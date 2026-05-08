@@ -8,7 +8,8 @@ set -u
 
 LOG="$HOME/venture-os/state/claude-memory-rsync.log"
 SRC="$HOME/.claude/projects/"
-DST="imac:backups/claude-memory/"
+DST="imac:backups/claude-memory/current/"
+ROTATE_SCRIPT="$HOME/venture-os/components/claude-memory-backup/rotate-imac.sh"
 TS="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
 # Guard 1: SRC esiste e non vuoto (evita --delete che azzera backup remoto)
@@ -35,6 +36,15 @@ RC=$?
 if [ $RC -eq 0 ]; then
   N_FILES=$(echo "$OUT" | grep -cv '^$')
   echo "$TS OK lines=$N_FILES" >> "$LOG"
+
+  # Rotation snapshot su iMac (idempotente, una rotation per giorno UTC).
+  # Script via stdin pipe → no bootstrap manuale richiesto su iMac.
+  if [ -f "$ROTATE_SCRIPT" ]; then
+    ROUT=$(ssh -o ConnectTimeout=5 -o BatchMode=yes imac 'bash -s' < "$ROTATE_SCRIPT" 2>&1)
+    RRC=$?
+    RMSG=$(echo "$ROUT" | tr '\n' ' ' | head -c 200)
+    echo "$TS ROTATE rc=$RRC msg=$RMSG" >> "$LOG"
+  fi
 else
   MSG=$(echo "$OUT" | tr '\n' ' ' | head -c 200)
   echo "$TS FAIL rc=$RC msg=$MSG" >> "$LOG"

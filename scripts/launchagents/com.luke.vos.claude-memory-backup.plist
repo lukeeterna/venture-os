@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.luke.vos.claude-memory-backup</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/local/bin/bash</string>
+        <string>/Volumes/MontereyT7/venture-os/components/claude-memory-backup/backup.sh</string>
+    </array>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/usr/local/bin:/usr/bin:/bin</string>
+    </dict>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string>/tmp/vos-claude-memory-backup.out</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/vos-claude-memory-backup.err</string>
+</dict>
+</plist>

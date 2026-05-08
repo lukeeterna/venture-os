@@ -1,0 +1,26 @@
+#!/bin/bash
+# post-commit hook — push automatico backup locale a iMac (remote `imac`).
+# Pattern: fire-and-forget background, non blocca commit se iMac offline.
+# Log: state/git-push.log con timestamp UTC + esito + commit hash.
+# Coerente con vincolo VOS "iMac 2012 server sempre acceso" (CLAUDE.md).
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+LOG="$REPO_ROOT/state/git-push.log"
+COMMIT="$(git rev-parse --short HEAD)"
+TS="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+(
+  # Ignora SIGHUP: sopravvive a chiusura terminale/Claude Code session.
+  # Equivalente inline a nohup, evita quoting fragile delle variabili padre.
+  trap '' HUP
+  OUT=$(git push imac master 2>&1)
+  RC=$?
+  if [ $RC -eq 0 ]; then
+    echo "$TS OK $COMMIT" >> "$LOG"
+  else
+    MSG=$(echo "$OUT" | tr '\n' ' ' | head -c 200)
+    echo "$TS FAIL rc=$RC $COMMIT msg=$MSG" >> "$LOG"
+  fi
+) </dev/null >/dev/null 2>&1 &
+
+exit 0

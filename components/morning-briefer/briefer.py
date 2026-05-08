@@ -127,6 +127,62 @@ def _git_push_status() -> Optional[str]:
         return None
 
 
+def _git_head_drift() -> Optional[str]:
+    """Confronta HEAD locale vs HEAD bare repo iMac via SSH.
+    Copre lo scenario in cui il post-commit hook non scatta affatto
+    (es. commit fatto fuori da Claude Code, hook rimosso, race condition).
+    Ritorna msg segnale se diverge; None se uguali o iMac irraggiungibile
+    (in quest'ultimo caso il signal generico 'iMac non raggiungibile' copre già il caso).
+    """
+    try:
+        r_local = subprocess.run(
+            ["git", "-C", str(VOS_ROOT), "rev-parse", "HEAD"],
+            capture_output=True, text=True, timeout=5,
+        )
+        if r_local.returncode != 0:
+            _log_error(f"git rev-parse local rc={r_local.returncode}: {r_local.stderr.strip()[:200]}")
+            return None
+        local_head = r_local.stdout.strip()
+
+        r_remote = subprocess.run(
+            ["ssh", "-o", "ConnectTimeout=5", "-o", "BatchMode=yes",
+             "imac", "git --git-dir=$HOME/git-backups/venture-os.git rev-parse master"],
+            capture_output=True, text=True, timeout=10,
+        )
+        if r_remote.returncode != 0 or not r_remote.stdout.strip():
+            # iMac irraggiungibile o bare repo mancante — non un'anomalia di drift,
+            # gestito dal segnale generico 'iMac non raggiungibile' in _signals.
+            return None
+        remote_head = r_remote.stdout.strip()
+
+        if local_head == remote_head:
+            return None
+
+        # HEAD diversi: prova a contare commit locali non pushati.
+        # Se il remote_head non esiste localmente (es. clone fresco senza fetch),
+        # rev-list fallisce e cadiamo nel ramo divergente generico.
+        r_count = subprocess.run(
+            ["git", "-C", str(VOS_ROOT), "rev-list", "--count", f"{remote_head}..HEAD"],
+            capture_output=True, text=True, timeout=5,
+        )
+        if r_count.returncode == 0 and r_count.stdout.strip().isdigit():
+            n = int(r_count.stdout.strip())
+            if n > 0:
+                return (
+                    f"backup iMac in ritardo, {n} commit non pushati "
+                    f"(HEAD locale {local_head[:7]} ≠ iMac {remote_head[:7]})"
+                )
+        return (
+            f"backup iMac divergente (HEAD locale {local_head[:7]} ≠ iMac {remote_head[:7]})"
+        )
+    except subprocess.TimeoutExpired as e:
+        _log_error("git head drift timeout", e)
+        return None
+    except Exception as e:  # noqa: BLE001
+        _log_error("git head drift check failed", e)
+        return None
+
+
 def _select_main_db(db_files: list) -> Optional[str]:
     """Filtra: SQLite ext + esclude profili browser. Ritorna il primo path valido."""
     for p in db_files:
@@ -240,6 +296,10 @@ def _signals(mac: Optional[dict], imac: Optional[dict], projects: dict) -> list:
     gp = _git_push_status()
     if gp:
         sigs.append(gp)
+
+    gd = _git_head_drift()
+    if gd:
+        sigs.append(gd)
 
     for pname, pinfo in (projects or {}).items():
         debt = pinfo.get("handoff_debt_lines", 0)
