@@ -10,4 +10,5 @@ safe_to_clean:
   - ~/Library/Caches/uv
   - ~/.npm/_cacache
   - ~/.cargo/registry/cache
-  - ~/.Trash
+  # ~/.Trash rimosso 2026-05-08: TCC/FDA su Trash genera errori du_failed rc=1 ripetuti
+  # in errors.jsonl. Costo (FDA su Trash) > beneficio (svuotamento Cestino marginale).
