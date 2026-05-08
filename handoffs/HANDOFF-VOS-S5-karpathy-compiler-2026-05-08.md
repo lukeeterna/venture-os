@@ -1,8 +1,16 @@
 # HANDOFF S4 → S5 — Pattern compilation Karpathy operativo
 
-**Generato**: 2026-05-08T17:50Z (fine sessione S4)
-**Sessione successiva**: S5 dedicata implementazione compiler + pilot Guardian
-**Stato S4 chiuso**: VERDE (3/3 debiti tecnici risolti, vedi commit `f15aad5`)
+**Generato**: 2026-05-08T17:50Z (fine sessione S4), aggiornato 19:15Z post Gap-1+Gap-2
+**Sessione successiva**: S5 = test E2E hook globali + Karpathy compiler + pilot Guardian
+**Stato S4 chiuso**: VERDE — 3 debiti tecnici S3 risolti (`f15aad5`) + 2 hook VOS globali aggiunti (Gap 1 context-gate 50/60/75, Gap 2 session-end con commit auto + NEXT_SESSION_PROMPT generato)
+
+## Hook globali aggiunti S4 (verifica E2E in S5)
+- `~/.claude/hooks/global_context_gate.py` — soglie 50% WARN / 60% MANDATE / 75% HARD_STOP
+- `~/.claude/hooks/global_session_end.sh` — commit auto SAFE (git diff --check pass) + DIRTY marker se whitespace + NEXT_SESSION_PROMPT.md auto-generato
+- Registrati in `~/.claude/settings.json`. Smoke test 11/11 verde. **E2E reale = primo turno S5**: il hook si è attivato sulla sessione S4 stessa al 100% (involontario test E2E ✅).
+
+## Debito tracciato S4 per S5+
+- `state/blueprint-deviations.jsonl` entry `global-hooks-not-backed-up`: estendere `claude-memory-backup.sh` a includere `~/.claude/hooks/` + `~/.claude/settings.json` + `~/.claude/CLAUDE.md`. Oggi MacBook fail = perdita config hook.
 
 ---
 
