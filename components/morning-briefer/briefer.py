@@ -24,6 +24,7 @@ VOS_ROOT = Path("/Volumes/MontereyT7/venture-os")
 INVENTORY = VOS_ROOT / "state" / "projects-inventory.yaml"
 HOST_MONITOR_LOG = VOS_ROOT / "state" / "host-monitor.jsonl"
 ERROR_LOG = VOS_ROOT / "state" / "errors.jsonl"
+GIT_PUSH_LOG = VOS_ROOT / "state" / "git-push.log"
 BRIEFS_DIR = VOS_ROOT / "briefs"
 BRIEFS_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -102,6 +103,27 @@ def _imac_probe_via_ssh() -> Optional[dict]:
         return json.loads(r.stdout.strip())
     except (subprocess.TimeoutExpired, json.JSONDecodeError, Exception) as e:  # noqa: BLE001
         _log_error("ssh imac failed", e)
+        return None
+
+
+def _git_push_status() -> Optional[str]:
+    """Ispeziona ultima riga git-push.log. Se FAIL ritorna msg per segnale, altrimenti None.
+    Formato log: 'TS OK COMMIT' oppure 'TS FAIL rc=N COMMIT msg=...'.
+    """
+    try:
+        if not GIT_PUSH_LOG.exists():
+            return None
+        with open(GIT_PUSH_LOG) as f:
+            lines = [ln for ln in f if ln.strip()]
+        if not lines:
+            return None
+        last = lines[-1].strip()
+        parts = last.split(" ", 2)
+        if len(parts) >= 2 and parts[1] == "FAIL":
+            return f"backup git iMac fallito — ultimo log: {last[:140]}"
+        return None
+    except Exception as e:  # noqa: BLE001
+        _log_error("git-push.log read failed", e)
         return None
 
 
@@ -214,6 +236,10 @@ def _signals(mac: Optional[dict], imac: Optional[dict], projects: dict) -> list:
             sigs.append(f"iMac uptime {int(up)}h ({int(up // 24)}gg), considerare reboot")
     else:
         sigs.append("iMac non raggiungibile via SSH")
+
+    gp = _git_push_status()
+    if gp:
+        sigs.append(gp)
 
     for pname, pinfo in (projects or {}).items():
         debt = pinfo.get("handoff_debt_lines", 0)
