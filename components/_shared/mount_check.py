@@ -15,6 +15,10 @@ def is_t7_mounted() -> bool:
 
 
 def require_t7_or_exit(component_name: str):
+    # Bypass per host remoti (iMac) dove T7 non è collegato.
+    # Audit: blueprint-deviations.jsonl S2-MVP Task 3.
+    if os.environ.get("VOS_SKIP_MOUNT_CHECK") == "1":
+        return
     if is_t7_mounted():
         return
     msg = {
