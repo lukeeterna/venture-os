@@ -1,0 +1,28 @@
+# Pattern handoff per-progetto (blueprint sez. 7.6.4 fix 5c).
+# ARGOS/FLUXION/Guardian hanno convenzioni naming differenti, glob unico fallirebbe.
+# handoff-debt-tracker itera per progetto e somma righe matchate.
+projects:
+  ARGOS:
+    root: ~/Documents/combaretrovamiauto-enterprise
+    patterns:
+      - "agent-memory/**/*.md"
+      - "memory/**/*.md"
+      - "prompts/s*.md"
+      - "rules/**/*.md"
+    threshold_lines: 2000
+  FLUXION:
+    root: /Volumes/MontereyT7/FLUXION
+    patterns:
+      - "HANDOFF*.md"
+      - "MEMORY*.md"
+      - "STATO_CORRENTE*.md"
+      - "ROADMAP*.md"
+      - "docs/handoffs/*.md"
+    threshold_lines: 2000
+  Guardian:
+    root: ~/Documents/pulizia-smartphone
+    patterns:
+      - ".planning/**/*.md"
+      - "HANDOFF*.md"
+      - "MEMORY*.md"
+    threshold_lines: 1500

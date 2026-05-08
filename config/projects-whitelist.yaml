@@ -1,0 +1,12 @@
+# Whitelist progetti attivi VOS — max 3 (vincolo blueprint sez. 4).
+# Quarto progetto = aggiunta esplicita richiede chiusura/parcheggio di uno esistente.
+active_projects:
+  - name: ARGOS
+    path: ~/Documents/combaretrovamiauto-enterprise
+    stack: python+sqlite
+  - name: FLUXION
+    path: /Volumes/MontereyT7/FLUXION
+    stack: tauri+react+sqlite
+  - name: Guardian
+    path: ~/Documents/pulizia-smartphone
+    stack: python+sqlite

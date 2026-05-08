@@ -1,0 +1,58 @@
+generated_at: '2026-05-08T15:34:35.432960+00:00'
+scanner_version: v0
+projects:
+  ARGOS:
+    path: /Users/macbook/Documents/combaretrovamiauto-enterprise
+    stack: python+sqlite
+    exists: true
+    has_claude_md: true
+    db_files:
+    - /Users/macbook/Documents/combaretrovamiauto-enterprise/data/db/cove_tracker.duckdb
+    - /Users/macbook/Documents/combaretrovamiauto-enterprise/data/db/dealer_network.duckdb
+    - /Users/macbook/Documents/combaretrovamiauto-enterprise/data/db/nhtsa_wmi.duckdb
+    - /Users/macbook/Documents/combaretrovamiauto-enterprise/dealer_network.sqlite
+    - /Users/macbook/Documents/combaretrovamiauto-enterprise/src/cove/data/cove_tracker.duckdb
+    - /Users/macbook/Documents/combaretrovamiauto-enterprise/src/cove/data/nhtsa_wmi.duckdb
+    - /Users/macbook/Documents/combaretrovamiauto-enterprise/src/marketing/chroma_db/chroma.sqlite3
+    - /Users/macbook/Documents/combaretrovamiauto-enterprise/tools/scrapers/.chrome_profile/Default/heavy_ad_intervention_opt_out.db
+    - /Users/macbook/Documents/combaretrovamiauto-enterprise/tools/scrapers/.chrome_profile/first_party_sets.db
+    handoff_debt_lines: 14693
+    handoff_files: 94
+    handoff_threshold: 2000
+    last_modified: '2026-05-07T08:08:13.307948+00:00'
+  FLUXION:
+    path: /Volumes/MontereyT7/FLUXION
+    stack: tauri+react+sqlite
+    exists: true
+    has_claude_md: true
+    db_files:
+    - /Volumes/MontereyT7/FLUXION/.whatsapp-session/session/Default/heavy_ad_intervention_opt_out.db
+    - /Volumes/MontereyT7/FLUXION/.whatsapp-session/session/first_party_sets.db
+    - /Volumes/MontereyT7/FLUXION/fluxion.db
+    - /Volumes/MontereyT7/FLUXION/src-tauri/fluxion.db
+    - /Volumes/MontereyT7/FLUXION/voice-agent/data/vertical_dbs/auto.db
+    - /Volumes/MontereyT7/FLUXION/voice-agent/data/vertical_dbs/barbiere.db
+    - /Volumes/MontereyT7/FLUXION/voice-agent/data/vertical_dbs/beauty.db
+    - /Volumes/MontereyT7/FLUXION/voice-agent/data/vertical_dbs/fisioterapia.db
+    - /Volumes/MontereyT7/FLUXION/voice-agent/data/vertical_dbs/gommista.db
+    - /Volumes/MontereyT7/FLUXION/voice-agent/data/vertical_dbs/medical.db
+    - /Volumes/MontereyT7/FLUXION/voice-agent/data/vertical_dbs/odontoiatra.db
+    - /Volumes/MontereyT7/FLUXION/voice-agent/data/vertical_dbs/palestra.db
+    - /Volumes/MontereyT7/FLUXION/voice-agent/data/vertical_dbs/professionale.db
+    - /Volumes/MontereyT7/FLUXION/voice-agent/data/vertical_dbs/salone.db
+    - /Volumes/MontereyT7/FLUXION/voice-agent/data/vertical_dbs/toelettatura.db
+    - /Volumes/MontereyT7/FLUXION/voice-agent/data/vertical_dbs/wellness.db
+    handoff_debt_lines: 3277
+    handoff_files: 5
+    handoff_threshold: 2000
+    last_modified: '2026-05-07T08:06:15.462943+00:00'
+  Guardian:
+    path: /Users/macbook/Documents/pulizia-smartphone
+    stack: python+sqlite
+    exists: true
+    has_claude_md: true
+    db_files: []
+    handoff_debt_lines: 16398
+    handoff_files: 53
+    handoff_threshold: 1500
+    last_modified: '2026-05-04T14:34:21.727399+00:00'

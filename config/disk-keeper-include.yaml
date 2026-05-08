@@ -1,0 +1,13 @@
+# disk-keeper-include.yaml — whitelist a inclusione chiusa per il componente disk-keeper.
+# Solo i path elencati qui sotto possono essere analizzati e ripuliti da Mole.
+# Riferimento: BLUEPRINT-JD v3.2.1 sezione 7.3. Aggiunte = modifica esplicita di questo file.
+
+safe_to_clean:
+  - ~/Library/Developer/Xcode/DerivedData
+  - ~/Library/Caches/com.apple.dt.Xcode
+  - ~/Library/Caches/Homebrew
+  - ~/Library/Caches/pip
+  - ~/Library/Caches/uv
+  - ~/.npm/_cacache
+  - ~/.cargo/registry/cache
+  - ~/.Trash
