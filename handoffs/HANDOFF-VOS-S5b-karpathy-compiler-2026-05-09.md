@@ -98,7 +98,16 @@ Se STEP 2 + Guardian chiudono: S6 = blueprint update (vedi `seeds/S6-blueprint-b
 
 ## Pre-flight S5b
 
-- Verificare `GEMINI_API_KEY` esiste: `grep GEMINI ~/.claude/.env.free-gpu 2>/dev/null` (probabile no, chiedere a Luke creazione key gratuita su https://aistudio.google.com/apikey)
+- **TASK PRIORITARIO `find-and-implement-gemini-key`**: Luke 2026-05-09T16:30Z ha confermato di avere già una Google API key attiva. Sessione S5-prep ha verificato negativo:
+  - `~/.claude/.env.free-gpu` NO key
+  - Grep `~/` solo match in transcript jsonl backup, no env files
+  Cercare in (in ordine, fermarsi al primo HIT):
+  1. `grep -i "gemini\|google.*api\|aistudio" ~/.zshrc ~/.zshenv ~/.profile 2>/dev/null`
+  2. `grep -ril "GEMINI_API_KEY\|GOOGLE_API_KEY" ~/Documents/combaretrovamiauto-enterprise /Volumes/MontereyT7/FLUXION ~/Documents/pulizia-smartphone --include=".env*" 2>/dev/null`
+  3. `security find-generic-password -l "gemini" 2>&1 | head -5` e variants ("google api", "aistudio", "genai")
+  4. `find ~ -maxdepth 4 -name ".env*" -type f 2>/dev/null | xargs grep -l "GEMINI\|GOOGLE_API" 2>/dev/null`
+  5. Chiedere a Luke quale progetto la usa, dump diretto da lì
+  Una volta trovata: `echo 'GEMINI_API_KEY=...' >> ~/.claude/.env.free-gpu && chmod 600 ~/.claude/.env.free-gpu` + verifica con curl test Gemini API endpoint (1 chiamata gratuita)
 - Verificare `pip install google-genai --dry-run --report -.json` per check Big Sur compatibility (vincolo #8 — google-genai NON in blacklist, ma verifica wheel macOS 11)
 - T7 mount check come ogni componente VOS
 

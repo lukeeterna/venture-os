@@ -1,42 +1,45 @@
-# Prompt ripartenza — generato automaticamente
+# NEXT SESSION PROMPT — generato 2026-05-09T16:35Z (override manuale post-MANDATE 60%)
 
-**Generato**: `2026-05-09T16:27:21Z`
-**Sessione**: `b7e2cd18-70c8-4bc0-a7fd-a717cf41eac9`
-**Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: committed: b9d242f
-**Last commit**: `b9d242f auto-close session b7e2cd18-70c8-4bc0-a7fd-a717cf41eac9 @ 2026-05-09T16:27:21Z`
+**Sessione precedente**: S5-prep + S5 STEP 1 (chiusa VERDE per MANDATE vincolo #7)
+**Sessione successiva**: S5b — STEP 2+3 Karpathy compiler
 
-## Ultimi 5 commit
+## Stato chiuso
+
+- S5 STEP 1: `config/routing.yaml` (Gemini 2.5 Pro free, 1M ctx, 50 RPD) — `daec00d`
+- S5-prep: GH multi-remote `lukeeterna/venture-os` PRIVATE, hook `REMOTES=(imac github)`, fix HEAD bare iMac, seed S6, deviation — `259b4fc`
+- Parità 3-way locale = imac/master = github/master
+
+## Task aperto bloccante S5b STEP 3
+
+**`find-and-implement-gemini-key`** — Luke ha key Google API attiva. NON trovata in:
+- `~/.claude/.env.free-gpu` (solo HF + ngrok)
+- Grep ricorsivo `~/` (solo match in transcript jsonl backup)
+
+NON ancora cercato (5 comandi pronti in handoff S5b sezione "Pre-flight"):
+shell rc, project envs ARGOS/FLUXION/Guardian, Keychain macOS, find env files.
+
+## Prompt resume (copia in nuova sessione da `~/venture-os`)
+
 ```
-b9d242f auto-close session b7e2cd18-70c8-4bc0-a7fd-a717cf41eac9 @ 2026-05-09T16:27:21Z
-259b4fc S5-prep: GH backup multi-remote + seed S6 blueprint
-68bc8db S4 final: handoff S5 esteso con Gap 1+2 hook globali completati
-6f411bb S4 close: handoff S5 per implementazione karpathy-compiler
-f15aad5 S4 close: chiusura 3 debiti tecnici S3
+Leggi nell'ordine:
+1. ~/venture-os/.claude/NEXT_SESSION_PROMPT.md (questo)
+2. ~/venture-os/handoffs/HANDOFF-VOS-S5b-karpathy-compiler-2026-05-09.md
+
+PRIMA AZIONE: eseguire i 5 comandi pre-flight (handoff S5b sezione Pre-flight)
+per trovare GEMINI_API_KEY esistente Luke. Implementarla in
+~/.claude/.env.free-gpu (chmod 600). Verifica con 1 curl test Gemini.
+
+POI procedere S5b STEP 2 (compiler.py) + STEP 3 (pilot Guardian).
+
+Vincoli: #1 verifica fattuale, #3 raccomandazione singola, #4 autocritica 4 punti,
+#7 chiusura a 60%, #8 preflight Big Sur per google-genai SDK.
 ```
 
-## File modificati nell'ultimo commit
-```
-A	briefs/2026-05-08.md
-A	briefs/2026-05-09.md
-```
+## Pre-flight check rapido
 
-## Ultimo prompt utente (estratto)
+```bash
+mount | grep -q MontereyT7 && echo "T7 OK" || echo "T7 MISSING"
+ls ~/.claude/hooks/global_context_gate.py ~/.claude/hooks/global_session_end.sh
+cd ~/venture-os && for r in imac github; do echo "$r: $(git ls-remote $r master | cut -f1)"; done
+echo "local: $(git rev-parse HEAD)"
 ```
-[{"tool_use_id":"toolu_01PFKbrFxLXW2gqoQrd8pNqW","type":"tool_result","content":"LOCAL: 259b4fc4f220a07e3b82ce11590efe3337346ce6\nIMAC:  259b4fc4f220a07e3b82ce11590efe3337346ce6\nGH:    259b4fc4f220a07e3b82ce11590efe3337346ce6","is_error":false}]
-```
-
-## Ultimi turni assistant
-```
-3. **Lista `REMOTES=(imac github)` hard-coded nel hook**: se in futuro aggiungi un terzo remote (es. Codeberg come backup ridondante a GitHub) dimenticherai di editare `.git/hooks/post-commit` perché è file non versionato (`.git/` per definizione). Soluzione vera: hook in `~/venture-os/scripts/git-hooks/post-commit` versionato + symlink da `.git/hooks/`. Debito da chiudere quando aggiungi terzo remote, non oggi.
-4. **`gh repo create --private` non ha bandiera `--disable-issues --disable-wiki`** — repo è aperta a issues/wiki che non userai e creano superficie d'attacco minima (spam, scraping). Comando di chiusura: `gh repo edit lukeeterna/venture-os --enable-issues=false --enable-wiki=false`. Eseguo se confermi, oppure lo lasci alla discrezione.
-Sequenza chiusa verde. Vuoi anche il comando di chiusura issues/wiki sopra (#4), oppure proseguiamo con S5 Karpathy?
-```
-
-## Come riprendere
-
-1. Apri Claude Code da `/Volumes/MontereyT7/venture-os`
-2. Leggi questo file (auto-loaded? dipende da config progetto)
-3. Continua dal punto indicato negli ultimi turni assistant sopra
-
-Se `SESSION_DIRTY.md` esiste in questa stessa cartella, risolvi PRIMA i conflitti.
