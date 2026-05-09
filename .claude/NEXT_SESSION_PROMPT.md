@@ -1,56 +1,50 @@
-# NEXT SESSION PROMPT — generato 2026-05-09T16:38Z (override post-MANDATE 72%)
+# NEXT SESSION — VOS S5c
 
-**Sessione precedente**: S5-prep + S5 STEP 1 chiusa VERDE. STEP 2-3 = S5b.
-**Stato bloccante S5b**: `.env.free-gpu` riga 15 CORROTTA con escape sequences (Luke incollato in zsh prompt fallito `read -p` no-coprocess; key length=169 invece di ~39).
+**Auto-close S5b**: 2026-05-09T19:25Z, context 60% raggiunto (vincolo #7).
+**Stato S5b**: VERDE imperfetto. Commit `8b467d0` su master.
 
-## URGENTE — FIRST ACTION S5b
+## TL;DR
 
-`~/.claude/.env.free-gpu` riga 15 contiene escape sequences ANSI (`^[[19`, `^[[15~` etc), NON una key valida. Curl test → HTTP 403.
+Karpathy compiler v0 funziona end-to-end (HTTP 200 su `gemini-2.5-flash` free tier).
+Pilot Guardian: 3/4 sezioni, output incompleto per pattern handoff-debt troppo largo.
+S5c: (a) restringere pattern, (b) re-pilot Guardian 4/4, (c) multi-vendor reval, (d) ARGOS+FLUXION.
 
-**Fix:**
-```bash
-# 1. Mostra file (no leak chiave reale, ma vedi la riga 15 corrotta)
-cat -An ~/.claude/.env.free-gpu | tail -5
-# 2. Rimuovi riga 15 corrotta (oppure tutte righe con "GEMINI_API_KEY")
-sed -i '' '/^GEMINI_API_KEY=/d' ~/.claude/.env.free-gpu
-# 3. Re-implementa key con metodo robusto (nano):
-nano ~/.claude/.env.free-gpu
-# Aggiungi riga: GEMINI_API_KEY=AIza...
-# Salva con Ctrl+O, Invio, Ctrl+X
-chmod 600 ~/.claude/.env.free-gpu
-# 4. Verifica length attesa ~39 + curl test
-KEY_LEN=$(grep '^GEMINI_API_KEY=' ~/.claude/.env.free-gpu | cut -d= -f2- | tr -d '\n' | wc -c | tr -d ' ')
-echo "Length: $KEY_LEN"
-set -a; . ~/.claude/.env.free-gpu; set +a
-curl -s -o /dev/null -w "HTTP %{http_code}\n" "https://generativelanguage.googleapis.com/v1beta/models?key=$GEMINI_API_KEY"
-# Atteso: HTTP 200
-```
+## NON rifare (chiuso S5b)
 
-## Stato chiuso S5-prep + STEP 1 (NON rifare)
+- Fix `~/.claude/.env.free-gpu` riga 15 corrotta — chiave Gemini valida HTTP 200 su flash
+- `config/routing.yaml` v2: long_context = `gemini-2.5-flash`, pro declassato a paid_fallback
+- `components/karpathy-compiler/compiler.py` v0 con dry-run/archive/force, REST puro, thinkingBudget=0
+- Pilot Guardian: COMPILED-STATE.md ≤500 righe + cost log entry (archived NON eseguito by design)
+- Deviations: `routing-pro-to-flash-switch`, `vendor-lock-in-not-reopened`
 
-- `config/routing.yaml` Gemini 2.5 Pro free → commit `daec00d`
-- GH multi-remote `lukeeterna/venture-os` PRIVATE, hook `REMOTES=(imac github)`, log per-remote
-- Fix HEAD bare repo iMac, seed S6, deviation tracciata
-- Parità 3-way verde a `e8c9bb3`
-
-## Prompt resume S5b (copia in nuova sessione)
+## Prompt resume S5c (copia-incolla)
 
 ```
+Sessione S5c: Karpathy compiler completion + multi-vendor reval.
+
 Leggi:
-1. ~/venture-os/.claude/NEXT_SESSION_PROMPT.md (questo, FIRST ACTION urgente)
-2. ~/venture-os/handoffs/HANDOFF-VOS-S5b-karpathy-compiler-2026-05-09.md
+1. ~/.claude/CLAUDE.md (vincoli globali)
+2. ~/venture-os/handoffs/HANDOFF-VOS-S5c-karpathy-followup-2026-05-09.md
+3. ~/venture-os/wiki/projects/Guardian/COMPILED-STATE.md (output S5b da rifare)
+4. ~/venture-os/state/blueprint-deviations.jsonl ultime 2 entry
+5. ~/venture-os/config/handoff-debt-config.yaml (pattern attuali)
 
-OBBLIGATORIO PRIMA AZIONE: fix .env.free-gpu riga 15 corrotta + re-implementa
-GEMINI_API_KEY via nano (metodo robusto). Verifica con curl HTTP 200.
+STEP 1: Restringi pattern handoff-debt-config.yaml (Guardian/ARGOS/FLUXION). Glob count prima/dopo.
+STEP 2: Re-pilot Guardian --force, verifica 4/4 sezioni, archive.
+STEP 3: Multi-vendor reval HTTP reale (Llama 3.3 iMac no-AVX2, HF Colab T4 skill free-gpu-api,
+        Qwen/Mistral OpenRouter, Cerebras). Update routing.yaml v3 se vincente != flash.
+STEP 4 (stretch): Pilot ARGOS + FLUXION con chunking se >1M token.
 
-POI S5b STEP 2 (compiler.py) + STEP 3 (pilot Guardian).
-
-Vincoli: #1 verifica fattuale, #3 raccomandazione singola, #4 autocritica 4 punti,
-#7 chiusura a 60% context, #8 preflight Big Sur per google-genai SDK.
+Vincoli: #1 HTTP reale, #3 raccomandazione singola, #4 critica 4 punti, #6 verde o handoff,
+         #7 chiusura 60%, #11 pattern recognition.
 ```
 
-## Lesson learned (per memory feedback futura)
+## Stato git
 
-`read -s -p "..."` NON funziona in zsh (`-p` = coprocess). Per prompt nascosto in zsh:
-- `read -s "key?GEMINI_API_KEY> "` (sintassi zsh)
-- oppure `nano` + edit manuale (più robusto, pattern usato S5b)
+- Master: `8b467d0` (S5b commit). Verifica push 3-way iMac+github al primo step S5c.
+
+## Rischi noti S5c
+
+1. ARGOS 14693 righe handoff > 1M token possibile anche con pattern restritto. Mitigazione: chunking.
+2. Multi-vendor reval può confermare Gemini → deviation log strutturato, no rotazione.
+3. iMac no-AVX2 blocker per llama.cpp self-hosted → no pivot hardware (vincolo #5).
