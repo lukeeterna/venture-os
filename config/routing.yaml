@@ -1,0 +1,37 @@
+# config/routing.yaml — VOS routing config
+# Bootstrap S5 STEP 1 (2026-05-09).
+# Aggiornamento runtime: routing-refresh notturno (CLAUDE.md "vincoli invarianti").
+# Vincolo #1: ogni entry ha last_verified + sources upstream verificati.
+# Vincolo #5: free-tier first, soglia hard €30/mese tracciata in state/costs.jsonl.
+
+version: 1
+last_verified: 2026-05-09
+
+models:
+  # Long-context model per pattern compilation Karpathy (handoff debt >2000 righe).
+  # Requisito: ≥500K context per leggere 16K righe Guardian senza chunking.
+  - role: long_context
+    model_id: gemini-2.5-pro
+    provider: google
+    api_endpoint: https://generativelanguage.googleapis.com/v1beta
+    context_window: 1000000
+    output_tokens_max: 65536
+    cost_per_1m_in: 0.0
+    cost_per_1m_out: 0.0
+    free_tier: true
+    rate_limit_rpd: 50
+    rate_limit_tpm: 250000
+    auth_env: GEMINI_API_KEY
+    sources:
+      - https://ai.google.dev/gemini-api/docs/rate-limits
+      - https://ai.google.dev/gemini-api/docs/pricing
+    notes: |
+      Verificato 2026-05-09: free tier attivo, 1M context, 50 RPD.
+      Google ha tagliato free quotas 50-80% a dic 2025; possibile ulteriore degrado.
+      Alternative scartate:
+        - qwen/qwen3.6-plus 1M = PAID $0.325/$1.95 per 1M tokens (no free tier)
+        - qwen/qwen3-next-80b-a3b-instruct:free = 262K context, insufficiente per Guardian 1.5M tokens
+      Karpathy use case: ~3 chiamate/settimana max → 50 RPD copre largamente.
+
+defaults:
+  long_context: gemini-2.5-pro
