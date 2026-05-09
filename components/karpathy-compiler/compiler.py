@@ -168,6 +168,75 @@ Ricorda: 450 righe MASSIMO. Stringato verificato > prolisso verosimile. Le 4 sez
 """
 
 
+# Multi-pass: una sezione per call. Risolve deviation S5d "cap per-sezione ignorato".
+# Pattern S5c+S5d: gemini-2.5-flash su input ≥60K tok consolida ma NON rispetta cap
+# globale per sezione (8 run consecutive 49-2589 righe, "Blocker" 368 righe vs cap 80).
+# Multi-pass: input identico, contratto su 1 sola sezione, output piccolo e prevedibile.
+SECTION_SPECS = [
+    {
+        "key": "stato",
+        "heading": "## Stato attuale verificato",
+        "max_lines": 200,
+        "intent": (
+            "Cosa esiste e funziona OGGI nel progetto. Solo affermazioni esplicite nel testo, niente inferenza. "
+            "Aggrega per area funzionale (es. 'Backup', 'Network', 'AI/Detection'). Una bullet per fatto, max una riga. "
+            "Se più handoff dicono lo stesso fatto, scrivi UNA bullet e tagga la sessione più recente (es. '(S27)')."
+        ),
+    },
+    {
+        "key": "decisioni",
+        "heading": "## Decisioni chiuse",
+        "max_lines": 100,
+        "intent": (
+            "Decisioni architetturali o di scope prese e non più in discussione. "
+            "Una bullet per decisione, max una riga. Se appare in più handoff, UNA bullet con tag sessione."
+        ),
+    },
+    {
+        "key": "blocker",
+        "heading": "## Blocker aperti",
+        "max_lines": 80,
+        "intent": (
+            "Problemi noti, dipendenze esterne attese, errori non risolti, lavoro fermo. "
+            "ESCLUDI blocker che il testo dichiara risolti, chiusi, o superati. "
+            "Una bullet per blocker, max una riga. Se appare in più handoff, UNA bullet con tag sessione più recente."
+        ),
+    },
+    {
+        "key": "prossimi",
+        "heading": "## Prossimi passi",
+        "max_lines": 70,
+        "intent": (
+            "SOLO step esplicitamente menzionati come 'next', 'TODO', 'carry-over', 'da fare', 'prossima sessione'. "
+            "Niente raccomandazioni tue. Niente passi già fatti. Una bullet per step, max una riga."
+        ),
+    },
+]
+
+
+def build_section_system_prompt(spec: dict) -> str:
+    """System prompt single-section: contratto stretto su 1 sola sezione, no fenestratura su altre."""
+    return f"""Sei un compilatore di stato progetto Karpathy-style, in modalità single-section.
+
+INPUT: concat di handoff/memory/stato di un progetto software in italiano (può contenere termini tecnici inglesi).
+
+OUTPUT RICHIESTO: ESATTAMENTE UNA sezione markdown, intestazione `{spec['heading']}`, MASSIMO {spec['max_lines']} RIGHE totali (intestazione inclusa).
+
+CONTENUTO della sezione:
+{spec['intent']}
+
+VINCOLI ASSOLUTI:
+1. SOLO contenuto presente nell'INPUT. Mai inferenza, mai "potrebbe/probabilmente/si suggerisce".
+2. **DEDUPLICA AGGRESSIVAMENTE**: se un item compare in più handoff, UNA bullet con tag sessione più recente (es. '(S27)').
+3. ESCLUDI ogni informazione che NON appartiene a `{spec['heading']}`. Le altre sezioni del documento le scrive un'altra call: tu fai SOLO questa.
+4. Se non c'è contenuto pertinente, scrivi solo: `{spec['heading']}\\n\\n_(nessuna evidenza nel materiale)_`
+5. Inizia direttamente con `{spec['heading']}`. Nessun preambolo, nessuna chiusura, niente fence ```markdown.
+6. **HARD STOP** a {spec['max_lines']} righe: se hai più materiale, taglia per priorità (più recente, più rilevante). Mai sforare.
+7. Se l'INPUT è contraddittorio, prevale il più recente per data filename/contenuto.
+
+Ricorda: {spec['max_lines']} righe MAX. Stringato verificato > prolisso verosimile."""
+
+
 def build_user_prompt(project: str, files: list[Path]) -> str:
     chunks = [f"# Compilazione progetto: {project}\n"]
     chunks.append(f"# File totali: {len(files)}\n\n")
@@ -184,8 +253,21 @@ def build_user_prompt(project: str, files: list[Path]) -> str:
 
 # ---------- gemini call ----------
 
+def _parse_retry_delay(body: str) -> float:
+    """Estrae retry delay (s) dal body 429 di Google. Fallback 60s."""
+    import re
+    m = re.search(r'retry in (\d+(?:\.\d+)?)\s*s', body)
+    if m:
+        return float(m.group(1))
+    return 60.0
+
+
 def call_gemini(model: dict, system_prompt: str, user_prompt: str, api_key: str) -> dict:
-    """POST a generativelanguage. Ritorna dict completo (per estrarre text + usage)."""
+    """POST a generativelanguage. Ritorna dict completo (per estrarre text + usage).
+
+    Retry su 429 (TPM 250K/min): max 3 attempt, delay da body (cap 90s).
+    Vincolo #5: TPM è rolling 60s, non daily — quindi retry breve è zero-cost (no escalation a paid).
+    """
     url = f"{model['api_endpoint']}/models/{model['model_id']}:generateContent"
     headers = {
         "x-goog-api-key": api_key,
@@ -203,16 +285,30 @@ def call_gemini(model: dict, system_prompt: str, user_prompt: str, api_key: str)
             "thinkingConfig": {"thinkingBudget": 0},
         },
     }
-    resp = requests.post(url, headers=headers, json=payload, timeout=300)
-    if resp.status_code == 429:
-        log_error({"event": "rate_limit", "status": 429, "body": resp.text[:500]})
-        sys.stderr.write(f"[{COMPONENT}] HTTP 429 rate limit. Riprova domani o attiva billing.\n")
-        sys.exit(3)
-    if resp.status_code != 200:
-        log_error({"event": "http_error", "status": resp.status_code, "body": resp.text[:1000]})
+    import time
+    max_attempts = 3
+    for attempt in range(1, max_attempts + 1):
+        # Timeout 900s: ARGOS 175K tok può richiedere >5min decode anche con thinking off.
+        # FLUXION 60K dura ~30-90s. Margine per worst case.
+        resp = requests.post(url, headers=headers, json=payload, timeout=900)
+        if resp.status_code == 200:
+            return resp.json()
+        if resp.status_code == 429:
+            delay = min(_parse_retry_delay(resp.text), 90.0)
+            log_error({"event": "rate_limit", "status": 429, "attempt": attempt,
+                       "delay_s": delay, "body": resp.text[:500]})
+            if attempt < max_attempts:
+                # Margine +5s per essere sicuri che la finestra TPM si sia resettata.
+                wait = delay + 5.0
+                sys.stderr.write(f"[{COMPONENT}] HTTP 429 attempt {attempt}/{max_attempts}, retry in {wait:.0f}s...\n")
+                time.sleep(wait)
+                continue
+            sys.stderr.write(f"[{COMPONENT}] HTTP 429 dopo {max_attempts} tentativi. Quota daily o TPM persistente.\n")
+            sys.exit(3)
+        log_error({"event": "http_error", "status": resp.status_code, "attempt": attempt, "body": resp.text[:1000]})
         sys.stderr.write(f"[{COMPONENT}] HTTP {resp.status_code}: {resp.text[:300]}\n")
         sys.exit(4)
-    return resp.json()
+    sys.exit(4)  # unreachable
 
 
 def extract_text(response: dict) -> str:
@@ -253,7 +349,7 @@ def write_compiled(project: str, body: str, model_id: str, files_count: int) -> 
         f"compiled_at: {now_iso()}\n"
         f"model: {model_id}\n"
         f"source_files: {files_count}\n"
-        "compiler: karpathy-compiler v0\n"
+        "compiler: karpathy-compiler v2 (multi-pass capable)\n"
         "---\n\n"
     )
     out_path.write_text(frontmatter + body.strip() + "\n", encoding="utf-8")
@@ -281,6 +377,7 @@ def main() -> int:
     parser.add_argument("--dry-run", action="store_true", help="Mostra prompt + token estimate, no LLM call")
     parser.add_argument("--archive", action="store_true", help="MV originali in archived-handoffs (default: NO)")
     parser.add_argument("--force", action="store_true", help="Bypass idempotenza (frontmatter date odierno)")
+    parser.add_argument("--multi-pass", action="store_true", help="4 chiamate (una per sezione) — risolve cap-ignorato S5d")
     args = parser.parse_args()
 
     require_t7_or_exit(COMPONENT)
@@ -324,10 +421,34 @@ def main() -> int:
         sys.stderr.write(f"[{COMPONENT}] {model['auth_env']} non trovata in {ENV_FILE} o env\n")
         return 6
 
-    print(f"[{COMPONENT}] chiamata Gemini in corso...")
-    response = call_gemini(model, SYSTEM_PROMPT, user_prompt, api_key)
-    body = extract_text(response)
-    usage = extract_usage(response)
+    if args.multi_pass:
+        print(f"[{COMPONENT}] modalità multi-pass: {len(SECTION_SPECS)} chiamate (una per sezione).")
+        sections_text: list[str] = []
+        usage = {"tokens_in": 0, "tokens_out": 0, "tokens_total": 0}
+        for spec in SECTION_SPECS:
+            print(f"[{COMPONENT}]   call sezione: {spec['heading']} (cap {spec['max_lines']} righe)...")
+            sys_prompt = build_section_system_prompt(spec)
+            resp = call_gemini(model, sys_prompt, user_prompt, api_key)
+            sec_text = extract_text(resp).strip()
+            # Hard cap client-side: se LLM sfora, tronchiamo. Non bloccante.
+            sec_lines = sec_text.splitlines()
+            if len(sec_lines) > spec["max_lines"]:
+                print(f"[{COMPONENT}]   WARN sezione {spec['key']}: {len(sec_lines)} righe > cap {spec['max_lines']}, trunco.")
+                sec_text = "\n".join(sec_lines[:spec["max_lines"]])
+            # Garantisci che inizi con l'heading atteso (se LLM aggiunge preambolo, prepend).
+            if not sec_text.lstrip().startswith(spec["heading"]):
+                sec_text = f"{spec['heading']}\n\n{sec_text}"
+            sections_text.append(sec_text)
+            u = extract_usage(resp)
+            usage["tokens_in"] += u["tokens_in"]
+            usage["tokens_out"] += u["tokens_out"]
+            usage["tokens_total"] += u["tokens_total"]
+        body = "\n\n".join(sections_text)
+    else:
+        print(f"[{COMPONENT}] chiamata Gemini in corso...")
+        response = call_gemini(model, SYSTEM_PROMPT, user_prompt, api_key)
+        body = extract_text(response)
+        usage = extract_usage(response)
 
     # Sanity check output ≤500 righe + 4 sezioni complete (vincolo S5c).
     # NB: archive ammesso SOLO se body NON troncato AND ha le 4 sezioni richieste.
