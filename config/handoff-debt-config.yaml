@@ -1,28 +1,47 @@
-# Pattern handoff per-progetto (blueprint sez. 7.6.4 fix 5c).
-# ARGOS/FLUXION/Guardian hanno convenzioni naming differenti, glob unico fallirebbe.
-# handoff-debt-tracker itera per progetto e somma righe matchate.
+# Pattern handoff per-progetto (blueprint sez. 7.6.4 — fix S5c).
+# v2 — 2026-05-09: restringimento pattern dopo S5b imperfetto su Guardian
+#   (53 file → 17 file, 4/4 sezioni invece di 3/4).
+#
+# Principio: SOLO veri handoff/state/next-session. Esclusi:
+#   - phase plans (.planning/phases/), research files (.planning/research/)
+#   - ROADMAP*.md (work future, non debito narrativo passato)
+#   - agent-memory generica (memoria per-agent, non handoff cross-session)
+#
+# Verificato con glob count S5c (file/righe/bytes/tok stima):
+#   Guardian: 53 → 17 file, 5557 righe, ~50KB, ~12K tok
+#   ARGOS:    94 → 98 file, 16255 righe, ~702KB, ~175K tok
+#   FLUXION:   0 → 17 file, 6832 righe, ~263KB, ~65K tok
+#
+# Tutti entrano in 1M context Gemini 2.5 Flash, no chunking necessario.
+
 projects:
   ARGOS:
     root: ~/Documents/combaretrovamiauto-enterprise
     patterns:
-      - "agent-memory/**/*.md"
-      - "memory/**/*.md"
-      - "prompts/s*.md"
-      - "rules/**/*.md"
+      - "HANDOFF.md"                    # root handoff principale
+      - "CURRENT_SPRINT.md"             # stato sprint attivo
+      - ".claude/memory/HANDOFF.md"     # memoria Claude Code project-scoped
+      - ".planning/STATE.md"            # state machine corrente
+      - "prompts/s*.md"                 # prompt sessione (s100..sNNN, 94 file)
     threshold_lines: 2000
+
   FLUXION:
     root: /Volumes/MontereyT7/FLUXION
     patterns:
-      - "HANDOFF*.md"
-      - "MEMORY*.md"
-      - "STATO_CORRENTE*.md"
-      - "ROADMAP*.md"
-      - "docs/handoffs/*.md"
+      - "HANDOFF*.md"                   # HANDOFF.md root
+      - "PROMPT-RIPARTENZA*.md"         # prompt ripartenza Feb 2026 (storico)
+      - "PROMPT-SESSIONE*.md"           # prompt sessione specifici
+      - "PROMPT_S*.md"                  # prompt numerati (PROMPT_S183.md)
+      - ".claude/NEXT_SESSION_PROMPT.md" # next-session corrente
     threshold_lines: 2000
+
   Guardian:
     root: ~/Documents/pulizia-smartphone
     patterns:
-      - ".planning/**/*.md"
-      - "HANDOFF*.md"
-      - "MEMORY*.md"
+      - ".planning/HANDOFF*.md"
+      - ".planning/STATE.md"
+      - ".planning/PROMPT_S*.md"        # PROMPT_S31..S50 (10 file)
+      - ".planning/NEXT*.md"            # NEXT_SESSION.md, NEXT-SESSION-PROMPT.md
+      - ".planning/MEGA-SESSION*.md"
+      - ".planning/S23*.md"             # S23_PROMPT.md (legacy naming)
     threshold_lines: 1500

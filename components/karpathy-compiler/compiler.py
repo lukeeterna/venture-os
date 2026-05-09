@@ -138,29 +138,33 @@ SYSTEM_PROMPT = """Sei un compilatore di stato progetto Karpathy-style.
 
 INPUT: concat di handoff/memory/stato di un progetto software in italiano (può contenere termini tecnici inglesi).
 
-OUTPUT RICHIESTO: un singolo documento markdown di MASSIMO 500 righe con ESATTAMENTE 4 sezioni in quest'ordine:
+OUTPUT RICHIESTO: un singolo documento markdown di MASSIMO 450 righe con ESATTAMENTE 4 sezioni in quest'ordine:
 
-## Stato attuale verificato
-Cosa esiste e funziona OGGI nel progetto. Solo affermazioni che trovi esplicite nel testo. Niente inferenza, niente "probabilmente".
+## Stato attuale verificato (MAX 200 RIGHE)
+Cosa esiste e funziona OGGI nel progetto. Solo affermazioni esplicite nel testo. Niente inferenza.
+Aggrega per area funzionale (es. "Backup", "Network", "AI/Detection"). Una bullet per fatto, max una riga.
+Se 17 handoff dicono "DB backup attivo" → UNA bullet, non 17.
 
-## Decisioni chiuse
-Decisioni architetturali/di scope che il testo segnala come prese e non più in discussione. Una bullet per decisione, max una riga.
+## Decisioni chiuse (MAX 100 RIGHE)
+Decisioni architetturali/di scope prese e non più in discussione. Una bullet per decisione, max una riga.
 
-## Blocker aperti
+## Blocker aperti (MAX 80 RIGHE)
 Problemi noti, dipendenze esterne attese, errori non risolti. Una bullet per blocker, max una riga.
 
-## Prossimi passi
-Solo step esplicitamente menzionati nel testo come "next" o "TODO" o equivalenti. Niente raccomandazioni tue.
+## Prossimi passi (MAX 70 RIGHE)
+Solo step esplicitamente menzionati come "next" / "TODO" / "carry-over". Niente raccomandazioni tue.
 
 VINCOLI ASSOLUTI:
 1. SOLO contenuto presente nell'INPUT. Mai aggiungere informazione non scritta.
 2. Mai usare frasi come "potrebbe", "probabilmente", "si suggerisce" — segnalano inferenza.
-3. Se una sezione non ha contenuto nell'INPUT, scrivi una sola riga: "_(nessuna evidenza nel materiale)_"
-4. Nessun preambolo, nessuna chiusura. Inizia direttamente con `## Stato attuale verificato`.
-5. Output puro markdown, NON dentro fence ```markdown.
-6. Se l'INPUT è contraddittorio (es. handoff vecchi vs nuovi), prevale il più recente per data filename.
+3. **DEDUPLICA**: se un fatto/decisione/blocker compare in più handoff, scrivi UNA sola bullet e nota la sessione più recente in cui appare (es. "(S27)"). MAI duplicati testuali.
+4. Se una sezione non ha contenuto, scrivi una sola riga: "_(nessuna evidenza nel materiale)_"
+5. Nessun preambolo, nessuna chiusura. Inizia direttamente con `## Stato attuale verificato`.
+6. Output puro markdown, NON dentro fence ```markdown.
+7. Se l'INPUT è contraddittorio (handoff vecchi vs nuovi), prevale il più recente per data filename/contenuto.
+8. **HARD STOP**: superato il cap righe per sezione, smetti e passa alla sezione successiva. Tutte le 4 sezioni DEVONO essere presenti.
 
-Ricorda: 500 righe è il MASSIMO, non il target. Stringato verificato è meglio di prolisso verosimile.
+Ricorda: 450 righe MASSIMO. Stringato verificato > prolisso verosimile. Le 4 sezioni sono un contratto.
 """
 
 
@@ -191,7 +195,7 @@ def call_gemini(model: dict, system_prompt: str, user_prompt: str, api_key: str)
         "systemInstruction": {"parts": [{"text": system_prompt}]},
         "contents": [{"role": "user", "parts": [{"text": user_prompt}]}],
         "generationConfig": {
-            "temperature": 0.2,
+            "temperature": 0.0,
             "maxOutputTokens": model.get("output_tokens_max", 65536),
             # Disabilita thinking: 2.5-flash ha CoT abilitato di default che consuma
             # maxOutputTokens budget riducendo output visibile (S5b: 32K thinking
@@ -325,14 +329,30 @@ def main() -> int:
     body = extract_text(response)
     usage = extract_usage(response)
 
-    # Sanity check output ≤500 righe
+    # Sanity check output ≤500 righe + 4 sezioni complete (vincolo S5c).
+    # NB: archive ammesso SOLO se body NON troncato AND ha le 4 sezioni richieste.
+    # S5c bug recap: archive_originals chiamato dopo truncate senza verifica → originali persi.
     lines = body.splitlines()
+    truncated = False
     if len(lines) > 500:
         print(f"[{COMPONENT}] WARN: output {len(lines)} righe > 500. Trunco a 500 + nota.")
         body = "\n".join(lines[:499]) + "\n\n_(troncato a 500 righe — output originale eccedeva soglia)_"
+        truncated = True
+
+    required_sections = [
+        "## Stato attuale verificato",
+        "## Decisioni chiuse",
+        "## Blocker aperti",
+        "## Prossimi passi",
+    ]
+    sections_found = [s for s in required_sections if s in body]
+    sections_ok = len(sections_found) == 4
+    if not sections_ok:
+        missing = [s for s in required_sections if s not in body]
+        print(f"[{COMPONENT}] WARN: solo {len(sections_found)}/4 sezioni. Mancanti: {missing}")
 
     out_path = write_compiled(args.project, body, model["model_id"], len(files))
-    print(f"[{COMPONENT}] scritto: {out_path} ({len(body.splitlines())} righe)")
+    print(f"[{COMPONENT}] scritto: {out_path} ({len(body.splitlines())} righe, sezioni={len(sections_found)}/4)")
 
     log_cost({
         "event": "compiled",
@@ -347,6 +367,12 @@ def main() -> int:
     })
 
     if args.archive:
+        if truncated or not sections_ok:
+            sys.stderr.write(
+                f"[{COMPONENT}] BLOCK archive: truncated={truncated} sections={len(sections_found)}/4. "
+                "Archive richiede output non troncato + 4/4 sezioni. Ri-esegui --force.\n"
+            )
+            return 7
         dest = archive_originals(args.project, files)
         print(f"[{COMPONENT}] archiviati {len(files)} file in {dest}")
     else:

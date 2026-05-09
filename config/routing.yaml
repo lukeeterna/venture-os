@@ -1,12 +1,26 @@
 # config/routing.yaml — VOS routing config
-# Bootstrap S5 STEP 1 (2026-05-09). Update S5b (2026-05-09 pomeriggio).
+# Bootstrap S5 STEP 1 (2026-05-09). Update S5b → v2 (afternoon). Update S5c → v3 (evening).
 # Aggiornamento runtime: routing-refresh notturno (CLAUDE.md "vincoli invarianti").
 # Vincolo #1: ogni entry ha last_verified + sources upstream verificati.
 # Vincolo #5: free-tier first, soglia hard €30/mese tracciata in state/costs.jsonl.
 
-version: 2
+version: 3
 last_verified: 2026-05-09
 last_verified_method: real_http_call  # vincolo #11, no doc-only
+
+# S5c reval esito: Gemini 2.5 Flash CONFERMATO long_context primario.
+# Alternative valutate (vincolo #2 ricerca attiva max 5min, deviation S5b "vendor-lock-in"):
+#  - Llama 3.3 70B self-hosted iMac → ESCLUSO: no AVX2 (machdep.cpu.features=AVX1.0),
+#    RAM 16GB < 40GB richiesti per 70B Q4. Capacity reale, non capex.
+#  - HF Colab T4 (skill free-gpu-api esistente) → ESCLUSO: 15GB VRAM = max 8B Q4,
+#    qualità degradata su 105K context consolidamento.
+#  - Cerebras Llama 3.3 70B → CANDIDATO PAID-BACKUP: 128K ctx (sufficiente per
+#    Guardian/FLUXION, marginale ARGOS 175K), 1M tok/day free, >2000 tok/s.
+#    HTTP test BLOCCATO da assenza CEREBRAS_API_KEY. Setup → S5d.
+#  - OpenRouter Llama 3.3 70B free → CANDIDATO PAID-BACKUP: 131K ctx, 20 req/min.
+#    HTTP test BLOCCATO da assenza OPENROUTER_API_KEY. Setup → S5d.
+# Decisione: Gemini flash resta vincente per 1M ctx unico + free tier 250 RPD vs
+# 1.2% quota usata (3 call/giorno). Backup chain configurata sotto, attivabile S5d.
 
 models:
   # Long-context model per pattern compilation Karpathy (handoff debt >2000 righe).
@@ -55,5 +69,54 @@ models:
       Solo se Luke attiva billing Google Cloud. NON usare di default.
       Soglia hard €30/mese: ~24 chiamate/mese da 200K input + 50K output.
 
+  # Backup chain free-tier (S5c reval) — attivazione richiede setup account S5d.
+  # NB: free_tier_pending=true significa "free tier confermato da doc upstream
+  # ma non ancora HTTP-verified per assenza API key Luke" — vincolo #1 esplicito.
+  - role: long_context_backup_1
+    model_id: llama-3.3-70b
+    provider: cerebras
+    api_endpoint: https://api.cerebras.ai/v1
+    context_window: 128000
+    output_tokens_max: 8192
+    cost_per_1m_in: 0.0
+    cost_per_1m_out: 0.0
+    free_tier: true
+    free_tier_pending: true  # vincolo #1: richiede HTTP test S5d
+    rate_limit_tpd: 1000000  # 1M tok/giorno free tier (doc Cerebras)
+    auth_env: CEREBRAS_API_KEY
+    sources:
+      - https://inference-docs.cerebras.ai/introduction
+      - https://cerebras.ai/inference  # pricing/free tier
+    notes: |
+      Setup S5d: account su https://cloud.cerebras.ai → API key → aggiungere a
+      ~/.claude/.env.free-gpu come CEREBRAS_API_KEY=...
+      Throughput >2000 tok/s, latenza <1s anche su 100K input.
+      Limit context 128K = OK Guardian (75K) + FLUXION (~65K), MARGINAL ARGOS (~175K).
+      Per ARGOS richiede chunking O fallback a Gemini flash 1M.
+
+  - role: long_context_backup_2
+    model_id: meta-llama/llama-3.3-70b-instruct:free
+    provider: openrouter
+    api_endpoint: https://openrouter.ai/api/v1
+    context_window: 131072
+    output_tokens_max: 4096
+    cost_per_1m_in: 0.0
+    cost_per_1m_out: 0.0
+    free_tier: true
+    free_tier_pending: true
+    rate_limit_rpm: 20
+    auth_env: OPENROUTER_API_KEY
+    sources:
+      - https://openrouter.ai/models?q=llama-3.3
+    notes: |
+      Setup S5d: account su https://openrouter.ai → API key.
+      Free tier 20 req/min, no daily cap. Più lento di Cerebras.
+      Backup secondario, attivare solo se Cerebras down.
+
 defaults:
   long_context: gemini-2.5-flash
+  long_context_fallback_chain:  # ordine di attivazione su rate limit/errore
+    - gemini-2.5-flash      # primario, free 250 RPD verified
+    - llama-3.3-70b         # cerebras free, pending HTTP test S5d
+    - meta-llama/llama-3.3-70b-instruct:free  # openrouter free, pending HTTP test S5d
+    - gemini-2.5-pro        # paid fallback, solo se Luke attiva billing
