@@ -1,17 +1,18 @@
 # config/routing.yaml — VOS routing config
-# Bootstrap S5 STEP 1 (2026-05-09).
+# Bootstrap S5 STEP 1 (2026-05-09). Update S5b (2026-05-09 pomeriggio).
 # Aggiornamento runtime: routing-refresh notturno (CLAUDE.md "vincoli invarianti").
 # Vincolo #1: ogni entry ha last_verified + sources upstream verificati.
 # Vincolo #5: free-tier first, soglia hard €30/mese tracciata in state/costs.jsonl.
 
-version: 1
+version: 2
 last_verified: 2026-05-09
+last_verified_method: real_http_call  # vincolo #11, no doc-only
 
 models:
   # Long-context model per pattern compilation Karpathy (handoff debt >2000 righe).
-  # Requisito: ≥500K context per leggere 16K righe Guardian senza chunking.
+  # Requisito: ≥500K context per leggere ~15K righe ARGOS senza chunking.
   - role: long_context
-    model_id: gemini-2.5-pro
+    model_id: gemini-2.5-flash
     provider: google
     api_endpoint: https://generativelanguage.googleapis.com/v1beta
     context_window: 1000000
@@ -19,19 +20,40 @@ models:
     cost_per_1m_in: 0.0
     cost_per_1m_out: 0.0
     free_tier: true
-    rate_limit_rpd: 50
+    rate_limit_rpm: 10
+    rate_limit_rpd: 250
     rate_limit_tpm: 250000
     auth_env: GEMINI_API_KEY
     sources:
       - https://ai.google.dev/gemini-api/docs/rate-limits
+      - https://ai.google.dev/gemini-api/docs/models#gemini-2.5-flash
+    notes: |
+      VERIFICATO 2026-05-09 con HTTP call reale: gemini-2.5-flash → HTTP 200 (key Luke).
+      gemini-2.5-pro NON disponibile su free tier del progetto Google di Luke
+      (HTTP 429, "limit: 0" sul free_tier_input_token_count). Switch a flash.
+      Stesso 1M context window di pro, qualità reasoning marginalmente inferiore
+      ma sufficiente per Karpathy compilation (consolidare handoff già scritti,
+      non generation creativa). Spot-check manuale del primo COMPILED-STATE.md
+      è obbligatorio per validare output.
+      Free tier: 10 RPM, 250 RPD, 250K TPM (verified docs ufficiali).
+      Karpathy use case: ~3 chiamate/settimana max → 250 RPD copre largamente.
+
+  # Fallback paid se Luke attiva billing futuro
+  - role: long_context_paid_fallback
+    model_id: gemini-2.5-pro
+    provider: google
+    api_endpoint: https://generativelanguage.googleapis.com/v1beta
+    context_window: 1000000
+    output_tokens_max: 65536
+    cost_per_1m_in: 1.25  # tier ≤200K input
+    cost_per_1m_out: 10.0
+    free_tier: false
+    auth_env: GEMINI_API_KEY
+    sources:
       - https://ai.google.dev/gemini-api/docs/pricing
     notes: |
-      Verificato 2026-05-09: free tier attivo, 1M context, 50 RPD.
-      Google ha tagliato free quotas 50-80% a dic 2025; possibile ulteriore degrado.
-      Alternative scartate:
-        - qwen/qwen3.6-plus 1M = PAID $0.325/$1.95 per 1M tokens (no free tier)
-        - qwen/qwen3-next-80b-a3b-instruct:free = 262K context, insufficiente per Guardian 1.5M tokens
-      Karpathy use case: ~3 chiamate/settimana max → 50 RPD copre largamente.
+      Solo se Luke attiva billing Google Cloud. NON usare di default.
+      Soglia hard €30/mese: ~24 chiamate/mese da 200K input + 50K output.
 
 defaults:
-  long_context: gemini-2.5-pro
+  long_context: gemini-2.5-flash
