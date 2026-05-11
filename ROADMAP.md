@@ -189,6 +189,13 @@ Trigger su alert handoff-debt-watcher (FASE 3.2). Manualmente: ogni 4-8 settiman
 ### B2 — Humanizer skill (installata 2026-05-11 21:20 ✅ — eval ITA aperta)
 **Update**: Luke ha fornito `~/Downloads/humanizer.zip` con `humanizer-skill/SKILL.md` v2.5.1 MIT (basata su Wikipedia "Signs of AI writing", compat claude-code+opencode, frontmatter allowed-tools esplicito). Installata in `~/.claude/skills/humanizer/SKILL.md`. **Skill generica EN-first**. Da valutare a S7 se funziona su output italiano sales ARGOS (Luca Ferretti dealer DE/BE/NL/AT) — se sì: chiusa. Se output ITA degradato: scrivere variante `argos-humanizer-it` con regole anti-pattern AI italiani specifici.
 
+### B4 — Fix hook `global_session_end.sh` overwrite destruttivo
+**Trigger**: S6 close 21:30 — scoperto durante chiusura sessione che hook auto-close SOVRASCRIVE `NEXT_SESSION_PROMPT.md` ad ogni invocazione (`{ echo ... } > $PROMPT_FILE`), cancellando handoff strutturato manuale. Mitigazione S6: scritto `~/venture-os/.claude/S6-HANDOFF.md` come file durable.
+- Fix: hook deve detectare se `NEXT_SESSION_PROMPT.md` è "manualmente strutturato" (es. >50 righe o contiene marker `# Resume —` invece di `# Prompt ripartenza — generato automaticamente`) e in quel caso APPEND la sezione auto-generated invece di overwrite.
+- Alternativa più semplice: hook scrive sempre in `NEXT_SESSION_PROMPT.auto.md` separato, NEXT_SESSION_PROMPT.md resta sotto controllo founder/CC.
+- Stima: 15 min.
+- Done when: 1 test simulato — scrivo prompt manuale, eseguo hook, verifico che prompt manuale è preservato.
+
 ### B2-original — Humanizer skill italiano custom (residua, condizionata a B2 eval)
 **Trigger**: founder S6 close 2026-05-11. ARGOS persona Luca Ferretti output WhatsApp/email B2B verso dealer DE/BE/NL/AT in italiano. Tono naturale = critico per response rate.
 - Step 1: search `claudemarketplaces.com` (4200+ skills) + `github.com/anthropics/skills` per humanizer ITA esistente.
