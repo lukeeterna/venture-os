@@ -177,6 +177,10 @@ SECTION_SPECS = [
         "key": "stato",
         "heading": "## Stato attuale verificato",
         "max_lines": 200,
+        # batch: "recent" → vede solo file ≥mediana mtime quando --split-temporal attivo
+        #        "old"    → vede solo file <mediana mtime
+        #        "all"    → vede tutti i file (default, comportamento pre-S5f)
+        "batch": "recent",
         "intent": (
             "Cosa esiste e funziona OGGI nel progetto. Solo affermazioni esplicite nel testo, niente inferenza. "
             "Aggrega per area funzionale (es. 'Backup', 'Network', 'AI/Detection'). Una bullet per fatto, max una riga. "
@@ -187,8 +191,10 @@ SECTION_SPECS = [
         "key": "decisioni",
         "heading": "## Decisioni chiuse",
         "max_lines": 100,
+        "batch": "old",
         "intent": (
-            "Decisioni architetturali o di scope prese e non più in discussione. "
+            "Decisioni architetturali o di scope prese e IMPLEMENTATE, non più in discussione, "
+            "indipendentemente da quanto recente è il file (anche di pochi giorni fa va bene se è una decisione chiusa). "
             "Una bullet per decisione, max una riga. Se appare in più handoff, UNA bullet con tag sessione."
         ),
     },
@@ -196,6 +202,7 @@ SECTION_SPECS = [
         "key": "blocker",
         "heading": "## Blocker aperti",
         "max_lines": 80,
+        "batch": "recent",
         "intent": (
             "Problemi noti, dipendenze esterne attese, errori non risolti, lavoro fermo. "
             "ESCLUDI blocker che il testo dichiara risolti, chiusi, o superati. "
@@ -206,12 +213,30 @@ SECTION_SPECS = [
         "key": "prossimi",
         "heading": "## Prossimi passi",
         "max_lines": 70,
+        "batch": "recent",
         "intent": (
             "SOLO step esplicitamente menzionati come 'next', 'TODO', 'carry-over', 'da fare', 'prossima sessione'. "
             "Niente raccomandazioni tue. Niente passi già fatti. Una bullet per step, max una riga."
         ),
     },
 ]
+
+
+def split_files_by_mtime(files: list[Path]) -> tuple[list[Path], list[Path], float]:
+    """Splitta file in (recent, old) per mediana mtime. Auto-bilanciato 50/50.
+
+    Vincolo #11 / deviation S5d "argos-input-exceeds-tpm-budget":
+    quando input >50% TPM rolling window, multi-pass deve splittare input.
+    Mediana auto-bilancia indipendentemente dalla distribuzione temporale.
+    """
+    import statistics
+    if not files:
+        return [], [], 0.0
+    mtimes = [f.stat().st_mtime for f in files]
+    median = statistics.median(mtimes)
+    recent = [f for f in files if f.stat().st_mtime > median]
+    old = [f for f in files if f.stat().st_mtime <= median]
+    return recent, old, median
 
 
 def build_section_system_prompt(spec: dict) -> str:
@@ -378,6 +403,8 @@ def main() -> int:
     parser.add_argument("--archive", action="store_true", help="MV originali in archived-handoffs (default: NO)")
     parser.add_argument("--force", action="store_true", help="Bypass idempotenza (frontmatter date odierno)")
     parser.add_argument("--multi-pass", action="store_true", help="4 chiamate (una per sezione) — risolve cap-ignorato S5d")
+    parser.add_argument("--split-temporal", action="store_true",
+                        help="Split input per mediana mtime: sezioni stato/blocker/prossimi vedono solo recent, decisioni vede solo old (richiede --multi-pass). Risolve ARGOS 175K timeout S5e.")
     args = parser.parse_args()
 
     require_t7_or_exit(COMPONENT)
@@ -396,9 +423,31 @@ def main() -> int:
         sys.stderr.write(f"[{COMPONENT}] nessun handoff matchato in {root}\n")
         return 1
 
+    # Pre-build user_prompt full (per single-pass + dry-run). Split-temporal costruisce
+    # prompt per-batch dentro il loop multi-pass.
     user_prompt = build_user_prompt(args.project, files)
     tokens_in_est = estimate_tokens(SYSTEM_PROMPT) + estimate_tokens(user_prompt)
     print(f"[{COMPONENT}] progetto={args.project} files={len(files)} chars={len(user_prompt)} tokens_in_est={tokens_in_est} model={model['model_id']}")
+
+    # Pre-compute split per --split-temporal (richiede --multi-pass).
+    recent_files: list[Path] = []
+    old_files: list[Path] = []
+    batch_prompts: dict[str, str] = {}
+    if args.split_temporal:
+        if not args.multi_pass:
+            sys.stderr.write(f"[{COMPONENT}] --split-temporal richiede --multi-pass\n")
+            return 8
+        recent_files, old_files, median_mt = split_files_by_mtime(files)
+        from datetime import datetime as _dt
+        med_iso = _dt.fromtimestamp(median_mt).strftime("%Y-%m-%d")
+        recent_chars = sum(f.stat().st_size for f in recent_files)
+        old_chars = sum(f.stat().st_size for f in old_files)
+        print(f"[{COMPONENT}] split-temporal: median mtime={med_iso} | "
+              f"recent={len(recent_files)} files {recent_chars}c ({recent_chars//4} tok) | "
+              f"old={len(old_files)} files {old_chars}c ({old_chars//4} tok)")
+        batch_prompts["recent"] = build_user_prompt(args.project, recent_files)
+        batch_prompts["old"] = build_user_prompt(args.project, old_files)
+        batch_prompts["all"] = user_prompt  # fallback se spec.batch non match
 
     if args.dry_run:
         print(f"\n--- system prompt ({len(SYSTEM_PROMPT)} chars) ---")
@@ -422,13 +471,22 @@ def main() -> int:
         return 6
 
     if args.multi_pass:
-        print(f"[{COMPONENT}] modalità multi-pass: {len(SECTION_SPECS)} chiamate (una per sezione).")
+        mode_label = "multi-pass + split-temporal" if args.split_temporal else "multi-pass"
+        print(f"[{COMPONENT}] modalità {mode_label}: {len(SECTION_SPECS)} chiamate (una per sezione).")
         sections_text: list[str] = []
         usage = {"tokens_in": 0, "tokens_out": 0, "tokens_total": 0}
         for spec in SECTION_SPECS:
-            print(f"[{COMPONENT}]   call sezione: {spec['heading']} (cap {spec['max_lines']} righe)...")
+            # Scegli batch input: split-temporal usa spec['batch'], altrimenti tutto.
+            if args.split_temporal:
+                batch_key = spec.get("batch", "all")
+                up = batch_prompts.get(batch_key, user_prompt)
+                batch_info = f" [batch={batch_key} {len(up)}c]"
+            else:
+                up = user_prompt
+                batch_info = ""
+            print(f"[{COMPONENT}]   call sezione: {spec['heading']} (cap {spec['max_lines']} righe){batch_info}...")
             sys_prompt = build_section_system_prompt(spec)
-            resp = call_gemini(model, sys_prompt, user_prompt, api_key)
+            resp = call_gemini(model, sys_prompt, up, api_key)
             sec_text = extract_text(resp).strip()
             # Hard cap client-side: se LLM sfora, tronchiamo. Non bloccante.
             sec_lines = sec_text.splitlines()
