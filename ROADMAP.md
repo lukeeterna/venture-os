@@ -19,13 +19,22 @@ status: vivente — aggiornare end-of-session quando una fase chiude
 
 **Goal**: trust foundation. Garantire che componenti esistenti girano davvero e che CLAUDE.md descrive lo stato reale, non aspirazionale.
 
-### 1.1 — FLUXION hook context budget audit
+### 1.1 — FLUXION hook context budget audit ✅ (2026-05-11)
 **Pattern S5e bug 5x**: `~/.claude/hooks/global_context_gate.py:88` aveva budget hardcoded 200K vs 1M reale. Alta probabilità (~80%) replicato in hook locale FLUXION.
 - Read `/Volumes/MontereyT7/FLUXION/.claude/hooks/` (cerca context_budget_gate.py o simile)
 - Grep magic number 200_000 / 200000 / 200K
 - Se trova: fix analogo VOS (constante named, env override, default 1M)
 - Stima: 15 min
 - **Done when**: ricerca eseguita + (fix shipped OR conferma "no bug in FLUXION hook")
+- **Esito**: bug confermato (`context_budget_gate.py:108` `budget = 200_000.0`). Fix shipped: costante named `_MAX_CONTEXT_TOKENS_FALLBACK = 1_000_000` con commento deviation ref. Test: transcript 100KB → 2.50% (era 12.5% sovrastima 5x). Sintassi OK. Hypothesis 80% confermata.
+
+### 1.1bis — Brief delivery a CC sessione ✅ (2026-05-11)
+**Blocker P0 emerso in discussione FASE 1.1 (founder feedback)**: morning-briefer genera correttamente brief in `briefs/` ma SessionStart hook in `~/.claude/settings.json` iniettava solo i 12 vincoli CLAUDE.md, NON il brief. Brief invisibile a CC ad ogni avvio sessione → Validation Window blueprint (sez. 5, Fase B) di fatto MAI iniziata.
+- Script `~/.claude/hooks/session_start_brief.sh`: cerca brief di oggi, se manca rigenera al volo via briefer.py (~1.3s), inietta JSON additionalContext con freschezza esplicita.
+- Edge cases gestiti: T7 unmounted (warning), nessun brief disponibile (diagnostica), brief stale N giorni (label "gg fa, MacBook era spento?" coerente con pattern Luke spento notte).
+- Settings.json: aggiunto secondo matcher SessionStart `startup|resume` (non compact, ridondante post-compact). Backup pre-modifica salvato.
+- Test verdi: JSON valido, hook invoke ritorna ctx 1235 char, delete+rerun rigenera brief automaticamente.
+- Deviation: blueprint sez. 5 prevedeva pull ("Luke dice buongiorno → brief-narrator"), implementato push (auto-inject SessionStart). Motivo: tu non hai mai detto buongiorno per 4 giorni → pull non funziona se l'utente non sa di doverlo invocare.
 
 ### 1.2 — Audit LaunchAgent alive
 **Verifica che i 4 agent VOS girano davvero (non solo registered)**.
@@ -37,16 +46,16 @@ status: vivente — aggiornare end-of-session quando una fase chiude
 - Stima: 20 min
 - **Done when**: report stato 4/4 con timestamp ultima esecuzione + fix per chi è silente
 
-### 1.3 — Allineamento CLAUDE.md vs stato reale
+### 1.3 — Allineamento CLAUDE.md vs stato reale (parzialmente chiuso 2026-05-11)
 **Reference dangling identificate**:
-- `~/venture-os/wiki/BLUEPRINT-JD-v3.4.md` — file non esiste
-- `routing-refresh` notturno — componente non esiste
-- Possibili altre — audit completo path-by-path
+- ~~`~/venture-os/wiki/BLUEPRINT-JD-v3.4.md` — file non esiste~~ → **CHIUSO**: blueprint v3.5 ingerito (supersede v3.4), reference CLAUDE.md aggiornata.
+- `routing-refresh` notturno — componente non esiste → resta aperto, FASE 3.1
+- Possibili altre — audit completo path-by-path (rimane da fare per altre reference)
 
-Azione:
-- Per ogni reference dangling: o (a) creare placeholder esplicito "not-yet-implemented, scheduled FASE N", o (b) rimuovere dalla CLAUDE.md.
-- Decisione architetturale dichiarata: **Karpathy compilation (wiki/projects/<P>/COMPILED-STATE.md) = blueprint vivente per progetto**. Blueprint VOS-globale rimandato a FASE 3 se ROI giustifica.
-- Stima: 30 min
+Azione residua:
+- Verificare altre reference puntatori CLAUDE.md riga-per-riga (routing.yaml exists, projects-whitelist.yaml exists, costs.jsonl — verificare)
+- Decisione architetturale REVISIONATA: blueprint v3.5 È il blueprint canonico vivente. Karpathy compilation per-progetto resta meccanismo di Layer 4 wiki, ma non sostituisce blueprint globale.
+- Stima residua: 15 min
 - **Done when**: CLAUDE.md ha 0 reference dangling verificabili con file_check
 
 **FASE 1 done when**: 3/3 task verdi.

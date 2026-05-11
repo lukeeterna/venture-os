@@ -1,0 +1,62 @@
+{
+  "$schema": "https://code.claude.com/schemas/settings.json",
+  "comment": "Settings globali Claude Code per Luke v1.1 — applica vincoli CLAUDE.md deterministicamente via hooks. Fix v3.5: 2a blacklist word-boundary, 2b root protection robusta, 2c SessionStart hookSpecificOutput JSON per inject context reale.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cat <<'JSON'\n{\"hookSpecificOutput\":{\"hookEventName\":\"SessionStart\",\"additionalContext\":\"## Vincoli sessione attivi (riassunto da ~/.claude/CLAUDE.md)\\n\\n1. Verifica fattuale prima di scrivere — sintassi/API/versioni con doc upstream o --help reale.\\n2. Ricerca attiva prima di chiedere — WebSearch/WebFetch max 5 min, poi raccomandazione singola.\\n3. Mai liste A/B/C/D su decisioni tecniche — una raccomandazione singola motivata con dati.\\n4. Critica strutturale obbligatoria — autocritica 4 punti dopo ogni design proposto.\\n5. Vincolo zero-cost — mai capex come soluzione a problemi software, free-tier first.\\n6. Mai stati PARTIAL/ARANCIONE — sessione chiude verde o handoff strutturato con prompt resume.\\n7. Context budget — /context periodicamente, sopra 60% chiudi sessione.\\n8. Pre-flight env check — pip install --dry-run --report -.json prima libs blacklist (paddlepaddle, paddleocr, tensorflow, torch, torchvision, opencv-contrib-python, mediapipe, onnxruntime-gpu).\\n9. Mai 'hai ragione' diplomatico — accordo motivato con dati o disaccordo motivato con dati.\\n10. Output verificato > output verosimile — 500 righe corrette > 1000 righe verosimili.\\n11. Pattern recognition strutturale — root cause non episodio, audit in state/blueprint-deviations.jsonl.\\n12. Scope globale vs project-scoped — file VOS in ~/.claude/, mai in <progetto>/.claude/.\\n\\n3 progetti attivi: ARGOS (~/Documents/combaretrovamiauto-enterprise), FLUXION (/Volumes/MontereyT7/FLUXION), Guardian (~/Documents/pulizia-smartphone). Storage VOS /Volumes/MontereyT7/venture-os/ con symlink ~/venture-os. iMac via 'ssh imac' (alias config), non imac.local.\"}}\nJSON\n"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "INPUT=$(cat); CMD=$(echo \"$INPUT\" | jq -r '.tool_input.command // \"\"'); BLACKLIST_PATTERN='\\b(paddlepaddle|paddleocr|tensorflow|torch|torchvision|opencv-contrib-python|mediapipe|onnxruntime-gpu)\\b'; if echo \"$CMD\" | grep -qE 'pip install' && echo \"$CMD\" | grep -qE \"$BLACKLIST_PATTERN\"; then if ! echo \"$CMD\" | grep -q -- '--dry-run'; then echo '{\"hookSpecificOutput\": {\"hookEventName\": \"PreToolUse\", \"permissionDecision\": \"deny\", \"permissionDecisionReason\": \"BLOCCATO: install librerie blacklist senza preflight env check. Vincolo CLAUDE.md n.8. Esegui prima: pip install --dry-run --report - --ignore-installed <pkg>, parse JSON, verifica wheel macOS 11 Big Sur compatibile. Se incompatibile, proponi alternativa cloud free OpenRouter o versione LTS Big Sur.\"}}'; exit 0; fi; fi; ROOT_PATTERN_1='rm[[:space:]]+(-[a-zA-Z]*r[a-zA-Z]*[[:space:]]+)?(/[*]?([[:space:]]|$)|/(Library|System|Users|Applications|bin|usr|etc|var|opt|private|sbin|dev)([/[:space:]]|$))'; ROOT_PATTERN_2='rm[[:space:]]+(-[a-zA-Z]*r[a-zA-Z]*[[:space:]]+)?(\\$HOME|~)([[:space:]]|$)'; if echo \"$CMD\" | grep -qE \"$ROOT_PATTERN_1\" || echo \"$CMD\" | grep -qE \"$ROOT_PATTERN_2\"; then echo '{\"hookSpecificOutput\": {\"hookEventName\": \"PreToolUse\", \"permissionDecision\": \"deny\", \"permissionDecisionReason\": \"BLOCCATO: rm -rf su path catastrofico (root, system dirs Library/System/Users/Applications/bin/usr/etc/var/opt/private/sbin/dev, oppure $HOME/~ bare). Path /Volumes/* e ~/sub-path specifici sono ALLOW. Se intenzione legittima, riformula con path esplicito non in blacklist.\"}}'; exit 0; fi; exit 0"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "INPUT=$(cat); CMD=$(echo \"$INPUT\" | jq -r '.tool_input.command // \"\"'); EXIT=$(echo \"$INPUT\" | jq -r '.tool_response.exit_code // 0'); echo \"$(date -u +%Y-%m-%dT%H:%M:%SZ) cmd=\\\"$CMD\\\" exit=$EXIT\" >> ~/.claude/command-log.txt",
+            "async": true
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "TS=$(date +%Y%m%d-%H%M%S); mkdir -p ~/.claude/backups; INPUT=$(cat); TRANSCRIPT=$(echo \"$INPUT\" | jq -r '.transcript_path // \"\"'); if [ -n \"$TRANSCRIPT\" ] && [ -f \"$TRANSCRIPT\" ]; then cp \"$TRANSCRIPT\" \"$HOME/.claude/backups/transcript-$TS.jsonl\" 2>/dev/null || true; fi",
+            "async": true
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo \"$(date -u +%Y-%m-%dT%H:%M:%SZ) session_stop\" >> ~/.claude/session-log.txt",
+            "async": true
+          }
+        ]
+      }
+    ]
+  }
+}
