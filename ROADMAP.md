@@ -186,7 +186,10 @@ Trigger su alert handoff-debt-watcher (FASE 3.2). Manualmente: ogni 4-8 settiman
 - Stima: 2-3h setup + 30min wrap skill.
 - Done when: Mike OSS reachable via `ssh imac "curl localhost:3000/health"` + skill testabile su contratto sample.
 
-### B2 — Humanizer skill italiano per ARGOS sales agent
+### B2 — Humanizer skill (installata 2026-05-11 21:20 ✅ — eval ITA aperta)
+**Update**: Luke ha fornito `~/Downloads/humanizer.zip` con `humanizer-skill/SKILL.md` v2.5.1 MIT (basata su Wikipedia "Signs of AI writing", compat claude-code+opencode, frontmatter allowed-tools esplicito). Installata in `~/.claude/skills/humanizer/SKILL.md`. **Skill generica EN-first**. Da valutare a S7 se funziona su output italiano sales ARGOS (Luca Ferretti dealer DE/BE/NL/AT) — se sì: chiusa. Se output ITA degradato: scrivere variante `argos-humanizer-it` con regole anti-pattern AI italiani specifici.
+
+### B2-original — Humanizer skill italiano custom (residua, condizionata a B2 eval)
 **Trigger**: founder S6 close 2026-05-11. ARGOS persona Luca Ferretti output WhatsApp/email B2B verso dealer DE/BE/NL/AT in italiano. Tono naturale = critico per response rate.
 - Step 1: search `claudemarketplaces.com` (4200+ skills) + `github.com/anthropics/skills` per humanizer ITA esistente.
 - Step 2: se nessuna ITA → scrivi `~/.claude/skills/argos-humanizer-it/SKILL.md` custom con regole anti-pattern AI (no "Spero che questo messaggio ti trovi bene", no "In primo luogo", no "Tuttavia"), tono dealer auto italiano.
