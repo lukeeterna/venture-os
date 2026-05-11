@@ -176,6 +176,31 @@ Trigger su alert handoff-debt-watcher (FASE 3.2). Manualmente: ogni 4-8 settiman
 - **NO** scope decisions su Luke per tecnica (vincolo #3). Roadmap è raccomandazione singola motivata.
 - **NO** capex hardware come soluzione (vincolo #5). Tutto è software su esistente.
 
+## Backlog S7+ (captured 2026-05-11 close S6, founder input post-close)
+
+### B1 — Mike OSS self-host + wrap in legal-compliance-checker skill
+**Trigger**: founder S6 close 2026-05-11. Mike OSS (mikeoss.com) = open-source legal AI rilasciato 5/5/2026, contract drafting + tracked changes versioning, self-hostable, bring-your-own-key (vincolo #5 ✓).
+- Self-host su iMac (Next.js+Supabase, no AVX2 needed). Stack: `willchen96/mike` GitHub + Railway template.
+- Wrap come tool del `~/.claude/skills/legal-compliance-checker/SKILL.md` già installato (39 skills enterprise).
+- Use case prioritario: stage 5 venture pipeline (blueprint sez. 4) — ARGOS dealer contracts, FLUXION €497 EULA, Guardian ToS future.
+- Stima: 2-3h setup + 30min wrap skill.
+- Done when: Mike OSS reachable via `ssh imac "curl localhost:3000/health"` + skill testabile su contratto sample.
+
+### B2 — Humanizer skill italiano per ARGOS sales agent
+**Trigger**: founder S6 close 2026-05-11. ARGOS persona Luca Ferretti output WhatsApp/email B2B verso dealer DE/BE/NL/AT in italiano. Tono naturale = critico per response rate.
+- Step 1: search `claudemarketplaces.com` (4200+ skills) + `github.com/anthropics/skills` per humanizer ITA esistente.
+- Step 2: se nessuna ITA → scrivi `~/.claude/skills/argos-humanizer-it/SKILL.md` custom con regole anti-pattern AI (no "Spero che questo messaggio ti trovi bene", no "In primo luogo", no "Tuttavia"), tono dealer auto italiano.
+- Mappare a ARGOS sales agent flow (verificare in `~/Documents/combaretrovamiauto-enterprise/`).
+- Stima: 30min (install esistente) o 1-2h (scrittura custom).
+- Done when: skill triggera su output sales ARGOS + sample message passa "detect AI" test informale.
+
+### B3 — Pattern operativo: anthropics/skills come default discovery
+**Trigger**: founder S6 close 2026-05-11. Skill marketplace ecosystem maturo (4200+ skills SkillsMP, 770+ MCP, 2500+ marketplaces aggiornato 10/5/2026).
+- Aggiungi 2 righe a `~/.claude/CLAUDE.md` sezione "Indice puntatori": prima di scrivere skill da zero, check `github.com/anthropics/skills` (ufficiale) + `claudemarketplaces.com` (community).
+- CLI: `/plugin marketplace add <url>` + `/plugin install <name>`.
+- Stima: 5 min.
+- Done when: CLAUDE.md aggiornato + 1 riga in memoria globale `~/.claude/projects/-Users-macbook/memory/`.
+
 ## Re-audit roadmap
 
 Questa roadmap è documento vivente. Quando una fase chiude → marcare ✅ qui + commit. Quando emerge nuova priorità → entry in deviation log "roadmap-revision-S<N>" + update qui.
