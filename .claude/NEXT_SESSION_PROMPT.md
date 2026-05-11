@@ -24,6 +24,12 @@ Leggi:
 4. ~/venture-os/seeds/S5f-hook-cc-violation-gate.md (design hook completo)
 5. ~/venture-os/state/blueprint-deviations.jsonl ultime 4 entry (S5d/S5e)
 
+**Roadmap canonica**: `~/venture-os/ROADMAP.md` (S5f close, documento vivente).
+Sequenza eseguibile: FASE 1 → FASE 2 → FASE 3 → FASE 4 (manutenzione).
+S6 target: chiudere FASE 1 (3 task, totale ~65min).
+
+---
+
 STEP 1 — Audit baseline cc-violations (7gg, ~30min):
   - tail -50 ~/venture-os/state/cc-violations.jsonl → conta hit per pattern_id
   - Se ≥5 violazioni reali catturate → switch mode log-only → block:
