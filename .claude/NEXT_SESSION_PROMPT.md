@@ -1,59 +1,62 @@
-# NEXT SESSION — VOS S5e
+# NEXT SESSION — VOS S5f
 
-**Auto-close S5d**: 2026-05-09T20:35Z, context ~55% (vincolo #7).
-**Stato S5d**: VERDE 1/4 STEP. STEP 1 FLUXION completo + compiler v2 multi-pass + retry shipped. STEP 2 ARGOS bloccato da TPM+timeout (fix shipped per S5e).
+**Auto-close S5e**: 2026-05-11T19:35Z, context ~58% (vincolo #7).
+**Stato S5e**: VERDE 2/3 STEP. STEP 2 founder-bridge + STEP 3 Cerebras shipped. STEP 1 ARGOS bloccato strutturalmente → splitting S5f.
 
-## Riassunto S5d
+## Riassunto S5e
 
-- ✅ STEP 1 — FLUXION pilot (245 righe, 4/4 sezioni, 14 file archived)
-- ✅ Compiler v2 — multi-pass mode (4 chiamate per sezione) risolve deviation cap-per-section-ignored
-- ✅ Retry 429 + timeout 900s — pronto per ARGOS S5e
-- ⏸ STEP 2 ARGOS — primo task S5e
-- ⏸ STEP 3-4 vendor setup — sblocca con founder-bridge S5e
-- 🆕 NUOVO requirement Luke — components/founder-bridge/browser.py per OAuth/setup
+- ✅ STEP 2 — founder-bridge component (browser.py + shim) + test reale verde
+- ✅ STEP 3 — Cerebras HTTP verified, routing.yaml v4 con pivot strutturale (fast_short_context vs long_context)
+- ✅ Deviation `cerebras-model-names-doc-vs-real` (3a ricorrenza doc-only) + `argos-timeout-900s-insufficient`
+- ❌ STEP 1 ARGOS — timeout 900s confermato insufficiente, serve splitting input
+- 🆕 NUOVO Luke — seed S5f hook Stop gate violazioni CC
 
-## Prompt resume S5e
+## Prompt resume S5f
 
 ```
-Sessione S5e — ARGOS pilot completion + founder-bridge component + vendor setup.
+Sessione S5f — ARGOS splitting input + Hook Stop gate violazioni CC.
 
 Leggi:
 1. ~/.claude/CLAUDE.md (vincoli globali)
-2. ~/venture-os/handoffs/HANDOFF-VOS-S5e-argos-pilot-and-founder-bridge-2026-05-09.md
-3. ~/venture-os/wiki/projects/FLUXION/COMPILED-STATE.md (esempio output verde S5d)
-4. ~/venture-os/components/karpathy-compiler/compiler.py v2 (multi-pass + retry)
-5. ~/venture-os/state/blueprint-deviations.jsonl ultime 2 entry
+2. ~/venture-os/handoffs/HANDOFF-VOS-S5f-argos-splitting-and-cc-violation-gate-2026-05-11.md
+3. ~/venture-os/components/karpathy-compiler/compiler.py v2 (per refactor splitting)
+4. ~/venture-os/seeds/S5f-hook-cc-violation-gate.md (design hook completo)
+5. ~/venture-os/state/blueprint-deviations.jsonl ultime 4 entry (S5d/S5e)
 
-STEP 1 — ARGOS pilot (cold start TPM, ~25-40min):
-  python3 components/karpathy-compiler/compiler.py --project ARGOS --multi-pass --force
-  Verifica 4/4 sezioni + cap. Se OK → --archive
-  Se timeout/429 persistente → splitting per categoria (handoff_root vs .planning/STATE)
+STEP 1 — ARGOS splitting per categoria temporale (~2h):
+  Patch compiler.py: flag --split-temporal.
+  Strategia: classifica file ARGOS per mtime.
+    - Batch1 = handoff ≤30gg → sezioni 1+2+3 (stato/blocker/prossimi)
+    - Batch2 = handoff >30gg → sezione 4 (decisioni storiche)
+  Stima per-batch: ~88K input × decode <5min, dentro timeout 900s.
+  Test: python3 components/karpathy-compiler/compiler.py --project ARGOS --split-temporal --multi-pass --force --archive
+  Critica obbligatoria 4 punti prima di scrivere (vincolo #4).
+  Fallback se classificazione temporale degenere: split per file size ranking (top-N vs resto).
 
-STEP 2 — components/founder-bridge/browser.py:
-  open_in_browser(url, browser=None) con osascript fallback
-  Test reale aprendo URL noto (vincolo #1)
+STEP 2 — Hook Stop global_violation_gate.py (~1h):
+  Path: ~/.claude/hooks/global_violation_gate.py (scope globale, vincolo #12)
+  WebFetch https://docs.claude.com/en/docs/claude-code/hooks PRIMA (vincolo #1)
+  Pattern: regex hai ragione / perfetto opener / liste 1.+2.+3. decisionali
+  Stdout JSON {"decision":"block","reason":"..."} se hit
+  Log JSONL in ~/venture-os/state/cc-violations.jsonl
+  Register in ~/.claude/settings.json hooks.Stop
+  Test: 8 positive + 8 negative prompts, conta block rate.
 
-STEP 3 — Cerebras setup:
-  - Luke crea account cloud.cerebras.ai (founder-bridge auto-open)
-  - CEREBRAS_API_KEY in ~/.claude/.env.free-gpu
-  - HTTP test reale llama-3.3-70b-instruct (compat OpenAI endpoint)
-  - routing.yaml: rimuovi free_tier_pending
+STEP 3 (stretch) — OpenRouter HTTP test analogo Cerebras S5e.
 
-STEP 4 (stretch) — OpenRouter analogo
-STEP 5 (stretch) — A/B Guardian Gemini vs Cerebras
-
-Vincoli S5e: #1 HTTP test reale | #4 critica 4 punti | #6 verde o handoff | #7 60% context | #11 pattern recognition
+Vincoli S5f: #1 verifica fattuale | #3 singola raccomandazione | #4 critica 4 punti |
+             #6 verde o handoff | #7 60% context | #11 pattern recognition | #12 scope globale
 ```
 
-## Blocker noti S5e
+## Blocker noti S5f
 
-1. ARGOS 175K input × 4 call = TPM saturation iterativa. Fix shipped (retry +35s + timeout 900s) ma non testato end-to-end.
-2. Cerebras/OpenRouter HTTP test bloccato finché Luke non crea account → STEP 3-4 dipendono da founder-bridge.
-3. Determinismo flash multi-pass: FLUXION run-1 = 307 righe, run-2 = 245 righe. Stesso input, output qualitativamente equivalente ma metricamente diverso. Monitorare.
+1. ARGOS splitting temporale assume cut ≤30gg/>30gg clean — non verificato in S5e. Fallback split-by-size se degenere.
+2. Stop hook spec da verificare con WebFetch doc Anthropic (vincolo #1). Luke aveva proposto PreToolUse, corretto a Stop ma da confermare.
+3. Memoria feedback_no_hai_ragione_diplomatico.md insufficiente — verifica empirica deviation S4. Hook è gate hard di backup.
 
-## Pre-flight S5e
+## Pre-flight S5f
 
 - T7 mount check (invariante)
-- `tail -10 state/costs.jsonl` — S5d ha usato ~10 chiamate flash (4% RPD)
-- `cat ~/.claude/.env.free-gpu` — verificare GEMINI_API_KEY presente, CEREBRAS_API_KEY assente
-- `git log --oneline -3` — commit S5d include compiler v2 + FLUXION
+- `tail -5 state/costs.jsonl` quota S5e (~7-10 call flash + 5 call cerebras free)
+- `tail -5 state/blueprint-deviations.jsonl` riconferma rule_implications S5e
+- `grep -c CEREBRAS_API_KEY ~/.claude/.env.free-gpu` verifica chiave persiste
