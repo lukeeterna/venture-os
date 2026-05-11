@@ -1,0 +1,7 @@
+{"ts": "2026-05-11T17:30:19.241408+00:00", "session_id": "test", "cwd": "/tmp", "mode": "block", "pattern_id": "vincolo-9-hai-ragione", "vincolo": 9, "snippet": "hai ragione, fix dopo"}
+{"ts": "2026-05-11T17:30:19.385646+00:00", "session_id": "test", "cwd": "/tmp", "mode": "block", "pattern_id": "vincolo-9-hai-ragione", "vincolo": 9, "snippet": "Hai Ragione di chiedere"}
+{"ts": "2026-05-11T17:30:19.511705+00:00", "session_id": "test", "cwd": "/tmp", "mode": "block", "pattern_id": "vincolo-9-perfetto-opener", "vincolo": 9, "snippet": "Perfetto, procedo subito"}
+{"ts": "2026-05-11T17:30:19.637877+00:00", "session_id": "test", "cwd": "/tmp", "mode": "block", "pattern_id": "vincolo-9-perfetto-opener", "vincolo": 9, "snippet": "Perfetto! Vediamo il bug"}
+{"ts": "2026-05-11T17:30:19.803710+00:00", "session_id": "test", "cwd": "/tmp", "mode": "block", "pattern_id": "vincolo-3-lista-decisionale", "vincolo": 3, "snippet": "1. opzione A\n2. opzione B\n3. opzione C", "decision_keyword": "Quale preferisci"}
+{"ts": "2026-05-11T17:30:19.987630+00:00", "session_id": "test", "cwd": "/tmp", "mode": "block", "pattern_id": "vincolo-3-lista-decisionale", "vincolo": 3, "snippet": "1. fix X\n2. fix Y\n3. fix Z", "decision_keyword": "Opzioni"}
+{"ts": "2026-05-11T17:30:20.438821+00:00", "session_id": "test", "cwd": "/tmp", "mode": "block", "pattern_id": "vincolo-9-hai-ragione", "vincolo": 9, "snippet": "Tu hai ragione di chiedere SE volesse fare X"}
