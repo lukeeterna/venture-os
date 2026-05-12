@@ -1,0 +1,28 @@
+# Big Sur compatibility matrix — vincolo CLAUDE.md #8 + hardware constraint
+# Versioni LTS verificate compatibili con macOS 11.7.10 Big Sur su MacBook Luke.
+#
+# Uso: quando preflight-blacklist.yaml blocca install, consulta questo file
+# per versione LTS alternativa. Se non listata → flag "non verificato",
+# proporre path alternativo (iMac SSH / Colab / OpenRouter).
+#
+# Generato: 2026-05-12 (S7 FASE 1.3 residua) — seed minimo, espandere on-demand
+# quando una libreria richiede pin verificato.
+
+version: 1
+os_constraint: "macOS 11.7.10 Big Sur"
+python_version: "3.9.x"  # default system Python su Big Sur
+last_updated: "2026-05-12"
+
+compatible_versions: {}
+  # Schema (popolare on-demand quando libreria richiede pin):
+  # <package_name>:
+  #   pin: "==X.Y.Z"
+  #   reason: "ultima versione con wheel macOS_11"
+  #   verified_on: "YYYY-MM-DD"
+  #   alternatives:
+  #     - "<package>==X.Y.Z (newer ma con --no-binary)"
+
+# Pattern operativo: prima di pin-blind, verifica su PyPI:
+#   pip index versions <pkg>          # versioni disponibili
+#   pip download <pkg>==X.Y.Z --no-deps --platform macosx_11_0_x86_64 \
+#     --only-binary :all: -d /tmp/pip-test  # wheel disponibile?

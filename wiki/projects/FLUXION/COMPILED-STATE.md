@@ -1,254 +1,168 @@
 ---
 project: FLUXION
-date: 2026-05-09
-compiled_at: 2026-05-09T20:25:22Z
+date: 2026-05-12
+compiled_at: 2026-05-12T16:40:35Z
 model: gemini-2.5-flash
-source_files: 14
+source_files: 2
 compiler: karpathy-compiler v2 (multi-pass capable)
 ---
 
 ## Stato attuale verificato
 
-### Voice Agent (Python)
-*   Il Voice Agent "Sara" è implementato con una pipeline a 5 layer. (P-R-2026-02-06)
-*   Il Voice Agent include una logica di WAITLIST completa. (P-R-2026-02-06)
-*   Il Voice Agent supporta la disambiguazione fonetica dei nomi (es. "Gino" vs "Gigio"). (P-R-2026-02-11)
-*   Il Voice Agent riconosce i soprannomi (es. "Gigi" per "Gigio"). (P-R-2026-02-11)
-*   Il Voice Agent gestisce la chiusura della chiamata con conferma ("Terminiamo la comunicazione e le inviamo la conferma via WhatsApp?"). (P-R-2026-02-07-LIVE-TEST)
-*   Il Voice Agent gestisce il rifiuto elegante di un booking ("No, ho cambiato idea" → "Posso aiutarla in altro modo?"). (P-R-2026-02-07-LIVE-TEST)
-*   Il Voice Agent può inviare conferme di booking via WhatsApp. (P-R-2026-02-07-LIVE-TEST)
-*   Il Voice Agent può leggere il `nome_attivita` dalle impostazioni del DB per un greeting dinamico. (P-R-2026-02-06)
-*   Il Voice Agent include un `FluxionLatencyOptimizer` per lo streaming LLM e connection pooling. (P-R-2026-02-12-VoiceAgent)
-*   Il Voice Agent include un `FluxionTurnTracker` per l'osservabilità a livello di turno e breakdown della latenza. (P-R-2026-02-12-VoiceAgent)
-*   Il Voice Agent utilizza un client Groq modificato per lo streaming LLM con chunking su punteggiatura. (P-R-2026-02-12-VoiceAgent)
-*   Il Voice Agent ha flag CLI `--version` e `--health-check` che funzionano anche con dipendenze mancanti. (S184)
-*   Il Voice Agent è configurato per ascoltare su `0.0.0.0:3002` sull'iMac. (P-R-2026-02-12-VoiceAgent)
-*   Il Voice Agent ha un test suite completa con 40+ test per intent, entity, state machine e performance. (P-R-2026-02-12-VoiceAgent)
-*   Il Voice Agent ha smoke test rapidi (14 test) e test cross-machine. (P-R-2026-02-12-VoiceAgent)
-*   Il Voice Agent ha un filtro PII per trascrizioni e `user_text` (16 chiavi). (S184)
+### CI/CD e Deploy
+*   Il CI release gate completo è deployato via VOS e self-hosted runner (S207).
+*   Il runner self-hosted GitHub Actions su MacBook esegue il componente VOS orchestrator (S207).
+*   Il workflow `.github/workflows/sara-release-gate.yml` è configurato per trigger su PR `voice-agent/**` e `workflow_dispatch` (S207).
+*   Il workflow `.github/workflows/sara-release-gate.yml` include pre-flight per il mount di T7 e la presenza dell'orchestrator (S207).
+*   Il workflow `.github/workflows/sara-release-gate.yml` sincronizza il path canonico `/Volumes/MontereyT7/FLUXION/` con il commit CI SHA (S207).
+*   Il workflow `.github/workflows/sara-release-gate.yml` carica l'artifact report JSON e l'entry VOS (S207).
+*   Il workflow `.github/workflows/sara-release-gate.yml` ha un timeout di 20 minuti (S207).
+*   Il file `~/venture-os/docs/SETUP-SELFHOSTED-RUNNER.md` contiene una procedura di 5 passaggi per il setup del runner (S207).
+*   Il `morning-briefer/briefer.py` è patchato per leggere l'ultimo entry di `sara-gate-runs.jsonl` e segnalare "Sara Gate FAIL: N verticali ko" / "INFRA_ERROR" / age >7gg (S207).
+*   Il `morning-briefer/briefer.py` è stato testato post-edit e genera un brief di 26 righe (S207).
+*   Il commit `149cbc0` (FLUXION) ha implementato il CI release gate completo via VOS e self-hosted runner (S207).
+*   Il commit `7f32551` (VOS) ha implementato `sara-gate-orchestrator` e il brief signal Sara Gate (S207).
+*   Il deploy dell'onboarding Ehiweb è stato effettuato con il commit `1a6cb51` (S202).
+*   Il deploy dell'onboarding Ehiweb è verificabile su `https://e7064e1d.fluxion-landing.pages.dev/voip-guida/` con 6 keyword nuove (S202).
+*   La produzione `fluxion-landing.pages.dev/voip-guida` è stata aggiornata (S202).
+*   Il release gate è in stato PASS con 0 FAIL (S201).
+*   La pipeline iMac e la codebase master sono sincronizzate sul commit `893f349` (S201).
+*   Il `fluxion-proxy` è deployato con version ID `008dd86c-46c1-4a55-8943-32814dac1019` (S197).
+*   I cron triggers per F-3 (`0 9 * * *`) e F-4 (`*/5 * * * *`) sono attivi (S197).
 
-### Frontend (React/TypeScript)
-*   Esiste un Setup Wizard a 6 step (Dati→Indirizzo→Macro→Micro→Licenza→Config). (P-R-2026-02-04)
-*   Il Setup Wizard include la selezione di macro e micro categorie. (P-R-COMPLETO)
-*   Le schede cliente verticali sono dinamiche e si attivano in base alla micro-categoria selezionata. (P-R-COMPLETO)
-*   Sono complete le schede `SchedaOdontoiatrica.tsx`, `SchedaFisioterapia.tsx`, `SchedaEstetica.tsx`. (P-R-2026-02-04)
-*   Esiste un componente `SchedaClienteDynamic.tsx` che funge da switcher automatico per le schede. (P-R-2026-02-04)
-*   Esiste una UI completa per la gestione delle licenze (`LicenseManager.tsx`). (P-R-2026-02-04)
-*   Esistono React Query hooks per tutte le schede cliente e per la gestione delle licenze. (P-R-2026-02-04)
-*   Esiste una UI per la creazione di pacchetti (`PacchettiAdmin.tsx`). (P-R-COMPLETO-2026-02-06)
-*   Esiste una UI per la visualizzazione del progresso loyalty (`LoyaltyProgress.tsx`). (P-R-COMPLETO-2026-02-06)
-*   Esiste un `FirstRunNetworkModal.tsx` per la gestione della connettività di rete al primo avvio. (S184)
-*   Esiste un Pre-flight Wizard a 8 step (`FirstRunWizard.tsx`) per controlli iniziali (network, microfono, path DB, porte, voice ready, AV/Defender). (S184)
-*   Esiste un componente `DiagnosticReport.tsx` per l'invio di report diagnostici. (S184)
-*   Il frontend ha un filtro PII per 15 chiavi. (S184)
+### Componenti e Funzionalità
+*   Il file `~/venture-os/components/sara-gate-orchestrator/orchestrator.py` (231 righe) è un wrapper Python stdlib (S207).
+*   `orchestrator.py` include `require_t7_or_exit` condiviso (S207).
+*   `orchestrator.py` esegue il parsing dei trigger metadata env (GitHub Actions: PR num, actor, run_id, SHA / manual / cron) (S207).
+*   `orchestrator.py` esegue `sara-release-gate.sh` con `SARA_GATE_ARGS` override (S207).
+*   `orchestrator.py` esegue il parsing del report JSON e l'audit per-vertical su 12 verticali noti (S207).
+*   `orchestrator.py` appende `state/sara-gate-runs.jsonl` con verdict, totals, latency, per_vertical {ok,warn,fail,failures} (S207).
+*   `orchestrator.py` propaga l'exit code 0/1/2 (S207).
+*   Il `gsd-statusline.cjs:21-47` è stato modificato per rimuovere `bridgeUsed` dal calcolo di `used` (S206).
+*   Il `gsd-statusline.cjs` ora ottiene `used` sempre da stdin runtime (S206).
+*   Il bridge in `gsd-statusline.cjs` è mantenuto solo per `budgetState` (badge SAFE/WARN/BLOCK) (S206).
+*   Il file `voice-agent/src/whatsapp.py:37, 60-80` è stato modificato per correggere il path di `fluxion_root` a 3 livelli `.parent` (S206).
+*   Il `whatsapp.py` ora include un autoresolve di `node_path` via `FLUXION_NODE_PATH` env (S206).
+*   La pipeline pid 83278 e il subprocess WhatsApp pid 83319 sono RUNNING (S206).
+*   Il log `/tmp/fluxion-whatsapp-service.log` è popolato con "FAQ Category salone, Auto-Responder ENABLED, Chrome path detected" (S206).
+*   Il messaggio "✅ WhatsApp service avviato" è visibile in `voice-pipeline.log` riga 78 (S206).
+*   Il file `landing/voip-guida/index.html` è stato corretto (S202).
+*   `landing/voip-guida/index.html` ha rimosso la FAQ contraddittoria "Sara funziona senza VoIP" (S202).
+*   `landing/voip-guida/index.html` ha 4 step (era 3) (S202).
+*   `landing/voip-guida/index.html` ha pricing veritiero (VivaVox Free 30gg / Flat €7,95-4,95 promo) (S202).
+*   `landing/voip-guida/index.html` ha una nuova FAQ "Cosa succede se Sara non è ancora pronta" (S202).
+*   `landing/voip-guida/index.html` chiarisce che il mobile non è supportato (S202).
+*   `src/components/setup/SetupWizard.tsx` step 6 ha una CTA prominente VivaVox Free + deep-link guida + testid E2E (S202).
+*   `docs/launch/ONBOARDING-EHIWEB-CLIENTE.md` (107 righe) contiene una procedura formale CTO (S202).
+*   `orchestrator.py` non resetta più `_vertical_explicitly_set=False` incondizionatamente in `start_session()` (S201).
+*   `orchestrator.py` L5202 (`greet()` VoIP) resetta esplicitamente il flag (S201).
+*   `availability_checker._generate_slots` non crasha più con `ValueError: time data ''` per verticali senza pausa pranzo (S201).
+*   `LATENCY_TARGET_MS` è allineato da 2000ms a 5000ms (S201).
+*   Il release gate completo (Tier 1+2+3) ha 0 FAIL (S201).
+*   Il `release_gate.py` (circa 340 righe) è un harness Tier 1+2+3 (S200).
+*   Lo `scripts/sara-release-gate.sh` (circa 95 righe) è un wrapper SSH iMac (S200).
+*   La directory `docs/launch/sara-release-gate-reports/` contiene lo storico dei report JSON timestamped (S200).
+*   Il Tier 1 — Core deep riusa il framework `test_sara_stress_per_verticale.py` (S200).
+*   Il Tier 2 — Extended smoke include 5 verticali (barbiere, fisioterapia, gommista, odontoiatra, toelettatura) (S200).
+*   Il Tier 3 — DB integrity verifica schema clienti+appuntamenti, conteggi, FK integrity, waitlist (S200).
+*   I runbook `docs/launch/RUNBOOK-P1-SARA-LIVE-TEST.md` (300 righe) e `docs/launch/RUNBOOK-P2-WIN-MSI-BUILD.md` (380 righe) sono stati consegnati (S200).
+*   Il `docs/launch/PRE-LAUNCH-AUDIT.md` è aggiornato (S200).
+*   Il `landing/faq.html` è di qualità enterprise con 8 categorie e 24 FAQ items (S199).
+*   Il `landing/faq.html` include cross-link tra Q, JSON-LD `FAQPage` schema markup SEO Google, GDPR Art. 9 dettagliato, distinzione soft-delete vs hard-delete Art. 17, SLA dichiarato, tier Pro priority (S199).
+*   Il footer di `landing/faq.html` ha 3 link legali distinti (Privacy + Termini di Servizio + Termini Garanzia) (S199).
+*   Il `landing/privacy.html` (22.8KB, 14 sezioni) è una riscrittura completa con Groq STT sub-processor + Sentry (S198).
+*   `landing/privacy.html` distingue Titolare/Responsabile, dettaglia il flusso audio Sara, include una tabella di conservazione per 7 categorie, CF edge analytics aggregati (no cookie banner), e il diritto ODR UE (S198).
+*   Il `landing/termini.html` (21.3KB, 15 sezioni) include Licenza lifetime 1 attività, garanzia commerciale 30gg distinta da recesso legale 14gg, disclaimer Sara, cambio provider AI consentito, foro Potenza, diritto italiano (S198).
+*   Il footer di `landing/index.html` è aggiornato con il link a `termini.html` (S198).
+*   L'API admin `POST /admin/health/run-now` ritorna HTTP 200 con `ok:true` e 3 checks `up` (S198).
+*   L'API admin `POST /admin/email-sequence/preview {email,tier:"base",step:1}` ritorna HTTP 200 con `sent:true` e `resend_id` (S198).
+*   Il `docs/launch/PRE-LAUNCH-AUDIT.md` è stato creato (S197).
+*   Il file `scripts/setup-piper.js` è stato rimosso (S197).
+*   L'entry `"setup:piper": "node scripts/setup-piper.js"` è stata rimossa da `package.json` (S197).
+*   Il bundle PyInstaller sidecar (208MB) è stato validato E2E HTTP `/api/voice/say` (S196).
+*   Il bundle include `models/tts/it_IT-paola-medium.onnx` (58MB), `models/tts/it_IT-paola-medium.onnx.json`, `piper/espeak-ng-data/it_dict` (95KB), `piper/espeakbridge.so`, e moduli PYZ (S196).
+*   Il sidecar è standalone e avviabile con `dist/voice-agent --port 3099 --host 127.0.0.1` (S196).
+*   Il log conferma `[TTSEngineSelector] PiperTTSEngine selected (fast mode)` e `PiperTTS: Python API voice loaded` (S196).
+*   `POST /api/voice/say` ritorna `success=true` e `audio_base64` con header `RIFF...WAVEfmt` valido (S196).
+*   Il bundle è copiato in `src-tauri/binaries/voice-agent-x86_64-apple-darwin` (S196).
+*   Il file `docs/perf/D3-voice-latency.md` è aggiornato con la sezione "S196 RESULT" (S196).
 
-### Backend (Rust/Tauri)
-*   Sono implementati 12 comandi Tauri per `get/upsert` di ogni scheda cliente. (P-R-2026-02-04)
-*   Sono implementati comandi Tauri per lo stato, attivazione, verifica e fingerprint delle licenze Ed25519. (P-R-2026-02-04)
-*   Sono implementati comandi Tauri per `get_setup_status`, `get_setup_config`, `save_setup_config`. (P-R-2026-02-04)
-*   Sono implementati comandi Tauri per `check_feature_access_ed25519` e `check_vertical_access_ed25519`. (P-R-2026-02-04)
-*   Il backend Rust include la dipendenza `ed25519-dalek`. (P-R-2026-02-04)
-*   Il backend Rust include una funzione `detect_cloud_sync_provider()` per rilevare servizi come iCloud/OneDrive/Dropbox. (S184)
-*   Il backend Rust include comandi per `check_network`, `check_mic`, `check_db_path`, `check_ports`, `check_voice_ready` per il Pre-flight Wizard. (S184)
-*   Il backend Rust include comandi per `collect_diagnostic` e `send_diagnostic_report` per i report diagnostici. (S184)
-*   Il backend Rust ha un filtro PII per 15 chiavi. (S184)
-*   Il backend Rust è configurato per il linking statico CRT su Windows (`target-feature=+crt-static`). (S184)
-*   Il backend Rust è configurato per `embedBootstrapper` per WebView2 su Windows. (S184)
+### Performance
+*   La latency aggregata del release gate è P50=993ms, Slow-ratio=17%, P95=10177ms (WARN-only) (S201).
+*   Il Gate 3 D-1 SQLite ha 8/8 query PASS (Q1-list P95 24.5ms vs SLO 50ms) (S197).
+*   Il Gate 3 D-2 IPC `get_clienti` ha P95 36.9ms vs SLO 100ms (margine -63%) (S197).
+*   Il Gate 3 D-3 Voice TTS Piper sidecar ha P95 **404ms** vs SLO 800ms (margine -49.5%) (S197, S196).
+*   Il bench latency di 10 frasi production-realistic ha P50=278.0 ms, P95=404.1 ms, P99/MAX=404.1 ms, MIN=209.7 ms, AVG=296.4 ms, STDEV=73.6 ms (S196).
 
-### Database (SQLite)
-*   Esistono tabelle per 6 schede cliente verticali (odontoiatriche, fisioterapia, estetica, parrucchiere, veicoli, carrozzeria). (P-R-2026-02-04)
-*   Esiste una tabella `license_cache` per i dati di licenza Ed25519. (P-R-2026-02-04)
-*   Esistono tabelle base per clienti, appuntamenti, operatori (`001_init.sql`). (P-R-COMPLETO)
-*   Esistono tabelle per la configurazione del Voice Agent (`011_voice_agent.sql`). (P-R-COMPLETO)
-*   Esistono tabelle per operatori e specializzazioni (`012_operatori_voice_agent.sql`). (P-R-COMPLETO)
-*   Esiste una tabella per la lista d'attesa VIP (`013_waitlist.sql`). (P-R-COMPLETO)
-*   Le query SQLite principali (list-all, by-id, search LIKE, count-active, count-vip, export, by-telefono, by-email) sono ottimizzate e passano gli SLO di performance (P95 list-all 24.50ms vs SLO 50ms). (S190)
+### Audit e Conformità
+*   L'entry `deploy-s207` è presente in `~/venture-os/state/blueprint-deviations.jsonl` (S207).
+*   Sono presenti 3 entry in `~/venture-os/state/blueprint-deviations.jsonl` per `statusline-bridge-stale-override`, `whatsapp-autostart-silent-noop-s205-p5`, `whatsapp-node-path-default-node-fails-under-nohup-ssh` (S206).
+*   Il `docs/launch/PRE-LAUNCH-AUDIT.md` è stato creato e include 6 categorie CTO checklist (S197).
+*   La categoria Security è PASS post-rotate (S197).
+*   La categoria Performance è PASS PRO (S197).
+*   La categoria Compliance è PARTIAL (S197).
+*   La categoria Customer Success è PARTIAL (S197).
+*   Il Gate 3 è COMPLETO BLINDATO (S196).
+*   F-1, F-2, F-3 (CODE COMPLETE), F-4 (CODE COMPLETE) sono ✅ (S196).
+*   D-1, D-2 (P95 36.9ms), D-3 (P95 404ms vs SLO 800ms) sono ✅ PASS PRO (S196).
 
-### Sistema Licenze
-*   Il sistema di licenze Ed25519 è implementato. (P-R-2026-02-04)
-*   Il License Generator è un tool separato che contiene la chiave privata Ed25519. (P-R-2026-02-04)
-*   La chiave pubblica Ed25519 è embedded in `license_ed25519.rs`. (P-R-2026-02-04)
-*   L'hardware fingerprint è generato tramite SHA-256(hostname + CPU + RAM + OS). (P-R-2026-02-04)
-*   Sono definiti i tier di licenza (Trial, Base, Pro, Enterprise) con mapping a verticali e funzionalità. (P-R-2026-02-04)
-
-### CI/CD e Build
-*   Il workflow `release-full.yml` su GitHub Actions è configurato per buildare su Linux, macOS-arm e Windows. (S183-bis)
-*   Il workflow `release-full.yml` include uno step per rinominare il Voice Agent per il sidecar Tauri. (S184)
-*   Il workflow `release-full.yml` include `!include LogicLib.nsh + WinVer.nsh + x64.nsh + FileFunc.nsh` per gli NSIS hooks su Windows. (S184)
-*   Il workflow `release-full.yml` è configurato con `permissions: contents: write` per la creazione di draft release su GitHub. (S184)
-*   Il workflow `release-full.yml` usa `actions/upload-artifact@v4` con `if: always()` per caricare i bundle indipendentemente dal successo della release. (S184)
-*   Esiste un workflow `.github/workflows/smoke-test-installers.yml` per smoke test CI cross-OS. (S184)
-*   Esiste un workflow `.github/workflows/virustotal-gate.yml` per il controllo VirusTotal pre-release. (S184)
-*   Esiste un workflow `.github/workflows/verify-windows-static-crt.yml` per verificare il linking statico CRT su Windows. (S184)
-*   Il bundle PyInstaller include `espeak-ng-data/` e tutti i submodules `piper.*`. (S195)
-*   Il `tts_engine.py` usa la PiperVoice Python API in priorità. (S195)
-*   La funzione `_find_model()` in `tts_engine.py` cerca i modelli anche nella directory del bundle (`get_bundle_root()`). (S195)
-*   Il `voice-agent-x86_64-apple-darwin` ha una dimensione di 193MB. (S194)
-*   Il `voice-agent-x86_64-apple-darwin` passa i smoke test `--version` e `--health-check`. (S194)
-
-### Customer Success
-*   Esiste una FAQ pubblica (`landing/faq.html`) con 24 Q&A in 8 categorie, filtro di ricerca live e JSON-LD SEO. (S187)
-*   Esiste un Support Runbook (`docs/SUPPORT-RUNBOOK.md`) con 1989 righe, 7 categorie, top-20 issue e 15 email template. (S187)
-*   Esiste un sistema di Email Sequence Cron (`fluxion-proxy/src/scheduled/email-sequence.ts`) con 5 template HTML (attivazione, tutorial, tips, feedback, review) e dispatcher. (S188)
-*   Esiste un Health Monitor Cron (`fluxion-proxy/src/scheduled/health-monitor.ts`) con 4 probe target (landing, self, Resend, Stripe), isteresi, persistenza stato KV e Discord webhook. (S188)
-*   Esiste un endpoint `POST /admin/email-sequence/preview` per inviare singoli step di email sequence a email di test. (S188)
-*   Esiste un endpoint `POST /admin/email-sequence/run-now` per invocare il cron handler immediato. (S188)
-*   Esiste un endpoint `GET /admin/health/status` per leggere lo snapshot dello stato di salute. (S188)
-*   Esiste un endpoint `POST /admin/health/run-now` per forzare l'esecuzione delle probe e la valutazione degli alert. (S188)
-*   Esiste un endpoint `POST /api/v1/diagnostic-report` per l'invio di report diagnostici privacy-safe. (S184)
-*   Esiste un tool `tools/network-test.sh` per il network audit con 9 probe endpoint e 3 modalità di output. (S184)
-*   Esiste un documento `scripts/install/docs/NETWORK-REQUIREMENTS.md` per i requisiti di rete e whitelist firewall per PMI. (S184)
-*   Il Discord webhook per il monitoraggio della salute è stato rollato a un Account API Token Cloudflare. (S192)
-
-### Sentry
-*   L'integrazione Sentry è LIVE su 3 tier (Frontend React, Rust Tauri, Python voice-agent). (S184)
-*   Sono stati validati 3 DSN end-to-end con eventi di test reali. (S184)
-*   L'account Sentry è configurato per la regione EU `de` (GDPR safe). (S184)
-*   La configurazione Sentry è zero-cost (traces=0, replay=0, profiling NON aggiunta). (S184)
-
-### Installazione
-*   Esistono script post-install `setup-mac.command` e `setup-win.bat` per bypassare quarantine/SmartScreen/Defender/firewall. (S184)
-*   Esiste un documento `scripts/install/docs/av-submission-guide.md` per la submission a 5 vendor AV. (S184)
-*   Esiste un video tutorial AI-generato (`landing/assets/video/fluxion-tutorial-install.mp4`) di 4:21 che copre l'installazione su macOS e Windows. (S184)
-*   La pagina `landing/come-installare.html` è aggiornata con il video tutorial e sezioni per script di setup ed errori comuni. (S184)
-*   Il `src-tauri/installer-hooks.nsh` include 4 macro per pre-flight checks (Win10+, x64, WebView2 detection, 1GB disk space). (S184)
-*   Il `src-tauri/installer-hooks.nsh` include messaggi in italiano per PMI. (S184)
-*   Il `tauri.conf.json` è configurato con `installerHooks: "./installer-hooks.nsh"`, `languages: ["Italian", "English"]`, `displayLanguageSelector: false`. (S184)
-*   Il `scripts/install/docs/win10-fresh-compat.md` documenta la compatibilità con Win10/Win11 e la strategia di installazione. (S184)
-
-### Cloudflare Worker (fluxion-proxy)
-*   Il Worker è deployato su `https://fluxion-proxy.gianlucanewtech.workers.dev/`. (S181)
-*   Il Worker include un endpoint `DELETE /admin/resend/domains/:id` per la gestione dei domini Resend. (S181)
-*   Il Worker include un endpoint `POST /api/v1/diagnostic-report` pubblico con validazione, honeypot, rate limit e inoltro a Resend. (S184)
-*   Il Worker è configurato con cron schedules per email sequence e health monitor. (S188)
-
-### Generale
-*   Il progetto aderisce a un vincolo di zero costi permanenti (no domini custom, no SaaS a pagamento). (S181)
-*   La chiave API OpenRouter è salvata in `.env` e gitignored, con accesso a modelli free per video, immagini, testo e audio. (DIRETTIVA OPENROUTER)
-*   Il repository GitHub è `https://github.com/lukeeterna/fluxion-desktop.git`. (S184)
-*   Il tag `v1.0.1` è stato pushato e la GitHub Release è stata creata. (S183-bis)
-*   Il `PRE-LAUNCH-AUDIT.md` è stato creato con 22 P0, 21 P1, 12 P2 distribuiti su 6 categorie. (S182)
-*   La `ROADMAP_S183_S190.md` è stata creata con 4 gate strict (S183→S188) e un buffer (S189-S190). (S182)
-*   Il `CLOUDFLARE_API_TOKEN` è stato rimosso dalla history git e dai file di configurazione locali. (S192)
-*   Il `setuptools` sull'iMac è stato downgradato a 69.5.1 per compatibilità con PyInstaller 6.19. (S194)
-*   `appdirs` 1.4.4 è installato sull'iMac. (S194)
-*   Il modello `it_IT-paola-medium.onnx` (61MB) e la sua configurazione sono stati scaricati in `voice-agent/models/tts/` sull'iMac. (S193)
-*   `piper-tts>=1.2.0` è installato sull'iMac. (S193)
-*   Il benchmark D-3 Voice TTS Piper ha un P95 di 590.8ms (vs SLO 800ms). (S193)
-*   Il benchmark D-2 IPC ha un P95 di 36.9ms (vs SLO 100ms). (S192)
+### Sicurezza
+*   `ADMIN_API_SECRET` è stato ruotato e propagato a 3 location (MacBook `.env`, iMac `.env`, CF Worker `fluxion-proxy`) (S198).
+*   La procedura di rotazione del secret è stata eseguita in modo zero-leak (S198).
 
 ## Decisioni chiuse
-*   Il Voice Agent deve usare l'IP `0.0.0.0` invece di `127.0.0.1` per essere accessibile dalla rete (S2026-02-12).
-*   L'IP statico `192.168.1.7` deve essere configurato sul router per l'iMac (S2026-02-12).
-*   Il Voice Agent deve ascoltare sulla porta `3002` e l'HTTP Bridge sulla porta `3001` (S2026-02-12).
-*   Il Voice Agent deve implementare lo streaming dei token LLM al TTS, connection pooling con keep-alive e selezione dinamica del modello (S2026-02-12).
-*   Il Voice Agent deve implementare il Turn-level observability con backend SQLite e latency breakdown per componente (S2026-02-12).
-*   Il Voice Agent deve implementare la generazione di risposte in streaming con chunking su punteggiatura e parallel TTS-ready (S2026-02-12).
-*   Il Voice Agent deve gestire la disambiguazione fonetica dei nomi (es. "Gino vs Gigio") e il riconoscimento dei soprannomi (es. "Gigi" per "Gigio") (S2026-02-11).
-*   Il Voice Agent deve gestire la chiusura della chiamata con una conferma esplicita all'utente e l'invio di un messaggio WhatsApp (S2026-02-11).
-*   Il Voice Agent deve gestire il rifiuto di un booking in fase di conferma, annullando la prenotazione e offrendo ulteriore aiuto (S2026-02-11).
-*   Il Voice Agent deve utilizzare il `nome_attivita` dalle impostazioni del DB per i greeting dinamici (S2026-02-06).
-*   Il sistema deve supportare schede cliente dinamiche che si attivano in base alla micro-categoria selezionata nel setup (S2026-02-04).
-*   Il sistema di licenze utilizza Ed25519 offline, hardware-locked (S2026-02-04).
-*   Il pricing dei tier di licenza è: Trial (Gratis, tutte verticali, Voice/API, 30gg), Base (€199, 1 verticale, no Voice/API, Lifetime), Pro (€399, 3 verticali, Voice, no API, Lifetime), Enterprise (€799, tutte verticali, Voice/API, Lifetime) (S2026-02-04).
-*   Il sistema deve supportare 8 macro-categorie verticali (medico, beauty, hair, auto, ecc.) con mapping a micro-categorie e schede DB/componenti React specifici (S2026-02-04).
-*   La chiave privata del License Generator non deve mai essere committata su repo pubblica e deve essere conservata offline/USB cifrata (S2026-02-04).
-*   La chiave pubblica è embedded in `license_ed25519.rs` come `FLUXION_PUBLIC_KEY_HEX` (S2026-02-04).
-*   L'hardware fingerprint è SHA-256(hostname + CPU + RAM + OS) (S2026-02-04).
-*   Il sistema deve supportare il vecchio Keygen.sh per retrocompatibilità (S2026-02-04).
-*   Il pricing canonico è `trial €0 / Base €497 / Pro €897` (S185-A).
-*   Le verticali sono `8 macro × ~50 micro` (S185-A).
-*   La wiki helpdesk è internal-only v1 (S185-A).
-*   Il prefisso `_` indica meta-content non query reale per i file di verifica (S185-A).
-*   Il build Tauri Windows è self-contained e non dipende da `vcruntime140.dll` / `msvcp140.dll` (S184 α.3.3).
-*   Il WebView2 viene installato tramite `embedBootstrapper` se non presente (S184 α.3.3).
-*   Gli installer hooks NSIS (`installer-hooks.nsh`) includono controlli Win10+, x64, WebView2 detection, spazio disco e messaggi in italiano (S184 α.3.3).
-*   Un CI gate verifica il linking statico del CRT per Windows e la presenza delle macro NSIS (S184 α.3.3).
-*   Il pre-flight wizard include 8 step di controllo (network, microfono, path DB, porte, voice ready, AV/Defender) e un flag `fluxion-preflight-completed-v1` in localStorage (S184 α.3.1).
-*   Il diagnostic send-report raccoglie payload privacy-safe (no PII clienti) e lo invia a un CF Worker con rate limit e persistenza KV (S184 α.3.1).
-*   Il CF Worker per il diagnostic report è pubblico e inoltra le email a `fluxion.gestionale@gmail.com` (S184 α.3.1).
-*   Il `voice-agent` espone CLI flags `--version` e `--health-check` (S184 α.3.0).
-*   Il sistema rileva i provider di cloud-sync (iCloud/OneDrive/Dropbox/etc.) e genera un warning (S184 α.3.0).
-*   Un CI smoke test cross-OS verifica l'installazione e lo stato di salute del `voice-agent` (S184 α.3.0).
-*   Un CI gate VirusTotal verifica gli hash SHA256 dei bundle e crea un'issue GitHub se ci sono troppe detection (S184 α.3.0).
-*   Il video tutorial di installazione copre sia macOS che Windows (S184 α.2-bis).
-*   Gli script post-install (`setup-mac.command`, `setup-win.bat`) sono mirrorati in `landing/assets/install/` (S184 α.2).
-*   La documentazione per la submission ai vendor AV è stata creata (S184 α.2).
-*   Il video tutorial è AI-generato, self-hosted e senza costi (S184 α.2).
-*   La landing page `come-installare.html` è stata aggiornata con nuove sezioni (S184 α.2).
-*   Un modal di errore di rete al primo avvio (`FirstRunNetworkModal.tsx`) è stato implementato (S184 α.2).
-*   L'integrazione Sentry è 3-tier (Frontend React + Rust Tauri + Python voice-agent) con 3 DSN validati (S184 α.1).
-*   L'account Sentry è `fluxion.gestionale@gmail.com` con regione EU `de` e filtri PII obbligatori (S184 α.1).
-*   La configurazione Sentry è zero-cost (traces=0, replay=0, profiling non aggiunta) (S184 α.1).
-*   Il piano Sentry sarà auto-downgradato a "Developer" free intorno al 2026-05-15 (S184 α.1).
-*   L'API key "fluxion" per OpenRouter è salvata in `.env` (`OPENROUTER_API_KEY`, gitignored) (S181-bis).
-*   L'endpoint OpenRouter è OpenAI-compatible: `https://openrouter.ai/api/v1` (S181-bis).
-*   I modelli OpenRouter free ($0/M) sono usati per video promo, thumbnail YouTube, asset social, copy multilingua landing, embeddings RAG Sara (S181-bis).
-*   Le dipendenze a pagamento devono essere sostituite per mantenere il vincolo zero costi (S181-bis).
-*   Il lancio cold-traffic non è ammissibile nello stato attuale del progetto (S182).
-*   Sono stati identificati 22 P0 BLOCKING, 21 P1 e 12 P2 (S182).
-*   La roadmap è divisa in 4 gate strict (BUILD + FUNCTIONAL E2E, SECURITY + COMPLIANCE, PERFORMANCE + UX, LAUNCH) (S182).
-*   Non si procede a Gate N+1 finché Gate N non è tutto verde con E2E PASS (S182).
-*   Il dominio `fluxion.it` non è mai stato registrato e non si intende registrare domini a pagamento (S181).
-*   Lo stack FLUXION resta su subdomini CF gratis: `fluxion-landing.pages.dev` + `fluxion-proxy.gianlucanewtech.workers.dev` (S181).
-*   Le email transazionali usano `onboarding@resend.dev` come sender (Resend free tier) (S181).
-*   Le email di contatto/supporto usano `fluxion.gestionale@gmail.com` (Gmail founder) (S181).
-*   Il vincolo zero costi è permanente (S181).
-*   L'endpoint `DELETE /admin/resend/domains/:id` è stato aggiunto per la gestione dei domini orfani (S181).
-*   Il dominio orfano Resend `fluxion.it` ID `e6de440b-c6f6-4c84-8bc5-a5d87d19b7fe` è stato eliminato (S181).
-*   I riferimenti a `fluxion.it` e `@fluxion.app` nei file non di produzione sono intenzionalmente non toccati (S181).
-*   Stripe è in modalità TEST (S181).
-*   La pipeline di release GitHub Actions è 3/4 GREEN (Linux, macOS-arm, Windows) con macOS-intel waived (S183-bis).
-*   Il tag `v1.0.1` è stato pushato e la GitHub Release è stata creata (S183-bis).
-*   La strategia α (onesta lenta) è stata confermata, con ETA +3 settimane e 6 beta tester (S183-bis).
-*   Il build Tauri macOS-intel è stato differito, con build locale su iMac on-demand (S184 α.3.2).
-*   La funzionalità di auto-update è temporaneamente disabilitata a causa di un mismatch nella password di firma (S184 α.3.2).
-*   La creazione di GitHub Release richiede `permissions: contents: write` nel job `build-tauri` (S184 α.3.2).
-*   Il scope del test α.3.2 è stato ridotto alla validazione degli artifact CI e all'integrità MSI (S184 α.3.2).
-*   Il `setup-win.bat` è stato copiato in `~/fluxion-vm-share/` su iMac per la VM Win11 (S184-bis3).
-*   La ISO Win11 it-IT è stata verificata (S184-bis2).
-*   La RAM dell'iMac è satura e richiede cleanup per la creazione di VM (S184-bis2).
-*   La cartella `~/fluxion-vm-share/` è stata creata su iMac per la shared folder UTM (S184-bis2).
-*   La ISO Win11 en-US è accettabile per α.3.2, con validazione UI italiana stock differita (S184-bis prep).
-*   Il `UTM.app` è stato spostato in `/Applications/UTM.app` su iMac (S184-bis prep).
-*   Il `voice-agent` è stato fixato per ascoltare su `0.0.0.0` invece di `127.0.0.1` (S2026-02-12).
-*   L'IP statico `192.168.1.7` è configurato per l'iMac (S2026-02-12).
-*   Il Voice Agent implementa lo streaming LLM, connection pooling, model selection dinamico (S2026-02-12).
-*   Il Voice Agent implementa il turn-level observability con SQLite backend e latency breakdown (S2026-02-12).
-*   Il Voice Agent ha una test suite completa e smoke tests cross-machine (S2026-02-12).
-*   Il build Tauri di Fluxion sull'iMac è stato completato e il Voice Agent è stato verificato in produzione (S2026-02-13).
-*   Node.js 20.11.0 LTS è installato su iMac (S2026-02-13).
-*   Il bundle `.app` è generato in `src-tauri/target/release/bundle/macos/` (S2026-02-13).
+*   CI release gate full via VOS + self-hosted runner su MacBook è stato implementato. (S207)
+*   Il self-hosted GitHub Actions runner è configurato per eseguire il componente VOS orchestrator, che a sua volta chiama `scripts/sara-release-gate.sh` via SSH su iMac. (S207)
+*   Il file `~/venture-os/components/sara-gate-orchestrator/orchestrator.py` è stato creato per gestire il gate di rilascio. (S207)
+*   Il workflow `.github/workflows/sara-release-gate.yml` è stato configurato per l'esecuzione del gate di rilascio. (S207)
+*   La procedura di setup per il self-hosted runner è documentata in `~/venture-os/docs/SETUP-SELFHOSTED-RUNNER.md`. (S207)
+*   Il `morning-briefer/briefer.py` è stato patchato per leggere lo stato del Sara Gate. (S207)
+*   Il bug dello statusline FLUXION che mostrava un falso SAFE è stato risolto rimuovendo `bridgeUsed` dal calcolo di `used`. (S206)
+*   Il bug di autostart di WhatsApp è stato risolto correggendo il path di `fluxion_root` e gestendo il buffering di `print()`. (S206)
+*   Il bug annidato `node_path` sotto `nohup` ssh è stato risolto con un autoresolve via `FLUXION_NODE_PATH` env. (S206)
+*   Sara è stata definita come inbound-only via VoIP (SIP trunk Ehiweb), non via microfono PC cliente. (S202)
+*   La guida VoIP `landing/voip-guida/index.html` è stata corretta e allineata. (S202)
+*   Il `SetupWizard.tsx` è stato aggiornato con una CTA per VivaVox Free. (S202)
+*   La procedura formale CTO per l'onboarding Ehiweb è documentata in `docs/launch/ONBOARDING-EHIWEB-CLIENTE.md`. (S202)
+*   Il trial Ehiweb di 30 giorni è stato allineato al trial Sara di 30 giorni, garantendo zero costi iniziali per il cliente. (S202)
+*   I bug dei guardrail NLU di Sara sono stati risolti rimuovendo il reset incondizionato di `_vertical_explicitly_set` in `start_session()`. (S201)
+*   Il crash di `availability_checker._generate_slots` per verticali senza pausa pranzo è stato risolto con un fix difensivo. (S201)
+*   Il `LATENCY_TARGET_MS` per il gate è stato allineato da 2000ms a 5000ms. (S201)
+*   Il release gate multi-verticale è stato automatizzato con `release_gate.py` e `sara-release-gate.sh`. (S200)
+*   I runbook `RUNBOOK-P1-SARA-LIVE-TEST.md` e `RUNBOOK-P2-WIN-MSI-BUILD.md` sono stati consegnati. (S200)
+*   La FAQ pubblica `landing/faq.html` è stata valutata come enterprise-grade e il footer è stato allineato con i link legali. (S199)
+*   La direttiva "No Co-Authored-By trailer" è stata implementata per tutti i commit futuri. (S198)
+*   Le pagine `landing/privacy.html` e `landing/termini.html` sono state riscritte per essere conformi al GDPR e pubblicate. (S198)
+*   Il footer di `landing/index.html` è stato aggiornato con il link ai Termini di Servizio. (S198)
+*   Il fix di autenticazione per gli admin endpoints (`ADMIN_API_SECRET`) è stato implementato e verificato. (S198)
+*   I Cloudflare API tokens sono stati ruotati in S189-B e la procedura di storage è stata definita. (S197)
+*   Il deploy dei Cloudflare Workers F-3 (email sequence) e F-4 (health monitor) è stato eseguito. (S197)
+*   Il file `docs/launch/PRE-LAUNCH-AUDIT.md` è stato creato per aggregare lo stato di readiness del Gate 3. (S197)
+*   Lo script `scripts/setup-piper.js` e la sua entry in `package.json` sono stati rimossi. (S197)
+*   Il bundle PyInstaller sidecar (199MB) per Piper TTS è stato validato E2E e la sua latenza P95 è di 404ms. (S196)
+*   Il bundle PyInstaller sidecar è stato copiato in `src-tauri/binaries/voice-agent-x86_64-apple-darwin` per il packaging Tauri. (S196)
+*   Il file `docs/perf/D3-voice-latency.md` è stato aggiornato con i risultati del benchmark S196. (S196)
 
 ## Blocker aperti
 
-*   **Build iMac**: PyInstaller `voice-agent.spec --clean` in background (commit `5f4aefe` pulled) (S195)
-*   **Bundle size**: target ~190MB (era 193MB S194, +espeak-ng-data ~10MB → ~200MB) (S195)
-*   **TEMPDIR inspection**: `find _MEI* -name 'paola*.onnx' -o -path '*espeak-ng-data*it_dict' -o -path '*piper/voice*'` → 3 hit (S195)
-*   **E2E sintesi**: avviare sidecar standalone (kill iMac voice 3002 first), `curl -X POST :3002/api/voice/say -d '{"text":"Ciao Sara test","voice_engine":"piper"}'` → WAV bytes `> 1KB` (S195)
-*   **Bench latency**: 10 frasi italiane → P95 vs SLO 800ms (atteso ~590ms come S193 native, possibile +20-50ms overhead Python API loaded vs subprocess) (S195)
-*   **Tech debt #4 NUOVO** (S184 α.3.2 build #17): Tauri updater signing password mismatch. Founder action: regenerate key + update GitHub secrets `TAURI_SIGNING_PRIVATE_KEY` + `TAURI_SIGNING_KEY_PASSWORD`. Auto-update DISABILITATA temporaneamente. (S184)
-*   **Tauri 2 NSIS DLL custom** (es: `nsisDriveSpace`) potenziale issue su build CI — verifica al primo build Win full (deferred to first Win MSI release) (S184 α.3.3)
-*   **Stripe LIVE flip + E2E carta reale con refund** (Gate 4 launch dopo CHUNK B) (S184 α.3.3)
-*   **macos-intel runner queue persistente GH** (waived S183-bis, da investigare quota) (S184 α.4)
-*   **Reminder calendar founder 2026-05-15**: verifica plan Sentry = "Developer" (free), NON "Business expired" (paid). NO carta credito chiesta da Sentry. (S184 α.1)
-*   **Runtime crash E2E** (browser throw + Rust panic + voice endpoint) — pending tauri dev runtime (S184 α.1)
-*   **Wrangler v3 → v4** upgrade (warning out-of-date) (S182)
-*   **iMac DHCP reservation router** (.2 vs .12 fluttua — eredità S179) (S182)
-*   **`purchase:fluxion.gestionale@gmail.com` pre-S174** verifica payment_intent migration (eredità S179) (S182)
-*   **Audit Stripe customer Base/Pro swap** pre-S175 (eredità S178 — ma audit live S179 ZERO clienti reali → priorità bassa) (S182)
-*   **Voice Agent Timeout**: Il Voice Agent sull'iMac ascolta su **127.0.0.1** (localhost) invece che su **0.0.0.0** (tutte le interfacce). (S2026-02-12)
-*   **Node.js su iMac**: Node.js non installato su iMac, bloccando `npm install` e `tauri build`. (S2026-02-13)
-*   **npm install**: Bloccato dall'installazione di Node.js. (S2026-02-13)
-*   **Tauri Build**: Bloccato dall'installazione delle dipendenze Node.js. (S2026-02-13)
-*   **Test Live**: Bloccato dal completamento del build Tauri. (S2026-02-13)
+*   **SPOF MacBook**: il runner self-hosted su MacBook è un Single Point Of Failure; se spento o in sleep, la CI resta pending. (S207)
+*   **Drift 60gg**: GitHub deprecata runner vecchio; la versione `2.319.1` fissata richiede un bump manuale ogni ~3 mesi. (S207)
+*   **Checkout race**: il workflow checkout in `_work/` ma il gate usa il path canonico T7; un commit master parallelo a una PR può falsare lo SHA. (S207)
+*   **Sovradimensionamento**: ogni PR richiede 12 minuti per l'esecuzione del gate completo. (S207)
+*   **PSTN stress test**: il founder deve ripetere lo stress test PSTN S205 per validare che i bug BUG-006/007/015/017 siano risolti e che il gate atteso sia 0 bug P0/HIGH. (S206)
+*   **RUNBOOK-P2 Win MSI build**: il founder deve eseguire il RUNBOOK-P2 per la build MSI di Windows, che è una priorità P0 per l'80% del mercato IT. (S206)
+*   **RUNBOOK-P1 Sara live audio**: il founder deve eseguire il RUNBOOK-P1 per il test live audio di Sara con 5 scenari. (S203)
+*   **Validare timeline attivazione VivaVox Free**: è una open question la timeline di attivazione reale di VivaVox Free. (S203)
+*   **Universal Binary arm64 + Linux Piper bundle**: la creazione di un Universal Binary arm64 e di un bundle Linux Piper è un'attività differita. (S206)
+*   **Pipeline launcher `python -u`**: aggiungere `python -u` permanente nello script di restart della pipeline per evitare il buffering dei print(). (S206)
+*   **Investigare slow-ratio 17%**: investigare lo slow-ratio del 17% dei sample > 5000ms (target <10%), quasi tutto dovuto al cold-start del primo turno di ogni verticale. (S201)
+*   **DPA Groq formale**: valutare la necessità di un DPA Groq formale se le chiamate Sara reali superano la soglia del free tier. (S200)
 
 ## Prossimi passi
 
-*   Apri Claude Code da `/Volumes/MontereyT7/FLUXION` (S196)
-*   Leggi questo file (auto-loaded? dipende da config progetto) (S196)
-*   Continua dal punto indicato negli ultimi turni assistant sopra (S196)
-*   Bundle size: target ~190MB (era 193MB S194, +espeak-ng-data ~10MB → ~200MB) (S195)
-*   TEMPDIR inspection: `find _MEI* -name 'paola*.onnx' -o -path '*espeak-ng-data*it_dict' -o -path '*piper/voice*'` → 3 hit (S195)
-*   E2E sintesi: avviare sidecar standalone (kill iMac voice 3002 first), `curl -X POST :3002/api/voice/say -d '{"text":"Ciao Sara test","voice_engine":"piper"}'` → WAV bytes `> 1KB` (S195)
-*   Bench latency: 10 frasi italiane → P95 vs SLO 800ms (atteso ~590ms come S193 native, possibile +20-50ms overhead Python API loaded vs subprocess) (S195)
+*   PRIORITY 1 founder fisico iMac (~60 min): ripetere S205 PSTN stress test (S207)
+*   PRIORITY 2 founder Windows (~3h): RUNBOOK-P2 Win MSI build (P0 ~80% mercato IT) (S207)
+*   PRIORITY 4 deferred: RUNBOOK-P1 Sara live audio (test fisico iMac mic — solo se P3 mostra regressioni audio) (S207)
+*   PRIORITY 4 deferred: Validare timeline attivazione VivaVox Free (open question #1 doc Ehiweb) (S207)
+*   PRIORITY 4 deferred: Universal Binary arm64 + Linux Piper bundle (S207)
+*   PRIORITY 4 deferred: Pipeline launcher: aggiungere `python -u` permanente in script restart per evitare buffer di print() (lesson S206) (S207)

@@ -5,8 +5,16 @@
 # Vincolo #5: free-tier first, soglia hard €30/mese tracciata in state/costs.jsonl.
 
 version: 4
-last_verified: 2026-05-11
+last_verified: 2026-05-12
 last_verified_method: real_http_call  # vincolo #11, no doc-only
+# S8 FASE 2.1 (2026-05-12) routing-http-verify.py: 5/5 verified post key setup
+#   google  gemini-2.5-flash               → verified (present in /v1beta/models)
+#   google  gemini-2.5-pro                 → verified catalog, paid quota Luke
+#   cerebras llama3.1-8b                   → verified (present in /v1/models)
+#   cerebras qwen-3-235b-a22b-instruct-2507 → verified catalog, quota too low free
+#   openrouter llama-3.3-70b:free          → verified post key setup S8 (scope: VOS only)
+# Drift count: 0 — nessuna deviation upstream-vs-locale. Log: state/routing-drift.jsonl
+# Fallback chain long_context aggiornata: gemini-flash → openrouter-70b → gemini-pro.
 
 # S5c reval esito: Gemini 2.5 Flash CONFERMATO long_context primario.
 # Alternative valutate (vincolo #2 ricerca attiva max 5min, deviation S5b "vendor-lock-in"):
@@ -38,6 +46,8 @@ models:
     rate_limit_rpd: 250
     rate_limit_tpm: 250000
     auth_env: GEMINI_API_KEY
+    last_verified: 2026-05-12
+    last_verified_method: real_http_call  # S8 routing-http-verify: catalog match
     sources:
       - https://ai.google.dev/gemini-api/docs/rate-limits
       - https://ai.google.dev/gemini-api/docs/models#gemini-2.5-flash
@@ -63,6 +73,8 @@ models:
     cost_per_1m_out: 10.0
     free_tier: false
     auth_env: GEMINI_API_KEY
+    last_verified: 2026-05-12
+    last_verified_method: real_http_call  # S8: presente in /v1beta/models, paid quota
     sources:
       - https://ai.google.dev/gemini-api/docs/pricing
     notes: |
@@ -89,8 +101,8 @@ models:
     auth_env: CEREBRAS_API_KEY
     required_headers:
       User-Agent: venture-os/1.0  # Cloudflare 1010 senza UA custom
-    last_verified: 2026-05-11
-    last_verified_method: real_http_call  # HTTP200 reply='PONG' 1068ms 2401 tok/s
+    last_verified: 2026-05-12
+    last_verified_method: real_http_call  # S8 routing-http-verify: catalog match
     sources:
       - https://api.cerebras.ai/v1/models  # /v1/models live (vincolo #1)
       - https://inference-docs.cerebras.ai/introduction
@@ -108,14 +120,14 @@ models:
     free_tier: true
     free_tier_quota_too_low: true  # 3 retry consecutivi 429 request_quota_exceeded
     auth_env: CEREBRAS_API_KEY
-    last_verified: 2026-05-11
-    last_verified_method: real_http_call
+    last_verified: 2026-05-12
+    last_verified_method: real_http_call  # S8: catalog match, quota free insuff.
     notes: |
       Modello esiste in /v1/models ma free-tier RPM quota insufficiente per produzione.
       Auth OK, errore 429 request_quota_exceeded persistente. Non in fallback chain.
       Riconsiderare se Luke passa a paid tier Cerebras.
 
-  - role: long_context_backup_pending_openrouter
+  - role: long_context_backup_openrouter
     model_id: meta-llama/llama-3.3-70b-instruct:free
     provider: openrouter
     api_endpoint: https://openrouter.ai/api/v1
@@ -124,20 +136,28 @@ models:
     cost_per_1m_in: 0.0
     cost_per_1m_out: 0.0
     free_tier: true
-    free_tier_pending: true  # vincolo #1: HTTP test pending OPENROUTER_API_KEY
     rate_limit_rpm: 20
     auth_env: OPENROUTER_API_KEY
+    last_verified: 2026-05-12
+    last_verified_method: real_http_call  # S8: catalog match, key setupata
     sources:
       - https://openrouter.ai/models?q=llama-3.3
     notes: |
-      Setup pending S5e/S5f: account su https://openrouter.ai → API key.
-      Backup secondario long_context. Da HTTP-testare prima di inserire in chain.
+      VERIFICATO 2026-05-12 S8 routing-http-verify: presente in /v1/models OpenRouter
+      con key Luke. Scope chiave: VOS only (preferenza Luke, non enforced server-side
+      — limit credit/rpm su openrouter.ai dashboard se serve hard scope).
+      Backup secondario long_context: scatta SOLO se Gemini flash down.
+      Caveat: output_tokens_max=4096 inferiore a Gemini (65536). Karpathy compilation
+      può produrre >4K tokens output → chunking richiesto in adapter VOS se openrouter
+      attivo. Ok per fallback emergency, marginale come primary.
 
 defaults:
   long_context: gemini-2.5-flash
   long_context_fallback_chain:  # ordine di attivazione su rate limit/errore
-    - gemini-2.5-flash      # primario, free 250 RPD verified
-    - gemini-2.5-pro        # paid fallback, solo se Luke attiva billing
+    - gemini-2.5-flash                          # primario, free 250 RPD verified
+    - meta-llama/llama-3.3-70b-instruct:free    # S8 verified, openrouter 131K ctx, 20 RPM
+    - gemini-2.5-pro                            # paid fallback, solo se Luke attiva billing
     # NB S5e: Cerebras rimosso da chain long_context (modelli ≤8B free tier inadeguati).
-    # Openrouter llama-3.3-70b:free reinserito post HTTP test.
+    # NB S8 2026-05-12: openrouter llama-3.3-70b:free aggiunto come backup #2 free
+    # (output max 4096 — adapter VOS deve gestire chunking output se >4K tokens).
   fast_short_context: llama3.1-8b  # cerebras, latenza ottimale per task brevi

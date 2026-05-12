@@ -20,7 +20,6 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-import requests
 import yaml
 
 # Path relativi alla root VOS.
@@ -32,11 +31,12 @@ COSTS_FILE = VOS_ROOT / "state" / "costs.jsonl"
 ERRORS_FILE = VOS_ROOT / "state" / "errors.jsonl"
 WIKI_PROJECTS = VOS_ROOT / "wiki" / "projects"
 ARCHIVED_HANDOFFS = VOS_ROOT / "wiki" / "raw" / "archived-handoffs"
-ENV_FILE = Path.home() / ".claude" / ".env.free-gpu"
 
-# Mount check shared util.
+# Shared utils + LLM router (S9). Sostituisce call_gemini diretto.
 sys.path.insert(0, str(VOS_ROOT / "components" / "_shared"))
 from mount_check import require_t7_or_exit  # noqa: E402
+from llm_router import complete as router_complete  # noqa: E402
+from llm_router import RouterError  # noqa: E402
 
 COMPONENT = "karpathy-compiler"
 
@@ -65,22 +65,6 @@ def log_cost(record: dict) -> None:
     record.setdefault("component", COMPONENT)
     with COSTS_FILE.open("a", encoding="utf-8") as f:
         f.write(json.dumps(record, ensure_ascii=False) + "\n")
-
-
-def load_env_file(path: Path) -> dict[str, str]:
-    """Parser minimale formato KEY=VALUE, ignora # e righe vuote."""
-    out: dict[str, str] = {}
-    if not path.exists():
-        return out
-    for line in path.read_text(encoding="utf-8").splitlines():
-        line = line.strip()
-        if not line or line.startswith("#"):
-            continue
-        if "=" not in line:
-            continue
-        k, v = line.split("=", 1)
-        out[k.strip()] = v.strip()
-    return out
 
 
 def load_yaml(path: Path) -> dict:
@@ -276,82 +260,29 @@ def build_user_prompt(project: str, files: list[Path]) -> str:
     return "".join(chunks)
 
 
-# ---------- gemini call ----------
+# ---------- LLM call (delega a llm_router S9) ----------
 
-def _parse_retry_delay(body: str) -> float:
-    """Estrae retry delay (s) dal body 429 di Google. Fallback 60s."""
-    import re
-    m = re.search(r'retry in (\d+(?:\.\d+)?)\s*s', body)
-    if m:
-        return float(m.group(1))
-    return 60.0
+def call_llm(system_prompt: str, user_prompt: str, max_output_tokens: int) -> str:
+    """Wrapper di llm_router.complete(role='long_context').
 
+    Router gestisce:
+      - fallback chain runtime da routing.yaml (flash → llama-70b → pro)
+      - retry 429 + chunking output > provider cap
+      - cost tracking append costs.jsonl (event="complete")
+      - circuit breaker in-process
 
-def call_gemini(model: dict, system_prompt: str, user_prompt: str, api_key: str) -> dict:
-    """POST a generativelanguage. Ritorna dict completo (per estrarre text + usage).
-
-    Retry su 429 (TPM 250K/min): max 3 attempt, delay da body (cap 90s).
-    Vincolo #5: TPM è rolling 60s, non daily — quindi retry breve è zero-cost (no escalation a paid).
+    Solleva RouterError se la chain è esausta. Compiler lo cattura e logga.
+    Timeout 900s (ARGOS 175K tok worst case decode).
     """
-    url = f"{model['api_endpoint']}/models/{model['model_id']}:generateContent"
-    headers = {
-        "x-goog-api-key": api_key,
-        "Content-Type": "application/json",
-    }
-    payload = {
-        "systemInstruction": {"parts": [{"text": system_prompt}]},
-        "contents": [{"role": "user", "parts": [{"text": user_prompt}]}],
-        "generationConfig": {
-            "temperature": 0.0,
-            "maxOutputTokens": model.get("output_tokens_max", 65536),
-            # Disabilita thinking: 2.5-flash ha CoT abilitato di default che consuma
-            # maxOutputTokens budget riducendo output visibile (S5b: 32K thinking
-            # vs 1.3K output reali). Karpathy = consolidamento, non reasoning.
-            "thinkingConfig": {"thinkingBudget": 0},
-        },
-    }
-    import time
-    max_attempts = 3
-    for attempt in range(1, max_attempts + 1):
-        # Timeout 900s: ARGOS 175K tok può richiedere >5min decode anche con thinking off.
-        # FLUXION 60K dura ~30-90s. Margine per worst case.
-        resp = requests.post(url, headers=headers, json=payload, timeout=900)
-        if resp.status_code == 200:
-            return resp.json()
-        if resp.status_code == 429:
-            delay = min(_parse_retry_delay(resp.text), 90.0)
-            log_error({"event": "rate_limit", "status": 429, "attempt": attempt,
-                       "delay_s": delay, "body": resp.text[:500]})
-            if attempt < max_attempts:
-                # Margine +5s per essere sicuri che la finestra TPM si sia resettata.
-                wait = delay + 5.0
-                sys.stderr.write(f"[{COMPONENT}] HTTP 429 attempt {attempt}/{max_attempts}, retry in {wait:.0f}s...\n")
-                time.sleep(wait)
-                continue
-            sys.stderr.write(f"[{COMPONENT}] HTTP 429 dopo {max_attempts} tentativi. Quota daily o TPM persistente.\n")
-            sys.exit(3)
-        log_error({"event": "http_error", "status": resp.status_code, "attempt": attempt, "body": resp.text[:1000]})
-        sys.stderr.write(f"[{COMPONENT}] HTTP {resp.status_code}: {resp.text[:300]}\n")
-        sys.exit(4)
-    sys.exit(4)  # unreachable
-
-
-def extract_text(response: dict) -> str:
-    try:
-        return response["candidates"][0]["content"]["parts"][0]["text"]
-    except (KeyError, IndexError) as e:
-        log_error({"event": "extract_failed", "error": str(e), "response_head": str(response)[:500]})
-        sys.stderr.write(f"[{COMPONENT}] response shape inattesa: {str(response)[:300]}\n")
-        sys.exit(5)
-
-
-def extract_usage(response: dict) -> dict:
-    u = response.get("usageMetadata", {}) or {}
-    return {
-        "tokens_in": u.get("promptTokenCount", 0),
-        "tokens_out": u.get("candidatesTokenCount", 0),
-        "tokens_total": u.get("totalTokenCount", 0),
-    }
+    return router_complete(
+        prompt=user_prompt,
+        role="long_context",
+        system=system_prompt,
+        max_output_tokens=max_output_tokens,
+        temperature=0.0,
+        stream=False,
+        timeout_s=900,
+    )
 
 
 # ---------- write + archive ----------
@@ -463,18 +394,17 @@ def main() -> int:
             print(f"  {size:>8}  {f.relative_to(root)}")
         return 0
 
-    # Vincolo #1: chiave da env file (precedenza) o env var.
-    env_kv = load_env_file(ENV_FILE)
-    api_key = env_kv.get(model["auth_env"]) or os.environ.get(model["auth_env"], "")
-    if not api_key:
-        sys.stderr.write(f"[{COMPONENT}] {model['auth_env']} non trovata in {ENV_FILE} o env\n")
-        return 6
+    # Auth: gestita interamente da llm_router (carica ~/.claude/.env.free-gpu
+    # via _load_env_file + os.environ fallback per ogni provider della chain).
+    # Vincolo #1: niente API key hardcoded, niente check manuale qui — il router
+    # alza RouterError se l'intera chain è esausta per missing_key.
+
+    out_tokens_cap = model.get("output_tokens_max", 65536)
 
     if args.multi_pass:
         mode_label = "multi-pass + split-temporal" if args.split_temporal else "multi-pass"
         print(f"[{COMPONENT}] modalità {mode_label}: {len(SECTION_SPECS)} chiamate (una per sezione).")
         sections_text: list[str] = []
-        usage = {"tokens_in": 0, "tokens_out": 0, "tokens_total": 0}
         for spec in SECTION_SPECS:
             # Scegli batch input: split-temporal usa spec['batch'], altrimenti tutto.
             if args.split_temporal:
@@ -486,8 +416,12 @@ def main() -> int:
                 batch_info = ""
             print(f"[{COMPONENT}]   call sezione: {spec['heading']} (cap {spec['max_lines']} righe){batch_info}...")
             sys_prompt = build_section_system_prompt(spec)
-            resp = call_gemini(model, sys_prompt, up, api_key)
-            sec_text = extract_text(resp).strip()
+            try:
+                sec_text = call_llm(sys_prompt, up, out_tokens_cap).strip()
+            except RouterError as e:
+                log_error({"event": "router_exhausted", "section": spec["key"], "error": str(e)[:500]})
+                sys.stderr.write(f"[{COMPONENT}] router exhausted on {spec['key']}: {e}\n")
+                return 4
             # Hard cap client-side: se LLM sfora, tronchiamo. Non bloccante.
             sec_lines = sec_text.splitlines()
             if len(sec_lines) > spec["max_lines"]:
@@ -497,16 +431,15 @@ def main() -> int:
             if not sec_text.lstrip().startswith(spec["heading"]):
                 sec_text = f"{spec['heading']}\n\n{sec_text}"
             sections_text.append(sec_text)
-            u = extract_usage(resp)
-            usage["tokens_in"] += u["tokens_in"]
-            usage["tokens_out"] += u["tokens_out"]
-            usage["tokens_total"] += u["tokens_total"]
         body = "\n\n".join(sections_text)
     else:
-        print(f"[{COMPONENT}] chiamata Gemini in corso...")
-        response = call_gemini(model, SYSTEM_PROMPT, user_prompt, api_key)
-        body = extract_text(response)
-        usage = extract_usage(response)
+        print(f"[{COMPONENT}] chiamata LLM in corso (single-pass via router)...")
+        try:
+            body = call_llm(SYSTEM_PROMPT, user_prompt, out_tokens_cap)
+        except RouterError as e:
+            log_error({"event": "router_exhausted", "error": str(e)[:500]})
+            sys.stderr.write(f"[{COMPONENT}] router exhausted: {e}\n")
+            return 4
 
     # Sanity check output ≤500 righe + 4 sezioni complete (vincolo S5c).
     # NB: archive ammesso SOLO se body NON troncato AND ha le 4 sezioni richieste.
@@ -533,16 +466,18 @@ def main() -> int:
     out_path = write_compiled(args.project, body, model["model_id"], len(files))
     print(f"[{COMPONENT}] scritto: {out_path} ({len(body.splitlines())} righe, sezioni={len(sections_found)}/4)")
 
+    # Project-level marker. Token/cost per-call sono già in costs.jsonl scritti
+    # dal router (event="complete"). Qui logghiamo solo aggregato progetto.
     log_cost({
-        "event": "compiled",
+        "event": "karpathy-compiled",
         "project": args.project,
-        "model": model["model_id"],
-        "tokens_in": usage["tokens_in"],
-        "tokens_out": usage["tokens_out"],
-        "tokens_total": usage["tokens_total"],
-        "cost_usd": 0.0,  # free tier flash
+        "model_intended": model["model_id"],
         "files_count": len(files),
         "output_lines": len(body.splitlines()),
+        "sections_found": len(sections_found),
+        "truncated": truncated,
+        "multi_pass": bool(args.multi_pass),
+        "split_temporal": bool(args.split_temporal),
     })
 
     if args.archive:

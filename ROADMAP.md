@@ -36,29 +36,26 @@ status: vivente — aggiornare end-of-session quando una fase chiude
 - Test verdi: JSON valido, hook invoke ritorna ctx 1235 char, delete+rerun rigenera brief automaticamente.
 - Deviation: blueprint sez. 5 prevedeva pull ("Luke dice buongiorno → brief-narrator"), implementato push (auto-inject SessionStart). Motivo: tu non hai mai detto buongiorno per 4 giorni → pull non funziona se l'utente non sa di doverlo invocare.
 
-### 1.2 — Audit LaunchAgent alive
-**Verifica che i 4 agent VOS girano davvero (non solo registered)**.
-- `tail -10 state/host-monitor.jsonl` → ultime entry recenti (≤24h)?
-- `ls -la briefs/` → brief più recente è di oggi/ieri?
-- `tail -10 state/claude-memory-rsync.log` → backup recente?
-- `tail -10 state/git-push.log` → push hook funzionante?
-- Se qualcuno silenzioso ≥3gg → diagnosi (`launchctl list | grep luke.vos`, plist load status)
-- Stima: 20 min
-- **Done when**: report stato 4/4 con timestamp ultima esecuzione + fix per chi è silente
+### 1.2 — Audit LaunchAgent alive ✅ (2026-05-12, S7)
+**Esito**: 4/4 VERDE.
+- host-monitor: ultima entry 2026-05-12T10:50:59Z ✅
+- morning-brief: `briefs/2026-05-12.md` ✅
+- claude-memory-backup: ROTATE OK 2026-05-12 ✅
+- git-push hook: ultimo push 2026-05-11T19:30:52Z (event-based, no commit oggi) ✅
+- `launchctl list | grep luke.vos` → 4/4 loaded, exit 0
+- Brief mancante 2026-05-10 coerente con pattern operativo Luke (MacBook salta giorni).
 
-### 1.3 — Allineamento CLAUDE.md vs stato reale (parzialmente chiuso 2026-05-11)
-**Reference dangling identificate**:
-- ~~`~/venture-os/wiki/BLUEPRINT-JD-v3.4.md` — file non esiste~~ → **CHIUSO**: blueprint v3.5 ingerito (supersede v3.4), reference CLAUDE.md aggiornata.
-- `routing-refresh` notturno — componente non esiste → resta aperto, FASE 3.1
-- Possibili altre — audit completo path-by-path (rimane da fare per altre reference)
+### 1.3 — Allineamento CLAUDE.md vs stato reale ✅ (S7 chiude residua)
+**Reference dangling identificate e risolte**:
+- ~~`BLUEPRINT-JD-v3.4.md`~~ → CHIUSO S6 (v3.5 ingerito).
+- ~~`bigsur-compatible-versions.yaml`~~ → CHIUSO S7: seed file creato `~/venture-os/config/bigsur-compatible-versions.yaml` (schema vuoto, popolare on-demand).
+- ~~`preflight-blacklist.yaml`~~ → CHIUSO S7: seed file creato con blacklist da CLAUDE.md vincolo #8.
+- `routing-refresh` notturno → resta aperto, FASE 3.1.
+- `~/automation-business/transcripts/` → lazy-created on first use skill yt-transcript, no fix.
 
-Azione residua:
-- Verificare altre reference puntatori CLAUDE.md riga-per-riga (routing.yaml exists, projects-whitelist.yaml exists, costs.jsonl — verificare)
-- Decisione architetturale REVISIONATA: blueprint v3.5 È il blueprint canonico vivente. Karpathy compilation per-progetto resta meccanismo di Layer 4 wiki, ma non sostituisce blueprint globale.
-- Stima residua: 15 min
-- **Done when**: CLAUDE.md ha 0 reference dangling verificabili con file_check
+**Esito**: 0 reference dangling rimaste (escluso `routing-refresh` atteso FASE 3.1).
 
-**FASE 1 done when**: 3/3 task verdi.
+**FASE 1 done when**: 3/3 task verdi → ✅ **FASE 1 CHIUSA** (2026-05-12).
 
 ---
 
@@ -84,14 +81,14 @@ Azione residua:
 - Stima: 30 min audit + 5 min switch
 - **Done when**: log JSONL audited + gate in mode block O regex refined + 2 sessione consecutive senza violation
 
-### 2.3 — Seed S6-blueprint-backup → decisione close/promote
-**File**: `seeds/S6-blueprint-backup.md` (S5-prep deviation "git-backup-multi-remote-codified-ad-hoc")
-- Lettura seed
-- Decisione: formalizzare convention git multi-remote (master ovunque, fire-and-forget, drift detect) in COMPILED-STATE VOS-globale OR archivia seed come "convention codificata in deviation log, no formal doc needed"
-- Stima: 20 min
-- **Done when**: seed o (a) promosso a fase implementation, o (b) archiviato con motivo
+### 2.3 — Seed S6-blueprint-backup → decisione ✅ (2026-05-12, S7)
+**Esito**: ARCHIVE 3/3 step con motivo. Seed mosso in `seeds/archived/S6-blueprint-backup.ARCHIVED-2026-05-12.md`.
+- Step 1 blueprint section "Componenti backup": ARCHIVE (convention già in produzione + deviation log, doc duplicato).
+- Step 2 gdrive-backup: NO-GO (post-whitelist <500MB stimati, github+imac bare repo coprono già, ARGOS sqlite = ToS violation su personal gdrive).
+- Step 3 disk-keeper quarantine: NO-GO (keeper.py ha già dry-run default + conferma Y maiuscola, safety pattern adeguato).
+- Deviation `blueprint-backup-codified` (resolves `git-backup-multi-remote-codified-ad-hoc`).
 
-**FASE 2 done when**: 3/3 task verdi, no debiti aperti da S5b-S5f.
+**FASE 2 progress**: 1/3 ✅ (2.3 done). 2.1+2.2 restano blocked (account OpenRouter + baseline 7gg matura 2026-05-18).
 
 ---
 
@@ -117,14 +114,13 @@ Azione residua:
 - Stima: 1-2h
 - **Done when**: watcher LaunchAgent installato, threshold definiti per ARGOS/FLUXION/Guardian, alert testato
 
-### 3.3 — DECISIONE: blueprint v3.4 canonico SI o NO
-**Tradeoff**:
-- Pro canonical doc: onboarding nuove sessioni più rapido, decisioni passate visibili senza scavare archived-handoffs
-- Contro: doc statico va aggiornato manualmente, drift inevitabile, duplica info che già è in COMPILED-STATE
+### 3.3 — ~~DECISIONE blueprint v3.4 canonico~~ **OBSOLETA-RISOLTA (S6, formalizzata S7 2026-05-12)**
 
-**Decisione raccomandata**: **NO blueprint canonico globale**. Karpathy compilation per-progetto è sufficiente. Update CLAUDE.md rimuovendo reference v3.4 (già fatto in FASE 1.3). Se in S10+ emerge bisogno reale di doc globale → riapri decisione con dati.
+**Stato**: superata da ingestion blueprint v3.5 in S6 FASE 1.3. v3.5 È il canonico vivente (`~/venture-os/wiki/BLUEPRINT-JD-v3.5.md`). v3.4 deprecato. Reference CLAUDE.md già aggiornata a v3.5. Karpathy compilation per-progetto resta meccanismo Layer 4 wiki, non sostituisce blueprint globale.
 
-**FASE 3 done when**: 3.1 + 3.2 shipped, 3.3 decisione formalizzata in deviation log.
+**Risoluzione**: nessun REVERT necessario. Deviation `blueprint-canonico-v3.5-ingerito` (S6) documenta decisione.
+
+**FASE 3 done when**: 3.1 + 3.2 shipped (3.3 già chiusa).
 
 ---
 
@@ -178,13 +174,26 @@ Trigger su alert handoff-debt-watcher (FASE 3.2). Manualmente: ogni 4-8 settiman
 
 ## Backlog S7+ (captured 2026-05-11 close S6, founder input post-close)
 
-### B1 — Mike OSS self-host + wrap in legal-compliance-checker skill
-**Trigger**: founder S6 close 2026-05-11. Mike OSS (mikeoss.com) = open-source legal AI rilasciato 5/5/2026, contract drafting + tracked changes versioning, self-hostable, bring-your-own-key (vincolo #5 ✓).
-- Self-host su iMac (Next.js+Supabase, no AVX2 needed). Stack: `willchen96/mike` GitHub + Railway template.
-- Wrap come tool del `~/.claude/skills/legal-compliance-checker/SKILL.md` già installato (39 skills enterprise).
-- Use case prioritario: stage 5 venture pipeline (blueprint sez. 4) — ARGOS dealer contracts, FLUXION €497 EULA, Guardian ToS future.
-- Stima: 2-3h setup + 30min wrap skill.
-- Done when: Mike OSS reachable via `ssh imac "curl localhost:3000/health"` + skill testabile su contratto sample.
+### B1 — Mike OSS self-host + wrap legal-compliance-checker (DEFERRED, 2026-05-12 S7)
+**Trigger originale**: founder S6 close 2026-05-11. Mike OSS = github.com/willchen96/mike, launched 2026-04-29 (verificato S7).
+
+**Stack reale verificato S7** (vincolo #1):
+- Next.js (port 3000) + Express (port 3001) + Supabase (Postgres) + S3-compatible storage
+- Node 20+ required, AGPL v3, bring-your-own-key (Claude/Gemini/OpenAI)
+- **NO docker-compose**, deploy manuale
+- Supabase locale richiede 8+ container self-hosted, OR cloud free tier 500MB (contraddice "files never leave perimeter")
+
+**Decisione S7 NO-START** (motivazione singola, vincolo #3):
+- Setup realistico 4-6h (non 2-3h del trigger originale, sottostimato — Supabase locale non banale)
+- Use case ARGOS dealer contracts = lead-gen attivo, no firme oggi
+- Use case FLUXION €497 EULA = draft once, no review continuo
+- Use case Guardian = pre-production
+- Skill `legal-compliance-checker` standalone già funziona senza Mike (usa LLM via Claude Code)
+- Mike OSS launched 13gg, stack ancora in fast evolution → setup oggi obsoleto in 6 mesi
+
+**Trigger riapertura**: (a) ARGOS firma primo dealer reale, O (b) FLUXION richiede EULA finale per launch, O (c) Mike OSS raggiunge v1.0 stable + docker-compose ufficiale.
+
+**Done when**: ri-valutazione con dato di business reale, non good-practice pre-emptive.
 
 ### B2 — Humanizer skill (installata 2026-05-11 21:20 ✅ — eval ITA aperta)
 **Update**: Luke ha fornito `~/Downloads/humanizer.zip` con `humanizer-skill/SKILL.md` v2.5.1 MIT (basata su Wikipedia "Signs of AI writing", compat claude-code+opencode, frontmatter allowed-tools esplicito). Installata in `~/.claude/skills/humanizer/SKILL.md`. **Skill generica EN-first**. Da valutare a S7 se funziona su output italiano sales ARGOS (Luca Ferretti dealer DE/BE/NL/AT) — se sì: chiusa. Se output ITA degradato: scrivere variante `argos-humanizer-it` con regole anti-pattern AI italiani specifici.
@@ -210,6 +219,46 @@ Trigger su alert handoff-debt-watcher (FASE 3.2). Manualmente: ogni 4-8 settiman
 - CLI: `/plugin marketplace add <url>` + `/plugin install <name>`.
 - Stima: 5 min.
 - Done when: CLAUDE.md aggiornato + 1 riga in memoria globale `~/.claude/projects/-Users-macbook/memory/`.
+
+### B5 — Componente VOS `tool-scout` ✅ (SHIPPED 2026-05-12, S7)
+**Esito**: v0 MVP shipped in ~1.5h (sotto stima 3-4h originale).
+- `config/tool-scout-areas.yaml` — 3 aree MVP (image-inpainting, background-removal, ocr)
+- `components/tool-scout/scouter.py` — stdlib only, HF public API, license whitelist+blacklist (vincolo #5 esteso)
+- LaunchAgent `com.luke.vos.tool-scout` RunAtLoad, gate interno settimana ISO
+- `state/tool-landscape.jsonl` + `state/tool-scout-diff.jsonl`
+- briefer.py integration testato con diff simulato (Qwen-Image-Edit emerge correttamente in Segnali brief)
+
+**Scoperta strutturale primo run** (vedi deviation `tool-scout-v0-first-run-confirms-drift-pattern`): mia raccomandazione ARGOS "LaMa" era 4 anni dietro SOTA. SOTA inpainting 2026-W20 = Qwen/Qwen-Image-Edit (Apache-2.0, 2386 likes). ARGOS prompt S163 Step 4 GO/NO-GO da valutare Qwen-Image-Edit vs LaMa.
+
+**Espansione futura** (deferred, on-demand): aggiungere aree tts-italian, stt, llm-inference-free, vision-language quando entrano in use case attivo progetto.
+
+### B5-old — Componente VOS `tool-scout` (entry originale, mantenuta come spec)
+**Trigger**: founder S7 close 2026-05-12. Pattern strutturale VOS: framework deve fare proactive scouting alternative open source, non aspettare proposte ad-hoc CTO. Caso reale ARGOS image sanitizer: ho proposto LaMa "soluzione certa" senza confronto con BiRefNet/RMBG-2.0/BrushNet/PowerPaint/Florence-2/Replicate. Vincolo #2 (ricerca attiva) applicato a metà. Inoltre scoperto RMBG-2.0 license non-commercial = vincolo #5 esteso a license-trap.
+
+**Scope**:
+- Componente: `~/venture-os/components/tool-scout/scouter.py`
+- Cadenza: LaunchAgent RunAtLoad (pattern operativo Luke), eseguito 1x/settimana
+- Aree calde da monitorare (config `~/venture-os/config/tool-scout-areas.yaml`):
+  - image-inpainting (LaMa, BrushNet, PowerPaint, IOPaint platform)
+  - background-removal (BiRefNet, RMBG-x.0 license tracking, rembg)
+  - ocr (PaddleOCR, EasyOCR, Tesseract, Surya)
+  - tts-italian (XTTS, Coqui, Bark, ElevenLabs API)
+  - stt (Whisper variants, Insanely-Fast-Whisper, faster-whisper)
+  - llm-inference-free (OpenRouter free models, HF Inference API, Together free, Groq free)
+  - vision-language (Florence-2, Qwen2-VL, LLaVA, InternVL)
+- Per ogni area: WebSearch SOTA 2026 + estrai license + estrai requirement HW
+- Output: `~/venture-os/state/tool-landscape.jsonl` append daily snapshot {area, top_3, license, hw_req, hosting_option, last_change}
+- Diff vs precedente snapshot → entry brief mattutino "tool landscape update: <area> new SOTA <tool> (was <prev>, reason <X>)"
+
+**License-trap detection (vincolo #5 esteso)**:
+- License whitelist: MIT, Apache-2.0, BSD-*, MPL-2.0, AGPL-3.0 (con disclaimer copyleft)
+- License blacklist: "non-commercial", "source-available", proprietary, "research-only" → FLAG nel snapshot, mai proposto come default
+- Esempio: RMBG-2.0 source-available non-commercial → SOTA accuracy ma blacklist per ARGOS B2B revenue
+
+**Stima**: 3-4h prima versione (script + areas config + LaunchAgent + brief integration).
+**Done when**: 7 aree popolate in tool-landscape.jsonl + diff detection testato simulando snapshot vecchio + brief mostra "tool landscape update" sezione.
+
+**Anti-pattern da evitare**: scope creep verso "AI tool curation platform". Tool-scout VOS è interno, MVP minimale, output JSONL grezzo per CC reading, non UI/dashboard.
 
 ## Re-audit roadmap
 

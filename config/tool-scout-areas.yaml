@@ -1,0 +1,86 @@
+# Tool-scout areas — config per componente VOS tool-scout
+# v1 MVP: 3 aree calde per ARGOS use case attuale + espandere on-demand.
+#
+# Schema area:
+#   hf_pipeline_tag: tag HuggingFace per filtrare (https://huggingface.co/models?pipeline_tag=X)
+#   top_n: quanti modelli top considerare
+#   sort_by: downloads | likes (likes meno gameable)
+#   license_whitelist: license commercially-safe (MIT, Apache-2.0, BSD, MPL, OpenRAIL)
+#   license_blacklist: pattern license non-commercial / source-available / research-only
+#   notes: contesto area (use case)
+#
+# Aggiungere area NUOVA = entry qui + 0 modifiche scouter.py.
+
+version: 1
+last_updated: "2026-05-12"
+
+areas:
+  image-inpainting:
+    source: hf
+    hf_pipeline_tag: "image-to-image"
+    top_n: 10
+    sort_by: likes
+    license_whitelist: ["mit", "apache-2.0", "bsd-3-clause", "bsd-2-clause", "mpl-2.0", "openrail", "openrail++", "creativeml-openrail-m"]
+    license_blacklist_patterns: ["non-commercial", "noncommercial", "research-only", "source-available", "cc-by-nc"]
+    notes: "Erase watermark/targhe/persona da foto auto dealer ARGOS"
+
+  background-removal:
+    source: hf
+    hf_pipeline_tag: "image-segmentation"
+    top_n: 10
+    sort_by: likes
+    license_whitelist: ["mit", "apache-2.0", "bsd-3-clause", "bsd-2-clause", "mpl-2.0"]
+    license_blacklist_patterns: ["non-commercial", "noncommercial", "research-only", "source-available", "cc-by-nc", "bria-rmbg"]
+    notes: "Background removal commerciale-safe (RMBG-2.0 license non-commercial = BLOCKER ARGOS)"
+
+  ocr:
+    source: hf
+    hf_pipeline_tag: "image-to-text"
+    top_n: 10
+    sort_by: downloads
+    license_whitelist: ["mit", "apache-2.0", "bsd-3-clause", "bsd-2-clause", "mpl-2.0"]
+    license_blacklist_patterns: ["non-commercial", "noncommercial", "research-only", "source-available", "cc-by-nc"]
+    notes: "OCR per documenti/foto. Note: PaddleOCR su blacklist preflight Big Sur (no wheel macOS 11), trova alternative cross-platform."
+
+  # 4 aree GitHub filtrate per capability-needs.yaml (principio Luke S7 + blueprint sez. 15.20).
+  # Niente discovery senza needs popolato. Source of truth keywords: capability-needs.yaml.
+  # tool-scout legge needs_from e costruisce query OR su github_keywords.
+  github-argos-tech:
+    source: github
+    needs_from: argos-tech
+    created_within_days: 30
+    min_stars: 50
+    top_n: 5
+    license_whitelist: ["MIT", "Apache-2.0", "BSD-3-Clause", "BSD-2-Clause", "MPL-2.0"]
+    license_blacklist_patterns: ["NOASSERTION", "AGPL-3.0"]
+    notes: "ROI atteso basso-medio (ARGOS nicchia). Catches tool tech-stack emerging."
+
+  github-fluxion-tech:
+    source: github
+    needs_from: fluxion-tech
+    created_within_days: 30
+    min_stars: 50
+    top_n: 5
+    license_whitelist: ["MIT", "Apache-2.0", "BSD-3-Clause", "BSD-2-Clause", "MPL-2.0"]
+    license_blacklist_patterns: ["NOASSERTION", "AGPL-3.0"]
+    notes: "ROI medio. Tauri 2 ecosystem + italian-tts catches."
+
+  github-guardian-tech:
+    source: github
+    needs_from: guardian-tech
+    created_within_days: 30
+    min_stars: 50
+    top_n: 5
+    license_whitelist: ["MIT", "Apache-2.0", "BSD-3-Clause", "BSD-2-Clause", "MPL-2.0"]
+    license_blacklist_patterns: ["NOASSERTION", "AGPL-3.0"]
+    notes: "ROI atteso basso (nicchia + stack TBD). Da rivedere quando Guardian stack definito."
+
+  github-cross-vos:
+    source: github
+    needs_from: cross-vos
+    created_within_days: 30
+    min_stars: 100
+    top_n: 5
+    license_whitelist: ["MIT", "Apache-2.0", "BSD-3-Clause", "BSD-2-Clause", "MPL-2.0"]
+    license_blacklist_patterns: ["NOASSERTION", "AGPL-3.0"]
+    notes: "ROI alto. LLM/agent/RAG ecosystem cresce settimanale. Catches alternative routing (es. future-agi)."

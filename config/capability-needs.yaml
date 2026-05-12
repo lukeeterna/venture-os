@@ -1,0 +1,65 @@
+# Capability needs VOS — source of truth bisogni dichiarati cross-progetto
+# Pattern principio (blueprint v3.5 sez. 15.20 capability-scanner Modo C):
+# "discovery proattiva con vincolo bisogni dichiarati". Niente discovery senza needs popolato.
+#
+# Consumato da:
+# - tool-scout (scouting GitHub/HF filtrato per relevance ai needs)
+# - capability-scanner futuro (sez. 15.20 blueprint, ancora non shipped)
+# - skill vos-scout (riferimento per scouting on-demand area corretta)
+#
+# Aggiungere need NUOVO = entry qui + restart tool-scout con `rm tool-scout-last-run.txt`.
+# Pattern keyword: tech-stack focused, NON domain business pure (signal GitHub).
+
+version: 1
+last_updated: "2026-05-12"
+
+needs:
+  argos-tech:
+    project: ARGOS
+    description: "ARGOS stack: scraping dealer marketplaces, persona LLM sales agent (Luca Ferretti), image sanitizer, OCR, B2B Italian auto"
+    # GitHub Search OR limit = max 5 keywords
+    github_keywords:
+      - playwright-stealth
+      - persona-llm
+      - sales-agent
+      - hitl-telegram
+      - whatsapp-agent
+    hf_pipeline_tags: ["text-generation", "image-to-image", "image-to-text"]
+    notes: "Domain pure (vehicle/car/dealer) signal nullo su GitHub. Tech-stack keywords danno match veri. Cap 5 per OR limit."
+
+  fluxion-tech:
+    project: FLUXION
+    description: "FLUXION stack: Tauri 2 + React 19 + SQLite, desktop SMB Italian, italian TTS per voice agent"
+    # GitHub Search OR limit = max 5 keywords
+    github_keywords:
+      - tauri-2
+      - sqlite-tauri
+      - italian-tts
+      - voice-agent
+      - desktop-app-vite
+    hf_pipeline_tags: ["text-to-speech"]
+    notes: "Italian TTS modelli HF + Tauri 2 ecosystem GitHub. ROI medio. Cap 5 per OR limit."
+
+  guardian-tech:
+    project: Guardian
+    description: "Guardian stack TBD: pulizia smartphone/mobile cleaning, gestione storage device, mobile junk detection"
+    github_keywords:
+      - smartphone-cleaning
+      - mobile-storage-manager
+      - ios-cleaner
+      - android-cleanup
+    hf_pipeline_tags: []
+    notes: "Nicchia dominio specifica. Signal GitHub presumibilmente basso. Da rivedere quando Guardian stack definito (oggi pre-production)."
+
+  cross-vos:
+    project: VOS-shared
+    description: "Componenti cross-progetto: LLM routing, agent framework, RAG, vector DB, Claude Code skills, observability LLM"
+    # Note: GitHub Search API cap 5 AND/OR/NOT operators per query = max 5 keywords per area
+    github_keywords:
+      - llm-router
+      - litellm
+      - claude-code-skill
+      - agent-framework
+      - llm-observability
+    hf_pipeline_tags: []
+    notes: "ROI alto. Ecosystem LLM/agent cresce settimanale. Catches alternative a LiteLLM (es. future-agi scoperto tool-scout S7). Keywords cap 5 per GitHub OR limit."
