@@ -336,7 +336,21 @@ def main() -> int:
     parser.add_argument("--multi-pass", action="store_true", help="4 chiamate (una per sezione) — risolve cap-ignorato S5d")
     parser.add_argument("--split-temporal", action="store_true",
                         help="Split input per mediana mtime: sezioni stato/blocker/prossimi vedono solo recent, decisioni vede solo old (richiede --multi-pass). Risolve ARGOS 175K timeout S5e.")
+    parser.add_argument("--archive-only", action="store_true",
+                        help="Skip LLM call. Verifica COMPILED-STATE.md su disco (frontmatter date odierna + 4/4 sezioni + non troncato) e archivia originali. Risolve S10 bug: archive bloccato da 429 RPM su re-compile forzato.")
     args = parser.parse_args()
+
+    # --archive-only è terminal mode: incompatibile con flag di compilazione.
+    if args.archive_only:
+        incompatibili = [n for n, v in (("--dry-run", args.dry_run),
+                                        ("--multi-pass", args.multi_pass),
+                                        ("--split-temporal", args.split_temporal),
+                                        ("--force", args.force)) if v]
+        if incompatibili:
+            sys.stderr.write(f"[{COMPONENT}] --archive-only incompatibile con: {', '.join(incompatibili)}\n")
+            return 8
+        # --archive implicito in --archive-only (sarebbe no-op altrimenti).
+        args.archive = True
 
     require_t7_or_exit(COMPONENT)
 
@@ -345,7 +359,8 @@ def main() -> int:
     model = resolve_long_context_model(routing)
 
     out_path = WIKI_PROJECTS / args.project / "COMPILED-STATE.md"
-    if not args.force and has_today_frontmatter(out_path):
+    # --archive-only DEVE vedere frontmatter odierno (è il gate); idempotency check skip.
+    if not args.archive_only and not args.force and has_today_frontmatter(out_path):
         print(f"[{COMPONENT}] {out_path} già aggiornato oggi. Usa --force per rifare.")
         return 0
 
@@ -353,6 +368,46 @@ def main() -> int:
     if not files:
         sys.stderr.write(f"[{COMPONENT}] nessun handoff matchato in {root}\n")
         return 1
+
+    # --archive-only: skip LLM, verifica COMPILED-STATE.md su disco, archivia se valido.
+    # Risolve S10 bug: re-compile con --force in burst brucia free-tier RPM (10/min Gemini-flash),
+    # 429 abortisce archive anche se output precedente era valido. Spot-check umano viene
+    # comunque richiesto a monte (l'operatore decide quando invocare --archive-only).
+    if args.archive_only:
+        if not out_path.exists():
+            sys.stderr.write(f"[{COMPONENT}] BLOCK archive-only: {out_path} non esiste. Compila prima.\n")
+            return 9
+        body_disk = out_path.read_text(encoding="utf-8")
+        # Gate 1: frontmatter date odierna (output stantio = no archive cieco).
+        if f"date: {today_str()}" not in body_disk[:300]:
+            sys.stderr.write(f"[{COMPONENT}] BLOCK archive-only: COMPILED-STATE.md non aggiornato oggi (frontmatter date mismatch).\n")
+            return 9
+        # Gate 2: 4/4 sezioni richieste.
+        required_sections = [
+            "## Stato attuale verificato",
+            "## Decisioni chiuse",
+            "## Blocker aperti",
+            "## Prossimi passi",
+        ]
+        sections_found = [s for s in required_sections if s in body_disk]
+        if len(sections_found) != 4:
+            missing = [s for s in required_sections if s not in body_disk]
+            sys.stderr.write(f"[{COMPONENT}] BLOCK archive-only: solo {len(sections_found)}/4 sezioni. Mancanti: {missing}\n")
+            return 9
+        # Gate 3: non troncato (marker scritto da write_compiled quando >500 righe).
+        if "_(troncato a 500 righe" in body_disk:
+            sys.stderr.write(f"[{COMPONENT}] BLOCK archive-only: COMPILED-STATE.md marcato come troncato. Ri-compila.\n")
+            return 9
+        print(f"[{COMPONENT}] archive-only: COMPILED-STATE.md verde (4/4 sezioni, non troncato, date odierna).")
+        dest = archive_originals(args.project, files)
+        print(f"[{COMPONENT}] archiviati {len(files)} file in {dest}")
+        log_cost({
+            "event": "karpathy-archive-only",
+            "project": args.project,
+            "files_count": len(files),
+            "archive_dest": str(dest),
+        })
+        return 0
 
     # Pre-build user_prompt full (per single-pass + dry-run). Split-temporal costruisce
     # prompt per-batch dentro il loop multi-pass.
