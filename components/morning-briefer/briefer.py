@@ -25,6 +25,8 @@ INVENTORY = VOS_ROOT / "state" / "projects-inventory.yaml"
 HOST_MONITOR_LOG = VOS_ROOT / "state" / "host-monitor.jsonl"
 ERROR_LOG = VOS_ROOT / "state" / "errors.jsonl"
 GIT_PUSH_LOG = VOS_ROOT / "state" / "git-push.log"
+TOOL_SCOUT_DIFF = VOS_ROOT / "state" / "tool-scout-diff.jsonl"
+SARA_GATE_RUNS = VOS_ROOT / "state" / "sara-gate-runs.jsonl"
 BRIEFS_DIR = VOS_ROOT / "briefs"
 BRIEFS_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -306,7 +308,85 @@ def _signals(mac: Optional[dict], imac: Optional[dict], projects: dict) -> list:
         thr = pinfo.get("handoff_threshold", 2000)
         if debt >= thr:
             sigs.append(f"{pname}: handoff debt {debt} righe oltre soglia ({thr}) — compilation Sessione 4 Fase C")
+
+    # Sara Gate runs (S207): segnale FAIL ultimo run + age da ultimo PASS
+    if SARA_GATE_RUNS.exists():
+        try:
+            with open(SARA_GATE_RUNS) as f:
+                runs = [ln for ln in f if ln.strip()]
+            if runs:
+                last = json.loads(runs[-1])
+                verdict = last.get("verdict", "?")
+                if verdict == "FAIL":
+                    per_v = last.get("per_vertical", {})
+                    fail_verts = [v for v, c in per_v.items() if c.get("fail", 0) > 0]
+                    if fail_verts:
+                        sigs.append(f"Sara Gate FAIL: {len(fail_verts)} verticali ko ({', '.join(fail_verts[:3])})")
+                    else:
+                        sigs.append("Sara Gate FAIL — verifica report")
+                elif verdict == "INFRA_ERROR":
+                    sigs.append("Sara Gate INFRA_ERROR — pipeline iMac/SSH non raggiungibile")
+                # Age da ultimo run (warning se >7gg, pattern release abbandonato)
+                ts_str = last.get("ts", "")
+                if ts_str:
+                    try:
+                        last_ts = datetime.fromisoformat(ts_str.replace("Z", "+00:00"))
+                        age_days = (datetime.now(timezone.utc) - last_ts).days
+                        if age_days >= 7:
+                            sigs.append(f"Sara Gate non eseguito da {age_days}gg — drift release rischio")
+                    except Exception:  # noqa: BLE001
+                        pass
+        except Exception as e:  # noqa: BLE001
+            _log_error("sara-gate-runs parse fail", e)
+
+    # Tool-scout VOS: ultimo diff settimanale (B5 S7 2026-05-12, esteso GitHub source)
+    if TOOL_SCOUT_DIFF.exists():
+        try:
+            with open(TOOL_SCOUT_DIFF) as f:
+                ls = [ln for ln in f if ln.strip()]
+            if ls:
+                last = json.loads(ls[-1])
+                diffs = last.get("diffs") or []
+                if diffs:
+                    for d in diffs[:3]:  # max 3 voci totale (vincolo brief 50 righe)
+                        area = d.get("area", "?")
+                        new = d.get("new_entries") or []
+                        if new:
+                            sigs.append(f"tool-scout {area}: nuovo top-safe {new[0]} (settimana {last.get('week')})")
+        except Exception as e:  # noqa: BLE001
+            _log_error("tool-scout diff parse fail", e)
     return sigs
+
+
+def _tool_landscape_top_github_by_project(top_n: int = 3) -> list:
+    """Ultimo snapshot landscape: estrae top GitHub repos raggruppati per progetto needs.
+    Max top_n totali per evitare brief overflow. Solo aree con safe_count > 0."""
+    if not (VOS_ROOT / "state" / "tool-landscape.jsonl").exists():
+        return []
+    try:
+        with open(VOS_ROOT / "state" / "tool-landscape.jsonl") as f:
+            ls = [ln for ln in f if ln.strip()]
+        if not ls:
+            return []
+        snap = json.loads(ls[-1])
+        rows = []
+        for a in snap.get("areas") or []:
+            if a.get("source") != "github" or not a.get("top_safe"):
+                continue
+            need = a.get("needs_from", "?")
+            top = a["top_safe"][0]  # 1 per area
+            rows.append({
+                "need": need,
+                "id": top["id"],
+                "stars": top.get("stars", 0),
+                "license": top.get("license", "?"),
+                "desc": (top.get("description") or "")[:80],
+            })
+        rows.sort(key=lambda r: r["stars"], reverse=True)
+        return rows[:top_n]
+    except Exception as e:  # noqa: BLE001
+        _log_error("tool-landscape top github parse fail", e)
+        return []
 
 
 def build_brief(today: date) -> str:
@@ -333,6 +413,14 @@ def build_brief(today: date) -> str:
         lines.append("## Segnali")
         for s in sigs:
             lines.append(f"- {s}")
+        lines.append("")
+
+    # AI tools rilevanti questa settimana (Layer 1 tool-scout GitHub filtered by capability-needs)
+    gh_top = _tool_landscape_top_github_by_project(top_n=3)
+    if gh_top:
+        lines.append("## AI tools rilevanti this week")
+        for r in gh_top:
+            lines.append(f"- [{r['need']}] {r['id']} ⭐{r['stars']} ({r['license']}) — {r['desc']}")
         lines.append("")
 
     # Footer Validation Window — riga echo precompilata
