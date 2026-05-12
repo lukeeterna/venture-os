@@ -6,8 +6,8 @@
 - **Stack**: python+sqlite
 - **Esiste**: True
 - **CLAUDE.md presente**: True
-- **Ultimo mtime root**: 2026-05-07T08:08:13.307948+00:00
-- **Handoff debt**: 14693 righe su 94 file (soglia 2000) → compilation raccomandata
+- **Ultimo mtime root**: 2026-05-12T16:52:36.930982+00:00
+- **Handoff debt**: 0 righe su 0 file (soglia 2000) → OK
 
 ## DB rilevati
 

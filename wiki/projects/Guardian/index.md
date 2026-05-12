@@ -7,7 +7,7 @@
 - **Esiste**: True
 - **CLAUDE.md presente**: True
 - **Ultimo mtime root**: 2026-05-04T14:34:21.727399+00:00
-- **Handoff debt**: 16398 righe su 53 file (soglia 1500) → compilation raccomandata
+- **Handoff debt**: 0 righe su 0 file (soglia 1500) → OK
 
 ## DB rilevati
 

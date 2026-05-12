@@ -107,12 +107,21 @@ status: vivente — aggiornare end-of-session quando una fase chiude
 - Stima: 2-3h
 - **Done when**: LaunchAgent installato, primo run mostra 0 drift (catalogo congruente), drift simulato (test con fake response) attiva alert brief
 
-### 3.2 — Karpathy compilation periodica
-**Oggi**: chiamata manuale per progetto. **Goal**: trigger automatico quando handoff debt cresce.
-- Scope: componente `handoff-debt-watcher` che misura ogni N giorni numero file handoff per progetto, se >threshold (es. 50 file o 500K char) genera brief alert "ARGOS handoff debt re-cresciuto, run compiler"
-- NON esegue compiler automaticamente (richiede --archive che è destructive — gate manuale Luke)
-- Stima: 1-2h
-- **Done when**: watcher LaunchAgent installato, threshold definiti per ARGOS/FLUXION/Guardian, alert testato
+### 3.2 — ~~Karpathy compilation periodica (handoff-debt-watcher)~~ ✅ **RESOLVED-DEDUP (S11, 2026-05-12)**
+
+**Stato S11**: scope già coperto da componenti esistenti, no new component required.
+- `project-scanner/scanner.py` calcola `handoff_debt_lines` per progetto da glob pattern `handoff-debt-config.yaml`, scrive in `state/projects-inventory.yaml`.
+- `morning-briefer/briefer.py:307-310` legge debt + threshold, genera segnale brief "ARGOS: handoff debt N righe oltre soglia (T) — compilation Sessione 4 Fase C" quando `debt >= threshold`.
+- Cadenza: project-scanner gira via LaunchAgent (parte di morning-brief pipeline, pattern operativo Luke RunAtLoad).
+
+**Validazione loop end-to-end post-S10 (eseguita S11 2026-05-12)**:
+- Pre-S10: ARGOS 14693, FLUXION 3277, Guardian 16398 righe handoff.
+- Post-S10 archive + re-scan: ARGOS 0, Guardian 0, FLUXION 41 (file auto-rigenerato post-archive, sotto threshold, no false alert).
+- Brief domani mostrerà 0 segnali "compilation Karpathy raccomandata" → loop funziona end-to-end.
+
+**Deviation logged**: `handoff-debt-watcher-already-covered-by-scanner-briefer` — roadmap S5f assumeva component dedicato, S11 audit dimostra coverage già completa. Trend tracking (alert su crescita vs threshold assoluto) non implementato perché threshold assoluto già adeguato per use case attuale.
+
+**Riapertura condizionata a**: detection di growth-pattern subdoli (debt sotto threshold ma crescita +30%/settimana) che il check assoluto manca. Non c'è evidenza oggi.
 
 ### 3.3 — ~~DECISIONE blueprint v3.4 canonico~~ **OBSOLETA-RISOLTA (S6, formalizzata S7 2026-05-12)**
 
@@ -120,7 +129,7 @@ status: vivente — aggiornare end-of-session quando una fase chiude
 
 **Risoluzione**: nessun REVERT necessario. Deviation `blueprint-canonico-v3.5-ingerito` (S6) documenta decisione.
 
-**FASE 3 done when**: 3.1 + 3.2 shipped (3.3 già chiusa).
+**FASE 3 done when**: 3.1 shipped (3.2 RESOLVED-DEDUP S11, 3.3 già chiusa).
 
 ---
 
@@ -154,13 +163,14 @@ Trigger su alert handoff-debt-watcher (FASE 3.2). Manualmente: ogni 4-8 settiman
 | 2 | 1.2 | LaunchAgent alive audit | 20min | nessuno |
 | 3 | 1.3 | CLAUDE.md alignment | 30min | nessuno |
 | 4 | 2.2 | violation gate switch (post baseline 7gg) | 35min | baseline 2026-05-18 |
-| 5 | 2.1 | OpenRouter HTTP test | 30min | Luke account creation |
-| 6 | 2.3 | seed S6-blueprint-backup decision | 20min | nessuno |
+| 5 | 2.1 | OpenRouter HTTP test | 30min | ✅ S8 |
+| 6 | 2.3 | seed S6-blueprint-backup decision | 20min | ✅ S7 |
 | 7 | 3.1 | routing-refresh component | 2-3h | nessuno post FASE 2 |
-| 8 | 3.2 | handoff-debt-watcher | 1-2h | nessuno post 3.1 |
-| 9 | 3.3 | blueprint v3.4 decisione | docu only | post 3.1+3.2 |
+| 8 | ~~3.2~~ | ~~handoff-debt-watcher~~ | ~~1-2h~~ | ✅ S11 RESOLVED-DEDUP |
+| 9 | 3.3 | blueprint v3.4 decisione | docu only | ✅ S6 |
+| 10 | B4 | hook global_session_end overwrite fix | 15min | nessuno |
 
-**Sessioni stimate**: S6 = FASE 1 completa. S7 = FASE 2 (split su 2 sessioni se baseline non ready). S8-S9 = FASE 3. S10+ = manutenzione.
+**Sessioni stimate**: S6 = FASE 1 completa. S7 = FASE 2 (split su 2 sessioni se baseline non ready). S8 = OpenRouter + routing-http-verify. S9 = llm-router adapter. S10 = Karpathy compilation 3/3. S11 = loop validation + 3.2 dedup + B4 fix. S12+ = FASE 3.1 routing-refresh + FASE 2.2 violation gate switch (post 2026-05-18).
 
 ---
 
@@ -198,12 +208,18 @@ Trigger su alert handoff-debt-watcher (FASE 3.2). Manualmente: ogni 4-8 settiman
 ### B2 — Humanizer skill (installata 2026-05-11 21:20 ✅ — eval ITA aperta)
 **Update**: Luke ha fornito `~/Downloads/humanizer.zip` con `humanizer-skill/SKILL.md` v2.5.1 MIT (basata su Wikipedia "Signs of AI writing", compat claude-code+opencode, frontmatter allowed-tools esplicito). Installata in `~/.claude/skills/humanizer/SKILL.md`. **Skill generica EN-first**. Da valutare a S7 se funziona su output italiano sales ARGOS (Luca Ferretti dealer DE/BE/NL/AT) — se sì: chiusa. Se output ITA degradato: scrivere variante `argos-humanizer-it` con regole anti-pattern AI italiani specifici.
 
-### B4 — Fix hook `global_session_end.sh` overwrite destruttivo
-**Trigger**: S6 close 21:30 — scoperto durante chiusura sessione che hook auto-close SOVRASCRIVE `NEXT_SESSION_PROMPT.md` ad ogni invocazione (`{ echo ... } > $PROMPT_FILE`), cancellando handoff strutturato manuale. Mitigazione S6: scritto `~/venture-os/.claude/S6-HANDOFF.md` come file durable.
-- Fix: hook deve detectare se `NEXT_SESSION_PROMPT.md` è "manualmente strutturato" (es. >50 righe o contiene marker `# Resume —` invece di `# Prompt ripartenza — generato automaticamente`) e in quel caso APPEND la sezione auto-generated invece di overwrite.
-- Alternativa più semplice: hook scrive sempre in `NEXT_SESSION_PROMPT.auto.md` separato, NEXT_SESSION_PROMPT.md resta sotto controllo founder/CC.
-- Stima: 15 min.
-- Done when: 1 test simulato — scrivo prompt manuale, eseguo hook, verifico che prompt manuale è preservato.
+### B4 — ~~Fix hook `global_session_end.sh` overwrite destruttivo~~ ✅ **RESOLVED-MITIGATED (S11, 2026-05-12)**
+
+**Stato S11 audit**: hook `~/.claude/hooks/global_session_end.sh:104-115` ha già pre-overwrite safety:
+- Detecta first-line != `"# Prompt ripartenza — generato automaticamente"` (AUTO_SENTINEL)
+- Sposta manual handoff in `.claude/NEXT_SESSION_PROMPT.manual.md` PRIMA di overwrite
+- Logga `[VOS-SESSION-END] preserved manual handoff -> ...` a stderr
+
+**Pattern operativo Luke complementare**: handoff strutturati cross-session usano nomi sessione-specifici (`~/venture-os/.claude/S6-HANDOFF.md`, `S7-HANDOFF.md`) → immuni al hook (file diverso, mai toccato).
+
+**Decisione no-code-change**: l'alternativa "scrivere su `.auto.md` separato" cambia il contratto del path canonico (tooling/agent che leggono `NEXT_SESSION_PROMPT.md` si aspettano versione auto). Breaking change non motivato. Mitigation attuale + pattern operativo coprono il rischio.
+
+**Riapertura condizionata a**: caso reale dove move-to-.manual.md fallisce O agent down-stream legge `NEXT_SESSION_PROMPT.md` aspettandosi manual content.
 
 ### B2-original — Humanizer skill italiano custom (residua, condizionata a B2 eval)
 **Trigger**: founder S6 close 2026-05-11. ARGOS persona Luca Ferretti output WhatsApp/email B2B verso dealer DE/BE/NL/AT in italiano. Tono naturale = critico per response rate.

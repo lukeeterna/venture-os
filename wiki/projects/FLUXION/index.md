@@ -6,8 +6,8 @@
 - **Stack**: tauri+react+sqlite
 - **Esiste**: True
 - **CLAUDE.md presente**: True
-- **Ultimo mtime root**: 2026-05-07T08:06:15.462943+00:00
-- **Handoff debt**: 3277 righe su 5 file (soglia 2000) → compilation raccomandata
+- **Ultimo mtime root**: 2026-05-12T16:40:35.739547+00:00
+- **Handoff debt**: 41 righe su 1 file (soglia 2000) → OK
 
 ## DB rilevati
 
