@@ -1,11 +1,12 @@
 # config/routing.yaml — VOS routing config
 # Bootstrap S5 STEP 1 (2026-05-09). Update S5b → v2. S5c → v3. S5e → v4 (Cerebras verified).
+# S11c-prereq (2026-05-13) → v5: categoria `uncensored` (blueprint sez 15.11 heretic-handler).
 # Aggiornamento runtime: routing-refresh notturno (CLAUDE.md "vincoli invarianti").
 # Vincolo #1: ogni entry ha last_verified + sources upstream verificati.
 # Vincolo #5: free-tier first, soglia hard €30/mese tracciata in state/costs.jsonl.
 
-version: 4
-last_verified: 2026-05-12
+version: 5
+last_verified: 2026-05-13
 last_verified_method: real_http_call  # vincolo #11, no doc-only
 # S8 FASE 2.1 (2026-05-12) routing-http-verify.py: 5/5 verified post key setup
 #   google  gemini-2.5-flash               → verified (present in /v1beta/models)
@@ -150,6 +151,61 @@ models:
       Caveat: output_tokens_max=4096 inferiore a Gemini (65536). Karpathy compilation
       può produrre >4K tokens output → chunking richiesto in adapter VOS se openrouter
       attivo. Ok per fallback emergency, marginale come primary.
+
+  # S11c-prereq (2026-05-13) — heretic-handler uncensored chain.
+  # Blueprint sez 15.11 + sez 232-235. Use case: brainstorming strategico ARGOS
+  # (persona fittizia, content trojan-horse, pricing aggressivo, sales psychology)
+  # senza filtri commerciali Anthropic. Gate hardcoded ALLOWED_CATEGORIES nel
+  # componente, audit hash-only in state/heretic-log.jsonl (no raw content).
+  # _resolve_chain(role='uncensored') ritorna TUTTE le entry con role match,
+  # in ordine YAML → dolphin primary, hermes fallback.
+  # Pre-flight S11c-prereq 2026-05-13: entrambi /v1/models OpenRouter OK.
+  - role: uncensored
+    provider: openrouter
+    model_id: cognitivecomputations/dolphin-mistral-24b-venice-edition:free
+    api_endpoint: https://openrouter.ai/api/v1
+    auth_env: OPENROUTER_API_KEY
+    context_window: 32768
+    input_tokens_max: 32768
+    output_tokens_max: 4096
+    cost_per_1m_in: 0.0
+    cost_per_1m_out: 0.0
+    free_tier: true
+    last_verified: 2026-05-13
+    last_verified_method: real_http_call
+    sources:
+      - https://openrouter.ai/api/v1/models
+      - https://openrouter.ai/cognitivecomputations/dolphin-mistral-24b-venice-edition:free
+    notes: |
+      Venice-edition uncensored fine-tune di Mistral 24B by cognitivecomputations.
+      Free tier OpenRouter, 32K context. Primary heretic-handler.
+      Scope etico: NON è bypass per content illegale. ALLOWED_CATEGORIES
+      hardcoded nel handler limita a brainstorming commerciale borderline
+      (persona-fittizia, content-strategy, pricing-aggressivo,
+      scope-borderline-legal, sales-psychology, competitor-positioning,
+      brainstorm-generale). Audit append-only hash-only.
+
+  - role: uncensored
+    provider: openrouter
+    model_id: nousresearch/hermes-3-llama-3.1-405b:free
+    api_endpoint: https://openrouter.ai/api/v1
+    auth_env: OPENROUTER_API_KEY
+    context_window: 131072
+    input_tokens_max: 131072
+    output_tokens_max: 4096
+    cost_per_1m_in: 0.0
+    cost_per_1m_out: 0.0
+    free_tier: true
+    last_verified: 2026-05-13
+    last_verified_method: real_http_call
+    sources:
+      - https://openrouter.ai/api/v1/models
+      - https://openrouter.ai/nousresearch/hermes-3-llama-3.1-405b:free
+    notes: |
+      Fallback. Hermes 3 405B by NousResearch — neutrally-aligned, low-refusal,
+      131K context (utile per brainstorming con context lungo da wiki ARGOS).
+      Scatta su rate_limit/error del dolphin primary via _resolve_chain
+      (entrambe entry hanno role='uncensored', ordine YAML = ordine chain).
 
 defaults:
   long_context: gemini-2.5-flash
