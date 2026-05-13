@@ -6,18 +6,20 @@
 
 ---
 
-## Pre-condizione obbligatoria offline (5-15 min, NO Claude Code)
+## Pre-condizione GIÀ COMPLETATA in S11c-strategic-extension (2026-05-13)
 
-Crea `~/Documents/combaretrovamiauto-enterprise/FOUNDER-DECISIONS-2026-05-13.md` con risposte (anche "ANCORA APERTA, applica default fallback DECISIONS.md") a:
-- **Q1** Identità Luca Ferretti (pseudonimo Luke / rebrand Gianluca / partner)
-- **Q2** P.IVA timing (già attiva / aprire subito / aspettiamo primo deal)
-- **Q3** Dominio (.pages.dev / .eu o .it / .com $3395)
-- **Q4** Target scope (stretto Sud BMW/Merc/Audi / allargato luxury / on-demand)
-- **Q5** Pricing trasparenza (range pubblico / su veicolo / dopo prima risposta)
+Founder Q1-Q11 closed + sub-domande borderline scritte:
+- `~/Documents/combaretrovamiauto-enterprise/FOUNDER-DECISIONS-2026-05-13.md` (11 Q chiuse: Q1 frontman fittizio + Q2 cash-no-documento + Q3 .pages.dev + Q4 nazionale wave + Q5 OPEN-pending-research + Q6-Q11 nuovi insight)
+- `~/Documents/combaretrovamiauto-enterprise/brainstorm-inputs/persona-luca-DEEP.md` (7 sub-domande borderline)
 
-E crea `~/Documents/combaretrovamiauto-enterprise/brainstorm-inputs/persona-luca-DEEP.md` con sub-domande borderline per heretic-handler (bozza in `handoffs/HANDOFF-VOS-S11c-strategic-wiki-argos-2026-05-13.md` righe 45-51, puoi copiarle + aggiungere domande tue).
+**Workflow ricerca correzione importante**: heretic-handler ≠ fact-finding. Heretic = uncensored brainstorm (modelli senza filtri commerciali, output creativo borderline). Fact-finding = WebSearch/WebFetch interni Claude Code, OR future VOS components automated:
+- `research-synth` (Gemini Pro long_context auto-sintesi research/)
+- `ground-truth-harvester` (PRAW Reddit + scrape forum auto IT Quattroruote/ClubAlfa)
+- `competitor-watcher` (WebFetch periodic competitor pricing + diff log)
 
-**Opzionale ma raccomandato**: `bash ~/venture-os/scripts/retry-heretic-d5.sh` in finestra notturna IT (02:00-06:00 UTC). Se 200 OK → D5 verde sblocca Step 3.1 D3.
+Constraint Luke: tutto automatizzato, nessuna operazione manuale founder. Tool secondari deprecati (NotebookLM, Reddit/FB manuale): sostituiti con VOS components futuri.
+
+**Opzionale ma raccomandato**: `bash ~/venture-os/scripts/retry-heretic-d5.sh` in finestra notturna IT (02:00-06:00 UTC). Se 200 OK → D5 verde sblocca Step 3.1 D3 (invocazione heretic su persona-luca-DEEP.md per Sezione 1 STRATEGY.md).
 
 ---
 
@@ -42,7 +44,11 @@ Se uno mancante: STOP, handoff S11d-deferred con problem statement.
 
 ### Goal: 3 deliverable atomici in `wiki/projects/ARGOS/`
 
-D2 (DECISIONS.md) già shipped — NON ri-fare.
+D2 (DECISIONS.md) già shipped + Q1-Q11 founder closure pronto in `FOUNDER-DECISIONS-2026-05-13.md`. Patch DECISIONS.md richiesta:
+- Q1-Q5 OPEN entries → DECIDED status
+- Nuove entries D-13 (luxury teaser) + D-14 (scope nazionale wave) + D-15 (1-deal eccellenza) + D-16 (dossier ampliato free-tier) + D-17 (AI Visual pilot bloccante) + D-18 (dossier struttura core+appendix) + D-19 (education layer trust-builder) + D-20 (positioning anti-Bolidem)
+- Cascading patch D-04 (firma WA: "Luca Ferretti" senza disclosure Gianluca, footer brand only) + D-05 (no claim verificabili) + D-03 (target shift commissione informali, S73 strutturati → parking lot)
+- Final state target: 20 entry totali (14 DECIDED + 1 D-08 OPEN-ipotesi)
 
 - **D1** `README.md` indice ≤50 righe (~15 min)
 - **D3** `STRATEGY.md` 6 sezioni con Open questions ogni sez (~90-120 min)
