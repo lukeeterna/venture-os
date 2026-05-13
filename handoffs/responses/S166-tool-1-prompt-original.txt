@@ -1,0 +1,21 @@
+Sto cercando dati empirici 2024-2026 su pattern di primo contatto B2B via WhatsApp Business in Italia, specifico settore automotive.
+
+Contesto operativo:
+- Mittente: consulente/broker che fa scouting auto premium dai mercati europei (Germania, Olanda, Belgio, Austria) per concessionari italiani
+- Destinatario: titolare concessionario auto family business, 3-10 auto in stock rotation, Sud Italia (Campania, Puglia, Calabria, Sicilia), età 45-60 anni
+- Canale: WhatsApp Business, mai contatto precedente, mittente sconosciuto al destinatario
+- Goal: aprire relazione commerciale, non vendere subito
+
+Domande specifiche:
+1. Quali pattern di "primo messaggio WhatsApp" funzionano vs falliscono in B2B services italiani 2024-2026? Cerca case study, articoli specializzati, post LinkedIn con metriche di conversion rate.
+2. Conversion rate medio cold WhatsApp B2B Italia: dati pubblicati 2024-2026 (HubSpot, Salesforce, agenzie italiane CRM).
+3. Differenza efficacia "messaggio con offerta specifica" (es. veicolo specifico) vs "messaggio relazionale" (qualifying + insight value-first) in cold WA B2B. Studi o A/B test pubblici.
+4. Cosa fa percepire "spam" un primo messaggio WA a un imprenditore italiano family business Sud Italia? Pattern documentati di rifiuto immediato (sociologia commerciale, etnografia trade Sud Italia).
+5. Trust signals che bypassano la diffidenza al primo contatto quando il mittente è sconosciuto: referenze, education content, soft introduction, qualifying questions. Quali funzionano in cultura commerciale Sud Italia 2024-2026.
+6. Broker auto EU-IT operativi 2024-2026: quali si pubblicizzano apertamente, come si presentano al primo contatto. Esempi specifici named entities (Bolidem.it, Autotedesche.it, Global Cars Importazioni, Michael-AutoGermania, altri).
+
+Output strutturato richiesto:
+- Per ogni domanda: 3-5 bullet point data-driven con fonti URL
+- Lista pattern "FUNZIONA" + lista pattern "FALLISCE" con evidence
+- Citation precise (link articolo, autore, data)
+- Se mancano dati 2024-2026 per Italia specifico, segnala lacuna esplicitamente — NON estrapolare da US/UK senza disclaimer.
