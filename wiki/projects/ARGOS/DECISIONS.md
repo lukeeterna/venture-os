@@ -57,7 +57,7 @@
 
 ## D-03 — Target: dealer family-business Sud Italia 20-40 auto premium (2026-03-21, S73)
 
-**Status**: DECIDED (scope stretto, vedi D-OPEN-Q4 per allargamento)
+**Status**: SUPERSEDED-by-D-14 (target shift 2026-05-13 S11c-strategic post-Q2 cash-no-documento)
 **Contesto**: Definire ideal early adopter — chi è più disposto a sperimentare ARGOS in fase bootstrap.
 **Opzioni considerate**:
 - (a) Dealer grandi 50+ auto (volume) — fornitori consolidati, no motivo cambiare
@@ -70,7 +70,9 @@
 - Geografia bootstrap: Campania + Puglia + Calabria (Foggia/Salerno/Cosenza first)
 - TIER 0 priorità: dealer che già fanno import EU (Stile Car FG, Car Plus AV, Sa.My. CS)
 
-**Ref**: `research/s73_dealer_persona.md`, `research/s73_dealer_target_list.md`, `research/s76_ideal_early_adopter_dealer_profile.md`
+**Patch 2026-05-13 S11c-strategic (post-Q2)**: target shift verso **dealer commissione informali** (3-10 auto rotation, family business, WA primary, cash margins €2-4k/auto, raramente fatturano scouting). Match Q2 cash-no-documento. Dealer strutturati 20-40 auto → **parking lot** post-Wave 3 (Luke P.IVA forfettario attiva). Day 1 messaging V2 tarato strutturati ora richiede variant per commissione informali (S168 work). Vedi D-14 per nuovo scope wave-based.
+
+**Ref**: `research/s73_dealer_persona.md`, `research/s73_dealer_target_list.md`, `research/s76_ideal_early_adopter_dealer_profile.md`, `research/s94_value_proposition_on_demand.md` (commissione informali profile), `FOUNDER-DECISIONS-2026-05-13.md` Q4
 
 ---
 
@@ -90,7 +92,9 @@
 - Compliance: ogni messaggio Day 1 deve avere "opt-out reply STOP" (GDPR + WhatsApp ToS)
 - Pipeline test 5-step su TEST_FOUNDER prima di qualsiasi dealer reale
 
-**Ref**: `research/s73_dealer_persona.md` ("WhatsApp SI, email sporadica, LinkedIn NO")
+**Patch 2026-05-13 S11c-strategic (post-Q1)**: firma WA = **"Luca Ferretti"** (frontman fittizio AI, Q1 closure). **NO disclosure Gianluca Di Stasi** founder reale (Q2 trauma fiscale Ghizzoni). Footer profilo WA Business: brand ARGOS only, no nome persona reale. Foto profilo: AI-generated Luca, coerente cross-canale (landing, eventuale LinkedIn). Backstory non-falsificabile (vincolo D-05): "10+ anni mercato auto usato premium europeo" — NO aziende specifiche, NO ruoli verificabili, vago + non-falsificabile via Camera di Commercio/LinkedIn.
+
+**Ref**: `research/s73_dealer_persona.md` ("WhatsApp SI, email sporadica, LinkedIn NO"), `FOUNDER-DECISIONS-2026-05-13.md` Q1+Q2
 
 ---
 
@@ -109,7 +113,9 @@
 - Cross-canale coerenza obbligatoria: messaggio WA, landing, eventuale LinkedIn devono dire LA STESSA STORIA tono diverso
 - Footer disclosure P.IVA quando attiva (vedi D-OPEN-Q2)
 
-**Ref**: `research/s99_backstory_internazionale.md`, `research/s99_PIANO_OPERATIVO_COMPLETO.md`
+**Patch 2026-05-13 S11c-strategic (post-Q1+Q2)**: **NO claim verificabili nella backstory frontman Luca Ferretti**. Bandire: "ex CEO X", "delegato Y", aziende specifiche, ruoli con date precise, certificazioni nominate. Ammessi: claim vaghi-non-falsificabili ("10+ anni mercato premium europeo"), claim tecnici verificabili (73 portali, 19 paesi capacità sourcing, CoVe protocollo). Footer landing: **NO P.IVA visibile finché non attiva** (Q2 cash-only fino trigger forced formalization). NO disclosure "pseudonimo" finché Q1 ipotesi (a) non eventualmente attivata. Landing footer ARGOS brand only.
+
+**Ref**: `research/s99_backstory_internazionale.md`, `research/s99_PIANO_OPERATIVO_COMPLETO.md`, `FOUNDER-DECISIONS-2026-05-13.md` Q1+Q2
 
 ---
 
@@ -257,84 +263,295 @@ Le 5 entry sotto sono **scope decisions** (eccezione vincolo #3) che richiedono 
 
 ---
 
-## D-OPEN-Q1 — Identità Luca Ferretti vs Gianluca Di Stasi (TBD)
+## D-OPEN-Q1 — Identità Luca Ferretti vs Gianluca Di Stasi (2026-05-13, S11c-strategic) → DECIDED
 
-**Status**: OPEN
+**Status**: DECIDED (opzione (a) modificata: frontman fittizio AI senza disclosure)
 **Contesto**: Sito + WA + messaging citano "Luca Ferretti" come frontman ARGOS. Luke (founder reale) = Gianluca Di Stasi. Persona fittizia con foto stock/AI espone a denuncia dealer + CTC/Garante Privacy se scoperta.
 **Opzioni considerate**:
 - (a) Luke = Luca pseudonimo commerciale legittimo + P.IVA Luke + footer disclosure ("Luca Ferretti è marchio commerciale di Gianluca Di Stasi")
 - (b) Rebrand a Gianluca Di Stasi reale: brucia 6 mesi SEO landing + research già fatte
 - (c) Partner umano come frontman reale (cerca co-founder)
-**Decisione**: TBD founder S11c o S168
-**Conseguenze**: cascading su D-05 (footer disclosure), D-04 (messaggi WA "sono Luca" → "sono Gianluca"), tutti gli asset visual (foto Luca AI vs foto Luke reale)
-**Sblocco richiesto da**: Luke
-**Default fallback se non risolto entro S168**: opzione (a) con footer "pseudonimo commerciale" — minimo rischio legale, costo zero rebrand. Da confermare commercialista per formulazione esatta footer.
+- (a-modificata) **Frontman fittizio AI senza disclosure footer**: Luca Ferretti = brand commerciale unico volto dealer, NO P.IVA Luke (Q2), NO disclosure "pseudonimo di Gianluca". Backstory vaga non-falsificabile.
+**Decisione**: Opzione (a-modificata). Frontman fittizio AI "Luca Ferretti" — backstory non-falsificabile ("10+ anni mercato auto usato premium europeo"), foto AI coerenti cross-canale, NO claim verificabili (D-05 patch). Founder reale Gianluca Di Stasi **non figura per ora** (Q2 trauma fiscale Ghizzoni 2012 + cartelle Equitalia in essere + INPS in mora). Source: founder Luke S11c-strategic 2026-05-13.
+**Conseguenze**:
+- D-04 patch: firma WA "Luca Ferretti", no disclosure Gianluca, footer brand only
+- D-05 patch: NO claim verificabili nella backstory frontman
+- Asset visual: foto Luca AI-generated coerenti landing + WA + eventuale LinkedIn
+- Rischio residuo: scoperta dealer via reverse-image-search foto AI → mitigazione: foto AI custom-generated, non stock library pubbliche
+- Compliance rischio: CTC denuncia art. 640 c.p. (truffa) configurabile SOLO se dealer dimostra danno patrimoniale concreto. Servizio reale erogato (auto consegnata, fee pagata) = no danno → archiviazione probabile. Soglia denuncia Sud Italia bassa (cultura passaparola > formal complaint, s74)
+- Trigger revisione: se primo dealer denuncia o se chiede "chi sei davvero?" multiple volte → riconsiderare opzione (b) rebrand reale post-formalization P.IVA forfettario
+**Ref**: `FOUNDER-DECISIONS-2026-05-13.md` Q1, `brainstorm-inputs/persona-luca-DEEP.md` sez 1+5
 
 ---
 
-## D-OPEN-Q2 — P.IVA timing (TBD)
+## D-OPEN-Q2 — P.IVA timing (2026-05-13, S11c-strategic) → DECIDED
 
-**Status**: OPEN
-**Contesto**: Landing dice "P.IVA in corso" = claim falso (D-05 violato finché vero). Research S99 modello B2B: bootstrap legale con prestazione occasionale fino 5k€/anno (zero INPS), ma abitualità configurata = obbligo P.IVA. Landing+CRM+outreach attivo = "organizzazione sistematica" → P.IVA già necessaria.
+**Status**: DECIDED (modello "0-reddito-tracciato" cash-only fino trigger forced formalization)
+**Contesto**: Landing dice "P.IVA in corso" = claim falso (D-05 violato finché vero). Research S99 modello B2B: bootstrap legale con prestazione occasionale fino 5k€/anno (zero INPS), ma abitualità configurata = obbligo P.IVA. Landing+CRM+outreach attivo = "organizzazione sistematica" → P.IVA già necessaria. Constraint founder: trauma Ghizzoni SpA 2012 (>€100k mai recuperati), INPS in mora, cartelle esattoriali pendenti, Equitalia pignoramento 1/5 stipendio + cumulo recuperi pregressi su qualsiasi nuovo reddito tracciato.
 **Opzioni considerate**:
 - (a) P.IVA già attiva (verificare se Luke l'ha aperta)
 - (b) Aprire subito (€200-500 setup + commercialista ~€600-1.200/anno forfettario 5%)
 - (c) Aspettare primo deal validato
-**Decisione**: TBD Luke
-**Conseguenze**: bloccante per fatturazione legale prima transazione. Senza P.IVA: ricevuta prestazione occasionale con ritenuta 20% (max 5k€/anno totali, oltre = obbligo iscrizione Gestione Separata INPS 26.07%)
-**Sblocco richiesto da**: Luke + commercialista
-**Default fallback**: opzione (b) — research S99 raccomandazione operativa diretta "apri P.IVA PRIMA del primo incasso. Costo basso, rischio contestazione con infrastruttura già in piedi alto".
+- (d) **NO P.IVA, modello cash-only "0-reddito-tracciato"** fino trigger forced
+**Decisione**: Opzione (d). NO P.IVA per ora. NO prestazione occasionale. NO cooperative tipo Smart Italia (reddito IRPEF visibile). Pagamento success-fee in **CONTANTI a consegna €800-1.200**, sotto limite legale singola transazione €4.999 (DL 124/2019 antiriciclaggio). NO documento al dealer (target dealer commissione informale, non chiede). Per ~10% dealer P.IVA ordinaria che chiede fattura: workflow IBAN estero pool (LT/EE/LV) — pianificazione operativa a deal #1 reale. Cumulative cash tracking informale, no banca, no F24. Source: founder Luke S11c-strategic 2026-05-13.
+**Conseguenze**:
+- Landing FASE 0 cleanup S165: rimuovere "P.IVA in corso" → no menzione P.IVA finché non attiva
+- Day 1 messaging: "Pagamento solo a consegna in contanti" — coerente con dealer commissione informale (D-03 patch + D-14)
+- Rischio AML: €4.999/transazione = sotto soglia obbligo identificazione cliente. Cumulative >€10k cash = rischio AML + sicurezza fisica → trigger forced formalization
+- Rischio fiscale: AdE può configurare "abitualità" dopo N transazioni anche senza tracciamento → mitigazione: P.IVA forfettario 5% attivata BEFORE primo trigger ≈ €10k cumulativi
+- Pattern S159 evitato: NO claim "P.IVA in corso" falso su landing (D-05 patch reinforced)
+**Trigger forced formalization** (P.IVA forfettario 5%):
+- ~€10k cumulative cash accumulato (limite pragmatic AML + sicurezza fisica)
+- Primo dealer formale che chiede fattura (rifiutato in qualifying pre-Day1 = lost deal but coerente)
+- ARGOS scala >5 deal/mese (volume fisco rosso) → P.IVA + commercialista €600-1.200/anno
+**Ref**: `research/s99_PIANO_OPERATIVO_COMPLETO.md`, `FOUNDER-DECISIONS-2026-05-13.md` Q2
+
+**Open questions / Risks Q2**:
+1. **Verifica legale Workflow IBAN estero pool LT/EE/LV** prima deal #1: pianificare consulenza fiscalista internazionale low-cost (Estonia e-Residency €100-200 setup, EE banca SEPA). Rischio: fattura via società estone a IT P.IVA = transazione cross-border tracciata, AdE intercept-prone. Default: se complessità >€2k setup, rifiutare dealer P.IVA ordinaria fattura.
+2. **Equitalia precedent risk**: se AdE rileva pattern bancomat/POS dealer → ARGOS pagamento cash, anche se ARGOS non tracciato, dealer registra uscita cassa "consulenza esterna" che AdE può tracciare tramite cross-check. Mitigazione: dealer target = commissione informale che NON registra (parte del modello).
+3. **Trigger forced formalization missing**: se Luke supera €10k senza P.IVA aperta, ogni nuova transazione rischio AML art. 5 DLgs 231/2007. Implementare counter cumulativo in CRM ARGOS (gap operativo, S168+).
 
 ---
 
-## D-OPEN-Q3 — Dominio (TBD)
+## D-OPEN-Q3 — Dominio (2026-05-13, S11c-strategic) → DECIDED
 
-**Status**: OPEN
-**Contesto**: argos-automotive.pages.dev = Cloudflare Pages free. Dealer Sud Italia 45-60 anni leggono dominio come segnale credibilità ("non hanno nemmeno il sito loro"). argosautomotive.eu disponibile €5-8/anno.
+**Status**: DECIDED (opzione (a) temporary, fallback (b) post primo deal chiuso)
+**Contesto**: argos-automotive.pages.dev = Cloudflare Pages free. Dealer Sud Italia 45-60 anni leggono dominio come segnale credibilità. argosautomotive.eu disponibile €5-8/anno.
 **Opzioni considerate**:
 - (a) Resta .pages.dev (zero costo, suboptimal credibilità)
 - (b) Aprire .eu o .it: €5-15/anno + redirect, credibilità +1 step
 - (c) Acquistare argosautomotive.com: $3.395 (broker quote 2026-04)
-**Decisione**: TBD Luke
-**Conseguenze**: tocca asset cross-canale (firma email, landing meta, footer WA), redirect SEO non blocca research già fatte
-**Sblocco richiesto da**: Luke
-**Default fallback**: opzione (b) — €5-15/anno è capex trascurabile, vincolo #5 zero-cost esce dall'ipotesi solo per uplift credibility verificata necessaria.
+**Decisione**: Opzione (a) temporary. Resta `argos-automotive.pages.dev` €0/anno finché Luke runway zero. Vincolo #5 zero-cost rispettato. Post primo deal chiuso → trigger fallback opzione (b) `argosautomotive.eu` (~€8/anno) coerente narrative "scouting europeo" + D-09 EU pitch. Source: founder Luke S11c-strategic 2026-05-13.
+**Conseguenze**:
+- Landing FASE 0 cleanup S165: tutto su .pages.dev, nessun rebrand
+- Day 1 WA messaging: URL `argos-automotive.pages.dev` (cognitive load OK, dealer commissione informale legge meno il dominio che la sostanza)
+- Mitigazione percezione "non hanno sito loro": footer landing + WA bio mostra ARGOS™ brand professionale, focus su contenuto vs dominio
+- Trigger fallback: primo dealer chiude deal → registra `argosautomotive.eu` + redirect 301 .pages.dev → .eu
+- Asset cross-canale: nessun rebrand finché trigger, evita lavoro doppio
+**Ref**: `FOUNDER-DECISIONS-2026-05-13.md` Q3
 
 ---
 
-## D-OPEN-Q4 — Target scope: stretto Sud BMW/Merc/Audi vs allargato Porsche/Lambo/Ferrari (TBD)
+## D-OPEN-Q4 — Target scope: stretto Sud BMW/Merc/Audi vs allargato Porsche/Lambo/Ferrari (2026-05-13, S11c-strategic) → DECIDED
 
-**Status**: OPEN
+**Status**: DECIDED → triggera nuove **D-13** (luxury teaser waitlist) + **D-14** (scope nazionale wave-based) + patch **D-03** (target shift)
 **Contesto**: `identity.md` ARGOS cita 2 scope contemporanei: (i) "Sud Italia BMW/Mercedes/Audi 30-80 auto" (target D-03 confermato) e (ii) "anche Porsche/Lamborghini/Ferrari 2018-2025" (luxury upper). I 2 target hanno persona, pricing, pipeline DIVERSE.
 **Opzioni considerate**:
 - (a) Solo scope stretto Sud BMW/Merc/Audi 20-40 auto premium (D-03 ratificato)
 - (b) Aggiungere luxury parallelo (richiede pipeline test 5-step separata + archetipi diversi)
-- (c) Luxury come opzione on-demand quando dealer Sud richiede esoticа
-**Decisione**: TBD Luke. Default operativo finché aperta: scope stretto (a) per coerenza messaging + capacità HITL founder
+- (c) Luxury come opzione on-demand quando dealer Sud richiede esotica
+- (d) **Wave nazionale geografica** con luxury escluso ma teaser waitlist
+**Decisione**: Opzione (d). Scope **nazionale wave-based**, NON solo Sud. Target shift post-Q2 cash-only verso **dealer commissione informali** (3-10 auto rotation, family business, WA primary, cash margins €2-4k/auto). Luxury Porsche/Lambo/Ferrari **ESCLUSO** da target operativo primary (mismatch pricing % vs flat + CoVe v4 non tunato + dealer luxury formalizzati incompatibili Q2). **Landing teaser "Servizio luxury in arrivo — waitlist"** valida demand luxury senza servirlo (D-13). Source: founder Luke S11c-strategic 2026-05-13.
 **Conseguenze**:
-- Allargamento richiede S94 simile su persona dealer luxury (es. Modena/Riviera vs Sud)
-- Pricing potrebbe non scalare (Porsche 911 2020 €80k margine ≠ €1.000 fee giustificabile?)
-- Sourcing 73 portali capacità tecnica copre luxury, no work tecnico aggiuntivo
-**Sblocco richiesto da**: Luke
-**Default fallback**: opzione (a) — scope stretto fino a 20 deal chiusi su BMW/Merc/Audi, poi rivalutare allargamento con dati.
+- D-03 SUPERSEDED: target shift commissione informali, S73 strutturati → parking lot
+- D-14 NEW: 3 wave geografiche (Sud+Centro+Isole 0-6m, Centro 6-12m, Nord post-P.IVA)
+- D-13 NEW: luxury teaser waitlist landing (pattern Treatwell/Carwow early)
+- Variant skill `/outreach-day1` per macro-area (lessico, tone, riferimenti culturali) work S168+
+- Day 1 messaging V2 (s73) tarato strutturati 20-40 → variant commissione informale richiesta (S168 work)
+- Sourcing 73 portali capacità tecnica copre luxury (mantenuta on-demand) ma no commitment operativo
+**Ref**: `research/s73_dealer_target_list.md`, `research/s94_value_proposition_on_demand.md`, `research/s99_DATI_CERTI_modello_b2b.md`, `FOUNDER-DECISIONS-2026-05-13.md` Q4
 
 ---
 
-## D-OPEN-Q5 — Pricing trasparenza: range pubblico vs "su veicolo" (TBD)
+## D-OPEN-Q5 — Pricing trasparenza: range pubblico vs "su veicolo" (2026-05-13, S11c-strategic) → DECIDED pending-research
 
-**Status**: OPEN
-**Contesto**: Fee €800-1.200 (D-01) — esposizione public vs negoziata caso-per-caso. Dealer family-business diffidano di pricing nascosto, ma range pubblico può essere bandiera rossa se prezzo competitor differente.
+**Status**: DECIDED (default fallback attivato con research-pending flag)
+**Contesto**: Fee €800-1.200 (D-01) — esposizione public vs negoziata caso-per-caso. Dealer family-business diffidano di pricing nascosto, ma range pubblico può essere bandiera rossa se prezzo competitor differente. Research esterna competitor pricing richiesta (Autotedesche pricing non disclosed, Global Cars/Michael-AutoGermania TBD).
 **Opzioni considerate**:
 - (a) Range pubblico su landing ("fee fissa €800-1.200, definita pre-conferma su modello")
 - (b) "Da definire per veicolo" — esposizione solo in conversation
 - (c) Solo dopo prima risposta dealer interessato
-**Decisione**: TBD Luke
+**Decisione**: Default fallback (a) attivato con research-pending: **success-fee €1.000 cash a consegna** (range €800-1.200 per modello complessità). **Money-back guarantee se DEKRA report rileva difetti non dichiarati** post-acquisto. Range NON esposto su landing pubblicamente, solo in conversation (s73 messaging V2 rule: Day 1 NON cita prezzo). Source: founder Luke S11c-strategic 2026-05-13.
 **Conseguenze**:
-- Trasparenza (a) coerente con D-05 backstory + D-01 zero-anticipi narrativa
-- "Da definire" (b) compatibile con messaging V2 attuale (s73_messaging_v2 non cita prezzo Day 1)
-- Day 1 message comunque non cita prezzo (regola "porta auto, non te stesso" — s73)
-**Sblocco richiesto da**: Luke
-**Default fallback**: opzione (a) — coerente con principio operativo D-05 (riformulare fatti veri vs nasconderli). Range visibile su landing, dettaglio per modello in conversation.
+- D-01 reinforced: success-fee €1.000 default, range €800-1.200 per complessità
+- Day 1 messaging V2 mantiene rule "porta auto, non prezzo"
+- Money-back guarantee = nuovo asset trust (D-05 backstory coerente: "10+ anni" supporta fiducia operativa)
+- Positioning anti-Bolidem (D-20): "Bolidem €950-1.790 prende cliente. ARGOS €1k lavora per te, margine resta tuo"
+- Research-pending: VOS component `competitor-watcher` (futuro) settimanale Bolidem/Autotedesche/Global Cars pricing diff
+**Data competitor verificati 2026-05-13**:
+- **Bolidem.it**: €950 servizio ritiro venditore / €1.790+ con trasportatore. Pricing FISSO. NO percentuale. B2C cliente finale
+- **Autotedesche.it**: pricing NOT disclosed pubblicamente (contatto per preventivo). 169 recensioni B2C inferred
+
+**Ref**: `research/s73_messaging_v2.md`, `research/s99_DATI_CERTI_margini_reali.md`, `FOUNDER-DECISIONS-2026-05-13.md` Q5
+
+---
+
+# Founder closure 2026-05-13 (S11c-strategic) — D-13..D-20
+
+---
+
+## D-13 — Luxury teaser waitlist (no commitment operativo) (2026-05-13, S11c-strategic)
+
+**Status**: DECIDED
+**Contesto**: Q4 closure ESCLUDE luxury Porsche/Lambo/Ferrari da target operativo primary (mismatch pricing flat €1k vs % margine, CoVe v4 non tunato, dealer luxury formalizzati Q2-incompatibili). Tuttavia demand luxury esiste e validare interesse pre-pivot costa zero.
+**Opzioni considerate**:
+- (a) Servire luxury subito (pricing model mismatch + risk operativo)
+- (b) Ignorare luxury totalmente (lost demand signal)
+- (c) **Landing teaser "Servizio luxury in arrivo — waitlist"** pattern Treatwell/Carwow early
+**Decisione**: Opzione (c). Sezione landing dedicata: "ARGOS LUXURY — In arrivo Q1 2027. Iscriviti alla waitlist." Email capture only, no commitment date, no pricing claim. Source: founder Luke S11c-strategic 2026-05-13 Q4.
+**Conseguenze**:
+- Landing S165 ARGOS: nuova sezione luxury teaser sotto fold + email signup (Cloudflare Pages free + Formspree free-tier)
+- Mailing list pipeline futura (validazione demand pre-investment)
+- NO claim "abbiamo già operato Porsche": vincolo D-05 reinforced
+- Trigger pivot luxury: ≥50 iscritti waitlist + ≥20 deal mainstream chiusi (volume validato) → riconsiderare scope, costruire CoVe v5 luxury-tuned
+- Costo: €0 (Formspree free 50 submission/mese, Cloudflare Pages)
+**Ref**: `FOUNDER-DECISIONS-2026-05-13.md` Q4
+
+---
+
+## D-14 — Scope nazionale wave-based (NO solo Sud) (2026-05-13, S11c-strategic)
+
+**Status**: DECIDED (supersede scope D-03 "Sud only")
+**Contesto**: Q4 closure pivot strutturale post-Q2 cash-only: target shift verso dealer commissione informali, ma scope geografico ampliato da solo Sud a nazionale wave-based per evitare lock geografico + maximize TAM. Stima volume: 2.500-4.000 operatori commissione informali Sud Italia (s94), ampliabile.
+**Opzioni considerate**:
+- (a) Solo Sud Italia bootstrap (TAM piccolo ma low-competition broker EU-IT)
+- (b) Nazionale parallelo (TAM grande ma capacity HITL founder limitata)
+- (c) **Wave geografica data-driven** (Sud-Centro-Isole → Centro → Nord)
+**Decisione**: Opzione (c). 3 wave nazionali:
+- **Wave 1 (0-6 mesi)**: dealer commissione informali Sud + Centro + Isole. Province pilot TIER 1 (s99 score >80): **Salerno, Bari, Foggia, Catania, Cosenza**. Match Q2 cash-only, low competition broker EU-IT
+- **Wave 2 (post 10-20 deal Wave 1)**: Centro espanso — Lazio, Marche, Abruzzo, Umbria, Toscana sud
+- **Wave 3 (post-formalization Luke P.IVA forfettario)**: Nord — Lombardia, Veneto, Emilia-Romagna. Pre-req: P.IVA attiva + fattura disponibile + concorrenza diretta (Bolidem.it, Auto1 Group) affrontabile
+Source: founder Luke S11c-strategic 2026-05-13 Q4.
+**Conseguenze**:
+- D-03 SUPERSEDED-by-D-14: target shift verso commissione informali, S73 strutturati → parking lot Wave 3
+- Discovery scraper update: filtro stock 3-10 auto (commissione) ≠ 20-40 (strutturati), feature s94 commission_classifier ATTIVATA priorità S167
+- Day 1 messaging V2 variant per macro-area (Sud/Centro/Nord lessico differente): work S168+ skill `/outreach-day1`
+- Wave gate: 10-20 deal Wave 1 closed → Wave 2 trigger; P.IVA + N>5 deal/mese → Wave 3 trigger
+- Geografia bootstrap NON cambia (TIER 0 Sud sempre primary): Foggia/Salerno/Cosenza first
+**Ref**: `research/s94_value_proposition_on_demand.md`, `research/s99_DATI_CERTI_modello_b2b.md`, `FOUNDER-DECISIONS-2026-05-13.md` Q4
+
+---
+
+## D-15 — Primi 1-3 dealer "1-deal eccellenza" investment (2026-05-13, S11c-strategic)
+
+**Status**: DECIDED
+**Contesto**: Q6 closure — primi 1-3 dealer chiusi ricevono trattamento premium per case study + word-of-mouth Sud Italia (passaparola critical s73). Costo ARGOS più alto, ROI nel passaparola che attiva Wave 1.
+**Opzioni considerate**:
+- (a) Trattamento standard primi dealer (minimize cost, maximize throughput)
+- (b) **Premium primi 1-3 dealer** (case study + word-of-mouth amplificato)
+- (c) Pilot 10 dealer free deal (commissione zero) per traction → cash burn high
+**Decisione**: Opzione (b). Primi 1-3 dealer ricevono: **dossier full-spec (D-16+D-18) + money-back guarantee (D-OPEN-Q5) + founder HITL 100% + follow-up 30gg post-delivery**. Costo per ARGOS ~€500 primo deal (margine netto residuo ~€500 vs €1.000 fee). Source: founder Luke S11c-strategic 2026-05-13 Q6.
+**Conseguenze**:
+- Margine netto primi 3 deal ridotto (€500 vs €1.000) — accettabile come investment
+- Case study scrittura post-delivery: 1 page per dealer (anonimizzato se preferito, named se autorizza)
+- Word-of-mouth tracking: chiedere esplicitamente "se soddisfatto, presenti 2-3 colleghi" in follow-up 30gg
+- Validazione: 1 dealer chiude + raccomanda 2-3 colleghi → Wave 1 acquisition funnel attivato (passaparola Sud Italia)
+- Trigger end "1-deal eccellenza": 3 dealer closed con case study + ≥1 raccomandazione attiva ricevuta
+**Ref**: `research/s73_dealer_persona.md` (passaparola Sud), `FOUNDER-DECISIONS-2026-05-13.md` Q6
+
+---
+
+## D-16 — Dossier ampliamento free-tier + carVertical on-demand (2026-05-13, S11c-strategic)
+
+**Status**: DECIDED (ship S168 ARGOS, condition: D-17 AI Visual pilot validato)
+**Contesto**: Q7 closure — dossier core 12 sezioni (D-18) ampliabile con appendix expandable on-demand. Ampliamenti free-tier (RDW NL, Euro NCAP, ADAC) costo dev una-tantum, value differential vs Autotedesche/Bolidem.
+**Opzioni considerate**:
+- (a) Dossier minimale invariato (no investment)
+- (b) Ampliamento full immediato (rischio over-engineering pre-product-market-fit)
+- (c) **Ampliamento incrementale free-tier + paid on-demand**
+**Decisione**: Opzione (c). Implementazione S168 ARGOS:
+- **RDW NL integration** (3h dev): se auto da NL, dossier include APK MOT history full + tech specs. Hit-rate stimato ~20% (volume NL su 73 portali). Costo €0 (RDW API pubblica free)
+- **Euro NCAP + ADAC Pannenstatistik scrape** (4-6h dev): sezione "Affidabilità modello" crashtest + tassi guasto reali 2018-2023. Costo €0 (dati pubblici)
+- **carVertical integration ON-DEMAND** (4h dev): €20/report ARGOS, ammortizzato 2% su fee €1k. Ship S168 come "premium service" trigger
+Source: founder Luke S11c-strategic 2026-05-13 Q7.
+**Conseguenze**:
+- Dossier differential value vs Bolidem (D-20 anti-Bolidem positioning rafforzato)
+- Costo ARGOS per deal: +€20 (carVertical) solo se dealer chiede premium
+- Dev time S168: ~13h totali (3 RDW + 6 NCAP/ADAC + 4 carVertical)
+- Bloccante: D-17 AI Visual pilot validato PRIMA shipping dossier ampliato in production
+- Hit-rate RDW solo NL: se aumenta volume sourcing NL post-validation → ROI integration cresce
+**Ref**: `FOUNDER-DECISIONS-2026-05-13.md` Q7, `research/s65_all_eu_car_portals.md`
+
+---
+
+## D-17 — AI Visual Inspection pilot bloccante (Gemini Flash) (2026-05-13, S11c-strategic)
+
+**Status**: DECIDED (bloccante D-16 production shipping)
+**Contesto**: Q7 closure dossier ampliamento include feature AI Visual Inspection: foto annuncio EU analizzate da Gemini Flash per flag anomalie visive (urti minori, ruggine, interni usura). Overselling rischio se "AI verdict" presentato come autoritativo. Pattern S159 evitato: pilot OBBLIGATORIO PRIMA production.
+**Opzioni considerate**:
+- (a) Skip AI Visual (lose differentiator)
+- (b) Ship AI Visual diretto in production (overselling risk + bug runtime su dealer reale)
+- (c) **Pilot 10-15 known-good + 10-15 known-bad, measure flag precision/recall PRIMA shipping**
+**Decisione**: Opzione (c). Pilot dataset ground-truth: 10-15 annunci known-good (auto verificate sane in-person post-acquisto reale via Stile Car/Car Plus contacts) + 10-15 known-bad (auto note danneggiate/anomalie documentate). Misurare:
+- **Precision** (flag corretti / flag totali) ≥0.75 = pass
+- **Recall** (anomalie rilevate / anomalie reali) ≥0.60 = pass
+- Output dossier formato: "**Visual flags da review umana**" NON "**AI verdict**" (overselling rischio)
+Source: founder Luke S11c-strategic 2026-05-13 Q7.
+**Conseguenze**:
+- Pilot work S168 pre-shipping: ~6-8h (dataset assembly + Gemini Flash calls + manual labeling + metrics calc)
+- Costo Gemini Flash: ~$0.075/MP image, dossier 8-12 foto ≈ $0.50-0.80 per veicolo (sopra capex zero ma sotto ROI)
+- Fail pilot → AI Visual scrapped dal dossier, dossier ampliato shipped senza feature (D-16 parziale OK)
+- Pattern S159 mitigato: blueprint che si auto-debugga al primo dealer reale evitato
+- Vincolo D-05 reinforced: claim verificabili only ("review umana") non claim autoritative ("AI ha verificato")
+**Ref**: `FOUNDER-DECISIONS-2026-05-13.md` Q7, `state/blueprint-deviations.jsonl` (pattern S159 reference)
+
+---
+
+## D-18 — Dossier struttura core 12 sezioni + appendix expandable (2026-05-13, S11c-strategic)
+
+**Status**: DECIDED
+**Contesto**: Q10 closure — sweet spot dossier curated vs overflow. Founder principle "fai bene, non infodump". 12-15 sezioni core curated ottimale per dealer commissione informale (target shift D-14): legge in 5-10 min, decide su signal density alta.
+**Opzioni considerate**:
+- (a) Dossier minimo 3-5 sezioni (decisione veloce ma value-thin)
+- (b) Dossier full 25+ sezioni (completezza ma overflow cognitive, dealer non legge)
+- (c) **Core 12 sezioni curated + appendix expandable on-demand**
+**Decisione**: Opzione (c). Strutturazione:
+- **Core 12 sezioni** (sempre presente): (1) persona dealer, (2) archetipo predicted, (3-5) opportunità #1-3 con auto specifiche, (6) veicolo+equip, (7) analisi mercato (% differenziale prezzo EU/IT), (8) CoVe scoring breakdown, (9) costi sbarco EUROCOC+DAT+DEKRA+trasporto Macingo, (10) margine atteso dealer, (11) timeline consegna (15-25gg), (12) compliance check (km verificati, owner history, no flood)
+- **Appendix expandable** (on-demand): RDW MOT history (se NL), Euro NCAP + ADAC reliability, carVertical history (paid +€20), Visual flags review (D-17), DEKRA pre-purchase opzionale
+Source: founder Luke S11c-strategic 2026-05-13 Q10.
+**Conseguenze**:
+- Template dossier S168 ARGOS: core 12 sezioni fisso + appendix conditional rendering basato su auto features (NL → RDW shown, etc.)
+- Dossier PDF generation time: target <60s con appendix conditional
+- Cognitive load dealer: 12 sezioni curated leggibile 5-10 min vs 25 sezioni overflow → conversion rate Day 1→deal stimato +20% (assumption non validata, S168+ tracking)
+- Lessico curato per ogni sezione (D-04 patch lessico target commissione informale)
+**Ref**: `FOUNDER-DECISIONS-2026-05-13.md` Q10, `research/s99_DATI_CERTI_modello_b2b.md`
+
+---
+
+## D-19 — Education layer trust-builder + lead magnet (2026-05-13, S11c-strategic)
+
+**Status**: DECIDED (deferred ship post-primo-deal validato, S168+)
+**Contesto**: Q8 closure — pattern HubSpot Academy / Salesforce Trailhead in B2B auto Italia = **0 competitor IT lo fa** (Bolidem/Autotedesche/Global Cars tutti transazionali). Differentiator significativo trust signal dealer Sud 45-60 anni.
+**Opzioni considerate**:
+- (a) Skip education (focus transazionale solo)
+- (b) Education layer full Day 1 (capex tempo founder pre-revenue)
+- (c) **Education layer deferred post-primo-deal validato**, light implementation
+**Decisione**: Opzione (c). Post primo deal chiuso (D-15 trigger), implementation light:
+- **5-10 video brevi** (Loom recording founder voice + screencast pattern "Come leggere annuncio AS24.de in 30 sec", "Decoder VIN BMW step-by-step", "VAT calcoli IT vs DE")
+- **5-10 cheat sheet PDF** rip-and-share su social
+- **Landing area gated dietro email signup** (lead capture, sinergica D-13 luxury waitlist)
+- **Material rip-and-share su social**: dealer condividono ai colleghi → viralità Sud Italia passaparola (s73)
+Source: founder Luke S11c-strategic 2026-05-13 Q8.
+**Conseguenze**:
+- Capex tempo founder: 1-2 settimane post-primo-deal per content creation iniziale
+- Email signup gating: mailing list pipeline futura cross-vendor (luxury waitlist + education subscribers)
+- Trust signal nuovo dealer Sud: "non vendono solo, educano" — competitor IT non lo fa
+- Viralità content: 1 dealer condivide a 3 colleghi → effetto reticolare Sud Italia
+- Costo: €0 (Loom free 25 video/account, Cloudflare Pages, Formspree free 50/mese)
+- Trigger ship: 1 deal chiuso + dealer feedback positivo Day +30
+**Ref**: `FOUNDER-DECISIONS-2026-05-13.md` Q8
+
+---
+
+## D-20 — Positioning anti-Bolidem: "ARGOS lavora PER il dealer, non DAL dealer" (2026-05-13, S11c-strategic)
+
+**Status**: DECIDED
+**Contesto**: Q11 closure — Bolidem.it (4.8 rating / 212 recensioni, €950-1.790 servizio) = competitor B2C che **prende cliente finale**. ARGOS = B2B che **lavora per dealer**, cliente resta dealer. Differenziazione strutturale critica: dealer Sud 45-60 anni interpretano broker B2C come "ruba clienti", broker B2B come "alleato margine".
+**Opzioni considerate**:
+- (a) Ignorare Bolidem (lose positioning opportunity)
+- (b) Contrastare via pricing (€800 vs €950 — race-to-bottom, brand-damage)
+- (c) **Contrastare via positioning** "ufficio acquisti EU DEL dealer"
+**Decisione**: Opzione (c). Day 1 messaging anchor frase (sostituibile per archetipo D-08):
+> *"Bolidem fa lo stesso lavoro che fai tu — ma se ne porta il cliente. ARGOS lavora per TE: il cliente resta tuo, il margine resta tuo. 73 portali, 19 paesi, paghi €1k SOLO quando l'auto è in mano tua."*
+
+Source: founder Luke S11c-strategic 2026-05-13 Q11.
+**Conseguenze**:
+- Day 1 messaging V2 (s73) update S168: anchor frase incorporata variant commissione informale
+- Landing FASE 0 cleanup S165: sezione "Perché ARGOS vs altri broker" cita Bolidem implicitamente ("alcuni broker prendono il TUO cliente. Noi NO")
+- Cita Bolidem named SOLO in conversation (1-on-1), MAI su landing pubblica (compliance risk + Bolidem brand mention defensive)
+- Frame retorico "alleato margine" reinforced D-01 zero-anticipi + D-15 1-deal eccellenza follow-up 30gg
+- Trigger update: se Bolidem entra in B2B (cambia model) → riconsiderare positioning
+**Ref**: `FOUNDER-DECISIONS-2026-05-13.md` Q11, web data Bolidem 2026-05-13 verified
 
 ---
 
@@ -344,9 +561,9 @@ Le 5 entry sotto sono **scope decisions** (eccezione vincolo #3) che richiedono 
 |---|--------|--------|------|----------|
 | D-01 | Success-fee B2B €800-1.200 | DECIDED | 2026-03-21 | S73 |
 | D-02 | Pivot ibrido on-demand | DECIDED | 2026-03-31 | S94 |
-| D-03 | Target Sud Italia 20-40 auto premium | DECIDED | 2026-03-21 | S73 |
-| D-04 | WhatsApp primary | DECIDED | 2026-03-21 | S73 |
-| D-05 | Backstory riformulare, mai inventare | DECIDED | 2026-04-03 | S99 |
+| D-03 | Target Sud Italia 20-40 auto premium | SUPERSEDED-by-D-14 | 2026-03-21 | S73 (patch 2026-05-13) |
+| D-04 | WhatsApp primary (firma Luca Ferretti) | DECIDED | 2026-03-21 | S73 (patch 2026-05-13) |
+| D-05 | Backstory riformulare, no claim verificabili | DECIDED | 2026-04-03 | S99 (patch 2026-05-13) |
 | D-06 | Stack CoVe v4 + WA + discovery | DECIDED | 2026-04 | S101 |
 | D-07 | HITL primi 20 dealer reali | DECIDED | 2026-04 | S101+S11c |
 | D-08 | 5 archetipi (NARCISO/BARONE/...) — IPOTESI | OPEN | 2026-03-21 | S73 |
@@ -354,18 +571,30 @@ Le 5 entry sotto sono **scope decisions** (eccezione vincolo #3) che richiedono 
 | D-10 | TIER 0/1/2 segmentation | DECIDED | 2026-03-21 | S73 |
 | D-11 | Pipeline test 5-step TEST_FOUNDER | DECIDED | 2026-05-13 | S11c-prereq |
 | D-12 | Recensioni reali gap critico | DECIDED | 2026-04 | S99 |
-| D-OPEN-Q1 | Identità Luca vs Gianluca | OPEN | — | TBD |
-| D-OPEN-Q2 | P.IVA timing | OPEN | — | TBD |
-| D-OPEN-Q3 | Dominio | OPEN | — | TBD |
-| D-OPEN-Q4 | Target scope stretto vs luxury | OPEN | — | TBD |
-| D-OPEN-Q5 | Pricing trasparenza | OPEN | — | TBD |
+| D-OPEN-Q1 | Identità Luca = frontman fittizio AI | DECIDED | 2026-05-13 | S11c-strategic |
+| D-OPEN-Q2 | P.IVA timing — cash-only no documento | DECIDED | 2026-05-13 | S11c-strategic |
+| D-OPEN-Q3 | Dominio — resta .pages.dev temporary | DECIDED | 2026-05-13 | S11c-strategic |
+| D-OPEN-Q4 | Target scope — nazionale wave-based | DECIDED | 2026-05-13 | S11c-strategic |
+| D-OPEN-Q5 | Pricing — €1k cash a consegna | DECIDED pending-research | 2026-05-13 | S11c-strategic |
+| D-13 | Luxury teaser waitlist (no commitment) | DECIDED | 2026-05-13 | S11c-strategic |
+| D-14 | Scope nazionale wave-based | DECIDED | 2026-05-13 | S11c-strategic |
+| D-15 | Primi 1-3 dealer "1-deal eccellenza" | DECIDED | 2026-05-13 | S11c-strategic |
+| D-16 | Dossier ampliamento free-tier + carVertical | DECIDED | 2026-05-13 | S11c-strategic |
+| D-17 | AI Visual Inspection pilot bloccante | DECIDED | 2026-05-13 | S11c-strategic |
+| D-18 | Dossier core 12 sez + appendix expandable | DECIDED | 2026-05-13 | S11c-strategic |
+| D-19 | Education layer trust-builder | DECIDED | 2026-05-13 | S11c-strategic |
+| D-20 | Positioning anti-Bolidem | DECIDED | 2026-05-13 | S11c-strategic |
 
-**Totale**: 17 entry (11 DECIDED + 6 OPEN: Q1-Q5 founder-input + D-08 ipotesi-da-validare). Soglia handoff S11c-strategic D2 ≥13 → ✅.
+**Totale**: 25 entry (23 DECIDED + 1 OPEN-ipotesi D-08 + 1 SUPERSEDED D-03). Founder Q1-Q5 closed via S11c-strategic. Pattern S159 evitato: D-17 AI Visual pilot bloccante PRIMA shipping.
 
 # Open questions / Risks
 
-1. **Default fallback per OPEN entries non risolte entro S168 ARGOS**: ogni D-OPEN-Qx ha un "Default fallback" che indica cosa fare se Luke non risolve in tempo. Rischio: defaults si attivano in silent e diventano decisioni implicite. Mitigazione: brief mattutino può segnalare D-OPEN-Qx age >14gg.
-2. **Cascading dipendenze**: D-OPEN-Q1 (identità) tocca D-04 (firma WA), D-05 (footer landing), tutti gli asset visual. Risolvere Q1 trigger update D-04+D-05 (cross-reference da mantenere sync).
-3. **Decision drift retroattivo**: D-01 success-fee €1.000 deciso S73 (2026-03-21). Variabili economiche cambiate (inflation, costi trasporto Macingo) — review periodica annuale necessaria.
-4. **Pattern S159 ribattezzato**: scrivere STRATEGY.md (D3 deferred S11d) senza chiudere D-OPEN-Q1 = blueprint che si auto-debugga al primo dealer reale (D-05 violato). STRATEGY.md NON va scritta prima di Q1 closed o default attivato esplicitamente.
-5. **Audit retroattivo DECIDED entries** (S11c-strategic 2026-05-13 lessons): D-08 inizialmente scritta DECIDED, corretta OPEN-ipotesi-non-validata dopo flag founder (n=6 portfolio ≠ evidenza, S101 stesso cita gap). Audit-check applicato alle restanti 11 DECIDED: tutte sono strategiche-non-behavioral (success-fee, pivot, canale WA, backstory, stack, HITL, scope EU, tier segmentation, pipeline test, gap recensioni) o factual-observed (recensioni 0 vs 169 Autotedesche). Nessuna è ipotesi comportamentale travestita da decisione. Pattern: prima di marcare DECIDED, distinguere {strategic-commitment, factual-observation, behavioral-hypothesis}. Solo i primi 2 ammissibili come DECIDED senza n>>1 evidenza.
+1. **D-08 ipotesi 5 archetipi**: unica OPEN remaining post-S11c-strategic. Sblocco S168+ via ≥20 dealer HITL outcome tracking. Default operativo: skill `/outreach-day1` accetta archetype come parametro flaggato `[ipotesi-non-validata]`.
+2. **Decision drift retroattivo**: D-01 success-fee €1.000 deciso S73 (2026-03-21). Variabili economiche cambiate (inflation, costi trasporto Macingo) — review periodica annuale necessaria. D-OPEN-Q5 default attivato research-pending: competitor pricing data refresh trimestrale.
+3. **Pattern S159 mitigato D-17**: AI Visual Inspection pilot OBBLIGATORIO PRIMA shipping production. Pattern documentato: "blueprint che si auto-debugga al primo dealer reale" evitato via pilot precision/recall metrics.
+4. **Cascading patches S11c-strategic eseguite**: D-03 → SUPERSEDED-by-D-14 (target shift commissione informali). D-04 patched firma frontman fittizio. D-05 patched no claim verificabili. Cross-reference sync verificata.
+5. **Trigger forced formalization P.IVA (Q2)**: ~€10k cumulative cash + N>5 deal/mese → P.IVA forfettario 5%. Counter cumulativo cash mancante in CRM ARGOS (gap S168+). Rischio: silent breach soglia AML art. 5 DLgs 231/2007.
+6. **Frontman fittizio CTC denuncia risk (D-OPEN-Q1)**: art. 640 c.p. truffa configurabile SOLO se danno patrimoniale concreto. Servizio reale erogato → archiviazione probabile. Soglia denuncia Sud Italia bassa (s74 cultura passaparola). Trigger revisione: scoperta dealer multi-evento → riconsiderare opzione (b) rebrand reale.
+7. **Workflow IBAN estero pool (Q2 conseguenze)**: dealer P.IVA ordinaria fattura = lost deal vs setup società estone complessità. Default: rifiutare se setup >€2k. Consulenza fiscalista internazionale TBD pre-deal #1.
+8. **Audit retroattivo DECIDED entries** (S11c-strategic 2026-05-13 lessons): D-08 inizialmente scritta DECIDED, corretta OPEN-ipotesi-non-validata. Audit-check applicato alle 23 DECIDED: tutte strategiche-non-behavioral o factual-observed. Pattern: prima di marcare DECIDED, distinguere {strategic-commitment, factual-observation, behavioral-hypothesis}. Solo i primi 2 ammissibili come DECIDED senza n>>1 evidenza.
+9. **Heretic D5 uncensored unverified**: Venice/hermes-3 pool 429 sustained 2026-05-13. Step 3.1 STRATEGY.md sez 1 (persona Luca Ferretti uncensored insights) skipped — claim borderline marcati `[unverified-insight]` esplicitamente. Trigger retry: finestra notturna IT 02:00-06:00 UTC via `scripts/retry-heretic-d5.sh`.
