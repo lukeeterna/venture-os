@@ -269,6 +269,34 @@ Trigger su alert handoff-debt-watcher (FASE 3.2). Manualmente: ogni 4-8 settiman
 
 ---
 
+### B6 — Pre-action-check enforcement post S159 rebrand #5 (S166 2026-05-13, escalation FASE 4.2)
+
+**Trigger**: pattern S159 rebrand 5× in 1 giorno S166 → soglia FASE 4.2 (≥3) superata, escalation strutturale obbligatoria.
+
+**Root cause**: LLM production-confidence > verification-of-constraints. CLAUDE.md vincoli diluiti in conversazione; DECISIONS.md DECIDED entries non re-letti pre-output; nessun hook forza pre-action check.
+
+**5 rebrand documentati** (`state/blueprint-deviations.jsonl`):
+1. Day 1 V1 BMW X3 (D-02 ibrido on-demand violato)
+2. Bias Sud 14× nei prompt (D-14 wave nazionale ignorato)
+3. Path A vs B inventato (scope S11c chiuso)
+4. Path B P.IVA ordinaria (D-OPEN-Q2 frontale)
+5. Proposta "B6 strutturale" senza leggere ROADMAP (anti-pattern riga 183)
+
+**Fix 3 layer**:
+- L1 Hook SessionStart: inject DECIDED+founder-input entries da `wiki/projects/<cwd>/DECISIONS.md`
+- L2 Skill `pre-action-check`: auto-trigger keyword ["propongo", "Path", "decisione", "V3", "strategia"] → 3-line check (D-XX rif + vincolo founder + fonte dati) PRIMA output
+- L3 CLAUDE.md vincolo #13: pre-action check obbligatorio proposte strategiche/decisioni
+
+**Stima**: 2-3h sessione dedicata.
+
+**Done when**: hook upgrade testato cwd ARGOS, skill installata, vincolo #13 in CLAUDE.md (sotto 200 righe), zero rebrand S159 in 3 sessioni consecutive post-B6.
+
+**Anti-pattern evitare**: skill verbose, block-mode hook senza opt-out, memoria aggressiva.
+
+**Priorità**: HIGH — blocca ARGOS S167+ outreach reale.
+
+---
+
 ### C1 — Hook `global_session_end.sh` husky-aware (S11b 2026-05-13, deferred)
 **Trigger**: analisi `~/.claude/session-log.txt` S11b mostra FLUXION = 50/63 commit-failed (79%). Root cause: hook auto-commit tenta `git commit` semplice, ma `.husky/pre-commit` esegue lint/typecheck/test → fail → hook si arrende.
 
