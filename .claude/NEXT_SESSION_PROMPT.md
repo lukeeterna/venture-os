@@ -1,35 +1,36 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-05-13T18:04:07Z`
+**Generato**: `2026-05-13T18:15:13Z`
 **Sessione**: `91497afa-a50c-47a3-b985-f27380249b25`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: committed: fda3ee1
-**Last commit**: `fda3ee1 auto-close session 91497afa-a50c-47a3-b985-f27380249b25 @ 2026-05-13T18:04:07Z`
+**Commit auto**: committed: c3221b1
+**Last commit**: `c3221b1 auto-close session 91497afa-a50c-47a3-b985-f27380249b25 @ 2026-05-13T18:15:13Z`
 
 ## Ultimi 5 commit
 ```
+c3221b1 auto-close session 91497afa-a50c-47a3-b985-f27380249b25 @ 2026-05-13T18:15:13Z
 fda3ee1 auto-close session 91497afa-a50c-47a3-b985-f27380249b25 @ 2026-05-13T18:04:07Z
 1e9b018 auto-close session 91497afa-a50c-47a3-b985-f27380249b25 @ 2026-05-13T18:03:49Z
 f2eb356 auto-close session 91497afa-a50c-47a3-b985-f27380249b25 @ 2026-05-13T17:55:41Z
 c4e3177 auto-close session 91497afa-a50c-47a3-b985-f27380249b25 @ 2026-05-13T17:50:44Z
-8b4dae5 auto-close session 91497afa-a50c-47a3-b985-f27380249b25 @ 2026-05-13T17:48:00Z
 ```
 
 ## File modificati nell'ultimo commit
 ```
 M	.claude/NEXT_SESSION_PROMPT.md
+A	handoffs/S166-research-bundle.md
 ```
 
 ## Ultimo prompt utente (estratto)
 ```
-[{"tool_use_id":"toolu_0111UMNU1vTo2QNrbCfpoLnJ","type":"tool_result","content":"OK riaperto","is_error":false}]
+[{"tool_use_id":"toolu_01Kzv1C88f3wUczcLZT5uyrk","type":"tool_result","content":"OK aperti: bundle.md per Gemini + Finder research/ per NotebookLM","is_error":false}]
 ```
 
 ## Ultimi turni assistant
 ```
-- Costo €0
-Quando pronto, parti col Tool 1 (Google AI Studio + Gemini 2.5 Pro + Search ON). Incolla il prompt come è ora nel file, output torna qui, io salvo.
-File riaperto. In attesa output Tool 1.
+5. Incolla **Q1** del prompt Tool 4 (dal file `RESEARCH-PROMPTS-S166-approach-method.md`) → leggi risposta → poi Q2, Q3, ecc. una alla volta
+## Quando incolli output in chat
+Format suggerito: scrivi "**Tool 3 Gemini output:**" + paste, oppure "**Tool 4 NotebookLM Q1 output:**" + paste. Salvo io strutturato.
 ```
 
 ## Come riprendere
