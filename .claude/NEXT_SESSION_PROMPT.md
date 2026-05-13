@@ -1,18 +1,18 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-05-13T10:37:56Z`
+**Generato**: `2026-05-13T10:45:50Z`
 **Sessione**: `8712f8a4-c227-4083-b58e-407943cf153d`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: committed: 1129074
-**Last commit**: `1129074 auto-close session 8712f8a4-c227-4083-b58e-407943cf153d @ 2026-05-13T10:37:56Z`
+**Commit auto**: committed: 85579c8
+**Last commit**: `85579c8 auto-close session 8712f8a4-c227-4083-b58e-407943cf153d @ 2026-05-13T10:45:50Z`
 
 ## Ultimi 5 commit
 ```
+85579c8 auto-close session 8712f8a4-c227-4083-b58e-407943cf153d @ 2026-05-13T10:45:50Z
 1129074 auto-close session 8712f8a4-c227-4083-b58e-407943cf153d @ 2026-05-13T10:37:56Z
 6129b91 auto-close session 8712f8a4-c227-4083-b58e-407943cf153d @ 2026-05-13T10:30:40Z
 3c67084 S11b: log analysis pattern recognition + C1 backlog
 e5377f6 auto-close session 8712f8a4-c227-4083-b58e-407943cf153d @ 2026-05-13T09:53:04Z
-6232093 auto-close session 8712f8a4-c227-4083-b58e-407943cf153d @ 2026-05-13T09:47:59Z
 ```
 
 ## File modificati nell'ultimo commit
@@ -23,14 +23,14 @@ M	state/cc-violations.jsonl
 
 ## Ultimo prompt utente (estratto)
 ```
-                                                                       . io non ritengo sia un approccio efficace per i dealer. ho provato a far fare a cc varie deep research sui dealer e su come "approcciarli" ma non mi convincono . penso sempre che "dietro " un delaer ci sia prima una persona. ho provato a fargli "mappare" le zone . non credo che il "piano" elaborato da cc sia efficace per far funzionare bene argos. cosa proponi sui "protocolli" di VOS? ovviamente bisogna anche risolvere e far
+è importante anche essere CREDIBILI con il personaggio Luca Ferretti, che comunica solo per Wa , e trovare motivo plausibile per questo e dargli una storia credibile e di appeal per far si che il delaer si fidi di lui. inoltre ho proposto ad argos di "creare" una sezione con credenziali nella landing ,no dominio solo cf pages, per "addestrare" ma non tecnicamente , solo commercialmente i dealer a vendere e trovare clienti altospendenti per meno transazioni mensili ma piu remunerative senza spie
 ```
 
 ## Ultimi turni assistant
 ```
-solo planning.
+Vincolo #7: stop quando context >50%, S11c potrebbe richiedere S11d.
 ```
-L'invio Day 1 reale a TEST_FOUNDER aspetta che la pipeline-test-only sequence sia pronta (S14). Non perdi nulla: TEST_FOUNDER è tuo, non scappa.
+Posso continuare a rifinire la leggenda Luca / scope landing qui se vuoi, oppure chiudo sessione e procedi col prompt. Decidi tu, ma il consiglio resta: chiudi qui.
 ```
 
 ## Come riprendere

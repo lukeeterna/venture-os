@@ -236,6 +236,37 @@ Trigger su alert handoff-debt-watcher (FASE 3.2). Manualmente: ogni 4-8 settiman
 - Stima: 5 min.
 - Done when: CLAUDE.md aggiornato + 1 riga in memoria globale `~/.claude/projects/-Users-macbook/memory/`.
 
+### FASE 4 — Wiki ARGOS consolidation + uncensored orchestration (S11b 2026-05-13)
+
+**Goal**: shippare livello strategico VOS per ARGOS — heretic-handler (uncensored gateway blueprint sez 15.11) + wiki ARGOS strategy/decisions consolidata, consumando research/sX_*.md frammentati.
+
+### 4.1 — Heretic-handler MVP (S11c-prereq, 1-2h)
+- Componente blueprint v3.5 sez 15.11 specificato ma mai shipped
+- `config/routing.yaml` v5: categoria `uncensored` (dolphin-mistral-venice + hermes-3-405b free)
+- `components/heretic-handler/handler.py`: wrapper su llm_router pattern, gate ALLOWED_CATEGORIES, audit hash-only
+- `state/heretic-log.jsonl`: append-only metadata, NO contenuto raw
+- Test live obbligatorio post-ship
+- Handoff dedicato: `handoffs/HANDOFF-VOS-S11c-prereq-heretic-handler-2026-05-13.md`
+- **Done when**: handler.py shipped + routing.yaml v5 + log esistente + test live PASS
+
+### 4.2 — Routing-refresh (FASE 3.1 esistente, ridefinita come blocca S11c-strategic)
+- Già pianificata FASE 3.1, oggi spostata in FASE 4.2 come dependency strutturale
+- Include uncensored category in drift detection (evita silent fail dolphin-mistral)
+- Handoff esistente: `handoffs/HANDOFF-VOS-S12-routing-refresh-2026-05-13.md`
+
+### 4.3 — Wiki ARGOS strategy consolidation (S11c-strategic, 2.5-3.5h)
+- `~/venture-os/wiki/projects/ARGOS/README.md` (indice 4 file, quando-leggere)
+- `~/venture-os/wiki/projects/ARGOS/DECISIONS.md` (schema ADR lean 5 campi, 8-12 DECIDED + 5 OPEN)
+- `~/venture-os/wiki/projects/ARGOS/STRATEGY.md` (6 sezioni: Persona / Layer outreach / Content trojan / Compliance gates / Pipeline test / Refs)
+- ARGOS ROADMAP update FASE 0 + FASE 5
+- Workflow ibrido: heretic-handler brainstorm raw → fact-check CC → STRATEGY normalizzata
+- Pre-requisito BLOCCANTE: `~/Documents/combaretrovamiauto-enterprise/FOUNDER-DECISIONS-2026-05-13.md` con risposte Q1-Q5 founder
+- Handoff dedicato: `handoffs/HANDOFF-VOS-S11c-strategic-wiki-argos-2026-05-13.md`
+
+**FASE 4 done when**: 4.1 + 4.2 + 4.3 shipped, wiki ARGOS auto-loadable da sessione ARGOS future via README.md, deviation `argos-strategy-consolidated-S11c` logged.
+
+---
+
 ### C1 — Hook `global_session_end.sh` husky-aware (S11b 2026-05-13, deferred)
 **Trigger**: analisi `~/.claude/session-log.txt` S11b mostra FLUXION = 50/63 commit-failed (79%). Root cause: hook auto-commit tenta `git commit` semplice, ma `.husky/pre-commit` esegue lint/typecheck/test → fail → hook si arrende.
 
