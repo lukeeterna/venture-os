@@ -9,8 +9,17 @@
 
 - Sintesi data-driven 3 fonti (Gemini Search + Claude Opus + NotebookLM): `~/venture-os/handoffs/S166-SYNTHESIS-approach-method.md`
 - Protocollo VOS riusabile: `~/venture-os/wiki/patterns/data-driven-research-protocol.md`
-- Day 1 V3 derivato data-driven (12/12 anti-pattern check PASS), aspetta validation founder pre-send TEST_FOUNDER
+- Day 1 V3 derivato data-driven (12/12 anti-pattern check PASS), **NON inviato a TEST_FOUNDER** (Luke ha stoppato send 2026-05-13 ~22:00 IT, fatica fine giornata)
 - B6 entry aggiunto in ROADMAP.md (escalation FASE 4.2, priorità HIGH)
+- VOS automation pipeline verificata alive: morning-brief LaunchAgent caricato, brief 2026-05-13.md generato, SessionStart hook session_start_brief.sh attivo, host-monitor 19:53Z, routing-refresh 11:37Z
+
+## Cosa parte automatico domani 2026-05-14 (zero azione Luke richiesta)
+
+- **~07:00 IT (LaunchAgent StartCalendarInterval)**: morning-briefer genera `briefs/2026-05-14.md` (risorse MacBook/iMac + DB inventory 3 progetti + segnali tool-scout/routing-drift + Validation Window)
+- **All'avvio CC sessione**: SessionStart hook `~/.claude/hooks/session_start_brief.sh` legge brief + 12 vincoli CLAUDE.md → JSON additionalContext iniettato
+- **host-monitor**: continua tracking ogni N min (ROADMAP FASE 1.2 confirmed alive)
+- **routing-refresh**: prossimo run via LaunchAgent (settimanale)
+- **git-push hook**: event-based su commit
 
 ## Pattern recognition critico
 
