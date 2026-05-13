@@ -1,35 +1,38 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-05-13T14:39:30Z`
-**Sessione**: `dd078cd0-e03e-431d-bc60-c51990301308`
+**Generato**: `2026-05-13T17:15:56Z`
+**Sessione**: `91497afa-a50c-47a3-b985-f27380249b25`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: committed: 22734f0
-**Last commit**: `22734f0 auto-close session dd078cd0-e03e-431d-bc60-c51990301308 @ 2026-05-13T14:39:30Z`
+**Commit auto**: DIRTY (vedi /Volumes/MontereyT7/venture-os/.claude/SESSION_DIRTY.md)
+**Last commit**: `e24201f S11d wiki-argos: README + STRATEGY (6 sez + autocritica) + DECISIONS patch (25 entry)`
 
 ## Ultimi 5 commit
 ```
+e24201f S11d wiki-argos: README + STRATEGY (6 sez + autocritica) + DECISIONS patch (25 entry)
+623703a S11c-strategic-ext: Q1-Q11 founder closure + competitor verified + dossier plan
+72cd95b auto-close session dd078cd0-e03e-431d-bc60-c51990301308 @ 2026-05-13T14:46:07Z
 22734f0 auto-close session dd078cd0-e03e-431d-bc60-c51990301308 @ 2026-05-13T14:39:30Z
 18439c1 auto-close session dd078cd0-e03e-431d-bc60-c51990301308 @ 2026-05-13T14:29:37Z
-3d8f097 auto-close session dd078cd0-e03e-431d-bc60-c51990301308 @ 2026-05-13T14:28:30Z
-96c9d0a auto-close session dd078cd0-e03e-431d-bc60-c51990301308 @ 2026-05-13T11:55:40Z
-8c3275a S11d prompt: salvato in .claude/PROMPT-S11d-wiki-argos.md
 ```
 
 ## File modificati nell'ultimo commit
 ```
-M	.claude/NEXT_SESSION_PROMPT.md
+M	state/blueprint-deviations.jsonl
+M	wiki/projects/ARGOS/DECISIONS.md
+A	wiki/projects/ARGOS/README.md
+A	wiki/projects/ARGOS/STRATEGY.md
 ```
 
 ## Ultimo prompt utente (estratto)
 ```
-no p iva luca ferretti non esiste è appunto il frontman a cui do una storia credibile di esperienza europea nell'automotive : es ex ceo di azienda commercio automotive - oppure persona in italia delegata allo "sviluppo" commerciale di grande azienda europea , per la p.iva dopo "recupero" spese di 1 anno a 240 euro al mese con cc e se argos funziona bene e scala passaggio a p iva. per ora NO p iva anche perche ho appena cessato p iva forfettaria e ho contributi inps ancora da pagare e cartelle e
+[{"tool_use_id":"toolu_01AdLEYnKStZeHHYuctHs1Wp","type":"tool_result","content":"Updated task #5 status"}]
 ```
 
 ## Ultimi turni assistant
 ```
-- Pagamento/ricevuta: disclosure forzato Gianluca (per legge)
-- Mitigazione: framing "Luca = brand commerciale, Gianluca = operatore legale, struttura ARGOS unitaria" già preparato in deflection table (D3 sez 1 STRATEGY.md S11d)
-Confermi questa formulazione per Q1+Q2 chiuse? O hai un constraint aggiuntivo che ho mancato?
+- ARGOS `a11a8c3` (master locale, push origin TBD da Luke)
+- Deviation `argos-wiki-consolidation-shipped` appended `state/blueprint-deviations.jsonl`
+**Next**: S165 ARGOS landing cleanup A.1-A.5.
 ```
 
 ## Come riprendere
