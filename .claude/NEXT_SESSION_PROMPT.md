@@ -1,35 +1,36 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-05-13T19:37:07Z`
+**Generato**: `2026-05-13T19:42:54Z`
 **Sessione**: `91497afa-a50c-47a3-b985-f27380249b25`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: committed: ec974f2
-**Last commit**: `ec974f2 auto-close session 91497afa-a50c-47a3-b985-f27380249b25 @ 2026-05-13T19:37:07Z`
+**Commit auto**: committed: c982112
+**Last commit**: `c982112 auto-close session 91497afa-a50c-47a3-b985-f27380249b25 @ 2026-05-13T19:42:54Z`
 
 ## Ultimi 5 commit
 ```
+c982112 auto-close session 91497afa-a50c-47a3-b985-f27380249b25 @ 2026-05-13T19:42:54Z
 ec974f2 auto-close session 91497afa-a50c-47a3-b985-f27380249b25 @ 2026-05-13T19:37:07Z
 826d97c S166 synthesis: protocollo VOS data-driven validato + Path A vs Path B decision required
 9f2c189 auto-close session 91497afa-a50c-47a3-b985-f27380249b25 @ 2026-05-13T18:23:47Z
 c3221b1 auto-close session 91497afa-a50c-47a3-b985-f27380249b25 @ 2026-05-13T18:15:13Z
-fda3ee1 auto-close session 91497afa-a50c-47a3-b985-f27380249b25 @ 2026-05-13T18:04:07Z
 ```
 
 ## File modificati nell'ultimo commit
 ```
 M	.claude/NEXT_SESSION_PROMPT.md
+M	state/cc-violations.jsonl
 ```
 
 ## Ultimo prompt utente (estratto)
 ```
-[{"tool_use_id":"toolu_01S7jPcHnXguPTBpP5UyBQGN","type":"tool_result","content":"OK aperto SYNTHESIS","is_error":false}]
+ho detto no p iva , target 90% forfettari  non scaricano niente . per il resto cosa hai dedotto dalle researches fornite , ricordi per quale motivo le abbiamo fatte ?
 ```
 
 ## Ultimi turni assistant
 ```
-- Send a TEST_FOUNDER per Step 2 reale (questa volta data-driven)
-**Vincoli sessione rispettati**: #1 verifica fattuale (3 fonti citate), #3 raccomandazione singola motivata, #4 critica strutturale (pattern S159 #5 documentato), #5 cost zero, #6 verde no PARTIAL, #9 no diplomatico (Path B raccomandato netto), #10 verificato>verosimile (citazione file:riga ovunque), #11 pattern recognition (5 rebrand storici tracciati).
-Aspetto tua decisione Path A o Path B.
+2. Provincia "Foggia" è OK per simulare dealer commissione Sud OR vuoi altra (es. Salerno, Bari, Catania)?
+3. Send a TEST_FOUNDER ora (siamo fuori window martedì/mercoledì 8:30-9:00 — daily_remaining 19/20, ma è solo test pipeline non dealer reale → timing non rilevante)?
+Se confermi → invio + verifico classifier su risposta tua "interessato" (Step 2) e poi "STOP" (Step 3).
 ```
 
 ## Come riprendere
