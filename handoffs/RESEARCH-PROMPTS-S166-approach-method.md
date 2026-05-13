@@ -5,14 +5,33 @@
 > **Contesto**: ARGOS Automotive, broker B2B vehicle scouting EU→IT, frontman commerciale "Luca Ferretti", zero recensioni, fase bootstrap, target dealer 3-10 auto rotation family business 45-60 anni Sud Italia.
 > **Output atteso da ogni tool**: dati + pattern + fonti citate (no opinioni generiche). Poi sintetizzo io.
 > **Vincolo**: nessuna disclosure di "frontman fittizio AI", "cash-only no documento", "P.IVA inesistente" — questi sono interni ARGOS, fuori dai prompt esterni.
+> **Vincolo #5 zero-cost**: SOLO tool free-tier. Niente Perplexity Pro / Claude Pro / ChatGPT Plus / Gemini Advanced.
+
+## Tool free-tier disponibili (verificati 2026-05-13)
+
+| Tool | Free-tier reale | Strength |
+|------|-----------------|----------|
+| **Google AI Studio (Gemini 2.5 Pro)** | aistudio.google.com — free dev, 1M context, Search grounding | Search + synthesis 1M context |
+| **NotebookLM** | notebooklm.google.com — free completo Google | Source-grounded Q&A su upload |
+| **Claude.ai** | claude.ai — Sonnet free con limite ~5-10 msg/giorno | Ragionamento strutturale |
+| **ChatGPT** | chatgpt.com — GPT-5 limitato + GPT-4o-mini illimitato | Cross-validation prospettiva |
+| **Google/DDG search** | manuale browser | Ground truth dealer Reddit/forum |
+
+**Skip se non accesso**: Claude.ai free se quota esaurita → ripeti prompt Tool 2 su Gemini AI Studio con Search OFF.
 
 ---
 
-## Tool 1 — Perplexity (search + citation, fonti recenti 2024-2026)
+## Tool 1 — Google AI Studio (Gemini 2.5 Pro + Google Search grounding) — FREE
 
-**Strength**: ricerca web con citation, dati empirici recenti, accesso a forum/articoli che il training Claude/GPT non vede.
+**Strength**: search web con grounding Google integrato, citation, 1M context, free-tier sviluppatore. Sostituto free di Perplexity Pro.
 
-**Copia in Perplexity (modalità Pro, deep research se disponibile)**:
+**Setup**:
+1. Vai su https://aistudio.google.com (login con Google account)
+2. Apri nuovo prompt, modello **Gemini 2.5 Pro**
+3. Nel pannello a destra **abilita Tool "Grounding with Google Search"** (toggle on)
+4. Imposta temperature 0.3 (factual mode)
+
+**Copia in Google AI Studio**:
 
 ```
 Sto cercando dati empirici 2024-2026 su pattern di primo contatto B2B via WhatsApp Business in Italia, specifico settore automotive.
@@ -40,11 +59,13 @@ Output strutturato richiesto:
 
 ---
 
-## Tool 2 — Claude Web (Opus 4.6 o Sonnet 4.6, no training-data shortcut)
+## Tool 2 — Claude.ai FREE (Sonnet, ragionamento strutturale)
 
 **Strength**: ragionamento strutturale, framing strategico, critica metodologica. Per derivare framework dai principi, non da search.
 
-**Copia in Claude.ai (modello Opus 4.6 o Sonnet 4.6, conversazione nuova)**:
+**Setup**: claude.ai free-tier (5-10 messaggi/giorno limite). Se non hai accesso → skip questo tool, sostituisci con Gemini 2.5 Pro (AI Studio, Tool 1) ripetendo il prompt con Search disabilitato + temperature 0.5 per ragionamento.
+
+**Copia in Claude.ai (conversazione nuova, modello default)**:
 
 ```
 Analisi strategica B2B outreach. Aiutami a derivare il METODO di primo contatto, non a scrivere un messaggio.
@@ -75,11 +96,13 @@ Vincolo: niente "potresti", "potrebbe funzionare", "dipende". Voglio raccomandaz
 
 ---
 
-## Tool 3 — Gemini Pro (Deep Research o long-context 1M)
+## Tool 3 — Google AI Studio Gemini 2.5 Pro (long-context 1M, NO search) — FREE
 
-**Strength**: ingestion automatica + cross-reference su molti documenti. Per sintetizzare research/ ARGOS esistente senza dover leggere io 12 file.
+**Strength**: ingestion automatica + cross-reference su molti documenti (1M token = ~750k parole). Per sintetizzare research/ ARGOS esistente senza dover leggere io 12 file. Stesso accesso del Tool 1, ma in **nuovo prompt** (no Search grounding, temperature 0.3).
 
-**Copia in Gemini (Gemini 2.5 Pro o Deep Research)**:
+**Setup**: aistudio.google.com → nuovo prompt → Gemini 2.5 Pro → Grounding Search **OFF** (vogliamo solo synthesis source) → temperature 0.3.
+
+**Copia in Google AI Studio (Tool 1 e Tool 3 condividono la stessa app — solo prompt diverso e Search ON/OFF)**:
 
 ```
 Sintesi documentale. Ho 12 file research interni di un progetto B2B vehicle scouting (ARGOS Automotive). Ti incollerò il contenuto di 5 file critici. Tu estrai i pattern data-driven sul METODO di primo contatto dealer auto commissione informale Sud Italia.
@@ -172,11 +195,13 @@ Q7. Sequenza Day 1 / Day 3 / Day 7 nei source: cosa va detto in ogni touchpoint,
 
 ---
 
-## Tool 6 — ChatGPT (cross-validation, prospettiva alternativa)
+## Tool 6 — ChatGPT FREE (cross-validation, prospettiva alternativa)
 
-**Strength**: alternative perspective, training data leggermente diverso da Claude, può catturare blind spot.
+**Strength**: alternative perspective, training data leggermente diverso da Claude/Gemini, può catturare blind spot.
 
-**Copia in ChatGPT (GPT-5 o GPT-4o, no Search se vuoi solo ragionamento)**:
+**Setup**: chatgpt.com free-tier — GPT-5 disponibile gratis ma con limite messaggi/giorno (dopo limite fa fallback su GPT-4o-mini). OK anche con GPT-4o-mini per cross-validation. Conversazione nuova.
+
+**Copia in ChatGPT (no Search, solo ragionamento)**:
 
 ```
 [Riusare lo stesso prompt del Tool 2 Claude Web Opus, copia integrale]
@@ -206,7 +231,7 @@ Aggiungi alla fine:
 
 ## VOS pattern futuro (Q9 automation)
 
-Questo workflow manuale = primo prototipo del componente VOS `research-synth` (Gemini Pro long_context auto-sintesi) + `ground-truth-harvester` (PRAW Reddit + scrape forum auto IT). Quando questi componenti saranno costruiti, sostituiscono i tool 3+4+5 manuali. Tool 1+2+6 (Perplexity/Claude/ChatGPT) restano umano-in-the-loop per cross-validation.
+Questo workflow manuale = primo prototipo del componente VOS `research-synth` (Gemini Pro long_context auto-sintesi via API key gratuita Google AI Studio) + `ground-truth-harvester` (PRAW Reddit + scrape forum auto IT). Quando questi componenti saranno costruiti, sostituiscono i tool 3+4+5 manuali. Tool 1+2+6 (Gemini Search/Claude.ai/ChatGPT) restano umano-in-the-loop per cross-validation.
 
 **Backlog VOS post-S11d**:
 - `research-synth`: ingestion automatica research/ + LLM long_context output sintesi sourced
