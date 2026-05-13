@@ -236,6 +236,19 @@ Trigger su alert handoff-debt-watcher (FASE 3.2). Manualmente: ogni 4-8 settiman
 - Stima: 5 min.
 - Done when: CLAUDE.md aggiornato + 1 riga in memoria globale `~/.claude/projects/-Users-macbook/memory/`.
 
+### C1 — Hook `global_session_end.sh` husky-aware (S11b 2026-05-13, deferred)
+**Trigger**: analisi `~/.claude/session-log.txt` S11b mostra FLUXION = 50/63 commit-failed (79%). Root cause: hook auto-commit tenta `git commit` semplice, ma `.husky/pre-commit` esegue lint/typecheck/test → fail → hook si arrende.
+
+**Scope**: hook deve detectare presenza `.husky/pre-commit` o `.git/hooks/pre-commit` non-sample, e in quel caso:
+- Skip auto-commit (rischio elevato di fail, husky è lavoro WIP-aware)
+- Genera `.claude/WIP-MARKER.md` con timestamp + file modificati + last user prompt
+- Log session-log come `result=husky-skip` invece di `commit-failed`
+
+**Stima**: 30 min (script + test su FLUXION + verifica non rompe ARGOS/Guardian).
+**Done when**: hook husky-aware shipped + 2 sessione consecutive FLUXION chiudono `husky-skip` invece di `commit-failed` + ARGOS/Guardian behavior invariato.
+
+**Riapertura**: SUBITO disponibile, basso rischio. Candidato post-S12.
+
 ### B5 — Componente VOS `tool-scout` ✅ (SHIPPED 2026-05-12, S7)
 **Esito**: v0 MVP shipped in ~1.5h (sotto stima 3-4h originale).
 - `config/tool-scout-areas.yaml` — 3 aree MVP (image-inpainting, background-removal, ocr)
