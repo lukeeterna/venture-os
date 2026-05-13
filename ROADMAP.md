@@ -96,16 +96,17 @@ status: vivente — aggiornare end-of-session quando una fase chiude
 
 **Goal**: aggiungere capacità VOS che ora mancano e bloccano ottimizzazione.
 
-### 3.1 — `routing-refresh` notturno
-**Componente citato in CLAUDE.md "vincoli invarianti" ma non esistente**.
-- Scope: LaunchAgent giornaliero (RunAtLoad, pattern operativo Luke) che esegue:
-  - HTTP `/v1/models` su Gemini, Cerebras, OpenRouter (vincolo #1, dato live)
-  - Confronta con routing.yaml — se diff → log delta in `state/routing-drift.jsonl`
-  - **NON** modifica routing.yaml automaticamente (gate manuale Luke per evitare regressioni)
-  - Brief mattutino segnala drift
-- Path: `components/routing-refresh/refresher.py`
-- Stima: 2-3h
-- **Done when**: LaunchAgent installato, primo run mostra 0 drift (catalogo congruente), drift simulato (test con fake response) attiva alert brief
+### 3.1 — ~~`routing-refresh` notturno~~ ✅ **shipped (S12, 2026-05-13)**
+
+Vedi anche FASE 4.2 (stesso componente, ridefinita scope post-S11b).
+
+- Componente: `components/routing-refresh/refresher.py` (~370 LOC stdlib + pyyaml)
+- LaunchAgent: `~/Library/LaunchAgents/com.luke.vos.routing-refresh.plist`, RunAtLoad, python@3.13
+- 3 drift_type: `model_removed`, `model_added` (scoped uncensored/long-context), `field_change` + `run_marker` ogni run
+- Brief integration: `briefer.py:_signals()` legge ultimo run_marker, emette `routing-drift: N entry (...)` se drift > 0, alert `routing-refresh non eseguito da Nh` se age >36h
+- Primo real-run 2026-05-13 detecta 22 drift reali: 3 field_change (Gemini ctx 1M→1.048M, OpenRouter llama-3.3 ctx 131K→65K), 19 model_added free long-context (gpt-oss, nemotron, qwen3-coder, etc.) — gate manuale Luke per integrarli in routing.yaml
+- Test drift simulato (gemini-fake-9000) → model_removed entry PASS
+- Stima 2-3h → actual 1.5h (riuso massimo pattern `routing-http-verify.py` S8)
 
 ### 3.2 — ~~Karpathy compilation periodica (handoff-debt-watcher)~~ ✅ **RESOLVED-DEDUP (S11, 2026-05-12)**
 
@@ -129,7 +130,7 @@ status: vivente — aggiornare end-of-session quando una fase chiude
 
 **Risoluzione**: nessun REVERT necessario. Deviation `blueprint-canonico-v3.5-ingerito` (S6) documenta decisione.
 
-**FASE 3 done when**: 3.1 shipped (3.2 RESOLVED-DEDUP S11, 3.3 già chiusa).
+**FASE 3 done when**: 3.1 shipped (3.2 RESOLVED-DEDUP S11, 3.3 già chiusa). ✅ **CHIUSA (S12, 2026-05-13)**
 
 ---
 
@@ -249,10 +250,11 @@ Trigger su alert handoff-debt-watcher (FASE 3.2). Manualmente: ogni 4-8 settiman
 - Handoff dedicato: `handoffs/HANDOFF-VOS-S11c-prereq-heretic-handler-2026-05-13.md`
 - **Done when**: handler.py shipped + routing.yaml v5 + log esistente + test live PASS
 
-### 4.2 — Routing-refresh (FASE 3.1 esistente, ridefinita come blocca S11c-strategic)
+### 4.2 — ~~Routing-refresh~~ ✅ **shipped (S12, 2026-05-13)** (= FASE 3.1)
 - Già pianificata FASE 3.1, oggi spostata in FASE 4.2 come dependency strutturale
-- Include uncensored category in drift detection (evita silent fail dolphin-mistral)
-- Handoff esistente: `handoffs/HANDOFF-VOS-S12-routing-refresh-2026-05-13.md`
+- Include uncensored category in drift detection: refresher.py riconosce keyword `dolphin/hermes/venice/...` in scope `model_added` — alert se nuovo uncensored model appare upstream
+- Routing.yaml v5 (S11c-prereq) processato senza false-positive: dolphin-mistral-venice + hermes-3-405b presenti in catalog OpenRouter al primo run
+- Handoff: `handoffs/HANDOFF-VOS-S12-routing-refresh-2026-05-13.md`
 
 ### 4.3 — Wiki ARGOS strategy consolidation (S11c-strategic, 2.5-3.5h)
 - `~/venture-os/wiki/projects/ARGOS/README.md` (indice 4 file, quando-leggere)

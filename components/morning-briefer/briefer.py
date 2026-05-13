@@ -27,6 +27,7 @@ ERROR_LOG = VOS_ROOT / "state" / "errors.jsonl"
 GIT_PUSH_LOG = VOS_ROOT / "state" / "git-push.log"
 TOOL_SCOUT_DIFF = VOS_ROOT / "state" / "tool-scout-diff.jsonl"
 SARA_GATE_RUNS = VOS_ROOT / "state" / "sara-gate-runs.jsonl"
+ROUTING_DRIFT = VOS_ROOT / "state" / "routing-drift.jsonl"
 BRIEFS_DIR = VOS_ROOT / "briefs"
 BRIEFS_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -355,6 +356,44 @@ def _signals(mac: Optional[dict], imac: Optional[dict], projects: dict) -> list:
                             sigs.append(f"tool-scout {area}: nuovo top-safe {new[0]} (settimana {last.get('week')})")
         except Exception as e:  # noqa: BLE001
             _log_error("tool-scout diff parse fail", e)
+
+    # Routing-refresh (S12): ultima run_marker entry → drift count + provider fail
+    if ROUTING_DRIFT.exists():
+        try:
+            with open(ROUTING_DRIFT) as f:
+                ls = [ln for ln in f if ln.strip()]
+            # Cerca ultimo run_marker (può non essere last line se altre entry dopo)
+            last_marker = None
+            for ln in reversed(ls):
+                try:
+                    e = json.loads(ln)
+                    if e.get("drift_type") == "run_marker":
+                        last_marker = e
+                        break
+                except Exception:
+                    continue
+            if last_marker:
+                drift_count = last_marker.get("drift_count", 0)
+                breakdown = last_marker.get("drift_breakdown", {}) or {}
+                providers_fail = last_marker.get("providers_fail", []) or []
+                if providers_fail:
+                    pf = ",".join(p.get("provider", "?") for p in providers_fail[:3])
+                    sigs.append(f"routing-refresh: {len(providers_fail)} provider FAIL ({pf}) — verifica state/routing-drift.jsonl")
+                elif drift_count > 0:
+                    parts = [f"{k}={v}" for k, v in breakdown.items()]
+                    sigs.append(f"routing-drift: {drift_count} entry ({', '.join(parts)}) — review state/routing-drift.jsonl")
+                # Age da ultimo run: warning se >36h (LaunchAgent saltato 2 notti)
+                ts_str = last_marker.get("ts", "")
+                if ts_str:
+                    try:
+                        last_ts = datetime.fromisoformat(ts_str.replace("Z", "+00:00"))
+                        age_h = (datetime.now(timezone.utc) - last_ts).total_seconds() / 3600
+                        if age_h >= 36:
+                            sigs.append(f"routing-refresh non eseguito da {int(age_h)}h — verifica LaunchAgent")
+                    except Exception:  # noqa: BLE001
+                        pass
+        except Exception as e:  # noqa: BLE001
+            _log_error("routing-drift parse fail", e)
     return sigs
 
 
