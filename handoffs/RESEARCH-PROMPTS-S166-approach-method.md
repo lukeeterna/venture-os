@@ -1,8 +1,9 @@
 # Research prompts — Metodo primo contatto dealer auto Italia (S166 protocollo VOS)
 
 > **Data**: 2026-05-13
-> **Obiettivo**: derivare dai DATI (non inventare) il metodo di primo contatto via WhatsApp efficace per dealer auto commissione informale Sud Italia.
-> **Contesto**: ARGOS Automotive, broker B2B vehicle scouting EU→IT, frontman commerciale "Luca Ferretti", zero recensioni, fase bootstrap, target dealer 3-10 auto rotation family business 45-60 anni Sud Italia.
+> **Obiettivo**: derivare dai DATI (non inventare) il metodo di primo contatto via WhatsApp efficace per dealer auto in Italia. Scope **nazionale**, NON solo Sud.
+> **Contesto**: ARGOS Automotive, broker B2B vehicle scouting EU→IT, frontman commerciale "Luca Ferretti", zero recensioni, fase bootstrap, target tipologia dealer (3-10 auto rotation family business, OR 20-40 auto strutturati, OR altro) **da DERIVARE dai dati di ricerca**, NON assumere a priori.
+> **Audit bias evitato**: research interna S73 ARGOS era tarata "Sud Italia 20-40 auto premium" perché founder vive in Basilicata. Bias NON data-driven. Wave 1 D-14 mantenuto bias Sud. **Questo prompt set audita il bias: lasciare ai DATI dire dove sta il valore €€€ per ARGOS €1k success-fee.**
 > **Output atteso da ogni tool**: dati + pattern + fonti citate (no opinioni generiche). Poi sintetizzo io.
 > **Vincolo**: nessuna disclosure di "frontman fittizio AI", "cash-only no documento", "P.IVA inesistente" — questi sono interni ARGOS, fuori dai prompt esterni.
 > **Vincolo #5 zero-cost**: SOLO tool free-tier. Niente Perplexity Pro / Claude Pro / ChatGPT Plus / Gemini Advanced.
@@ -38,16 +39,19 @@ Sto cercando dati empirici 2024-2026 su pattern di primo contatto B2B via WhatsA
 
 Contesto operativo:
 - Mittente: consulente/broker che fa scouting auto premium dai mercati europei (Germania, Olanda, Belgio, Austria) per concessionari italiani
-- Destinatario: titolare concessionario auto family business, 3-10 auto in stock rotation, Sud Italia (Campania, Puglia, Calabria, Sicilia), età 45-60 anni
+- Destinatario: titolare concessionario auto family business, 3-10 auto in stock rotation, **Italia intera (Nord, Centro, Sud, Isole — DATI decidono dove cluster di valore sta)**, età 45-60 anni
 - Canale: WhatsApp Business, mai contatto precedente, mittente sconosciuto al destinatario
 - Goal: aprire relazione commerciale, non vendere subito
 
 Domande specifiche:
+
+**0. Mappatura geografica del valore (PRIORITÀ #1, audit bias)**: dove sono concentrati in Italia 2024-2026 i dealer auto premium con margini operativi sufficienti per pagare €1k success-fee per veicolo importato? Distribuzione Nord (Lombardia/Veneto/Emilia/Piemonte) vs Centro (Toscana/Lazio/Marche) vs Sud+Isole (Campania/Puglia/Sicilia/Calabria). Dati ACI, ISTAT, Federauto, UNRAE 2024-2026 su numero concessionari premium per regione, fatturato medio, marginalità.
+
 1. Quali pattern di "primo messaggio WhatsApp" funzionano vs falliscono in B2B services italiani 2024-2026? Cerca case study, articoli specializzati, post LinkedIn con metriche di conversion rate.
 2. Conversion rate medio cold WhatsApp B2B Italia: dati pubblicati 2024-2026 (HubSpot, Salesforce, agenzie italiane CRM).
 3. Differenza efficacia "messaggio con offerta specifica" (es. veicolo specifico) vs "messaggio relazionale" (qualifying + insight value-first) in cold WA B2B. Studi o A/B test pubblici.
-4. Cosa fa percepire "spam" un primo messaggio WA a un imprenditore italiano family business Sud Italia? Pattern documentati di rifiuto immediato (sociologia commerciale, etnografia trade Sud Italia).
-5. Trust signals che bypassano la diffidenza al primo contatto quando il mittente è sconosciuto: referenze, education content, soft introduction, qualifying questions. Quali funzionano in cultura commerciale Sud Italia 2024-2026.
+4. Cosa fa percepire "spam" un primo messaggio WA a un imprenditore italiano family business Italia (tutte le aree)? Pattern documentati di rifiuto immediato (sociologia commerciale, etnografia trade Italia (tutte le aree)).
+5. Trust signals che bypassano la diffidenza al primo contatto quando il mittente è sconosciuto: referenze, education content, soft introduction, qualifying questions. Quali funzionano in cultura commerciale Italia (tutte le aree) 2024-2026.
 6. Broker auto EU-IT operativi 2024-2026: quali si pubblicizzano apertamente, come si presentano al primo contatto. Esempi specifici named entities (Bolidem.it, Autotedesche.it, Global Cars Importazioni, Michael-AutoGermania, altri).
 
 Output strutturato richiesto:
@@ -72,15 +76,18 @@ Analisi strategica B2B outreach. Aiutami a derivare il METODO di primo contatto,
 
 Setup:
 - Servizio B2B: vehicle sourcing EU→IT per concessionari italiani (success-fee €1k a consegna, zero anticipi, money-back DEKRA)
-- Target: dealer family business Sud Italia 3-10 auto stock, cercano su commissione del cliente finale (cliente chiede X, dealer cerca su AS24/Mobile.de), 45-60 anni, fatturano poco (commissione informale), cash margins, WhatsApp è canale primario
+- Target: dealer family business Italia (tutte le aree) 3-10 auto stock, cercano su commissione del cliente finale (cliente chiede X, dealer cerca su AS24/Mobile.de), 45-60 anni, fatturano poco (commissione informale), cash margins, WhatsApp è canale primario
 - Posizione del mittente: nuovo nel mercato, zero recensioni Google, zero referenze concrete, frontman commerciale (consulente che è il volto del servizio)
 - Canale: WhatsApp Business, primo contatto cold
-- Cultura: Sud Italia, passaparola critical, diffidenza cold outreach, "vediamoci di persona" mindset
+- Cultura: Italia intera. Differenze regionali Nord/Centro/Sud da considerare data-driven, non assumere passaparola Sud-style universale. Dealer Nord (Lombardia/Veneto/Emilia) tipicamente più capitalizzati, formalizzati P.IVA ordinaria, business-mindset transazionale. Dealer Sud tipicamente passaparola, cash, informalità. Dove sta il valore €€€ per ARGOS €1k success-fee deve emergere DAI DATI di ricerca.
 
 Domande:
+
+**0. Segmentazione target ottimale (audit bias)**: dato il setup (success-fee €1k, zero anticipi, money-back DEKRA, frontman commerciale solo, zero referenze), qual è il tipo di dealer auto italiano con **maggiore probabilità di accettare** il servizio E con margini operativi sufficienti a pagare €1k? Considera matrice: (a) dealer 3-10 auto family business commissione informale vs (b) dealer 20-40 auto strutturati premium P.IVA ordinaria vs (c) gruppi multi-brand 50+ auto. Per ogni segmento: pro/contro accettazione + capacità €1k + concentrazione geografica nazionale Italia (Nord/Centro/Sud). Argomenta con principi di buying psychology B2B, NON assumere "Sud Italia commissione informale" come target ottimale — quello è ipotesi founder bias da auditare data-driven.
+
 1. **Push vs Pull vs Relationship-first vs Value-first**: confronta i 4 frame di primo contatto applicati a questo setup. Quale ha maggior probabilità di non finire in blocchi/ignorato? Argomenta con principi di buying psychology B2B, non con esempi.
 2. **Problema strutturale**: dealer commissione informale lavorano "su richiesta cliente". Inviare auto specifica al primo contatto = push obsoleto. Qual è l'asset di valore che PUÒ essere portato al primo contatto SENZA chiedere niente al dealer (no qualifying spinto, no auto specifica, no pitch servizio)?
-3. **Trust building sequence**: derivare la sequenza ottimale primi 3 touchpoint (Day 1, Day 3, Day 7) per un mittente sconosciuto che vuole costruire relazione asincrona via WA — coerente con cultura Sud Italia. Sequenza per principi, non per messaggi.
+3. **Trust building sequence**: derivare la sequenza ottimale primi 3 touchpoint (Day 1, Day 3, Day 7) per un mittente sconosciuto che vuole costruire relazione asincrona via WA — coerente con cultura Italia (tutte le aree). Sequenza per principi, non per messaggi.
 4. **Anti-pattern**: quali frame di primo contatto AMPLIFICANO il rischio "spam" in questo setup? Riconoscili come pattern strutturali (non come errori cosmetici).
 5. **Education layer come Trojan-horse**: pattern HubSpot Academy/Salesforce Trailhead funziona se LTV alto (subscription). ARGOS è transazionale (€1k success-fee). Education layer ha senso in transazionale B2B? Argomenta i trade-off.
 6. **Critica al frame "porta sempre un'auto specifica"**: questo era il pattern S73 (research interna) per dealer strutturati 20-40 auto. È applicabile a dealer commissione informale 3-10 auto? Dimostra perché sì o perché no.
@@ -105,7 +112,7 @@ Vincolo: niente "potresti", "potrebbe funzionare", "dipende". Voglio raccomandaz
 **Copia in Google AI Studio (Tool 1 e Tool 3 condividono la stessa app — solo prompt diverso e Search ON/OFF)**:
 
 ```
-Sintesi documentale. Ho 12 file research interni di un progetto B2B vehicle scouting (ARGOS Automotive). Ti incollerò il contenuto di 5 file critici. Tu estrai i pattern data-driven sul METODO di primo contatto dealer auto commissione informale Sud Italia.
+Sintesi documentale. Ho 12 file research interni di un progetto B2B vehicle scouting (ARGOS Automotive). Ti incollerò il contenuto di 5 file critici. Tu estrai i pattern data-driven sul METODO di primo contatto dealer auto commissione informale Italia (tutte le aree).
 
 [ATTENZIONE Luke: prima di inviare a Gemini, copia il CONTENUTO INTEGRALE di questi 5 file:
 1. ~/Documents/combaretrovamiauto-enterprise/research/s73_dealer_persona.md
@@ -121,7 +128,7 @@ Domande a Gemini DOPO incollato il contenuto:
 1. Quale modello di primo contatto è esplicitamente raccomandato nei 5 documenti per dealer COMMISSIONE INFORMALE (vs dealer strutturati 20-40 auto)? Cita righe specifiche.
 2. Esistono contraddizioni tra i 5 documenti sul metodo di primo contatto? Quali e come risolverle data-driven?
 3. Quale è la sequenza Day 1 / Day 3 / Day 7 che emerge dai documenti? Cita i passaggi.
-4. Quali trust signals sono documentati come critici nei 5 file per dealer Sud Italia 45-60 anni? Lista esaustiva con citazione.
+4. Quali trust signals sono documentati come critici nei 5 file per dealer Italia (tutte le aree) 45-60 anni? Lista esaustiva con citazione.
 5. Cosa dicono i documenti su "portare un veicolo specifico al primo contatto" — è raccomandato sempre, mai, o condizionalmente? Cita il contesto.
 6. Gap nei documenti: cosa NON è coperto sul metodo di approccio dealer commissione informale che servirebbe per implementare un primo contatto E2E?
 
@@ -151,13 +158,13 @@ Output:
 **Domande sequenziali in NotebookLM** (una alla volta, leggi risposta, poi successiva):
 
 ```
-Q1. Qual è il METODO di primo contatto che emerge dai source per dealer auto family business Sud Italia che lavorano su commissione del cliente finale (3-10 auto stock)? Distinguilo dal metodo per dealer strutturati 20-40 auto.
+Q1. Qual è il METODO di primo contatto che emerge dai source per dealer auto family business Italia (tutte le aree) che lavorano su commissione del cliente finale (3-10 auto stock)? Distinguilo dal metodo per dealer strutturati 20-40 auto.
 
 Q2. I source citano esempi di "primo messaggio WhatsApp" specifici? Riporta letterale con citazione source + numero righe.
 
 Q3. Cosa dicono i source sul rischio "percezione spam" al primo contatto WA in questa cultura commerciale?
 
-Q4. Quali trust signals sono documentati nei source per superare diffidenza dealer Sud Italia 45-60 anni verso un broker EU sconosciuto?
+Q4. Quali trust signals sono documentati nei source per superare diffidenza dealer Italia (tutte le aree) 45-60 anni verso un broker EU sconosciuto?
 
 Q5. Cosa raccomandano i source su "portare un'auto specifica al primo contatto" — è sempre opportuno, mai, o solo in certe condizioni?
 
@@ -174,7 +181,7 @@ Q7. Sequenza Day 1 / Day 3 / Day 7 nei source: cosa va detto in ogni touchpoint,
 
 **Strength**: voce diretta dei dealer/concessionari, no marketing-bias.
 
-**Ricerche Google da fare**:
+**Ricerche Google da fare** (scope Italia intera, no bias Sud):
 
 ```
 1. site:reddit.com "concessionario" "WhatsApp" "spam" dealer auto
@@ -183,8 +190,10 @@ Q7. Sequenza Day 1 / Day 3 / Day 7 nei source: cosa va detto in ogni touchpoint,
 4. clubalfa.it dealer "importazione" "Germania" recensione
 5. site:linkedin.com "concessionario auto" "primo contatto" WhatsApp 2024
 6. "concessionario auto" "non rispondo a sconosciuti" OR "non rispondo a numeri sconosciuti"
-7. site:google.com/maps "Stile Car Foggia" recensioni — capire tone dealer simili
-8. site:reddit.com "salonista" OR "rivenditore auto" Sud Italia "broker"
+7. UNRAE OR Federauto OR ACI "concessionari auto" "fatturato" "Lombardia" OR "Veneto" OR "Emilia" 2024
+8. "salonista" OR "rivenditore auto" "broker tedesco" OR "importazione EU" forum
+9. site:reddit.com "comprato auto Germania" Italia esperienza
+10. "Bolidem" OR "Autotedesche" OR "Auto1" Italia "recensioni dealer" forum
 ```
 
 **Per ogni ricerca**: leggi 3-5 thread/post pertinenti, copia i commenti dealer (non i miei o di altri broker), output:

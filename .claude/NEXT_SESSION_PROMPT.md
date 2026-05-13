@@ -1,36 +1,35 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-05-13T17:50:44Z`
+**Generato**: `2026-05-13T17:55:41Z`
 **Sessione**: `91497afa-a50c-47a3-b985-f27380249b25`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: committed: c4e3177
-**Last commit**: `c4e3177 auto-close session 91497afa-a50c-47a3-b985-f27380249b25 @ 2026-05-13T17:50:44Z`
+**Commit auto**: committed: f2eb356
+**Last commit**: `f2eb356 auto-close session 91497afa-a50c-47a3-b985-f27380249b25 @ 2026-05-13T17:55:41Z`
 
 ## Ultimi 5 commit
 ```
+f2eb356 auto-close session 91497afa-a50c-47a3-b985-f27380249b25 @ 2026-05-13T17:55:41Z
 c4e3177 auto-close session 91497afa-a50c-47a3-b985-f27380249b25 @ 2026-05-13T17:50:44Z
 8b4dae5 auto-close session 91497afa-a50c-47a3-b985-f27380249b25 @ 2026-05-13T17:48:00Z
 57eea74 auto-close session 91497afa-a50c-47a3-b985-f27380249b25 @ 2026-05-13T17:45:50Z
 6054e1f auto-close session 91497afa-a50c-47a3-b985-f27380249b25 @ 2026-05-13T17:39:45Z
-afafd77 auto-close session 91497afa-a50c-47a3-b985-f27380249b25 @ 2026-05-13T17:36:55Z
 ```
 
 ## File modificati nell'ultimo commit
 ```
 M	.claude/NEXT_SESSION_PROMPT.md
-M	handoffs/RESEARCH-PROMPTS-S166-approach-method.md
 ```
 
 ## Ultimo prompt utente (estratto)
 ```
-[{"tool_use_id":"toolu_015THLpnzVFYdqP6Sy81XLiX","type":"tool_result","content":"OK file riaperto","is_error":false}]
+[{"tool_use_id":"toolu_011yR9ZY3GUmc2aJbe5bAKdU","type":"tool_result","content":"total 0\ndrwxr-xr-x   2 macbook  staff   64 13 Mag 19:47 .\ndrwxr-xr-x  19 macbook  staff  608 13 Mag 19:50 ..\n---PRONTO---","is_error":false}]
 ```
 
 ## Ultimi turni assistant
 ```
-| 6 | ChatGPT free | ✅ chatgpt.com | 5 min | `responses/S166-tool-6-chatgpt.md` |
-**Priorità minima per decision data-driven**: Tool 1 + Tool 3 + Tool 4 + Tool 5 = **core 4 fonti** (4 fonti = N>=4 evidence per buona triangolazione). Tool 2 + Tool 6 = cross-validation aggiuntiva se hai accesso.
-File aperto. Vai pure col Tool 1 (Google AI Studio, sostituto Perplexity).
+## Quando manderò sintesi
+Quando mi dici **"ho finito, sintetizza"** → leggo tutte le risposte salvate, estraggo pattern convergenti, gestisco contraddizioni con criterio (volume + freshness + qualità fonte), produco `~/venture-os/handoffs/S166-SYNTHESIS-approach-method.md` data-driven. Poi tu decidi metodo, io rifaccio Day 1 V3 sul metodo deciso.
+Vai col Tool 1 quando pronto, incolla qui l'output.
 ```
 
 ## Come riprendere
