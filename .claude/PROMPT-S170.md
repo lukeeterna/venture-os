@@ -88,6 +88,23 @@ print(f'intent={result.intent} sentiment={result.sentiment} scam_flag={result.sc
 
 **Done when**: bridge_inbound row presente + classifier output coerente (e.g., "ok dossier" → intent=positive, sentiment=POSITIVE, scam_flag=False).
 
+### Step 1.5 — Trial `pp-openrouter` cross-LLM check su V5 (~10 min, autonomous)
+Trigger gate seed 999.1: install `pp-openrouter` CLI + 1 trial reale per validare workflow.
+
+```bash
+# Install (npm-global, no sudo)
+npm install -g pp-openrouter  # OR via Printing Press factory se non in registry
+
+# Trial: cross-LLM check V5 testo
+pp-openrouter ask --model "google/gemini-2.0-flash-exp:free" \
+  "Valuta efficacia di questo cold-lead B2B Italian per dealer auto premium: [V5 testo]. \
+   Bocciare specifico, suggerire alternative se applicabile."
+pp-openrouter ask --model "meta-llama/llama-3.3-70b-instruct:free" \
+  "[same prompt]"
+```
+
+Done when: 2 cross-LLM output collected, salvati in `~/venture-os/state/cross-llm-checks/S170-V5.md`. Se workflow utile → keep CLI. Se non uso entro 14gg → uninstall + downgrade seed 999.1 a DEFER pieno.
+
 ### Step 2 — V5 testo final review founder (~5 min, founder gate)
 Founder decide:
 - V5 testo va bene così, o modifichi parole?
