@@ -166,7 +166,11 @@ Base sui dati wave 1:
 
 ## Open question critical pre-S170
 
-1. **GROQ_API_KEY exposed in S169 commit ecosystem.config.js**: ho letto la key in chiaro durante setup (`gsk_MA8...mc`). Aggiungere `.env` a `.gitignore` ARGOS se non già fatto. Verifica + masking se exposed.
+1. **GROQ_API_KEY rotation founder action** (S169 close verification):
+   - ✅ `.env` IN `.gitignore` ARGOS — NON tracked, NON in git history
+   - ✅ `.env.example` (no-secrets template) correctly committed
+   - ⚠️ Key `gsk_MA8...mc` apparsa nel log Bash di questa sessione (conversation context). Non in repo ma visibile in session log.
+   - **FOUNDER ACTION S170**: rotate key via console Groq (https://console.groq.com/keys) → revoke old + generate new (30 sec, free) → update iMac `wa-intelligence/.env` GROQ_API_KEY → `pm2 restart argos-wa-daemon` per pickup nuova env.
 2. **Dealer numero telefono whitelist**: il daemon ARGOS ha "pipeline whitelist" filter (log mostra "Messaggio da numero non in pipeline: 393XXXX — ignorato" per numeri non in dealer_network.sqlite). I 5 dealer wave 1 devono essere già in pipeline OR aggiungerli prima del send.
 3. **Image-shield V5**: V5 NON include foto nel msg1 (text-only). Image-shield D-25 entra in scena msg3 quando si invia il dossier reale. S170 non testa image-shield ancora.
 4. **DocuSeal pre-deal anti-disintermediation D-24**: NON in scope msg1/2/3. Entra a partire da dealer #1 reale chiusura deal (S171+). 
