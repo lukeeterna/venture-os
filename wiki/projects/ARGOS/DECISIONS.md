@@ -555,6 +555,133 @@ Source: founder Luke S11c-strategic 2026-05-13 Q11.
 
 ---
 
+## D-21 — Workflow ARGOS info-broker → communication-broker-garante eBay-style (2026-05-14, S167)
+
+**Status**: DECIDED (founder closure S167 + audit research v2 automated)
+**Contesto**: V3 messaging S166 *"pago io fino al piazzale — paga cash a consegna"* descriveva modello importer (ARGOS anticipa cash €30-40k + porta auto + dealer paga solo a delivery). Incompatibile con runway €0 Luke + D-02 (ARGOS NON è venditore di leads). Founder correzione 2026-05-14: ARGOS è **communication-broker-garante eBay-style**, NON info-broker.
+**Opzioni considerate**:
+- (a) Importer model (V3 originale) — escluso runway €0
+- (b) Info-broker unlock contatti post-payment — escluso "barriera alta dealer↔venditore EU" + disintermediation risk
+- (c) Communication-broker-garante eBay-style con identity masking bilaterale + clausola contrattuale
+**Decisione**: Opzione (c). Workflow 8-step:
+1. Dealer IT chiede auto specifica via WA
+2. ARGOS produce dossier preview con foto protette (D-25), paese sorgente (DE/BE/NL/AT), CoVe scoring, margine teorico — **NO** nome/contatti venditore
+3. Dealer firma contratto pre-deal con clausola anti-disintermediation (D-24) — penale forfettaria €5.000 art. 2596 c.c.
+4. ARGOS apre canale comm proxied bilingue (dealer↔ARGOS in IT, ARGOS↔venditore EU in EN universal) — identity masking bilaterale
+5. ARGOS AI message analysis (NLU intent+sentiment+scam) + template risposte 5 fasi standard
+6. ARGOS state machine tracking real-time 7-10 step (offer→...→delivered)
+7. ARGOS garante trust layer (NO escrow cash hold, solo intermediazione records auditable)
+8. Fee €1.000 corrisposta "alla consegna del documento" finale (atto/fattura cross-border)
+**Conseguenze**:
+- D-02 conserved: ARGOS = ufficio acquisti EU del dealer
+- D-04 reinforced: WA single brand identity Luca Ferretti (anche venditore EU contattato via stesso numero)
+- D-20 reinforced: ARGOS lavora PER dealer, NON DAL dealer
+- F1.Q1.3 CTO decision: lato venditore EU contattato via canale esposto su portale (AS24/Mobile.de NO API ufficiale messaging — solo Listing Creation write-only) o email/WA pubblico venditore. Stesso Luca Ferretti brand identity. NO 2° SIM EU.
+- Fattura finale rivela forzatamente identità venditore EU → clausola contrattuale D-24 come deterrent
+- MVP path: Baileys + python-statemachine + DocuSeal + Pillow image-shield (D-22)
+**Trigger revisione**: se >50% dealer rifiuta firmare clausola pre-deal → riconsiderare modello.
+**Ref**: `wiki/patterns/data-driven-research-protocol-v2-automated.md`, S167 founder closure, 3 Agent thread research output in handoff S168
+
+---
+
+## D-22 — Stack tecnico ARGOS communication infrastructure (2026-05-14, S167)
+
+**Status**: DECIDED (post research v2 automated, 3 Agent Thread 4 + audit locale HW/SW)
+**Contesto**: D-21 richiede stack OSS zero-cost per F1-F5 (messaging proxy + AI analysis + templates + state machine + contract). Audit locale: MacBook macOS 11.7.10 Big Sur Py3.13.2 + Node 22.14.0. iMac 2012 macOS 12.7.4 16GB RAM SSE4.2+AVX1.0 (no AVX2). Stack ARGOS esistente: WA daemon wa-intelligence/ + wa-sender/ + LLM cascade `src/llm_cascade.py` Groq llama-3.3-70b-versatile primary + OpenRouter llama-3.3-70b:free fallback.
+**Opzioni considerate** (per ciascuna F, dettaglio in Thread 4 output): Baileys vs whatsapp-web.js (F1), Chatwoot vs n8n vs custom Python (F1), Groq vs DeepL (F2), python-statemachine vs transitions (F4), DocuSeal vs alternative (F5).
+**Decisione**:
+- **F1 messaging**: `@whiskeysockets/baileys` v7.0.0-rc10 (WebSocket-direct, 510 npm projects, no Puppeteer overhead vs whatsapp-web.js 156 projects). Lato venditore EU: canale esposto portale (email/tel listing) o WA pubblico. State session-mapping in SQLite ARGOS esistente.
+- **F2 AI message analysis**: Groq llama-3.3-70b-versatile (esistente in cascade) — 1 LLM call combinata per messaggio (intent 8 fasi + sentiment + scam red-flag + translation IT↔EN). Verified free tier 2026: 30 RPM / 6000 TPM / 1000 RPD = ~10 deal attivi/giorno cap. OpenRouter llama-3.3-70b:free fallback.
+- **F3 templates**: Jinja2 + variable injection (auto specs/prezzi/date) + Groq LLM finishing per personalizzazione contesto. Lib stdlib.
+- **F4 state machine**: `python-statemachine` 3.0.0 (Feb 2026) — Py3.9-3.14 compat, SQLite-backed approval workflow esempio nei doc ufficiali (use case isomorfo), hierarchical states, async support. Vince vs `transitions` per esempi specifici workflow persistente.
+- **F5 contract**: `DocuSeal` self-host (AGPLv3 §7(b) — verificare additional terms pre-commercial use). Docker 2 container (app + Postgres), 2GB VPS sufficiente, iMac fattibile. eIDAS Simple Electronic Signature (FES) legalmente valida B2B IT sotto reg UE 910/2014.
+- **F5 alternative**: skill `legal-compliance-checker` esistente CC — copre GDPR/marketing/red-flags MA NO template anti-disintermediation NDA. **Gap S168**: estendere skill con template clausola D-24 IT.
+**Conseguenze**:
+- Costo year 1 (10-30 deal/mese): €0/mese — tutto free-tier o self-hosted
+- Threshold Groq paid migration: >10 deal attivi simultaneo/giorno year 2+
+- DocuSeal AGPL §7(b): SE ARGOS distribuisce DocuSeal modificato come SaaS → AGPL obblighi source release. Mitigazione: self-host pure senza fork modifications.
+- iMac inadequato per self-host LLM 70B (no AVX2 + 16GB < 40GB Q4) — Groq cloud free-tier resta primary
+- MVP path S168: Baileys daemon test + state machine 7-step + Jinja2 templates + DocuSeal trial deploy iMac. Tempo founder solo: ≤2 settimane
+**Ref**: S167 Thread 4 verified output, [Groq pricing 2026](https://tokenmix.ai/blog/groq-free-tier-limits-2026), [Baileys npm](https://www.npmjs.com/package/@whiskeysockets/baileys), [python-statemachine 3.0](https://python-statemachine.readthedocs.io/), [DocuSeal compliance](https://www.docuseal.com/compliance)
+
+---
+
+## D-23 — D-OPEN-Q2 timeline revision: forced formalization P.IVA arriva deal #5-7 NON €10k (2026-05-14, S167)
+
+**Status**: DECIDED-revision-D-OPEN-Q2 (research Thread 3 con dati DAC8 + CRS + art. 67 TUIR)
+**Contesto**: D-OPEN-Q2 (2026-05-13) stimava trigger forced formalization a €10k cumulative cash. Research v2 automated Thread 3 (2026-05-14) ha verificato:
+- **DAC8** (Direttiva UE 2023/2226, operativa **1 gennaio 2026**): CASP cripto (Strike, Bitpanda, exchange) report TUTTE transazioni residenti IT ad AdE. Soglia ZERO. Self-custodial wallet (Phoenix, Sparrow) non report direttamente MA on/off-ramp via CASP sì → identificabile. Cripto exit chiusa.
+- **CRS** (DLgs 29/2014 + DAC2): EU EMI (Wise/Revolut/Bunq/Paysera) report annuale CRS verso AdE saldi + flussi conti business. Estonia e-Residency setup €1.500-2k = viola zero-cost + comunque CRS reportato.
+- **art. 67 TUIR**: soglia €5.000/anno stesso committente = presunzione abitualità → P.IVA obbligatoria
+- **Archivio Rapporti Finanziari** (DL 201/2011 art. 11): AdE vede saldi PostePay/Wise IT on-demand senza CRS
+- **DL 124/2019**: limite cash €4.999,99 per singola transazione (frazionamento artificioso = sanzione 1-40%)
+**Opzioni considerate**:
+- (a) Mantenere stima D-OPEN-Q2 €10k cumulative → ottimismo founder non supportato dati
+- (b) **Revision realistica deal #5-7 cumulative stesso dealer/anno** = trigger abitualità art. 67 TUIR
+- (c) Skip Q2 reformulation, action only on first dealer P.IVA ordinaria che chiede fattura
+**Decisione**: Opzione (b) revision. Trigger forced formalization realistico:
+- Cumulative **€5.000/anno stesso committente** = abitualità presunta art. 67 TUIR (NON €10k)
+- Equivale a ~5-7 deal stesso dealer/anno (€1.000 fee × 5)
+- Primo dealer P.IVA ordinaria che chiede fattura = trigger immediato indipendente dal cumulative
+**Conseguenze**:
+- D-OPEN-Q2 conseguenze patch: counter cumulativo cash in CRM ARGOS deve essere **per-committente/anno** (NON solo aggregato totale). Gap S168+
+- **Action consigliata Thread 3 critical**: consultare commercialista specializzato pignoramenti (ordine dottori commercialisti Potenza, sezione contenzioso) per verificare se P.IVA forfettario nuova attività 5% (5 anni regime) ISOLA redditi da cumulo recupero Equitalia pre-esistente con piano di rateazione attivo art. 19 DPR 602/1973. **Costo consulenza one-shot €150-300 = UNICO capex giustificato** (vincolo #5 deroga motivata). Questa è la vera unlock, NON rail estero/cripto (chiusi da DAC8/CRS post-PNRR Italia).
+- Modello "0-reddito-tracciato" sostenibile SOLO per validation MVP mesi 1-3 (<€5k cumulativo). Scaling >5 deal/mese impossibile senza P.IVA.
+- Cripto Lightning + DAC8 = no anonymity from 1/1/2026. P2P cash↔BTC (Hodl Hodl, Robosats, Bisq) liquidità Sud Italia <€500/settimana = no scala.
+**Ref**: S167 Thread 3 Agent output verified, [DL 124/2019](https://www.gazzettaufficiale.it/eli/id/2019/10/26/19G00134/sg), [DAC8 eur-lex 2023/2226](https://eur-lex.europa.eu/eli/dir/2023/2226), DLgs 231/2007 art. 49
+
+**Open question critical**: consulenza commercialista 1 settimana — sblocca/conferma vera fattibilità P.IVA forfettario isolata da cumulo.
+
+---
+
+## D-24 — Anti-disintermediation defense 3-pillar (2026-05-14, S167)
+
+**Status**: DECIDED (research Thread 2 marketplace incumbent pattern)
+**Contesto**: D-21 workflow rivela dati venditore EU via fattura finale. Rischio strutturale dealer bypass deal #2 stesso venditore. Research Thread 2 (Airbnb/Upwork/eBay/Etsy/Vinted incumbent pattern + paper BU/HBS/Wharton): mascheramento PII da solo è **inefficace** (paper Airbnb 2022), value-add ricorrente + sourcing rotation funzionano, TOS+penale = deterrent psicologico NON enforcement strumento (costo causa civile IT €8-25k vs valore deal €1k = ROI negativo enforcement).
+**Opzioni considerate**:
+- (a) PII redaction + email proxy only — paper marketplace mostra inefficace
+- (b) Payment lock-in escrow — incompatibile D-OPEN-Q2 cash-no-documento
+- (c) **3-pillar defense**: value-add bundle + TOS penale forfettaria + sourcing rotation
+- (d) Skip defense, accettare bypass rate stimato
+**Decisione**: Opzione (c). 3-pillar:
+1. **Value-add bundle post-deal #1**: ARGOS offre trasporto Macingo + dogana + traduzione atto come servizio incluso prossimo deal (€300-500 valore percepito che dealer non ha tempo/skill replicare). Trasforma "broker info" in "operatore continuativo". Zero-cost (founder esegue manualmente fino scala).
+2. **TOS penale forfettaria €5.000 + 24 mesi non-circumvention** ai sensi art. 2596 c.c., scrittura privata firmata pre-deal con FES via DocuSeal (D-22). Costo redazione one-shot €300-500 (commercialista o avvocato). Funzione: **deterrent psicologico**, NON recupero (enforcement costo IT €8-25k > deal value €1k).
+3. **Sourcing geografico rotante 4 paesi** (DE/BE/NL/AT) con venditori EU diversi per deal. Dealer che bypassa venditore #1 non ha accesso a pool #2-#N. Moat è il sourcing, non singolo contatto.
+**Conseguenze**:
+- Pillar 1: capacità founder limitata >3 deal/mese paralleli (tempo gestione trasporto non scala) — accettabile year 1
+- Pillar 2: clausola IT enforceable art. 2596 c.c., problema probatorio strutturale (no discovery anglosassone) = deterrent funzione
+- Pillar 3: richiede pipeline sourcing >50 venditori EU attivi — gap year 1 (Luke ha capacità tecnica 73 portali ma non ancora 50 venditori contattati)
+- **Vero pillar #1 anno 1** (per onestà Agent Thread 2): fare 5 deal e raccogliere DATI su retention reale prima di ingegnerizzare defense per problema non ancora osservato. Iterazione su evidenza vs assumption.
+**Ref**: S167 Thread 2 Agent verified, [BU Airbnb disintermediation paper 2022](https://questromworld.bu.edu/platformstrategy/wp-content/uploads/sites/49/2022/07/PlatStrat2022_paper_37.pdf), [HBS Edelman/Hu](https://www.hbs.edu/faculty/Pages/item.aspx?num=51399), [Upwork Conversion Fee policy](https://support.upwork.com/hc/en-us/articles/360052511133), [art. 2596 c.c.](https://www.brocardi.it/codice-civile/libro-quinto/titolo-x/capo-i/sezione-i/art2596.html)
+
+---
+
+## D-25 — Image-shield Pillow-only stack (no OpenCV Big Sur safe) (2026-05-14, S167)
+
+**Status**: DECIDED (research Thread 1 anti-reverse-search + Big Sur Py3.13 compat verify)
+**Contesto**: D-21 dossier preview pre-payment include foto annuncio EU. Dealer può Google Lens / TinEye / Yandex reverse-search → trovare listing originale e bypassare ARGOS. Research Thread 1 verified: CNN embedding moderni (2024-2026) sopravvivono a crop ≤30%, flip, blur lieve, watermark piccolo. Adversarial perturbation (PhotoGuard/Glaze) **fragile** in pratica (paper BlurGuard 2025: blur+JPEG rompe protezione). SD img2img rompe trust dealer (foto "ridisegnata" non ispezionabile + GPU cost).
+**Opzioni considerate**:
+- (a) Adversarial perturbation — scartato (fragile + GPU cost)
+- (b) SD img2img regenerate — scartato (rompe trust + costo)
+- (c) **Crop ROI aggressivo + watermark visibile grid + JPEG re-encode + color shift HSV**
+- (d) Skip protezione, accettare bypass — incompatibile con workflow D-21
+**Decisione**: Opzione (c). Pipeline Pillow-only (no OpenCV — `opencv-python` 4.7+ rompe Big Sur, conferma [GitHub issue #777](https://github.com/opencv/opencv-python/issues/777)):
+- Crop centrale 65% area (rimuove targa + landmark contesto)
+- Watermark testo "ARGOS PREVIEW — DOSSIER #{id}" tilted 35°, font 48pt, alpha 0.28, ripetuto griglia 3×3
+- HSV shift hue+5° / sat-8%
+- JPEG re-encode quality=72, EXIF stripped
+- Output: foto dossier preview con info-value ispezione preservata + reverse-search hit-rate <1/10 atteso
+**Conseguenze**:
+- Stack 100% Big Sur safe: `Pillow` 11.3.0 (già installato MacBook Py3.13) + `ImageHash` 4.3.2 (validation only)
+- ZERO dipendenza opencv-python / torch / diffusers / GPU
+- Validation method: 10 listing Mobile.de reali, query Google Lens + TinEye + Yandex pre/post protection. Target post hit-rate ≤1/10 + dealer human-eval ispezione ≥4/5
+- Tempo benchmark validation: ~45 min one-shot, costo €0
+- Trade-off: HSV shift marginale vs CNN embedding moderni (color jitter ±10% tollerato) — possibile semplificare a crop+watermark+JPEG only se dealer riporta degrado visivo
+- Trigger update: a 60gg re-testare hit-rate (Google Lens migliora vehicle-make matching nel tempo) → ruotare seed watermark + crop region ogni 60gg
+**Ref**: S167 Thread 1 Agent verified, [arXiv 2511.00143 BlurGuard](https://arxiv.org/html/2511.00143v1), [arXiv 2406.00918 evasion robustness](https://arxiv.org/html/2406.00918v2), [opencv-python issue #777 Big Sur](https://github.com/opencv/opencv-python/issues/777)
+
+---
+
 # Indice cronologico
 
 | # | Titolo | Status | Data | Sessione |
@@ -584,8 +711,13 @@ Source: founder Luke S11c-strategic 2026-05-13 Q11.
 | D-18 | Dossier core 12 sez + appendix expandable | DECIDED | 2026-05-13 | S11c-strategic |
 | D-19 | Education layer trust-builder | DECIDED | 2026-05-13 | S11c-strategic |
 | D-20 | Positioning anti-Bolidem | DECIDED | 2026-05-13 | S11c-strategic |
+| D-21 | Workflow info-broker → communication-broker-garante eBay-style | DECIDED | 2026-05-14 | S167 |
+| D-22 | Stack tecnico ARGOS comm infra (Baileys + Groq + state-machine + DocuSeal + Pillow) | DECIDED | 2026-05-14 | S167 |
+| D-23 | D-OPEN-Q2 timeline revision: forced P.IVA al deal #5-7 NON €10k | DECIDED-revision-D-OPEN-Q2 | 2026-05-14 | S167 |
+| D-24 | Anti-disintermediation 3-pillar (value-add + TOS penale + sourcing rotation) | DECIDED | 2026-05-14 | S167 |
+| D-25 | Image-shield Pillow-only stack (no OpenCV Big Sur safe) | DECIDED | 2026-05-14 | S167 |
 
-**Totale**: 25 entry (23 DECIDED + 1 OPEN-ipotesi D-08 + 1 SUPERSEDED D-03). Founder Q1-Q5 closed via S11c-strategic. Pattern S159 evitato: D-17 AI Visual pilot bloccante PRIMA shipping.
+**Totale**: 30 entry (28 DECIDED + 1 OPEN-ipotesi D-08 + 1 SUPERSEDED D-03). Founder Q1-Q5 closed via S11c-strategic. Pattern S159 evitato: D-17 AI Visual pilot bloccante PRIMA shipping. S167 workflow evolution data-driven via protocollo v2 automated (5 nuove DECIDED con research verified Thread 1+2+3+4).
 
 # Open questions / Risks
 
