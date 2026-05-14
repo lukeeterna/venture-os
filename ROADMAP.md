@@ -269,7 +269,7 @@ Trigger su alert handoff-debt-watcher (FASE 3.2). Manualmente: ogni 4-8 settiman
 
 ---
 
-### B6 — Pre-action-check enforcement post S159 rebrand #5 (S166 2026-05-13, escalation FASE 4.2)
+### B6 — Pre-action-check enforcement post S159 rebrand #5 ✅ SHIPPED (S167 2026-05-14)
 
 **Trigger**: pattern S159 rebrand 5× in 1 giorno S166 → soglia FASE 4.2 (≥3) superata, escalation strutturale obbligatoria.
 
@@ -291,9 +291,16 @@ Trigger su alert handoff-debt-watcher (FASE 3.2). Manualmente: ogni 4-8 settiman
 
 **Done when**: hook upgrade testato cwd ARGOS, skill installata, vincolo #13 in CLAUDE.md (sotto 200 righe), zero rebrand S159 in 3 sessioni consecutive post-B6.
 
+**Esito S167**:
+- L1 hook `~/.claude/hooks/session_start_brief.sh` upgraded: cwd-detection (ARGOS/FLUXION/Guardian) + extract DECIDED entries da DECISIONS.md + inject blocco "DECISIONI FOUNDER NON RINEGOZIABILI" in additionalContext. Test cwd ARGOS: 20+ entries iniettate (7.5k chars). Test cwd VOS root: NO inject (corretto).
+- L2 skill `~/.claude/skills/pre-action-check/SKILL.md` installata, visibile in skill list session start. Test 5 prompt (3 trigger keyword "propongo/raccomando/scrivo per" + 2 no-trigger "leggi/esegui") PASS.
+- L3 CLAUDE.md vincolo #13 aggiunto, file collassato a 198 righe (sotto 200 doc Anthropic). Skill mini-docs ridondanti compressi in pointer 2-line.
+- Memoria persistente `~/.claude/projects/-Volumes-MontereyT7-venture-os/memory/feedback_pattern_S159_mitigation.md` salvata, MEMORY.md index aggiornato.
+- Validazione 3-sessione-consecutiva senza rebrand: pendente (richiede sessioni S168+).
+
 **Anti-pattern evitare**: skill verbose, block-mode hook senza opt-out, memoria aggressiva.
 
-**Priorità**: HIGH — blocca ARGOS S167+ outreach reale.
+**Priorità**: HIGH — blocca ARGOS S167+ outreach reale. **Soddisfatta**.
 
 ---
 
