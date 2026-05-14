@@ -6,6 +6,26 @@
 
 ---
 
+## UPDATE 2026-05-14 fine sessione — MVP comm-broker SHIPPED 17/17 test PASS
+
+Comm-broker stack D-22 F1+F2+F3+F4 SHIPPED in ARGOS repo `comm-broker/`:
+- `image_shield.py` (D-25 Pillow Big Sur safe)
+- `deal_state_machine.py` (D-22 F4 7-step + SQLite)
+- `templates/*.j2` (D-22 F3 5 fasi × 2 lang IT+EN, 10/10 render)
+- `wa_bridge.py` (D-22 F1 SQLite bridge — KEEP whatsapp-web.js NO Baileys)
+- `message_analyzer.py` (D-22 F2 Groq cascade wrap — 1-call combined)
+- `pipeline.py` (D-22 glue orchestrator)
+- `tests/` 4 test files, 17/17 PASS (incl 4 live Groq calls verified)
+
+Live Groq verified:
+- BMW interest → offer/positive translation EN OK
+- Western Union → scam_flag=True, FSM aborted, outbound NOT queued ✅
+- Gemini-flash 429 quota → cascade circuit breaker → Groq fallback automatic
+
+S168 Step 2 MVP build COMPLETE. Step 3 V3-rev2 send TEST_FOUNDER + wa-daemon
+wire-up real = next priority. Step 1 consulenza commercialista = DEFERRED
+fino payment evidence (Luke feedback memoria saved).
+
 ## Pre-condizioni GIÀ COMPLETATE in S167 (verifica)
 
 - **B6 3-layer shipped** (ROADMAP B6 marker SHIPPED): hook SessionStart cwd-detect + skill `pre-action-check` + CLAUDE.md vincolo #13 (file 198 righe ≤200). Test cwd ARGOS: 25+ DECIDED entries iniettate (7.5k+ chars). Test cwd VOS root: NO inject corretto.
