@@ -1,18 +1,18 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-05-14T18:39:49Z`
+**Generato**: `2026-05-14T18:49:06Z`
 **Sessione**: `05e8394a-a24b-4840-9c9a-fee26263135e`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: committed: 20be03c
-**Last commit**: `20be03c auto-close session 05e8394a-a24b-4840-9c9a-fee26263135e @ 2026-05-14T18:39:49Z`
+**Commit auto**: committed: 802553e
+**Last commit**: `802553e auto-close session 05e8394a-a24b-4840-9c9a-fee26263135e @ 2026-05-14T18:49:06Z`
 
 ## Ultimi 5 commit
 ```
+802553e auto-close session 05e8394a-a24b-4840-9c9a-fee26263135e @ 2026-05-14T18:49:06Z
+12d3f78 S170 close: D-26 cold-lead framework V5 + wave 1 send 4/5 OK
 20be03c auto-close session 05e8394a-a24b-4840-9c9a-fee26263135e @ 2026-05-14T18:39:49Z
 e386bc3 auto-close session 05e8394a-a24b-4840-9c9a-fee26263135e @ 2026-05-14T18:36:54Z
 044085e auto-close session c7432d1c-24e6-4c29-aedc-959861d56adb @ 2026-05-14T18:25:02Z
-8a561f9 seed 999.1 correction + PROMPT-S170 trial gate pp-openrouter
-c57bc3d auto-close session c7432d1c-24e6-4c29-aedc-959861d56adb @ 2026-05-14T18:20:30Z
 ```
 
 ## File modificati nell'ultimo commit
@@ -22,14 +22,14 @@ M	.claude/NEXT_SESSION_PROMPT.md
 
 ## Ultimo prompt utente (estratto)
 ```
-[{"tool_use_id":"toolu_01DQDparLmCL72sy9B74G8Z4","type":"tool_result","content":"dealer_id     name        city        region      wa            phone        stock_size  premium_pct  score_fit   tier        pipeline_status\n------------  ----------  ----------  ----------  ------------  -----------  ----------  -----------  ----------  ----------  ---------------\nstile_car_fg  Stile Car   Orta Nova   Puglia      393334254654  333-4254654  40          0.65         8.5         TIER0       CONTACT
+[{"tool_use_id":"toolu_01Y5Yq1ipwATYgpGmFWEGm5D","type":"tool_result","content":" M .claude/NEXT_SESSION_PROMPT.md\n---\n12d3f78 S170 close: D-26 cold-lead framework V5 + wave 1 send 4/5 OK\n20be03c auto-close session 05e8394a-a24b-4840-9c9a-fee26263135e @ 2026-05-14T18:39:49Z\ne386bc3 auto-close session 05e8394a-a24b-4840-9c9a-fee26263135e @ 2026-05-14T18:36:54Z\n044085e auto-close session c7432d1c-24e6-4c29-aedc-959861d56adb @ 2026-05-14T18:25:02Z\n8a561f9 seed 999.1 correction + PROMPT-S170 t
 ```
 
 ## Ultimi turni assistant
 ```
-**(D1)** Procediamo con questi 5 Sud-only? Onesto su limitazione → wave 1 = misura V5 paradigma su Sud Italia, NON Italia rappresentativa.
-**(D2)** Spawn task S171-priority: estensione CoVe scouting → 30+ dealer Nord/Centro/Isole per wave 2 territory-diversified?
-**(D3)** GROQ rotation hai fatto? (te lo chiedo perché mentre tu rotavi ho fatto B in parallelo)
+- Se 0 reply dopo 7gg: research-protocol-v2 4-agent cold-lead B2B IT specifico
+- CoVe scouting Nord/Centro/Isole (blocker wave 2)
+Commit pushed: `12d3f78 S170 close: D-26 cold-lead framework V5 + wave 1 send 4/5 OK`. NEXT_SESSION_PROMPT.md restano in M (hook gestisce autonomamente).
 ```
 
 ## Come riprendere
