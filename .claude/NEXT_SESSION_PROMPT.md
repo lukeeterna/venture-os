@@ -1,35 +1,36 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-05-14T09:16:16Z`
+**Generato**: `2026-05-14T09:19:08Z`
 **Sessione**: `d483065d-2a3d-4f04-8b12-d2584e1d2cb0`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: committed: 00de189
-**Last commit**: `00de189 auto-close session d483065d-2a3d-4f04-8b12-d2584e1d2cb0 @ 2026-05-14T09:16:16Z`
+**Commit auto**: committed: 934cbfa
+**Last commit**: `934cbfa auto-close session d483065d-2a3d-4f04-8b12-d2584e1d2cb0 @ 2026-05-14T09:19:08Z`
 
 ## Ultimi 5 commit
 ```
+934cbfa auto-close session d483065d-2a3d-4f04-8b12-d2584e1d2cb0 @ 2026-05-14T09:19:08Z
 00de189 auto-close session d483065d-2a3d-4f04-8b12-d2584e1d2cb0 @ 2026-05-14T09:16:16Z
 f01acc6 auto-close session d483065d-2a3d-4f04-8b12-d2584e1d2cb0 @ 2026-05-14T09:13:57Z
 36d04e4 auto-close session d483065d-2a3d-4f04-8b12-d2584e1d2cb0 @ 2026-05-14T09:10:54Z
 43e4c9b auto-close session d483065d-2a3d-4f04-8b12-d2584e1d2cb0 @ 2026-05-14T09:09:23Z
-d737d75 auto-close session d483065d-2a3d-4f04-8b12-d2584e1d2cb0 @ 2026-05-14T08:57:16Z
 ```
 
 ## File modificati nell'ultimo commit
 ```
 M	.claude/NEXT_SESSION_PROMPT.md
+M	state/cc-violations.jsonl
 ```
 
 ## Ultimo prompt utente (estratto)
 ```
-ma se utilizziamo wa web e abbiamo sistema antiban e altro a cosa si riferiscono questi costi?
+ok procedi piece 3
 ```
 
 ## Ultimi turni assistant
 ```
-3. **Pattern errore noti**: AutoScout24/Mobile.de CAPTCHA / IP block scraper. Anti-ban portali EU diverso da anti-ban WA. Stack esistente CoVe lo gestisce per CoVe; comm-broker uso diverso (chat session-long vs scrape-burst).
-4. **Sovradimensiono?**: forse F1-F5 in PIECE 2 sono troppo. F3 (template) e F4 (state machine) sono valore-vero. F2 (NLU scam detection) può essere LITE prima — pattern matching regex su parole chiave scam ("bonifico estero anticipato", "western union") + LLM only su edge case. F5 (contract) skill CC nativa quindi zero ricerca.
-Confermi nuova baseline €0/mese + correzione PIECE 2? Procedo PIECE 3 sub-questions F1-F5 atomiche?
+- F2.Q2.1 è **performance critical**: 1 LLM call combinata vs 4 separate = differenza tra free-tier OK e overflow
+- F5.Q5.1 è **fast check**: 5 min verifica skill esistente, evita ricerca esterna se già coperto
+Va PIECE 3 così? Procedo PIECE 4 (output format + success criteria) + PIECE 5 (tool stack Agent può usare)?
 ```
 
 ## Come riprendere
