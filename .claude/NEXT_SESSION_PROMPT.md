@@ -1,18 +1,18 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-05-14T18:18:26Z`
+**Generato**: `2026-05-14T18:20:30Z`
 **Sessione**: `c7432d1c-24e6-4c29-aedc-959861d56adb`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: committed: f3d9d00
-**Last commit**: `f3d9d00 auto-close session c7432d1c-24e6-4c29-aedc-959861d56adb @ 2026-05-14T18:18:26Z`
+**Commit auto**: committed: c57bc3d
+**Last commit**: `c57bc3d auto-close session c7432d1c-24e6-4c29-aedc-959861d56adb @ 2026-05-14T18:20:30Z`
 
 ## Ultimi 5 commit
 ```
+c57bc3d auto-close session c7432d1c-24e6-4c29-aedc-959861d56adb @ 2026-05-14T18:20:30Z
+caaad9f seed 999.1: CLI Printing Press evaluation DEFERRED
 f3d9d00 auto-close session c7432d1c-24e6-4c29-aedc-959861d56adb @ 2026-05-14T18:18:26Z
 74704b2 auto-close session c7432d1c-24e6-4c29-aedc-959861d56adb @ 2026-05-14T18:16:05Z
 6af4d62 S169 close FINALE: pipeline E2E completa verde + handoff S170 con GROQ rotation note
-5b44f90 auto-close session c7432d1c-24e6-4c29-aedc-959861d56adb @ 2026-05-14T18:12:59Z
-144ae99 S169 extension: pipeline E2E inbound+classifier VALIDATED + LID bug caught/fixed live
 ```
 
 ## File modificati nell'ultimo commit
@@ -22,14 +22,14 @@ M	.claude/NEXT_SESSION_PROMPT.md
 
 ## Ultimo prompt utente (estratto)
 ```
-[{"tool_use_id":"toolu_01NbJrPeZMykaFisbEtM4No6","type":"tool_result","content":"Web search results for query: \"\"printing press\" CLI LLM API replacement open source 2026\"\n\nLinks: [{\"title\":\"GitHub - mvanhorn/cli-printing-press: Every API has a secret identity. This finds it, absorbs every feature from every competing tool, then builds the GOAT CLI — designed for AI agents first, with SQLite sync, offline search, and compound insight commands. GitHub\",\"url\":\"https://github.com/mvan
+[{"tool_use_id":"toolu_01SaD9hf4BHFNd6ng8vmRa3K","type":"tool_result","content":"[master caaad9f] seed 999.1: CLI Printing Press evaluation DEFERRED\n 2 files changed, 79 insertions(+)\n create mode 100644 seeds/999.1-cli-printing-press-mcp-agent-orchestration.md\ncaaad9f seed 999.1: CLI Printing Press evaluation DEFERRED","is_error":false}]
 ```
 
 ## Ultimi turni assistant
 ```
-- [Printing Press homepage](https://printingpress.dev/)
-- [GitHub mvanhorn/cli-printing-press](https://github.com/mvanhorn/cli-printing-press)
-- [SocialVik analysis: AI Agents Ditching APIs for Agent Native CLIs 2026](https://www.socialvik.com/blog/the-printing-press-framework)
+- Anti-pattern documentato (no adoption-driven-by-trend)
+Commit VOS `caaad9f`. Deviation log entry aggiunto.
+Quando uno dei 3 trigger si verifica → riapri seed 999.1, spawn evaluation. Fino ad allora resta parking lot, nessun maintenance overhead.
 ```
 
 ## Come riprendere
