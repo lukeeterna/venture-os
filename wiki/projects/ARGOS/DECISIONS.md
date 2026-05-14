@@ -608,7 +608,7 @@ Source: founder Luke S11c-strategic 2026-05-13 Q11.
 
 ## D-23 — D-OPEN-Q2 timeline revision: forced formalization P.IVA arriva deal #5-7 NON €10k (2026-05-14, S167)
 
-**Status**: DECIDED-revision-D-OPEN-Q2 (research Thread 3 con dati DAC8 + CRS + art. 67 TUIR)
+**Status**: DEFERRED-until-payment-evidence (Luke 2026-05-14: NO legal/tax thread pre-revenue, riapertura solo post deal #1 cash/bonifico documentato)
 **Contesto**: D-OPEN-Q2 (2026-05-13) stimava trigger forced formalization a €10k cumulative cash. Research v2 automated Thread 3 (2026-05-14) ha verificato:
 - **DAC8** (Direttiva UE 2023/2226, operativa **1 gennaio 2026**): CASP cripto (Strike, Bitpanda, exchange) report TUTTE transazioni residenti IT ad AdE. Soglia ZERO. Self-custodial wallet (Phoenix, Sparrow) non report direttamente MA on/off-ramp via CASP sì → identificabile. Cripto exit chiusa.
 - **CRS** (DLgs 29/2014 + DAC2): EU EMI (Wise/Revolut/Bunq/Paysera) report annuale CRS verso AdE saldi + flussi conti business. Estonia e-Residency setup €1.500-2k = viola zero-cost + comunque CRS reportato.
@@ -636,7 +636,7 @@ Source: founder Luke S11c-strategic 2026-05-13 Q11.
 
 ## D-24 — Anti-disintermediation defense 3-pillar (2026-05-14, S167)
 
-**Status**: DECIDED (research Thread 2 marketplace incumbent pattern)
+**Status**: DEFERRED-pillar2-until-payment-evidence (pillar 1 value-add + pillar 3 sourcing rotation restano DECIDED; pillar 2 TOS/penale art.2596 + skill `legal-compliance-checker` extension = riapertura post deal #1)
 **Contesto**: D-21 workflow rivela dati venditore EU via fattura finale. Rischio strutturale dealer bypass deal #2 stesso venditore. Research Thread 2 (Airbnb/Upwork/eBay/Etsy/Vinted incumbent pattern + paper BU/HBS/Wharton): mascheramento PII da solo è **inefficace** (paper Airbnb 2022), value-add ricorrente + sourcing rotation funzionano, TOS+penale = deterrent psicologico NON enforcement strumento (costo causa civile IT €8-25k vs valore deal €1k = ROI negativo enforcement).
 **Opzioni considerate**:
 - (a) PII redaction + email proxy only — paper marketplace mostra inefficace
