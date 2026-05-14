@@ -1,18 +1,18 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-05-14T18:16:05Z`
+**Generato**: `2026-05-14T18:18:26Z`
 **Sessione**: `c7432d1c-24e6-4c29-aedc-959861d56adb`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: committed: 74704b2
-**Last commit**: `74704b2 auto-close session c7432d1c-24e6-4c29-aedc-959861d56adb @ 2026-05-14T18:16:05Z`
+**Commit auto**: committed: f3d9d00
+**Last commit**: `f3d9d00 auto-close session c7432d1c-24e6-4c29-aedc-959861d56adb @ 2026-05-14T18:18:26Z`
 
 ## Ultimi 5 commit
 ```
+f3d9d00 auto-close session c7432d1c-24e6-4c29-aedc-959861d56adb @ 2026-05-14T18:18:26Z
 74704b2 auto-close session c7432d1c-24e6-4c29-aedc-959861d56adb @ 2026-05-14T18:16:05Z
 6af4d62 S169 close FINALE: pipeline E2E completa verde + handoff S170 con GROQ rotation note
 5b44f90 auto-close session c7432d1c-24e6-4c29-aedc-959861d56adb @ 2026-05-14T18:12:59Z
 144ae99 S169 extension: pipeline E2E inbound+classifier VALIDATED + LID bug caught/fixed live
-1667ea2 auto-close session c7432d1c-24e6-4c29-aedc-959861d56adb @ 2026-05-14T18:07:02Z
 ```
 
 ## File modificati nell'ultimo commit
@@ -22,14 +22,14 @@ M	.claude/NEXT_SESSION_PROMPT.md
 
 ## Ultimo prompt utente (estratto)
 ```
-[{"tool_use_id":"toolu_0179oPqdfTSWuSSj5hibJQE9","type":"tool_result","content":"[master 6af4d62] S169 close FINALE: pipeline E2E completa verde + handoff S170 con GROQ rotation note\n 1 file changed, 5 insertions(+), 1 deletion(-)\n6af4d62 S169 close FINALE: pipeline E2E completa verde + handoff S170 con GROQ rotation note","is_error":false}]
+[{"tool_use_id":"toolu_01NbJrPeZMykaFisbEtM4No6","type":"tool_result","content":"Web search results for query: \"\"printing press\" CLI LLM API replacement open source 2026\"\n\nLinks: [{\"title\":\"GitHub - mvanhorn/cli-printing-press: Every API has a secret identity. This finds it, absorbs every feature from every competing tool, then builds the GOAT CLI — designed for AI agents first, with SQLite sync, offline search, and compound insight commands. GitHub\",\"url\":\"https://github.com/mvan
 ```
 
 ## Ultimi turni assistant
 ```
-- Test E2E inbound già validato S169 → skip Step 1, partiamo da V5 final review
-- Wave 1 outreach 5 dealer Italia (tua selezione, mix territori)
-Context S169 chiude pulito a ~32% used (sotto 60% threshold #7). Buona notte/giornata. 🌙
+- [Printing Press homepage](https://printingpress.dev/)
+- [GitHub mvanhorn/cli-printing-press](https://github.com/mvanhorn/cli-printing-press)
+- [SocialVik analysis: AI Agents Ditching APIs for Agent Native CLIs 2026](https://www.socialvik.com/blog/the-printing-press-framework)
 ```
 
 ## Come riprendere
