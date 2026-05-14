@@ -682,6 +682,48 @@ Source: founder Luke S11c-strategic 2026-05-13 Q11.
 
 ---
 
+## D-26 — Cold-lead acquisition framework B2B 3-step relational (V5) (2026-05-14, S170)
+
+**Status**: DECIDED (founder S169 paradigm shift relational vs transactional; cross-LLM check S170 informativo non-blocking; wave 1 send live confirmed S170)
+**Contesto**: D-21 step 1 ("Dealer IT chiede auto specifica via WA") presuppone dealer inbound-attivo. La realtà operativa wave 1 nazionale (D-14) richiede outbound proattivo cold-lead per acquisire dealer not-yet-aware del servizio ARGOS. V3 messaging S166→S168→S169 (transactional ask-on-msg1) era applicato meccanicamente da carry-over senza re-validation (pattern S159 #5). Founder S169 esplicito: "V3-rev2 non lo ritengo efficace, voglio paradigma relational".
+**Opzioni considerate**:
+- (a) Transactional V3/V4 (msg1 = "vuoi listing/PDF/call?") — escluso founder S169 + bias documented "scaricare CTA su cold dealer sconosciuto = filtro spam alto"
+- (b) Relational V5 3-step (msg1 = persona+mirror+question-no-ask, msg2 = amplify+caso, msg3 = soft-CTA dossier) — selezionato
+- (c) Mixed (msg1 transactional con soft-question) — escluso ambiguità paradigmatica
+**Decisione**: Framework V5 relational 3-step (paradigm B2B Italian cold-lead dealer auto premium):
+1. **Msg 1** (cold, no prior contact): persona Luca Ferretti + mirror reality (margine premium calante + scarsità km bassi IT) + domanda aperta no-CTA (NO "vuoi X?"). Funzione: vendere msg2, non vendere servizio. ~95-105 parole.
+2. **Msg 2** (3-7gg post msg1 reply): amplify punto specifico citato da dealer + caso concreto mestiere + soft-question targeted. Hand-crafted, NO automation.
+3. **Msg 3** (post engagement msg2): "le mando dossier su auto X?" binary CTA, friction zero, trust pre-built. Entra in D-21 step 2.
+**V5 Msg 1 testo canonical** (104 parole, validato S170 wave 1 live send):
+```
+Buongiorno,
+
+mi chiamo Luca Ferretti. Mi occupo di trovare auto premium (BMW, Mercedes, Audi) sui mercati di Germania, Belgio e Olanda per concessionari italiani che vogliono ampliare l'offerta senza immobilizzare capitale in stock.
+
+Le scrivo non per propormi qualcosa oggi, ma per capire come lavora. Ho l'impressione che il margine sul premium usato si stia restringendo, e che i clienti chiedano sempre più spesso auto con chilometraggio basso certificato (sotto i 60.000), che sul mercato italiano costano care e sono difficili da reperire.
+
+Cosa sta facendo lei in questa situazione? Importa direttamente, o ci sono altri canali che le funzionano?
+
+Luca Ferretti
+Argos Import
+```
+**Data-anchor verificato** (S169 WebSearch 2026-05-14): AutoScout24.it BMW Serie 3 sub-30k€ <60k km ≥2021 = 28 annunci IT vs >250 annunci paginati DE → ratio density DE/IT ≥7-10x. Claim "scarsi su mercato italiano" verified.
+**Cross-LLM check S170** (informativo non-blocking): DeepSeek V4 Flash 6/10 reply-rate 3-7% + GPT-oss-120b 5/10 4-7%. Convergenza "troppo lungo per WA + CTA finale troppo aperta + suggeriscono paradigma transactional". Bias LLM transactional documented — non override scelta founder relational. Ref: `~/venture-os/state/cross-llm-checks/S170-V5.md`.
+**Conseguenze**:
+- D-21 step 1 ridefinito: "Dealer IT chiede auto specifica via WA **DOPO** acquisition pipeline D-26 msg1→msg2→msg3" (cross-ref bilaterale)
+- D-04 reinforced: stesso brand Luca Ferretti su outbound cold (D-26) + downstream proxied (D-21)
+- D-07 HITL applicabile da msg1: cold-lead pre-pipeline whitelist registration via `register_party('dealer', alias, 'IT')` PRIMA queue+approve
+- D-14 wave-based scope nazionale: wave 1 = 5 dealer (geo-bias dataset → 0 Nord/Centro/Isole disponibili NEW+WA, vedi Open Q #11)
+- **NO** automation msg2: hand-crafted per evitare drift verso transactional generic
+- **NO** geo-anchor in msg1 (memory `feedback_argos_scope_italia.md` post-S159): mai "Foggia/Sud/territorio X"
+- Metric success target wave 1 (n=5): ≥1 reply qualunque (anche STOP esplicito) = "dato vivo" → wave 2 (15-20 dealer post extension dataset); 0 reply = research-protocol-v2 S171 obbligatorio
+**Trigger revisione**:
+- Reply rate wave 1 (cumulative 7gg post send) <20% → re-design msg1 (V6) con learnings reali dealer feedback, NON LLM-driven
+- Pattern reply qualità bassa (dismissive/spammy) ≥3/5 → review CoVe scoring (dataset thin signal) prima di altri wave
+**Ref**: PROMPT-S170, cross-LLM S170, S169 founder closure paradigma relational, memory feedback_argos_scope_italia.md, AutoScout24.it density check 2026-05-14, wave 1 send confirmed bridge_outbound id 2-6 (DB iMac comm-broker/bridge.sqlite)
+
+---
+
 # Indice cronologico
 
 | # | Titolo | Status | Data | Sessione |
@@ -716,8 +758,9 @@ Source: founder Luke S11c-strategic 2026-05-13 Q11.
 | D-23 | D-OPEN-Q2 timeline revision: forced P.IVA al deal #5-7 NON €10k | DECIDED-revision-D-OPEN-Q2 | 2026-05-14 | S167 |
 | D-24 | Anti-disintermediation 3-pillar (value-add + TOS penale + sourcing rotation) | DECIDED | 2026-05-14 | S167 |
 | D-25 | Image-shield Pillow-only stack (no OpenCV Big Sur safe) | DECIDED | 2026-05-14 | S167 |
+| D-26 | Cold-lead acquisition framework V5 3-step relational (precede D-21 step 1) | DECIDED | 2026-05-14 | S170 |
 
-**Totale**: 30 entry (28 DECIDED + 1 OPEN-ipotesi D-08 + 1 SUPERSEDED D-03). Founder Q1-Q5 closed via S11c-strategic. Pattern S159 evitato: D-17 AI Visual pilot bloccante PRIMA shipping. S167 workflow evolution data-driven via protocollo v2 automated (5 nuove DECIDED con research verified Thread 1+2+3+4).
+**Totale**: 31 entry (29 DECIDED + 1 OPEN-ipotesi D-08 + 1 SUPERSEDED D-03). Founder Q1-Q5 closed via S11c-strategic. Pattern S159 evitato: D-17 AI Visual pilot bloccante PRIMA shipping. S167 workflow evolution data-driven via protocollo v2 automated (5 nuove DECIDED con research verified Thread 1+2+3+4). S170 cold-lead framework standalone (D-26) precede D-21 workflow comm-broker — pattern relational vs transactional paradigm founder-explicit S169.
 
 # Open questions / Risks
 
@@ -730,3 +773,5 @@ Source: founder Luke S11c-strategic 2026-05-13 Q11.
 7. **Workflow IBAN estero pool (Q2 conseguenze)**: dealer P.IVA ordinaria fattura = lost deal vs setup società estone complessità. Default: rifiutare se setup >€2k. Consulenza fiscalista internazionale TBD pre-deal #1.
 8. **Audit retroattivo DECIDED entries** (S11c-strategic 2026-05-13 lessons): D-08 inizialmente scritta DECIDED, corretta OPEN-ipotesi-non-validata. Audit-check applicato alle 23 DECIDED: tutte strategiche-non-behavioral o factual-observed. Pattern: prima di marcare DECIDED, distinguere {strategic-commitment, factual-observation, behavioral-hypothesis}. Solo i primi 2 ammissibili come DECIDED senza n>>1 evidenza.
 9. **Heretic D5 uncensored unverified**: Venice/hermes-3 pool 429 sustained 2026-05-13. Step 3.1 STRATEGY.md sez 1 (persona Luca Ferretti uncensored insights) skipped — claim borderline marcati `[unverified-insight]` esplicitamente. Trigger retry: finestra notturna IT 02:00-06:00 UTC via `scripts/retry-heretic-d5.sh`.
+10. **Dataset geo-bias `dealer_network.sqlite` (S170)**: 18 dealer totali distribuiti SOLO in Sud (Puglia 5, Campania 9, Calabria 4). ZERO dealer Nord/Centro/Isole disponibili NEW+WA per wave 1. Memory `feedback_argos_scope_italia.md` rispettata su V5 testo (no geo-anchor), ma dataset residual-biased pre-S170. Trigger blocker wave 2: CoVe scouting extension Nord/Centro/Isole target ≥30 dealer balanced prima di wave 2. Owner: ARGOS scouting pipeline S171.
+11. **Wave 1 send fail Auto Carfora (S170)**: id=5 bridge_outbound errore "No LID for user new" su 393489214946. Probabile numero non attivo WhatsApp OR business LID-disabled. Non bug ARGOS — dealer-side data quality. Trigger: verify phone manuale founder (call/SMS) → se attivo WA, re-queue con phone canonical; se inactive, marcare dealer `pipeline_status=DEAD_PHONE` in dealer_network.sqlite.
