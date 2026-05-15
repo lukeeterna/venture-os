@@ -1,9 +1,26 @@
-# Prompt FLUXION — Production Sprint S184-S190 — Public Launch Path (v3 post-review)
+# Prompt FLUXION — Production Sprint S184-S190 — Public Launch Path (v3.1)
 
 > **Workspace**: terminal Claude Code con `cwd /Volumes/MontereyT7/FLUXION`
 > **NON** in terminal VOS o ARGOS. Workspace dedicato FLUXION (decisione split S170).
 > **Priority CTO**: priority 1 production (founder S170-post-close: "FLUXION deve andare in produzione quanto prima").
-> **Versione**: v3 post-review CTO peer-review applicata 2026-05-15 (3 BLOCKER + 7 HIGH risolti, vedi commit log)
+> **Versione**: v3 post-review CTO peer-review applicata 2026-05-15 (3 BLOCKER + 7 HIGH risolti). v3.1 patch 2026-05-15 (2 HIGH + 2 LOW dependency graph + latency root cause + memory path + timeframe).
+
+## Dependency graph esecuzione
+
+```
+TECHNICAL READINESS (parallelizzabili):
+   P0 pricing  ─┐
+   P1 MSI      ─┤
+   P2 payment  ─┤   tutti convergono prima di P3
+   P6 Sentry   ─┘
+
+CRITICAL PATH first-paying-customer (sequenziali):
+   P3 sales (depends Action 6+7) → P4 landing+video (depends Action 3+4)
+       → P5 beta (depends P3+P4) → P8 public launch (depends P5)
+
+DEFERRED (post-beta, slittabili S191+):
+   P7 Sara latency (only if beta clients complain)
+```
 
 ---
 
@@ -195,16 +212,24 @@ Solo se Action 6 = "outbound OK":
 
 **Done when**: 1 forced crash → event in Sentry < 60s + rate limit verified su test simulato 200 events.
 
-### P7 — Sara latency optimization (4-6h, DEFERRED post-beta)
+### P7 — Sara latency optimization (DEFERRED post-beta, root-cause-first)
 
 **Trigger**: solo se beta clienti P5 lamentano latency. Altrimenti slittare S191+.
 
-**Task** (da `docs/perf/D3-voice-latency.md`):
-- Bottleneck IPC analysis flame graph
-- Optimization candidates: Groq cascade vs single-model, Piper TTS streaming
-- Target P95 <800ms, P99 <1200ms
+**Step 1 OBBLIGATORIO PRIMA optimization** (vincolo #11 root cause non episodio):
+- Leggi `docs/perf/D3-voice-latency.md` completo
+- Identifica **top-3 contributors P95 latency** (es. IPC overhead, Groq response, Piper TTS, Twilio RTT)
+- Quantifica % contribution di ognuno (con dati flame graph, NO estimate)
+- **Se top-3 totale <70% di 1330ms = root cause unclear → handoff S192 (NO blind optimization)**
 
-**Done when**: 3 consecutive benchmark verificato target OR feedback beta dice "latency OK così" → close P7 senza work.
+**Step 2 budget time re-evaluation**:
+- Calcola h-effort realistic per ognuno dei top-3
+- Se total >6h → handoff S185 + decomposition più granulare
+- Se ≤6h → procedi optimization 1 contributor alla volta + benchmark dopo ognuno
+
+**Target**: P95 <800ms, P99 <1200ms
+
+**Done when**: 3 consecutive benchmark verificato target OR feedback beta P5 dice "latency OK così" → close P7 senza work.
 
 ### P8 — Public launch
 
@@ -216,6 +241,8 @@ Solo se Action 6 = "outbound OK":
 - Sales agent attivo Path A o B
 - Support runbook attivo
 - **MILESTONE 1 = primo public buyer paying €497**
+
+**Timeframe failure**: **30 giorni post-launch senza primo buyer paying = retro vincolo #11 root cause obbligatorio**. NO extension passiva. Cause possibili da investigare: target/positioning, pricing, value prop, canale acquisition, friction installazione.
 
 ---
 
@@ -250,6 +277,8 @@ File rilevanti per FLUXION:
 - `MEMORY.md` index
 
 FLUXION-specific memory dir: `~/.claude/projects/-Volumes-MontereyT7-FLUXION/memory/` (se vuota, crea feedback FLUXION-specifici incrementali in dir locale).
+
+**Memory save path FLUXION**: nuovi feedback file FLUXION da salvare in `~/.claude/projects/-Volumes-MontereyT7-FLUXION/memory/feedback_*.md` (Claude Code auto-loads questo path per cwd FLUXION). Update `MEMORY.md` index nella stessa dir.
 
 ---
 
