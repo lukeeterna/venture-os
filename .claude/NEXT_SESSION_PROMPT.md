@@ -1,35 +1,36 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-05-15T07:36:58Z`
+**Generato**: `2026-05-15T07:48:55Z`
 **Sessione**: `05e8394a-a24b-4840-9c9a-fee26263135e`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: committed: 50ee4d0
-**Last commit**: `50ee4d0 auto-close session 05e8394a-a24b-4840-9c9a-fee26263135e @ 2026-05-15T07:36:58Z`
+**Commit auto**: committed: 25f9daf
+**Last commit**: `25f9daf auto-close session 05e8394a-a24b-4840-9c9a-fee26263135e @ 2026-05-15T07:48:55Z`
 
 ## Ultimi 5 commit
 ```
+25f9daf auto-close session 05e8394a-a24b-4840-9c9a-fee26263135e @ 2026-05-15T07:48:55Z
 50ee4d0 auto-close session 05e8394a-a24b-4840-9c9a-fee26263135e @ 2026-05-15T07:36:58Z
 d1b76e2 auto-close session 05e8394a-a24b-4840-9c9a-fee26263135e @ 2026-05-15T07:33:21Z
 1fffc4d S170-post-close: target re-baseline ARGOS + paradigm shift D-27/D-28 + FLUXION pricing 2-tier
 a101f00 auto-close session 05e8394a-a24b-4840-9c9a-fee26263135e @ 2026-05-15T07:10:44Z
-c6fc94a auto-close session 05e8394a-a24b-4840-9c9a-fee26263135e @ 2026-05-15T06:36:32Z
 ```
 
 ## File modificati nell'ultimo commit
 ```
 M	.claude/NEXT_SESSION_PROMPT.md
+M	state/cc-violations.jsonl
 ```
 
 ## Ultimo prompt utente (estratto)
 ```
-aspetta dove sono i prompt? non vuoi che li "passi" prima a claude ai? nell'installazione di fluxion lato cliente deve essere TUTTO MECHANIC! ALLINEIAMOCI BENE PRIMA
+  ~€16 su €497 = accettabile).  QUESTO LO SO . FAMMI CAPIRE
 ```
 
 ## Ultimi turni assistant
 ```
-2. **Passa Claude.ai prima** + dimmi cosa torna così aggiorno VOS-side (sì/no/altro workflow?)
-3. **EV cert €280-300/anno accept** come eccezione vincolo #5 per FLUXION "tutto mechanic" (sì/no/alternativa?)
-Se confermi tutti 3 → aggiorno PROMPT-FLUXION + PRD con sezione "TUTTO MECHANIC" critical constraint + new priority sequence P0-P8. Poi tu fai review Claude.ai dei prompt aggiornati prima di aprire terminali.
+3. Se OK → start identity validation
+4. Se NOT OK → ordine Sectigo EV cert
+Vuoi che faccia io questa verifica via WebSearch adesso e ti do output verificato 2026? Sarebbe 5 min, allineato vincolo #2 ricerca attiva max 5 min.
 ```
 
 ## Come riprendere
