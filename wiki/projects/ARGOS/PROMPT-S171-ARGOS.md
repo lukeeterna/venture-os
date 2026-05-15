@@ -288,3 +288,40 @@ Founder apre terminal ARGOS, copia-incolla questo prompt. Tu (Claude ARGOS-insta
 1. **Rispondi prima ai HARD BLOCKER DUBBI #1, #3, #7** (block until clarified). SOFT DUBBI #2/#4/#5/#6 procedi con default proposti (non bloccanti).
 2. Poi **P0 AMBRA audit SEQUENZIALE → P1 research microdealer** (NO parallel — single founder + single Claude instance = context switch costoso, vincolo #7)
 3. Sequenza P2-P6 dopo P0+P1 verdi (NO step ricerca fiscale/legale — vincolo founder insindacabile NO P.IVA NESSUN REGIME)
+
+---
+
+## VOS Utility Feedback Loop (mandatory close-of-task)
+
+A fine sessione terminal, **PRIMA di chiudere**, rispondi a queste 5 domande con evidence concreta (file/riga/momento sessione, NO generic). Output → append entry in `/Volumes/MontereyT7/venture-os/state/vos-utility-feedback.jsonl`.
+
+1. **Memory pointers VOS letti effettivamente usati?**
+   Quali feedback file VOS-side hai letto (path esatto) e quale decisione concreta hai preso O quale errore hai evitato grazie a quel file?
+   - Utile: "Letto `feedback_argos_target_microdealer_commissione.md` → ho FILTERED `dealer_network.sqlite` stock<20 invece di top score_fit → evitato re-do error wave 1 S170"
+   - Inutile: "Letti tutti i feedback files"
+
+2. **DECISIONS.md cross-ref hanno ridotto domande founder?**
+   Quante domande hai EVITATO di fare al founder grazie a D-XX entries? Cita 3 esempi con D-XX number + cosa avresti chiesto altrimenti. Se zero → VOS DECISIONS.md è overhead documentale.
+
+3. **PROMPT-S171 self-contained ha funzionato?**
+   Quante volte hai dovuto chiedere al founder context che il prompt non forniva? List le domande effettive. Se >3 → il prompt fallisce self-containment, VOS-meta investment in prompt-writing è overhead.
+
+4. **Memory feedback NUOVI generati questa sessione meritano persistence?**
+   Quali pattern emersi sono **trans-progetto** (utili anche ad altri terminali) vs **project-specific** (utili solo qui)? Trans-progetto → escalate a VOS-meta per propagation. Project-specific → memory locale sufficiente.
+
+5. **Overhead reale VOS in questa sessione**:
+   Quante volte hai dovuto leggere file VOS-side cross-mount (`/Volumes/MontereyT7/venture-os/...`) vs file locali progetto? Se T7 unmounted/lento ha bloccato lavoro = VOS overhead infrastrutturale. Quantifica minuti persi su mount/sync.
+
+**VERDICT FINALE sessione**:
+- ✅ **VOS UTILE**: ≥3/5 domande con evidence concreta + risparmio tempo founder quantificabile
+- 🟡 **VOS NEUTRO**: 1-2/5 con evidence + tempo founder neutro
+- ❌ **VOS OVERHEAD**: 0/5 con evidence concreta + tempo perso mount/sync/cross-ref > tempo risparmiato
+
+Append verdict + 5 risposte al jsonl. Founder leggerà aggregate weekly per decidere se VOS Phase 1-5 IMPROVEMENT vale o ridimensionare VOS.
+
+```bash
+# Comando append (esempio struttura)
+cat <<EOF >> /Volumes/MontereyT7/venture-os/state/vos-utility-feedback.jsonl
+{"ts":"$(date -u +%Y-%m-%dT%H:%M:%SZ)","session":"S171-ARGOS","verdict":"UTILE|NEUTRO|OVERHEAD","q1_memory_used":"...","q2_decisions_saved_questions":"...","q3_prompt_self_contained":"...","q4_new_feedback_trans_or_project":"...","q5_vos_overhead_minutes":N}
+EOF
+```

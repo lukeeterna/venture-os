@@ -1,164 +1,149 @@
-# VOS Improvement Proposal — Stack & Tech per Servire ARGOS/FLUXION/Guardian Production
+# VOS Improvement Proposal v2 — Re-scoped 8-12h (post-review)
 
-> **Scopo**: identificare miglioramenti tecnici/stack VOS per servire production-ready i 3 progetti
-> **Out of scope** (vincolo founder): procedure consolidate (heretic-handler, routing chain, briefer format)
-> **Scope**: stack tech, integration mechanisms, feedback loops, missing infrastructure
-> **Date**: 2026-05-15
-> **Discovery base**: VOS state inventory 2026-05-15 (14 componenti built, 11 JSONL state files, wiki operativa)
+> **Versione**: v2 (2026-05-15) post-review CTO peer Claude.ai
+> **Scope cut**: da 23-32h (5 phase) → 8-12h (3 phase ridotte)
+> **Out of scope (vincoli founder)**: heretic-handler, routing chain logic, Karpathy-compiler, briefer markdown format
+> **6 fix review applicati**: Phase 4 RIMOSSA, P5.1 field-only, scope cut FLUXION-priority, discovery pre-P1.2, test pre-P2.2, validate P1.1 need
+> **Discovery base**: VOS state inventory 2026-05-15
 
 ---
 
-## Sintesi gap analysis (5 critici + 4 secondari)
+## Fix review v1→v2 applicati
 
-### 🔴 GAP CRITICI
-
-| # | Gap | Impatto produzione |
+| # | Issue review | Fix applicato |
 |---|---|---|
-| **G1** | Brief-actions feedback loop NON popolato (briefer report-only, nessun trigger azioni) | Decisioni founder non tracciate, no audit trail, no compounding di learnings |
-| **G2** | Decision propagation cross-project MANUALE (DECISIONS.md ARGOS no sync a FLUXION/Guardian) | Pattern noti (AMBRA, B6 check, premature optimization) non si riusano cross-progetto = re-discovery loss |
-| **G3** | Tool-scout → deployment GAP (scout trova modelli, zero mechanism per integrarli) | Discovery senza adoption = noise informativo, ROI scouting basso |
-| **G4** | Cost tracking SOLO global €30/mese, no per-project burn-rate, no alert | Possibile sforamento silente, no segmentazione spesa ARGOS vs FLUXION vs Guardian |
-| **G5** | Routing regression NO auto-trigger fallback (es. Llama -50% context S170 non triggera switch) | Degradazione silente qualità VOS-meta operations |
+| 1 BLOCKER | P5.1 modifica briefer markdown layout (out-of-scope) | Re-scoped: SOLO field `signal_priority` in JSONL, NO modifica markdown output. Founder filtra lato sua. |
+| 2 BLOCKER | Phase 4 dipende ARGOS P0 audit out-of-scope | **Phase 4 RIMOSSA**. Riaprire post-AMBRA stabilizzato in ARGOS. |
+| 3 HIGH | 23-32h scope creep vs FLUXION priority | **Cut a 8-12h**: P1.2 + P2.1 + P5 depotenziato solo. P2.2/P3/P4 → backlog post-FLUXION MILESTONE 1. |
+| 4 HIGH | P1.1 brief-actions populate = assumption need | **Validate founder need PRIMA**: "stai perdendo decisioni? hai bisogno audit trail?". Se NO → P1.1 fuori scope. |
+| 5 HIGH | P2.2 memory federation assume Claude Code legge file droppati | **Test empirico pre-P2.2**: drop 1 file in target memory dir, verify SessionStart terminal lo legge. Se fail → P2.2 elimina, sostituire SessionStart hook injection. |
+| 8 LOW | G4 cost gap non quantificato | **Discovery 1h pre-P1.2**: export cost log 30gg ultimi, segmentare manuale, verify se gap materiale (>€5/mese drift) o teorico. |
 
-### 🟡 GAP SECONDARI
+---
 
-| # | Gap | Impatto |
+## Phase v2 (3 phase, 8-12h)
+
+### Phase 1 (revised) — Cost tracking per-project (4-5h)
+
+**P1.2 — Cost alert per-project (G4 confermato reale)**
+
+⛔ **Pre-step Discovery 1h** (Issue #8 fix):
+```bash
+# Export costs.jsonl ultimi 30gg + segmenta manuale per project_tag
+python3 -c "
+import json
+from collections import defaultdict
+from datetime import datetime, timedelta
+cutoff = datetime.utcnow() - timedelta(days=30)
+by_project = defaultdict(float)
+with open('state/costs.jsonl') as f:
+    for line in f:
+        e = json.loads(line)
+        if datetime.fromisoformat(e['ts'].replace('Z','+00:00').split('+')[0]) > cutoff:
+            tag = e.get('project_tag') or e.get('component', 'UNKNOWN')
+            by_project[tag] += e.get('cost_usd', 0)
+print(dict(by_project))
+"
+```
+Se max single project >€5/mese drift → gap materiale, procedi. Se <€5 → degrade P1.2 a logging only, no alert.
+
+**Task post-discovery**:
+- `_shared/llm_router.py`: aggiungi `project_tag` in cost log (default "VOS-meta" se unknown)
+- Script `tools/cost-burn-rate.py`: daily check, telegram alert founder se project cumulative >€10/mese
+- `state/cost-by-project.md` weekly summary auto-generated
+
+**Done when**: 1 alert burn-rate testato simulato + 1 settimana cost-by-project.md popolato
+
+### Phase 2 (revised P2.1 only) — Decision sync cross-project (3-4h)
+
+**P2.1 — Decision sync (G2 reale)**
+
+⛔ **Cap retention** (Issue #9 fix): last 20 cross-project decisions FIFO in injected SessionStart context (prevenire context bloat).
+
+**Task**:
+- `state/decisions-cross-project.jsonl`: append-only log decisioni VOS-meta trans-progetto (es. workspace split, target microdealer, no Twilio, NO P.IVA ricerca)
+- Hook `session_start_brief.sh` enhanced: legge ultimi 20 + injecta in SessionStart context PER OGNI sessione terminale
+- Convention: decisioni founder-explicit con tag `[cross-project]` in DECISIONS.md → script auto-extract via grep `^\\[cross-project\\]`
+
+**Done when**: ARGOS terminal SessionStart 2026-05-22 mostra ultimo decision "[cross-project] NO Twilio insindacabile" injection
+
+### Phase 5 (revised, field-only) — Brief signal scoring (1-2h)
+
+**P5.1 — Field signal_priority SOLO (G9 reale, Issue #1 fix)**
+
+⛔ **NO modifica markdown output layout**. Solo:
+- Briefer aggiunge `signal_priority` field (CRITICAL/HIGH/LOW) a ogni entry in `state/brief-signals.jsonl`
+- Founder può filtrare lato sua via grep o dashboard separato
+- NO sezione "🔴 CRITICAL in cima" nel brief markdown
+
+**Done when**: brief 2026-05-22 ha entry JSONL con signal_priority popolato
+
+---
+
+## Phase deferred a backlog post-FLUXION MILESTONE 1
+
+- **P1.1 brief-actions populate**: DEFERRED, validate founder need first via Q&A (Issue #4)
+- **P2.2 memory federation**: DEFERRED, test empirico fattibilità Claude Code first (Issue #5). Se fallisce → SessionStart hook injection (P2.1 estensione)
+- **P3.1 tool-scout adoption candidates**: DEFERRED, founder bandwidth FLUXION priority (Issue #6)
+- **P3.2 routing regression auto-trigger**: DEFERRED, degrade a passive logging (Issue #7)
+- **Phase 4 AMBRA sharing**: RIMOSSA, riaprire post-AMBRA stabilizzato ARGOS terminal
+
+---
+
+## Risorse stimate v2
+
+| Phase | Effort | Cost € |
 |---|---|---|
-| **G6** | Memory cross-progetto: VOS-side memory ≠ project-side memory (ARGOS terminal vede solo sua memory locale, manca pattern shared) | Pattern come "feedback_premature_optimization" memorizzato VOS-side non discoverable da terminal ARGOS automaticamente |
-| **G7** | AMBRA agent pattern (S170 D-27 Layer 3) replicabile a FLUXION sales agent ma nessuna infra sharing (codice agent + FSM + lessico) | Re-implementation duplicata FLUXION = sprechi tempo + drift design |
-| **G8** | Coordination cross-terminal: ARGOS+FLUXION terminali separati, no lock files, no handoff state shared | Conflict potenziale risorse (es. iMac daemon ARGOS + FLUXION sales agent stesso stack Baileys?) |
-| **G9** | brief generator non distingue urgenza segnali (tutti uguali importanza), no scoring | Founder deve leggere tutto brief per identificare urgenze |
+| Phase 1 revised | 4-5h | €0 |
+| Phase 2.1 revised | 3-4h | €0 |
+| Phase 5 revised | 1-2h | €0 |
+| **Total v2** | **8-11h** | **€0** |
+
+vs v1: 23-32h → 8-11h = **-65% effort, -100% scope creep**
 
 ---
 
-## Roadmap miglioramento VOS (proposed)
-
-### Phase 1 — Feedback loop foundation (sprint VOS-1, 4-6h)
-
-**P1.1 — Brief-actions populate mechanism (G1)**:
-- Modifica `morning-briefer/briefer.py`: per ogni decision-needed nel brief genera entry stub in `brief-actions.jsonl` con state `pending` + decision_due_by date
-- Aggiungi script `tools/brief-action-close.sh` che founder esegue per chiudere action (sets state `closed` + action_taken + outcome)
-- Update brief-tracker score.py per leggere brief-actions.jsonl + report weekly summary
-
-**P1.2 — Cost alert per-project (G4)**:
-- Modifica `_shared/llm_router.py`: aggiungi project_tag in cost log entry (es. "ARGOS-classifier", "FLUXION-sara", "VOS-meta")
-- Script `tools/cost-burn-rate.py` daily check: se project cumulative cost >€10 mese → telegram alert founder
-- Dashboard semplice: `state/cost-by-project.md` markdown summary auto-generated weekly
-
-**Done when**: brief 2026-05-22 ha actions tracked + 1 alert burn-rate testato simulato
-
-### Phase 2 — Decision & memory propagation (sprint VOS-2, 6-8h)
-
-**P2.1 — Decision sync cross-project (G2)**:
-- Creazione `~/venture-os/state/decisions-cross-project.jsonl`: append-only log delle decisioni VOS-meta che si applicano cross-progetto (es. workspace split, target microdealer ARGOS, no Twilio)
-- Hook `session_start_brief.sh` enhanced: legge cross-project decisions + injecta in SessionStart context PER OGNI sessione terminale (ARGOS, FLUXION, Guardian, VOS)
-- Convention: decisioni "founder-explicit" trasversali → marcare con tag `[cross-project]` in DECISIONS.md → script sync auto-extract
-
-**P2.2 — Memory federation cross-project (G6)**:
-- Memory file VOS-side restano canonical (`~/.claude/projects/-Volumes-MontereyT7-venture-os/memory/`)
-- Symlink/copy script che propaga feedback "trans-project" (es. premature_optimization, workspace_split, pattern_S159) a:
-  - `~/.claude/projects/-Users-macbook-Documents-combaretrovamiauto-enterprise/memory/`
-  - `~/.claude/projects/-Volumes-MontereyT7-FLUXION/memory/`
-  - `~/.claude/projects/-Users-macbook-Documents-pulizia-smartphone/memory/`
-- Rsync nightly via launchctl
-
-**Done when**: ARGOS terminal SessionStart vede memory `feedback_premature_optimization.md` come se fosse locale
-
-### Phase 3 — Tool-scout deployment pipeline (sprint VOS-3, 4-6h)
-
-**P3.1 — Tool-scout → adoption candidate flagging (G3)**:
-- Modifica `components/tool-scout/scouter.py`: per ogni top-safe model trovato, genera entry in `state/tool-adoption-candidates.jsonl` con campi: `model_id`, `area`, `target_project`, `fit_score`, `adoption_status` (default `proposed`)
-- Brief mattutino legge tool-adoption-candidates pending → lista come "azioni discovery" in brief
-- Founder può marcare `adopted` o `rejected` con commento → tracking ROI scouting
-
-**P3.2 — Routing regression auto-trigger (G5)**:
-- Routing-refresh notturno: se field_change su context_window decreased >30% → auto-flag model `degraded` in routing.yaml + adjust fallback chain
-- Esempio: Llama-3.3-70b 131K→65K -50% → routing chain promote alternative free 131K (e.g., Gemini-flash primary già è 1M, no action needed; ma se Gemini primary degraded, serve alternative)
-- Alert founder telegram quando auto-flag scattata
-
-**Done when**: prossima settimana di scout → 3 tool-candidate flagged + founder ha workflow chiarocone per adopt/reject
-
-### Phase 4 — AMBRA pattern sharing (sprint VOS-4, 6-8h)
-
-**P4.1 — AMBRA pattern artifact shared (G7)**:
-- DOPO ARGOS terminal P0 audit completato (PROMPT-S171 v2.2): export AMBRA codice/FSM/lessico in `~/venture-os/components/ambra-agent-pattern/`
-- Document standard: `wiki/patterns/ambra-agent-pattern.md` con architettura + reusable FSM + LLM cascade integration
-- Riferimento: FLUXION sales agent P3 può fare `import` da venture-os/components/ambra-agent-pattern/
-
-**P4.2 — Cross-terminal lock + handoff (G8)**:
-- File lock semplice `~/venture-os/state/active-terminals.jsonl`: ogni terminal session scrive entry start + close (PID + cwd + start_ts)
-- Briefer/dashboard mostra terminali attivi → previene conflict (es. 2 instance ARGOS che editano stesso file)
-- Coordination handoff: quando terminal close, dump in `state/handoff-N.md` con summary work done + open items
-
-**Done when**: AMBRA pattern doc + 1 successful import test in FLUXION repo + lock files visible in brief mattutino
-
-### Phase 5 — Brief intelligence (sprint VOS-5, 3-4h)
-
-**P5.1 — Brief signal scoring (G9)**:
-- Modifica briefer: aggiungi `signal_priority` field per ogni voce (CRITICAL/HIGH/LOW basato su euristiche: routing-drift CRITICAL se -50% ctx; cost burn-rate HIGH se >€20; tool-scout LOW)
-- Brief output: sezione "🔴 CRITICAL" in cima, poi report dettagliato
-- Founder può read solo CRITICAL se busy, dettaglio resta accessibile
-
-**Done when**: brief 2026-05-29 ha sezione priority scored
-
----
-
-## Risorse stimate
-
-| Phase | Effort | Cost € | Vincolo #5 |
-|---|---|---|---|
-| Phase 1 | 4-6h | €0 (script Python solo) | ✅ |
-| Phase 2 | 6-8h | €0 | ✅ |
-| Phase 3 | 4-6h | €0 | ✅ |
-| Phase 4 | 6-8h | €0 | ✅ |
-| Phase 5 | 3-4h | €0 | ✅ |
-| **Total** | **23-32h** | **€0** | ✅ |
-
----
-
-## Dipendenze & sequenza
+## Dipendenze v2
 
 ```
-Phase 1 (foundation) — independent, parte first
+Phase 1 (cost tracking) — independent, parte first
+   ↓ (cost log enriched con project_tag)
+Phase 2.1 (decision sync) — independent (può parallelizzare P1)
    ↓
-Phase 2 (propagation) — depends Phase 1 P1.2 cost tracking
-   ↓
-Phase 3 (tool-scout deployment) — depends Phase 2 propagation
-   ↓
-Phase 4 (AMBRA sharing) — depends ARGOS terminal P0 audit (out-of-scope VOS)
-   ↓
-Phase 5 (brief intelligence) — independent, ultima
+Phase 5 (signal_priority field) — independent
 ```
 
----
-
-## Out of scope esplicito (vincolo founder)
-
-- ❌ NO modifica procedure heretic-handler (whitelist, audit hash-only)
-- ❌ NO modifica routing chain logic (gemini-flash primary, fallback structure)
-- ❌ NO modifica briefer format markdown (solo enhancement signal_priority)
-- ❌ NO modifica Karpathy-compiler logic (lavora bene)
-- ❌ NO modifica heretic categorie ALLOWED
+Nessuna dipendenza out-of-scope. Tutte phase sono single-founder-executable.
 
 ---
 
-## Risks identified
+## VOS Utility Feedback Loop integration
 
-1. **Phase 2 memory federation** rischia divergenza file (canonical VOS vs project copies). Mitigation: rsync one-way (VOS → projects), never reverse. Project-specific memory resta in project memory dir.
-2. **Phase 3 routing auto-trigger** rischia false positive (regression transient API change). Mitigation: trigger solo se drift persistent >7 giorni.
-3. **Phase 4 cross-terminal lock** rischia stale lock (terminal crash, no close). Mitigation: timeout 8h, auto-clean entry stale.
-4. **Total effort 23-32h** è significativo. Mitigation: serializzazione (1 phase alla volta), validation gate dopo ognuna.
+Le 2 modifiche prompt ARGOS+FLUXION (sezione "VOS Utility Feedback Loop") generano dato strutturato in `state/vos-utility-feedback.jsonl`. Briefer mattutino legge aggregate → trigger decisione "scale Phase 1-2-5 vs ridimensionare VOS" basato su evidence empirica.
+
+Trigger soglie:
+- Aggregate ≥3 verdict UTILE su 5 sessioni terminali → procedi Phase 1-2-5
+- Aggregate ≥3 NEUTRO → discovery pre-Phase
+- Aggregate ≥2 OVERHEAD → ridimensionare VOS, kill phase
 
 ---
 
-## Open questions per founder (one-by-one)
+## Q&A founder pending (one-by-one quando comodo)
 
-Le faccio in ordine sequenziale dopo review Claude.ai del documento. Non discuto risposte, memorizzo in `~/.claude/projects/-Volumes-MontereyT7-venture-os/memory/feedback_vos_improvement_decisions.md`.
+Salvo risposte in `~/.claude/projects/-Volumes-MontereyT7-venture-os/memory/feedback_vos_improvement_decisions.md`. Research items in `wiki/TODO-VOS-RESEARCH.md`.
 
-Research items se serve → traccio in `/Volumes/MontereyT7/venture-os/wiki/TODO-VOS-RESEARCH.md`.
+**Q1 (Issue #4 validate)**: stai perdendo decisioni? Hai bisogno audit trail brief-actions? Se NO → P1.1 backlog permanent.
+
+**Q2 (Issue #5 test)**: vuoi che testiamo empiricamente se Claude Code carica memory file droppati esternamente in target dir? 15 min test, decide se P2.2 fattibile.
+
+**Q3 (Issue #8 discovery)**: prima di Phase 1 build, faccio io discovery 1h costs.jsonl segmentazione? Output: cost per project ultimo 30gg.
+
+**Q4 (priority scope)**: confermi v2 scope 8-11h Phase 1+2.1+5 OR vuoi tagliare ulteriormente (es. solo Phase 1)?
+
+**Q5 (timing)**: quando iniziamo VOS Phase work? Subito post Q&A OR dopo ARGOS+FLUXION terminali partono?
 
 ---
 
 ## Status
 
-PROPOSAL v1 — pending review Claude.ai → pending founder decisioni one-by-one → execution sequenziale phase
+PROPOSAL v2 — review CTO applicato 6 fix preliminari → READY for Q&A founder.

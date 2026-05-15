@@ -310,3 +310,39 @@ First paying customer = P0 → P1 → P2 → P3 → P4 → P5 → P8
 ```
 
 P6 Sentry e P7 Sara latency NON sono critical path — possono slittare sprint successivo se beta è verde.
+
+---
+
+## VOS Utility Feedback Loop (mandatory close-of-task)
+
+A fine sessione terminal, **PRIMA di chiudere**, rispondi a queste 5 domande con evidence concreta (file/riga/momento sessione, NO generic). Output → append entry in `/Volumes/MontereyT7/venture-os/state/vos-utility-feedback.jsonl`.
+
+1. **Memory pointers VOS letti effettivamente usati?**
+   Quali feedback file VOS-side hai letto (path esatto) e quale decisione concreta hai preso O quale errore hai evitato grazie a quel file?
+   - Utile: "Letto `feedback_premature_optimization.md` → ho DEFERRED ricerca rapporto Ehiweb post-revenue → evitato premature legal/fiscal"
+   - Inutile: "Letti tutti i feedback files"
+
+2. **PRD/Roadmap cross-ref hanno ridotto domande founder?**
+   Quante domande hai EVITATO di fare al founder grazie a PRD-FLUXION-COMPLETE.md / ROADMAP_S184 / Actions 1-7 risolte? Cita 3 esempi con sezione + cosa avresti chiesto altrimenti. Se zero → VOS docs sono overhead documentale.
+
+3. **PROMPT-FLUXION self-contained ha funzionato?**
+   Quante volte hai dovuto chiedere al founder context che il prompt non forniva (oltre Actions 1-7 attese)? List le domande effettive. Se >3 → il prompt fallisce self-containment, VOS-meta investment in prompt-writing è overhead.
+
+4. **Memory feedback NUOVI generati questa sessione meritano persistence?**
+   Quali pattern emersi sono **trans-progetto** (utili anche ad ARGOS/Guardian) vs **project-specific** FLUXION? Trans-progetto → escalate a VOS-meta per propagation in `~/.claude/projects/-Volumes-MontereyT7-venture-os/memory/`. Project-specific → memory locale FLUXION sufficiente.
+
+5. **Overhead reale VOS in questa sessione**:
+   Quante volte hai dovuto leggere file VOS-side cross-mount (`/Volumes/MontereyT7/venture-os/...`) vs file locali FLUXION? Se T7 unmounted/lento ha bloccato lavoro = VOS overhead infrastrutturale. Quantifica minuti persi su mount/sync.
+
+**VERDICT FINALE sessione**:
+- ✅ **VOS UTILE**: ≥3/5 domande con evidence concreta + risparmio tempo founder quantificabile
+- 🟡 **VOS NEUTRO**: 1-2/5 con evidence + tempo founder neutro
+- ❌ **VOS OVERHEAD**: 0/5 con evidence concreta + tempo perso mount/sync/cross-ref > tempo risparmiato
+
+Append verdict + 5 risposte al jsonl. Founder leggerà aggregate weekly per decidere se VOS Phase 1-5 IMPROVEMENT vale o ridimensionare VOS.
+
+```bash
+cat <<EOF >> /Volumes/MontereyT7/venture-os/state/vos-utility-feedback.jsonl
+{"ts":"$(date -u +%Y-%m-%dT%H:%M:%SZ)","session":"S184-FLUXION","verdict":"UTILE|NEUTRO|OVERHEAD","q1_memory_used":"...","q2_docs_saved_questions":"...","q3_prompt_self_contained":"...","q4_new_feedback_trans_or_project":"...","q5_vos_overhead_minutes":N}
+EOF
+```
