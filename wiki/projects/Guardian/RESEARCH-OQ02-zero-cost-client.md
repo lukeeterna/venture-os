@@ -1,18 +1,22 @@
 # Guardian OQ-02 — Research deep architettura zero-cost cliente
 
-**Sessione**: S177 VOS coordinator
+**Sessione**: S177 (v1) + S178 (v2 revised)
 **Data**: 2026-05-15
 **Trigger**: D-05 founder S173 raw "deep research necessaria con dati"
 **Vincolo dominante**: ZERO-COST CLIENTE + vincolo #5 CLAUDE.md (zero-cost Luke)
-**Output**: raccomandazione singola CTO per D-05 update + revisione D-02 stack
+**Output**: raccomandazione singola CTO per D-05 update + preservation D-02 stack
+
+> **AMENDMENT S178 (2026-05-15)**: la raccomandazione iniziale S177 era basata su assunzione FALSIFICATA in S178 (vendor expose AI fall events a terze parti via API). Verifica fattuale ha invalidato (d) "pure". Revised raccomandazione: hybrid (e+d-lite) — camera commodity RTSP (€20-€40) + Oracle Free Tier inference backend Luke (run_upstream.py PRESERVED). Sezione "Decisione CTO singola" REVISED sotto. Sezione "TL;DR" e tabella decisione mantenute v1 per audit trail, marcate SUPERSEDED.
 
 ---
 
-## TL;DR (CTO call, vincolo #3)
+## TL;DR v1 [SUPERSEDED-by-S178-amendment]
 
-**Raccomandazione**: pivot architetturale a **IP camera AI on-device commodity (Tapo C460 / KamiHome) + Guardian app caregiver (FCM notify + management UX) + Luke backend = solo orchestration alert routing (zero inference)**.
+**Raccomandazione iniziale S177**: pivot a **IP camera AI on-device commodity (Tapo C460 / KamiHome) + Guardian app caregiver (FCM notify + management UX) + Luke backend = solo orchestration alert routing (zero inference)**.
 
-Motivo principale: scala N clienti senza costo infra Luke + privacy on-device + latenza ottimale, al prezzo di pivot da stack custom yolov8n+LSTM (D-02) a service-layer sopra camera commodity.
+Motivo principale dichiarato S177: scala N clienti senza costo infra Luke + privacy on-device + latenza ottimale, al prezzo di pivot da stack custom yolov8n+LSTM (D-02) a service-layer sopra camera commodity.
+
+**INVALIDATA S178**: vendor AI consumer (Tapo, KamiHome, eufy) **NON espongono fall-detected event** via MQTT/webhook a terze parti. Espongono solo "motion" e "person detected" via ONVIF. Fall-event proprietario all'app vendor → Guardian non può consumarlo. Inoltre Tapo C460 battery-powered = NO RTSP NO ONVIF (architettura cieca a Guardian).
 
 Trade-off accettato: sunset 369 LOC `run_upstream.py` come algoritmo cliente (resta come reference iMac casa Luke per dev/test). Business model Guardian shifts da "tech stack proprietaria" a "service + UX caregiver".
 
@@ -98,66 +102,134 @@ Trade-off accettato: sunset 369 LOC `run_upstream.py` come algoritmo cliente (re
 
 ---
 
-## Decisione CTO singola (vincolo #3)
+## Decisione CTO singola REVISED S178 (vincolo #3)
 
-**Pivot a (d) IP camera AI on-device commodity + Guardian service-layer**.
+> Sezione v1 (pivot pure (d)) preservata sotto come SUPERSEDED per audit trail Pattern S159 mitigation. Decisione operativa = REVISED qui sotto.
 
-Razionale dati:
+### Verifica fattuale S178 — findings che invalidano v1
+
+| Vendor | RTSP/ONVIF | Motion event API | Fall-event API | Verdetto |
+|--------|------------|------------------|----------------|----------|
+| Tapo C460 (battery) | **NO** (battery-design limit) | NO | NO | KILLED |
+| Tapo C100/C200/C210 (wired) | **SÌ** | sì via ONVIF/HA integration | NO (proprietary app only) | RTSP-source only |
+| KamiHome/KamiCare | n/a | NO (SaaS app-only) | NO (SaaS app-only) | KILLED (no public API) |
+| eufy Security | sì (con MQTT bridge community) | sì (motion+person via MQTT) | NO (proprietary app) | RTSP-source only |
+| Hikvision DS-2xx (B2B) | sì | sì + AI analytics SDK | sì (B2B SDK paid) | B2B too expensive |
+
+**Pattern S159 corollario S178**: assunzione "vendor X has feature Y" richiede TRE verifiche: (1) feature esiste, (2) feature è esposta via API/MQTT, (3) API è free/non-paid. v1 OQ-02 saltato step (2)+(3) per vendor consumer. Regola: prima di raccomandazione "use vendor X feature", validate 3-tier.
+
+### Revised raccomandazione (e+d-lite hybrid)
+
+**Architettura WINNER S178**:
+
+```
+[Casa anziano]                          [Cloud Luke]                  [Caregiver]
+Tapo C200/C210/C100  --RTSP-->  Oracle Free Tier ARM A1  --FCM-->  Smartphone app
+(€20-€40, wired)                  (forever-free, 4 vCPU)           (Android+iOS)
+                                  run_upstream.py YOLO+LSTM
+                                  motion-gated frame sampling
+                                  fall event → FCM publish
+```
+
+**Componenti**:
+- **Hardware cliente**: Tapo C200/C210/C100 (~€20-€40 Italia retail, wired-power, RTSP+ONVIF). Cliente lo acquista o usa cam esistente compatibile RTSP.
+- **Backend inference Luke**: Oracle Cloud ARM A1 Free Tier (forever-free, no expiry, 4 vCPU + 24GB RAM, fino a 2 istanze). Esegue `run_upstream.py` (D-02 stack PRESERVED, NO sunset). 1 istanza stimata 10-20 stream concurrent a low-res 480p motion-gated.
+- **Notifica caregiver**: FCM Firebase free unlimited (verificato S177).
+- **Caregiver app**: PWA o React Native (decisione OQ-02.4 next session) — alert receiver, multi-anziano dashboard, medical context.
+
+**Costo cliente**: €20-€40 one-time (cam, riusa esistente se ha) + €0 service Guardian basic. Premium €5-10/mese opzionale (multi-cam, medical context, alert routing intelligence).
+
+**Costo Luke per N clienti**:
+- 1-10 clienti: €0 (1 istanza Oracle Free Tier)
+- 10-30 clienti: €0 (2 istanze Oracle Free Tier max)
+- 30+ clienti: €4-10/mese istanza cloud aggiuntiva (paid tier post-revenue, vincolo #5 rispettato pre-revenue)
+
+**Algoritmo controllato Luke**: yolov8n+LSTM `run_upstream.py` (D-02 PRESERVED come backend cliente, non solo dev/test).
+
+**Privacy mitigation**: stream RTSP cifrato (SRTP o WireGuard tunnel cam→Oracle), frame-only no storage, low-res 480p (face non-identificabile chiaramente), motion-gated upload (skip frame statici 95% bandwidth saving).
+
+**Latenza fall-alert**: RTSP stream ~200ms + inference ~150-200ms ARM A1 + FCM ~1s = totale ~2s. Ben sotto SLA 30s.
+
+**Pro hybrid vs v1**:
+- D-02 stack PRESERVED → no sunset 369 LOC `run_upstream.py` → S58-S65 investment retained
+- Algoritmo Luke-controlled → no vendor lock-in AI (escape strategy semplice: swap camera commodity)
+- Camera €20-€40 vs €90 (più cheap per cliente)
+- Privacy attiva (Luke mitigation tooling), no dipendenza vendor privacy policy
+
+**Contro vs v1**:
+- Bandwidth cliente: 1-2 Mbps upload sostenuto per stream low-res. Border line ADSL italiana media (1-3 Mbps upload). Mitigation: motion-gated reduce a ~200-400 Kbps medio. Verificare con primo cliente reale.
+- Oracle Free Tier "forever-free" non garantito 100% policy futura. Mitigation: dual-deploy iMac casa Luke come backup, exit migration AWS/Hetzner low-cost se Oracle rinega.
+- Scala limit Oracle 2 istanze free → ~30-50 clienti max free-tier. Mitigation: 30+ clienti = post-revenue, paid tier €4-10/mese accettabile.
+
+[CONTENUTO v1 SUPERSEDED — preservato sotto sezione "## Decisione v1 SUPERSEDED" come audit trail Pattern S159 mitigation]
+
+---
+
+## Decisione v1 SUPERSEDED (audit trail)
+
+Razionale dati S177 (INVALIDATO S178):
 1. Solo (d) e (e) sopravvivono il filtro always-on + scala
 2. (d) batte (e) su privacy (TOP vs medium) + latenza (<5s vs ~10s) + Luke maintenance (zero algoritmo vs YOLO updates)
-3. (e) preservato come fallback se (d) blocca su vendor verification (next session task)
+3. (e) preservato come fallback se (d) blocca su vendor verification (next session task) ← **(e) ATTIVATO S178**
 
-Costo trade-off (d):
-- **Sunset architetturale** dello stack D-02 (yolov8n+LSTM+MQTT custom) lato cliente. Resta valido come iMac casa Luke dev/test.
-- **Vendor lock-in** mitigato richiedendo camera con export MQTT/HTTP webhook (NOT app-only).
-- **Algoritmo non controllato**: accettato perché vendor claim 99% accuracy + Guardian aggiunge value sopra (multi-cam aggregation, caregiver UX, medical context, alert routing intelligence).
+Costo trade-off (d) v1:
+- **Sunset architetturale** dello stack D-02 ← **REJECTED S178**: D-02 PRESERVED come backend Luke
+- **Vendor lock-in** mitigato richiedendo MQTT/webhook export ← **REJECTED S178**: vendor consumer non espongono fall-event API
+- **Algoritmo non controllato** ← **REJECTED S178**: Luke controlla via run_upstream.py backend
 
-Business model shift implicito:
-- DA: "Guardian = stack proprietaria fall-detection (vendiamo software)"
-- A: "Guardian = service layer (caregiver app + alert orchestration + medical context) sopra camera commodity"
-- Pricing model: app caregiver freemium → premium subscription (€5-10/mese caregiver) per multi-anziano / multi-cam / medical context / scheduled check-in. Camera = customer-purchased commodity esterno al modello revenue Luke.
+Business model shift v1:
+- DA: "Guardian = stack proprietaria fall-detection"
+- A: "Guardian = service layer sopra camera commodity"
+- ← **PARTIAL S178**: Guardian RESTA stack proprietaria (algoritmo Luke su Oracle backend) + service layer caregiver UX. Camera è commodity ma algoritmo non delegated.
 
----
+## Autocritica strutturale S178 (vincolo #4)
 
-## Autocritica strutturale (vincolo #4)
+1. **Assunzione nascosta v1 INVALIDATA**: "vendor camera AI consumer espongono fall event via API". FALSA per Tapo/KamiHome (battery model no RTSP, KamiHome SaaS-only). Parziale per eufy (motion sì, fall no). Lezione: 3-tier verification (feature exists → exposed via API → free/non-paid) **PRIMA** di raccomandazione architetturale dependente da vendor feature. Pattern S159 corollario S178 aggiunto sopra.
 
-1. **Assunzione nascosta**: cliente accetta acquisto camera €90 una-tantum. Founder S173 raw dice "telecamere ip wifi" (plurale) — implica cliente già ha camere. Se cliente ha cam senza AI on-device (cam vecchia Hikvision basic), proposta (d) impone upgrade hardware = costo cliente. Mitigazione: Guardian app supporta DUE modes — (d) con cam AI on-device per nuovi, (e) Oracle relay per legacy cam senza AI (premium plan covers Oracle limit). Hybrid model regge.
+2. **Cosa rompe a 30/60/90gg (revised hybrid e+d-lite)**:
+   - 30gg: Oracle Free Tier policy change (limit aumentato in passato, mai diminuito significativamente, ma rischio non-zero). Mitigation: dual-deploy iMac casa Luke come fallback inference, exit migration to AWS Lightsail $5/mese accettabile post-1° revenue.
+   - 60gg: bandwidth ADSL cliente insufficiente per stream RTSP continuo (italian average 1-3 Mbps upload). Mitigation: motion-gated frame sampling riduce a ~200-400 Kbps medio. Validare con primo cliente reale field test (P1 production gating D-03).
+   - 90gg: cliente vede video frame attraversare Oracle US/EU server → privacy concern + GDPR DPA chain (Luke processor → Oracle sub-processor). Mitigation: Oracle EU regions disponibili (Frankfurt, Milan), DPA Oracle GDPR-compliant disponibile, frame-only no-storage architettura attestabile. Legal-compliance-checker S179 task validate.
 
-2. **Cosa rompe a 30/60/90gg**:
-   - 30gg: Tapo cambia firmware, blocca webhook MQTT → Guardian app cieca su quella cam. Mitigation: certifica al lancio una shortlist 3-5 vendor con MQTT/Home Assistant verified.
-   - 60gg: vendor introduce subscription cloud obbligatoria per AI feature → cliente disabilita → Guardian alert silent. Mitigation: requisito hardware = "AI feature local, no cloud dependency required".
-   - 90gg: competitor lancia "Tapo Care" app caregiver bundle → Guardian USP eroded. Mitigation: USP Guardian = (a) multi-vendor aggregation (Guardian funziona su Tapo + Kami + eufy concurrent, vendor app no), (b) medical context (allergie, contatti emergenza, scheduled check-in), (c) caregiver UX italiana mercato locale.
+3. **Pattern errori noti**: pattern "investment bias" che S177 aveva flaggato come gestito ("sunset accepted") era in realtà **soluzione errata al pattern**. La risposta corretta NON era "accetta sunset" ma "verifica se sunset è davvero necessario via verifica fattuale (vincolo #1)". S178 amend prova: investment NON è sunk, cambia layer (cliente → backend Luke). Pattern lezione: sunk-cost fallacy bias è REALE ma non sempre triggera; verifica fattuale prima di accept-sunset, sennò sunk-good-by-mistake (caso simmetrico).
 
-3. **Pattern errori noti**: pattern "investment bias" — Luke ha investito S58-S65 su `run_upstream.py` (369 LOC, YOLO+LSTM, MQTT operativo). Raccomandare (d) = sunset di quel codice come prodotto cliente. **Pattern**: codice esistente NON è asset se architettura cliente diversa — sunk cost. `run_upstream.py` resta valido come iMac casa Luke (Guardian-self-dogfooding, parents/grandparents real-world test bench, dataset gathering D-04 OQ-04). NON è waste, cambia ruolo.
-
-4. **Dove sovradimensiono**: stavo per scrivere 1500 righe pro/contro tutte le 5 opzioni con benchmark code. Tagliato a doc strutturato (~200 righe) + raccomandazione singola con dati comparativi tabella. Compressione 85%.
+4. **Dove sovradimensiono**: amendment S178 ha tentazione di rewrite full doc. Tagliato a sezione "REVISED" inline + sezione "v1 SUPERSEDED" preservata audit trail. Pattern Pattern S159 mitigation richiede SUPERSEDED visibili, non cancellati. Compressione: ~100 righe aggiunte vs rewrite 200+ righe. Audit trail Pattern S159 preserved.
 
 ---
 
-## Punti aperti (next session candidato)
+## Punti aperti REVISED S178 (next session candidato)
+
+OQ-02.1, OQ-02.2 v1 CLOSED da S178 verifica fattuale (vendor AI consumer non espongono fall-event API).
 
 | # | Punto | Tipo | Stima |
 |---|-------|------|-------|
-| OQ-02.1 | Verifica vendor shortlist: Tapo C460 + KamiHome + eufyCam S3 Pro supportano MQTT/HTTP webhook + Home Assistant integration | Research + test fisico | ~1h |
-| OQ-02.2 | Tapo C460 specifically: API documentation deep-dive, RTSP+ONVIF support, fall detection sensitivity tuning | Research | ~30min |
-| OQ-02.3 | Guardian backend service layer scope: webhook router + FCM gateway + caregiver app skeleton | Architecture + LOC estimate | ~45min |
-| OQ-02.4 | Caregiver app stack: Tauri mobile vs React Native vs PWA (vincolo zero-cost dev Luke) | tool-evaluator agent | ~30min |
-| OQ-02.5 | Verify FCM still free for Italian market 2026 + GDPR compliance push notification | legal-compliance-checker | ~20min |
+| OQ-02.3 (revised) | Guardian backend Oracle Free Tier setup: account creation + ARM A1 instance + run_upstream.py deploy + RTSP intake test | DevOps + arch validation | ~1h |
+| OQ-02.4 | Caregiver app stack: PWA vs React Native vs Tauri mobile (vincolo zero-cost dev Luke) | tool-evaluator agent | ~30min |
+| OQ-02.5 | Verify FCM free Italia 2026 + GDPR DPA chain (Luke processor → Oracle sub-processor) push notification + Frankfurt/Milan EU region selection | legal-compliance-checker | ~30min |
+| OQ-02.6 (new) | Bandwidth field test: stream RTSP motion-gated da connessione ADSL italiana media (cliente test reale) → verify <500 Kbps sostenuto | Field test 1° cliente | ~2h presence required |
+| OQ-02.7 (new) | Privacy mitigation tooling: SRTP/WireGuard tunnel cam→Oracle, frame-only no-storage attestation, GDPR processor agreement template | DevOps + legal | ~1h |
 
 ---
 
-## D-05 update proposto
+## D-05 update proposto REVISED S178
 
-**Status**: DECIDED → SUPERSEDED-by-D-06 (questo doc + sessione founder validation)
+**Status**: DECIDED → SUPERSEDED-by-D-06 (questo doc + sessione founder validation S179)
 
-Propongo a Luke S178 review e creazione **D-06** con architettura WINNER (d) hybrid (b/d) post-OQ-02.1 vendor shortlist verifica.
+Propongo a Luke S179 review e creazione **D-06** con architettura WINNER hybrid **(e+d-lite)**:
+- Camera commodity RTSP-capable (Tapo C100/C200/C210 €20-€40 wired-power) come hardware cliente
+- Backend inference Luke su Oracle Cloud ARM A1 Free Tier (run_upstream.py D-02 stack PRESERVED)
+- FCM notify caregiver smartphone (free unlimited)
+- Bandwidth motion-gated low-res 480p RTSP stream
 
-D-02 (stack yolov8n+LSTM+MQTT) NON viene SUPERSEDED, cambia scope: da "stack cliente production" a "stack iMac casa Luke dev/dogfooding + dataset gathering per training futuro algoritmi proprietary se vendor lock-in escape strategy attivato".
+**D-02 (stack yolov8n+LSTM+MQTT) PRESERVED** — non SUPERSEDED, scope EXTEND: da "stack iMac casa Luke" a "stack backend Luke cliente production + iMac casa Luke dev/dogfooding". Investment S58-S65 = asset attivo, not sunk cost.
+
+**Pattern S159 mitigation S178 (audit-completion-bias + verification-bias)**: la sequenza S177→S178 dimostra che verifica fattuale (vincolo #1) può invalidare raccomandazione CTO singola dopo 1 query mirata. Lezione applicata: amendment + audit trail visibile + corollario 3-tier vendor verification aggiunto a Pattern S159 in `feedback_pattern_S159_mitigation.md` (TODO S179).
 
 ---
 
 ## Sources
 
+S177 (v1):
 - [Best Indoor Cameras Elderly 2026 — eufy](https://www.eufy.com/blogs/security-camera/best-indoor-camera-for-elderly)
 - [KamiHome Fall Detection Aging in Place](https://kamivision.com/en-us/fall-detection/aging-in-place-kamihome)
 - [Best AI Security Cameras 2026 — the-gadgeteer](https://the-gadgeteer.com/2026/05/11/best-ai-security-cameras-2026/)
@@ -168,3 +240,11 @@ D-02 (stack yolov8n+LSTM+MQTT) NON viene SUPERSEDED, cambia scope: da "stack cli
 - [TFLite vs CoreML iOS latency benchmark — TildAlice](https://tildalice.io/tflite-vs-coreml-ios-latency-benchmark/)
 - [Mobile object detection models — Roboflow](https://blog.roboflow.com/mobile-object-detection-models/)
 - [ML Inference Latency mobile benchmark — USC paper](https://qed.usc.edu/paolieri/papers/2024_edgesys_mobile_inference_benchmark.pdf)
+
+S178 (v2 verification):
+- [Tapo C420 battery model no RTSP — TP-Link community](https://community.tp-link.com/en/smart-home/forum/topic/600676)
+- [HomeAssistant Tapo Control — JurajNyiri GitHub](https://github.com/JurajNyiri/HomeAssistant-Tapo-Control)
+- [Tapo C100/C200/C210 RTSP/ONVIF support — TP-Link FAQ](https://www.tp-link.com/us/support/faq/2680/)
+- [eufy security HA integration — fuatakgun GitHub](https://github.com/fuatakgun/eufy_security)
+- [eufy-ha-mqtt-bridge — matijse GitHub](https://github.com/matijse/eufy-ha-mqtt-bridge)
+- [KamiHome dev portal (SaaS-only no public API)](https://dev.kamihome.com/)
