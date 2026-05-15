@@ -799,6 +799,31 @@ Argos Import
 
 ---
 
+## D-29 — WA numero zero-cost pre-revenue (3314928901 condiviso ARGOS+FLUXION) (2026-05-15, S171-VOS-coord)
+
+**Status**: DECIDED (founder S171 raw "per ora nessun costo ulteriore senza revenue", vincolo #5 zero-cost rigoroso)
+**Contesto**: VOS S171 ha rilevato conflitto cross-progetto: numero 3314928901 era previsto in P5 test simulato sia ARGOS (persona Luca Ferretti, D-OPEN-Q1) sia FLUXION (persona Erica Fluxion). Un account WA non sostiene 2 brand identity senza outing (lookup numero / screenshot / foto profilo unica). Inoltre Layer 2 mystery shopper REAL su dealer terzi richiederebbe numero separato da identità Gianluca Di Stasi.
+**Opzioni considerate**:
+- (a) Twilio +39 dedicato ARGOS €14/anno + Twilio +39 dedicato FLUXION €14/anno — scartata (capex pre-revenue, vincolo #5)
+- (b) Seconda SIM italiana €5-8/mese — scartata (costo recurring zero-revenue)
+- (c) Burner free US/UK — scartata (trust signal negativo dealer IT)
+- (d) **3314928901 condiviso ARGOS+FLUXION + profilo WA neutro + finestre temporali separate** — adottata
+**Decisione**:
+- 3314928901 = unico numero pre-revenue, usato per: ARGOS P5 test simulato founder-to-founder, ARGOS Layer 1 (community), FLUXION P5 test simulato + FLUXION beta 100 clienti (promo 1° mese gratis)
+- Profilo WA 3314928901: foto neutra, nessun nome brand visibile, bio generica (no claim ARGOS né FLUXION)
+- Persona display Luca Ferretti / Erica Fluxion = solo nel CORPO MESSAGGI testuali, mai nel profilo numero
+- Finestre temporali separate: founder testa ARGOS P5 simulato, POI in altra finestra testa FLUXION P5 simulato. Mai sovrapposizione contatti reali su stesso numero
+- Layer 2 ARGOS mystery shopper REAL su dealer terzi = DEFERRED fino a primo revenue (ARGOS o FLUXION, qualunque arrivi prima)
+**Conseguenze**:
+- Wave 2 ARGOS S171+ procede con Layer 1 (call center community + outreach gruppi micro-dealer commissione) su 3314928901
+- AMBRA agent re-tune (gap audit S171) procede normalmente, no blocker numero
+- FLUXION P5 sales agent (Erica Fluxion) parte beta 100 clienti su 3314928901 senza switch immediato
+- BLOCKER WA daemon duplicate sends (Open Q #12) DEVE essere fixato prima outreach reale su 3314928901 (rischio amplificato: stesso numero 2 progetti = spam ban WA business)
+- Trigger upgrade: primo bonifico ricevuto (ARGOS €1k cash a consegna OR FLUXION cliente €497) → acquisto 1 numero Twilio dedicato al progetto che ha generato revenue
+**Ref**: vincolo CLAUDE.md #5 zero-cost, founder S171 raw refusal Twilio, memoria `project_fluxion_real_product.md`, conflitto cross-progetto registrato `state/blueprint-deviations.jsonl` S171-VOS-coord
+
+---
+
 # Indice cronologico
 
 | # | Titolo | Status | Data | Sessione |
@@ -836,8 +861,9 @@ Argos Import
 | D-26 | Cold-lead V5 3-step relational | ⚠️ SUPERSEDED-INVALIDATED-by-D-27/D-28 | 2026-05-14 | S170 |
 | D-27 | Approach scaltro mystery shopper hybrid 3-layer | PROPOSED-pending-research-P2.A | 2026-05-14 | S170-post-close |
 | D-28 | Target profile ARGOS = micro-dealer commissione P.IVA forfettaria stock<20 | DECIDED | 2026-05-14 | S170-post-close |
+| D-29 | WA 3314928901 condiviso ARGOS+FLUXION zero-cost pre-revenue; Twilio post-1°-revenue | DECIDED | 2026-05-15 | S171-VOS-coord |
 
-**Totale**: 33 entry (30 DECIDED + 1 PROPOSED + 1 OPEN-ipotesi D-08 + 1 SUPERSEDED-by-D-14 D-03 + 1 SUPERSEDED-by-D-27/D-28 D-26). Founder Q1-Q5 closed via S11c-strategic. Pattern S159 evitato: D-17 AI Visual pilot bloccante PRIMA shipping. S167 workflow evolution data-driven via protocollo v2 automated. S170 lessons: D-26 V5 INVALIDATED post wave 1 — target wrong (stock 30-200 dealer contattati invece micro-commissione <20) + bug daemon dedup (Open Q #12). D-27 mystery shopper inverso paradigm pending research. D-28 target profile definitivo.
+**Totale**: 34 entry (31 DECIDED + 1 PROPOSED + 1 OPEN-ipotesi D-08 + 1 SUPERSEDED-by-D-14 D-03 + 1 SUPERSEDED-by-D-27/D-28 D-26). Founder Q1-Q5 closed via S11c-strategic. Pattern S159 evitato: D-17 AI Visual pilot bloccante PRIMA shipping. S167 workflow evolution data-driven via protocollo v2 automated. S170 lessons: D-26 V5 INVALIDATED post wave 1 — target wrong (stock 30-200 dealer contattati invece micro-commissione <20) + bug daemon dedup (Open Q #12). D-27 mystery shopper inverso paradigm pending research. D-28 target profile definitivo.
 
 # Open questions / Risks
 
