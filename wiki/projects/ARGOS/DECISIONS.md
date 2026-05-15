@@ -684,7 +684,7 @@ Source: founder Luke S11c-strategic 2026-05-13 Q11.
 
 ## D-26 — Cold-lead acquisition framework B2B 3-step relational (V5) (2026-05-14, S170)
 
-**Status**: DECIDED (founder S169 paradigm shift relational vs transactional; cross-LLM check S170 informativo non-blocking; wave 1 send live confirmed S170)
+**Status**: ⚠️ **SUPERSEDED-INVALIDATED by D-27/D-28** (founder S170-post-close 2026-05-14): TARGET PROFILE SBAGLIATO + paradigma da invertire. Wave 1 send tecnico confermato MA dealer contattati erano stock 30-200 (target esclusione corretta era stock <20 micro-dealer commissione). Anche bug daemon duplicate sends (Open Q #12) ha contribuito invalidazione, ma root cause = target wrong applied to dataset wrong. Mantenuto in DECISIONS per pattern recognition: framework V5 self-introduce relational NON applicabile a micro-dealer commissione (vedi D-27 paradigm reverse mystery shopper).
 **Contesto**: D-21 step 1 ("Dealer IT chiede auto specifica via WA") presuppone dealer inbound-attivo. La realtà operativa wave 1 nazionale (D-14) richiede outbound proattivo cold-lead per acquisire dealer not-yet-aware del servizio ARGOS. V3 messaging S166→S168→S169 (transactional ask-on-msg1) era applicato meccanicamente da carry-over senza re-validation (pattern S159 #5). Founder S169 esplicito: "V3-rev2 non lo ritengo efficace, voglio paradigma relational".
 **Opzioni considerate**:
 - (a) Transactional V3/V4 (msg1 = "vuoi listing/PDF/call?") — escluso founder S169 + bias documented "scaricare CTA su cold dealer sconosciuto = filtro spam alto"
@@ -724,6 +724,81 @@ Argos Import
 
 ---
 
+## D-27 — Approach scaltro mystery shopper hybrid 3-layer (2026-05-14, S170-post-close)
+
+**Status**: PROPOSED (founder S170 raw prompt 2026-05-14: "ci presentiamo chiedendo un'auto, il prezzo, ecc., poi gli facciamo un confronto con il servizio di cui abbiamo sentito parlare ovvero Argos") — **PENDING research P2.A validation** prima di operationalize
+**Contesto**: D-26 V5 cold-lead relational self-introduce INVALIDATED (target wrong + paradigm wrong). Founder ha richiesto paradigma INVERSO: NON ARGOS si presenta a dealer, MA simula prospect che chiede quote auto specifica + pivot organico introduzione Argos come servizio "sentito parlare". Stile italiano natural, "senza americanate", "semplicemente con delle persone".
+**Opzioni considerate**:
+- (a) V5 self-introduce relational (D-26) — INVALIDATED target sbagliato + paradigm wrong per micro-dealer commissione
+- (b) Mystery shopper pure (no Argos mention) — escluso: senza pivot non c'è acquisizione
+- (c) **Hybrid 3-layer**: marketing infiltration (Layer 1) + mystery shopper WA (Layer 2) + AMBRA agent autonomous follow-up (Layer 3) — proposta
+- (d) Cold pitch transactional V3 originale — escluso (founder S169 + D-26 lessons)
+**Decisione proposta**: Opzione (c) — Hybrid 3-layer outreach framework:
+
+### Layer 1 — Marketing infiltration (discovery + pain listening)
+- Canali: Reddit (r/ItaliaCarOwners, r/automobili), Facebook Groups "dealer auto Italia", Telegram groups "import auto" / "commissione auto"
+- Stance: NON broadcast, NON post promozionali. JOIN + listen + occasional reply naturale a question altri user. Identifica dealer commissione attivi (signal: chiedono advice import EU, parlano tariffe, lamentano pain points scouting).
+- Tools: PRAW Reddit API (lurk + scrape), Telethon Telegram (join + listen), Subito.it dealer profile manual analysis (chi vende 5-15 auto stock con annunci EU).
+- Output: lista N dealer micro-commissione identificati con pain points specifici documentati.
+
+### Layer 2 — Mystery shopper WA (1-to-1 trust building)
+- Per dealer Layer 1 con phone+WA scoperto: contatto da numero "diverso" (non Luca Ferretti brand) chiedendo quote auto specifica concreta (es. "cerco BMW Serie 3 anno 2021 km <50k, riesce a propormi qualcosa?").
+- Dealer risponde con quote → conversazione naturale 2-3 turni (chiedere kmproof, certificazione, tempi).
+- Pivot organico: "Tra l'altro ho sentito parlare di un servizio chiamato Argos che fa scouting da Germania per dealer come voi. Vi è mai capitato di sentirne?" → osservare reazione.
+- Se reazione positiva/curiosa → seguente msg da numero Argos brand ("sono Luca Ferretti di Argos, ho sentito che mi cercava informazioni") → handoff brand-to-brand.
+- Stile: italiano naturale, NO scripts, NO CTA aggressivi, NO "americanate". Stress su credibilità ("piccolo cliente privato cerca consiglio").
+
+### Layer 3 — AMBRA agent autonomous (scale follow-up)
+- AMBRA = Phase 6 ARGOS roadmap (WA agent autonomo). Pattern: parla come umano, FSM stati, no scripted responses, lessico micro-dealer (commissione informale, percentuale, importazione).
+- Use case: follow-up dealer che hanno mostrato curiosità Layer 2. NON cold outbound. Solo dealer "warm" che hanno aperto conversazione.
+- AMBRA gestisce N conversazioni parallele, escalation a human (Luca Ferretti) quando trigger (richiesta concreta auto, contract pre-deal, dubbi specifici).
+
+**Conseguenze**:
+- Inverte D-04 single-brand outbound: aggiunge canale "civilian" (mystery shopper) PRIMA brand identity
+- D-07 HITL applica solo Layer 2-3 (Layer 1 = scout passivo, no outreach)
+- D-24 anti-disinterm: contract pre-deal applica solo a Layer 3 escalation, non a mystery shopper Layer 2
+- Phase 6 AMBRA agent diventa CRITICAL PATH (non più Phase finale): serve per scale Layer 3 prima di Phase 4 production
+- Dataset wave 1 burned (D-26): 4 dealer Sud non re-contattabili. Dataset re-baseline obbligatorio (stock<20).
+
+**Trigger validation**:
+- Research P2.A (PROMPT-S171-ARGOS): 4-agent thread su pain points reali + canali discovery + lessico micro-dealer
+- Test su 3-5 dealer Layer 1 identificati (NOT wave 1 burned) con mystery shopper Layer 2
+- Metric: % dealer Layer 2 che mostrano curiosità a pivot Argos ≥ 30% → operationalize. <30% → re-design pivot.
+
+**Vincoli founder applicabili**:
+- "Senza americanate" = NO sales script, NO CTA-driven copy, NO urgency triggers
+- "Semplicemente con delle persone" = conversational, italiano natural, NO formality professionale eccessiva
+- "Dealer richiede auto, NO sistema propone" = LAYER 2 è dealer-side suggesting auto (mystery shopper passivo); NO outbound vehicle push
+- "Skills psicologiche": reciprocity (info gratis prima ask), social proof ("altri dealer simili..."), curiosità (pivot organic non scripted), mirror language (lessico dealer)
+
+**Ref**: founder raw prompt S170-post-close 2026-05-14, memory feedback_argos_target_microdealer_commissione.md, D-26 lessons learned, Phase 6 ROADMAP AMBRA
+
+---
+
+## D-28 — Target profile ARGOS = micro-dealer commissione P.IVA forfettaria (2026-05-14, S170-post-close)
+
+**Status**: DECIDED (founder S170 raw prompt 2026-05-14)
+**Contesto**: Wave 1 S170 ha contattato dealer stock 30-200 (target sbagliato). Founder ha chiarito target definitivo: micro-dealer commissione informale, P.IVA forfettaria, NO brand proprio. Pain point: necessitano partner completo per scouting + import + docs + formazione.
+**Decisione**:
+- **Target inclusion**: dealer Italia con stock < 20 auto, P.IVA forfettaria (5-15% regime), modello commissione informale (no inventory ownership, broker style), no brand marketing proprio, no expertise import EU
+- **Target exclusion**: dealer stock ≥ 20, dealer P.IVA ordinaria con scale operativa, dealer con brand consolidato (concessionari ufficiali), dealer con team scouting interno
+- **Geo scope**: nazionale (Open Q #10 ARGOS — dataset extension Nord/Centro/Isole obbligatoria)
+- **CoVe v4 scoring re-calibration**: feature weights da ricalibrare per micro-dealer (few_listings HIGH, brand_diversity LOW, premium_pct moderate)
+**Conseguenze**:
+- `dealer_network.sqlite` filtering: 18 dealer attuali → quanti hanno stock<20? Audit immediato.
+- D-14 wave-based scope nazionale RICONFERMATO ma con target=micro
+- D-26 framework V5 superseded (target wrong)
+- D-27 mystery shopper approach applicabile SOLO a target micro
+- D-01 fee €1.000 RICONFIRMATO (micro-dealer can afford per single deal scouting+import+docs full-service)
+- Service offering esplicito: brand affidabile + scouting + import calc + production docs + area riservata formativa
+**Trigger revisione**:
+- Se Layer 2 mystery shopper rivela target reale ≠ micro-dealer commissione (es. risulta che P.IVA ordinaria piccola scale è prospect più caldo) → re-evaluate D-28
+- Soglia stock < 20 verificabile su Subito.it / Autoscout24 dealer profile (count annunci attivi)
+
+**Ref**: founder raw prompt S170-post-close 2026-05-14, memory feedback_argos_target_microdealer_commissione.md, STRATEGY.md S11d "lessico commissione informale"
+
+---
+
 # Indice cronologico
 
 | # | Titolo | Status | Data | Sessione |
@@ -758,9 +833,11 @@ Argos Import
 | D-23 | D-OPEN-Q2 timeline revision: forced P.IVA al deal #5-7 NON €10k | DECIDED-revision-D-OPEN-Q2 | 2026-05-14 | S167 |
 | D-24 | Anti-disintermediation 3-pillar (value-add + TOS penale + sourcing rotation) | DECIDED | 2026-05-14 | S167 |
 | D-25 | Image-shield Pillow-only stack (no OpenCV Big Sur safe) | DECIDED | 2026-05-14 | S167 |
-| D-26 | Cold-lead acquisition framework V5 3-step relational (precede D-21 step 1) | DECIDED | 2026-05-14 | S170 |
+| D-26 | Cold-lead V5 3-step relational | ⚠️ SUPERSEDED-INVALIDATED-by-D-27/D-28 | 2026-05-14 | S170 |
+| D-27 | Approach scaltro mystery shopper hybrid 3-layer | PROPOSED-pending-research-P2.A | 2026-05-14 | S170-post-close |
+| D-28 | Target profile ARGOS = micro-dealer commissione P.IVA forfettaria stock<20 | DECIDED | 2026-05-14 | S170-post-close |
 
-**Totale**: 31 entry (29 DECIDED + 1 OPEN-ipotesi D-08 + 1 SUPERSEDED D-03). Founder Q1-Q5 closed via S11c-strategic. Pattern S159 evitato: D-17 AI Visual pilot bloccante PRIMA shipping. S167 workflow evolution data-driven via protocollo v2 automated (5 nuove DECIDED con research verified Thread 1+2+3+4). S170 cold-lead framework standalone (D-26) precede D-21 workflow comm-broker — pattern relational vs transactional paradigm founder-explicit S169.
+**Totale**: 33 entry (30 DECIDED + 1 PROPOSED + 1 OPEN-ipotesi D-08 + 1 SUPERSEDED-by-D-14 D-03 + 1 SUPERSEDED-by-D-27/D-28 D-26). Founder Q1-Q5 closed via S11c-strategic. Pattern S159 evitato: D-17 AI Visual pilot bloccante PRIMA shipping. S167 workflow evolution data-driven via protocollo v2 automated. S170 lessons: D-26 V5 INVALIDATED post wave 1 — target wrong (stock 30-200 dealer contattati invece micro-commissione <20) + bug daemon dedup (Open Q #12). D-27 mystery shopper inverso paradigm pending research. D-28 target profile definitivo.
 
 # Open questions / Risks
 
@@ -776,3 +853,6 @@ Argos Import
 10. **Dataset geo-bias `dealer_network.sqlite` (S170)**: 18 dealer totali distribuiti SOLO in Sud (Puglia 5, Campania 9, Calabria 4). ZERO dealer Nord/Centro/Isole disponibili NEW+WA per wave 1. Memory `feedback_argos_scope_italia.md` rispettata su V5 testo (no geo-anchor), ma dataset residual-biased pre-S170. Trigger blocker wave 2: CoVe scouting extension Nord/Centro/Isole target ≥30 dealer balanced prima di wave 2. Owner: ARGOS scouting pipeline S171.
 11. **Wave 1 send fail Auto Carfora (S170)**: id=5 bridge_outbound errore "No LID for user new" su 393489214946. Probabile numero non attivo WhatsApp OR business LID-disabled. Non bug ARGOS — dealer-side data quality. Trigger: verify phone manuale founder (call/SMS) → se attivo WA, re-queue con phone canonical; se inactive, marcare dealer `pipeline_status=DEAD_PHONE` in dealer_network.sqlite.
 12. **🔴 BLOCKER STRUTTURALE — WA daemon duplicate sends bug (S170 close)**: il daemon `argos-wa-daemon` invia **multipli messaggi identici** per ogni singolo outbound row queue+approved. Confermato wave 1 S170: 4/5 bridge_outbound mostravano `sent_status=ok` single-row MA dealer ricevevano N copie identiche → founder ha eliminato i messaggi prima del reply window. **Wave 1 V5/D-26 metric reply rate INVALIDATO** (dealer percezione spam ≠ test paradigma relational). Pattern S159 #6: bug noto-non-fixato carry-over cross-session. **Blocker assoluto wave 2+ S171**: re-test V5 cold-lead framework richiede daemon dedup FIXED prima. Candidati root cause: (a) poll 30s race senza lock, (b) Baileys retry layer no idempotency, (c) missing UNIQUE constraint schema `bridge_outbound (deal_id, target_phone, body_hash)`. Diagnostic priority: query duplicate sent_ts stamps + log Baileys retry events. **Dataset wave 1 burned** (4/18 dealer pool nazionale non re-contattabili via stesso V5 msg1) → wave 2 dataset extension obbligatoria (Open Q #10) + variante msg1. **Memoria**: `~/.claude/projects/-Volumes-MontereyT7-venture-os/memory/feedback_wa_daemon_duplicate_sends.md`.
+13. **IBAN multipli configurazione (S170-post-close)**: founder richiesto inserimento N IBAN multipli da gestire come configurazione (possibilmente per regione/dealer/scope) DOPO che pipeline funziona end-to-end (test founder phone 3314928901 completo fino pagamento simbolico). Pagamento ufficiale = **BONIFICO BANCARIO** (founder explicit S170-post-close: "BONIFICO E BASTA"), NON Stripe/SumUp/altro PSP. Implications: reconciliation manual o webhook bancario (PSD2 open banking se disponibile). Trigger: test E2E completo verde → inserimento IBAN config layer. Owner: ARGOS Phase 4+ con D-OPEN-Q5 pricing close (€1k cash a consegna documento).
+14. **AMBRA agent stato (S170-post-close)**: Phase 6 ROADMAP ARGOS prevede AMBRA agent WA autonomo. D-27 Layer 3 dipende da AMBRA per scale follow-up dealer warm. **Stato implementazione**: TBD audit. Domande aperte: built? code esistente? FSM design? lessico micro-dealer integrato? Pattern AMBRA poi replicato per FLUXION sales agent (founder S170-post-close hint: "AMBRA agent di ARGOS ha caratteristiche che il sales agent di FLUXION dovrebbe avere, parla come un umano su WA"). Trigger: audit AMBRA stato implementazione in terminal ARGOS S171.
+15. **Dealer-pull-only NO system-push (S170-post-close)**: founder explicit "Dealer richiede auto, NO sistema propone. 'BTW X3' come esempio = NO spam di vehicle suggestions". ARGOS NON deve mai outbound proporre auto specifica al dealer. Solo dealer richiede auto specifica → ARGOS scout. Implications su Phase 6 AMBRA: AMBRA risponde a richiesta dealer, non inizia mai proposta vehicle.
