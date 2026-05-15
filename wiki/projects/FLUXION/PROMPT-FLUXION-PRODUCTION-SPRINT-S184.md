@@ -71,14 +71,16 @@ Design opzioni:
 
 **Done when**: opzione scelta + spec funzionale + UI mockup. Implementazione differita a P5 se complexity alta.
 
-### P2 — Build MSI Windows signed (runbook P2, 4-6h)
+### P2 — Build MSI Windows UNSIGNED (vincolo #5 zero-capex confermato founder S170-post-close)
 Da `docs/launch/RUNBOOK-P2-WIN-MSI-BUILD.md`:
 - Tauri build target Windows MSI
-- Code signing certificate (cost? founder vincolo #5 zero capex — usa self-signed iniziale + SmartScreen warning OR Cloudflare SignTool free OR EV cert ~€300/anno)
-- Test installazione VM Windows
-- SmartScreen bypass: build reputation via beta deployment
+- **NO code signing** (founder decision S170-post-close: skip Azure Trusted Signing + Sectigo EV)
+- Cliente vede SmartScreen "Editore sconosciuto" → workflow guidato "Maggiori informazioni → Esegui comunque" (one-time)
+- Reference guida esistente: `docs/helpdesk-wiki/wiki/entities/win10-installation.md` (già documenta workflow + license certificato genuinità)
+- Test installazione VM Windows Win10/Win11
+- **NOTE "TUTTO MECHANIC" tradeoff**: 1 click extra one-time accettato come tradeoff per zero capex. Resto installazione MUST essere full automated (license activation auto, Sara auto-config, Ehiweb integration).
 
-**Done when**: MSI builds clean + installs on Win10/Win11 VM + Sara starts correctly.
+**Done when**: MSI builds clean + installs on Win10/Win11 VM via guida + Sara starts correctly + license auto-activates.
 
 ### P3 — Sentry crash reporter integration (2-3h)
 Da ROADMAP_S184:
@@ -113,11 +115,13 @@ Design FLUXION sales agent:
   6. Follow-up se interest signal
   7. Handoff founder quando ready-to-buy
 
-**Dubbi founder**:
-- Hai già rapporto con WhatsApp Business API o usiamo Baileys? Stack stesso ARGOS iMac daemon?
+**Confermato founder S170-post-close**:
+- **Numero WA FLUXION**: `3314928901` **già operativo, già brandato "Erica Fluxion"** + logo FLUXION
+- Stack: Baileys (riuso pattern ARGOS daemon, stesso iMac PM2 OR instance separata)
+
+**Dubbi founder residui**:
 - Landing per ogni verticale già built? Quale URL?
 - Video demo Sara già recorded per verticale? Quale formato/length?
-- Stesso numero ARGOS Luca Ferretti o numero FLUXION dedicato (brand separation)?
 
 **Done when**: 1 sales agent WA workflow funzionante per 1 verticale (es. saloni di bellezza) + 5 prospect contattati + 1 demo video sent + tracking conversioni.
 
@@ -142,14 +146,17 @@ Da ROADMAP_REMAINING.md:
 
 ## DUBBI FOUNDER da chiarire (vincolo "SE HAI DUBBI CHIEDI")
 
+**Risolti S170-post-close** ✅:
+- ~~Numero WA FLUXION~~ → `3314928901` Erica Fluxion brand già operativo
+- ~~Code signing Windows~~ → NO cert, install guide self-signed approach esistente in `docs/helpdesk-wiki/wiki/entities/win10-installation.md`
+- ~~Stack WA~~ → Baileys (riuso pattern ARGOS)
+
+**Dubbi residui da risolvere**:
 1. **Ehiweb rapporto commerciale**: sei già reseller Ehiweb? Hai link affiliate? Quale tariffa cliente paga (€/mese)?
 2. **Pricing migration**: clienti BASE €297 esistenti (se ne esistono) come gestiamo? Grandfathered? Upgrade forced? Refund?
-3. **WhatsApp Business API vs Baileys** per FLUXION sales agent: stesso stack ARGOS o separato?
-4. **Numero WA FLUXION**: stesso Luca Ferretti ARGOS (brand mixing) o numero FLUXION dedicato?
-5. **Landing pages per verticale**: già built? URL? O da fare?
-6. **Video demo Sara**: già recorded per ogni verticale o da produrre?
-7. **Code signing certificate Windows**: €300/anno EV cert OR self-signed iniziale OK?
-8. **Beta clienti 6**: hai già lead identificati o serve scout da zero?
+3. **Landing pages per verticale**: già built? URL? O da fare?
+4. **Video demo Sara**: già recorded per ogni verticale o da produrre?
+5. **Beta clienti 6**: hai già lead identificati o serve scout da zero?
 
 ---
 

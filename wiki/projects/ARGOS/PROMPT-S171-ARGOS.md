@@ -28,7 +28,10 @@
 - **Dealer chiede auto, NO sistema propone** (no spam BTW X3)
 - Pagamento ufficiale = **BONIFICO BANCARIO** (NO Stripe/SumUp/PSP altri)
 - Test E2E completo fino bonifico simbolico (€0 o €1) + dossier + tracking veicolo fittizio
-- Founder phone test = **3314928901**
+- **Numeri WA confermati** (founder S170-post-close 2026-05-14):
+  - `3281536308` = numero personale founder, **brandato ARGOS "Luca Ferretti"** (outbound brand identity)
+  - `3314928901` = numero FLUXION, brandato "Erica Fluxion" (FLUXION sales agent) — **per ARGOS test E2E** founder lo usa come endpoint controllato (entrambi lati simulati founder, branding irrilevante in test)
+  - Per **mystery shopper Layer 2 REAL** (futuro post-test, dealer veri): serve numero DIVERSO da entrambi (TBD: 2° SIM founder OR burner free OR Twilio €1/mese)
 - IBAN multipli config DOPO pipeline funziona
 
 ---
@@ -163,11 +166,11 @@ Solo se P5 verde:
 
 ## DUBBI FOUNDER da chiarire (vincolo "SE HAI DUBBI CHIEDI")
 
-1. **Numero secondo per mystery shopper Layer 2**: il numero 3314928901 è già contatto ARGOS daemon (whitelist pipeline). Per mystery shopper serve numero DIVERSO da brand Luca Ferretti. Hai:
+1. **Numero mystery shopper Layer 2 REAL** (per dealer veri post-test): test E2E S171 usa `3314928901` (FLUXION, founder controlla entrambi lati). Per real outreach Layer 2 su dealer veri serve numero DIVERSO da `3281536308` (ARGOS Luca Ferretti brand) E da `3314928901` (FLUXION Erica brand). Opzioni:
    - (a) 2° SIM/numero attivo che possiamo usare? — quale?
    - (b) Burner number temporaneo (es. Tally / GoogleVoice / TextNow gratuiti)?
-   - (c) Stesso numero pretending "civilian" senza identity Luca Ferretti?
-   **Raccomandazione CTO**: (a) 2° numero reale è più credibile. (b) burner free è zero-cost ma trust signals minori. Tu decidi.
+   - (c) Twilio number €1/mese dedicato mystery shopper Argos
+   **Raccomandazione CTO**: (a) se disponibile, (c) come backup low-cost professional, (b) solo MVP iniziale.
 
 2. **Canali specifici Layer 1**: Reddit/Telegram/FB groups dealer auto Italia commissione — hai pointer a gruppi specifici già conosciuti? Senza pointer founder, Agent 3 ricerca blind richiede 60+ min. Con pointer → 15min validation.
 
