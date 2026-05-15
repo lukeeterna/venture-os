@@ -95,7 +95,7 @@
 
 ## D-05 — Architettura distribuzione clienti zero-cost: telecamere IP + smartphone notification (research-pending) (2026-05-15, S173-VOS-coord)
 
-**Status**: DECIDED (founder S173 raw "l'obiettivo per guardian è avere solo le telecamere ip wifi e ai figli lo smartphone da trovare metodo per far 'girare' il sistema no cost per i clienti")
+**Status**: SUPERSEDED-by-D-06 (S178 — deep research + founder Q1-Q5 validation)
 **Contesto**: Vincolo founder #5 (zero-cost) esteso lato cliente Guardian: nessun hardware dedicato venduto al cliente, sfruttare device esistenti (router casa con IP cam wifi già installate, smartphone caregiver/figli). "Far girare" sistema su infra cliente esistente = sfida aperta (dove gira inference? Google Drive sync? edge mobile? cloud free-tier?).
 **Opzioni considerate**:
 - (a) Inference su edge device cliente (Raspberry Pi €40, viola zero-cost cliente)
@@ -114,6 +114,29 @@
 
 ---
 
+## D-06 — Architettura cliente: camera-agnostic RTSP + Oracle Free Tier backend Luke (2026-05-15, S178-VOS-coord)
+
+**Status**: DECIDED (founder S178 raw Q1=a+camera-agnostic, Q3=a-implicito, Q5=a-casa-Luke; SUPERSEDES D-05)
+**Contesto**: D-05 OQ-02 deep research S177→S178 ha invalidato pattern "AI on-device camera vendor-specific" (Tapo C460 battery no-RTSP, KamiHome SaaS-only, eufy fall-event proprietary app). Founder S178 specifica vincolo: "il sistema deve funzionare con TUTTI i modelli di cam wifi". Test bench: 2 EZVIZ wifi già operative casa Luke (RTSP-verified: `rtsp://admin:QSTOZH@192.168.1.4:554/h264_stream`).
+**Opzioni considerate**: vedi `wiki/projects/Guardian/RESEARCH-OQ02-zero-cost-client.md` (5 opzioni analizzate, tabella decisione, autocritica v1+v2).
+**Decisione**: Architettura cliente **hybrid (e+d-lite) CAMERA-AGNOSTIC**:
+- **Input layer**: qualunque IP camera wifi con RTSP/ONVIF standard (Tapo C200/C210, EZVIZ, Reolink, Hikvision, generic ONVIF) — cliente porta sua cam o acquista commodity €20-€40 retail Italia.
+- **Inference backend**: Oracle Cloud ARM A1 Free Tier (forever-free, EU region Frankfurt/Milan), esegue `run_upstream.py` (D-02 stack PRESERVED) con motion-gated frame sampling low-res 480p.
+- **Notify layer**: FCM Firebase (free unlimited).
+- **Caregiver UX**: app/PWA TBD (OQ-02.4 next session).
+- **Test bench**: 2 EZVIZ casa Luke (self-dogfooding diretto Q5).
+**Conseguenze**:
+- D-02 NON sunset, scope EXTEND: backend cliente production + iMac casa Luke dev/test.
+- Camera-agnostic = no vendor shortlist required, sistema ingest RTSP-standard universale. Lavoro extra: tolleranza variazioni codec (h264/h265), risoluzioni (480p-4K), fps (15-30).
+- Privacy mitigation accettata pragmatica (Q3 founder "funzioni prima"): TLS RTSP + frame-only no-storage attestazione + Oracle EU. GDPR DPA chain documentato ma NON blocker MVP.
+- Business model DEFERRED (Q2): no pricing decision pre-revenue (vincolo #5 + memory `feedback_premature_optimization.md`).
+- V2 pulizia smartphone IN SCOPE (Q4 founder "deve essere completo"): D-04 resta OPEN ma scope-included nel roadmap Guardian. Discovery V2 NON blocker V1 MVP, ma deve essere planning entro lo stesso ciclo (parallelo dopo OQ-02.3 backend setup).
+- Founder S178 self-dogfooding: test casa Luke con 2 EZVIZ → P1 production gating (D-03) accelerato (Luke disponibile fisicamente).
+**Ref**: RESEARCH-OQ02-zero-cost-client.md (S177 v1 + S178 v2 amendment), founder S178 raw Q1-Q5, `~/fall-poc/run_upstream.py` (D-02), EZVIZ RTSP url in NEXT_SESSION_PROMPT.md S93 riga 80
+<!-- last_reviewed: 2026-05-15 -->
+
+---
+
 # Indice cronologico
 
 | # | Titolo | Status | Data | Sessione |
@@ -122,9 +145,10 @@
 | D-02 | Fall-detection stack production yolov8n-pose + LSTM + MQTT | DECIDED | 2026-05-15 | S173-VOS-coord |
 | D-03 | Activation gating zero-FP test naturale Luke ≥30min | DECIDED | 2026-05-15 | S173-VOS-coord |
 | D-04 | Verticale pulizia smartphone scope dettagliato | OPEN | 2026-05-15 | S173-VOS-coord |
-| D-05 | Architettura clienti zero-cost IP cam + smartphone (research-pending) | DECIDED | 2026-05-15 | S173-VOS-coord |
+| D-05 | Architettura clienti zero-cost IP cam + smartphone (research-pending) | SUPERSEDED-by-D-06 | 2026-05-15 | S173-VOS-coord |
+| D-06 | Architettura cliente camera-agnostic RTSP + Oracle Free Tier backend Luke | DECIDED | 2026-05-15 | S178-VOS-coord |
 
-**Totale**: 4 DECIDED + 1 OPEN. File iniziato S173-VOS-coord post-resolution drift CLAUDE.md vs COMPILED-STATE.
+**Totale**: 5 DECIDED + 1 OPEN + 1 SUPERSEDED. D-06 supera D-05 post deep research S177-S178 e founder validation Q1-Q5.
 
 ---
 
