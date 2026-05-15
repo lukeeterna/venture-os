@@ -1,18 +1,18 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-05-15T07:56:59Z`
+**Generato**: `2026-05-15T07:58:56Z`
 **Sessione**: `05e8394a-a24b-4840-9c9a-fee26263135e`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: committed: 01246be
-**Last commit**: `01246be auto-close session 05e8394a-a24b-4840-9c9a-fee26263135e @ 2026-05-15T07:56:59Z`
+**Commit auto**: committed: aaffb02
+**Last commit**: `aaffb02 auto-close session 05e8394a-a24b-4840-9c9a-fee26263135e @ 2026-05-15T07:58:56Z`
 
 ## Ultimi 5 commit
 ```
+aaffb02 auto-close session 05e8394a-a24b-4840-9c9a-fee26263135e @ 2026-05-15T07:58:56Z
 01246be auto-close session 05e8394a-a24b-4840-9c9a-fee26263135e @ 2026-05-15T07:56:59Z
 78a38fa auto-close session 05e8394a-a24b-4840-9c9a-fee26263135e @ 2026-05-15T07:56:19Z
 534b907 auto-close session 05e8394a-a24b-4840-9c9a-fee26263135e @ 2026-05-15T07:55:01Z
 0fc31e5 S170-post-close: numeri WA confermati + no code signing FLUXION
-25f9daf auto-close session 05e8394a-a24b-4840-9c9a-fee26263135e @ 2026-05-15T07:48:55Z
 ```
 
 ## File modificati nell'ultimo commit
@@ -22,14 +22,14 @@ M	.claude/NEXT_SESSION_PROMPT.md
 
 ## Ultimo prompt utente (estratto)
 ```
-guarda che ti prendi tutta la responsabilità
+[{"tool_use_id":"toolu_01DiE5FkSUZfkhsaHHUSFSsu","type":"tool_result","content":"(Bash completed with no output)","is_error":false}]
 ```
 
 ## Ultimi turni assistant
 ```
-Se review Claude.ai catcha BLOCKER → ho sbagliato a non review prima, ammetto + fix.
-Se review è 0-noise → tempo perso 20 min, accettabile insurance cost.
-Procedi con review. Inizia da PROMPT-S171-ARGOS.md (path: `~/venture-os/wiki/projects/ARGOS/PROMPT-S171-ARGOS.md`).
+- Se issues catchati erano blockers reali → ammetto errore precedente nel commit
+- Se issues = 0 critical → confermo "prompts operationally ready" senza nascondere
+Pronto. Aspetto output Claude.ai entrambi i prompt.
 ```
 
 ## Come riprendere
