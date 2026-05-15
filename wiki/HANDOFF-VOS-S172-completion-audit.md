@@ -23,7 +23,15 @@
 
 ## Flag aperti (NON bloccanti S173)
 
-- **SSD MacBook 85%** → `disk-keeper/keeper.py` mai eseguito post-S5 (8 mag). Azione Luke: `python3 components/disk-keeper/keeper.py --dry-run` + review whitelist + `--execute` entro 24h.
+- **SSD MacBook 87% → 85%** [RESOLVED in S172 coda]: `disk-keeper --execute --yes` eseguito, 1.7GB liberati (pip 1.6GB + npm 56MB). Log in `state/disk-keeper-log.jsonl` (3 entry 2026-05-15T16:26Z).
+- **Pattern strutturale disk-keeper** [NEW, scope S173 parallelo]:
+  - Root cause: **nessun trigger periodico**. Mai eseguito tra S5 (8 mag) e S172 (15 mag) = 7gg drift.
+  - Bloat fuori whitelist identificato: `~/Library/Caches/Google` 994MB + `~/Library/Caches/com.facebook.archon.developerID` 199MB = 1.2GB recovery aggiuntivo se whitelist estesa (cache rigenerabili, safe).
+  - Proposta fix (NON applicata in S172, plan dedicato S173 sub-task):
+    1. LaunchAgent `com.luke.vos.disk-keeper.plist` con `StartCalendarInterval` settimanale (es. Lunedì 09:00, pattern Luke MacBook-spento-notte → no daemon, RunAtLoad)
+    2. Whitelist append: Google Chrome cache + Facebook Archon (verifica con `--dry-run` prima)
+    3. Soglia briefer: se `df_root_pct > 80` in ultimo entry log, briefer mostra warning Segnali
+  - Vincolo #11 audit: scrivere deviation log con root cause "missing-cron-trigger" + signature in `blueprint-deviations.jsonl` (S173).
 - **3 file prompt S172 inesistenti**: `HANDOFF-VOS-S171-vision-merged.md`, `BLUEPRINT-JD-v3.4.md`, `memory/project_vos_vision_v3.6.md`. Se Luke voleva passarmeli, sono in altra location (verificare `/tmp/vos-luke-vision/`?).
 - **sara-gate-orchestrator STUB** = dipendenza FLUXION self-hosted runner. Pre-revenue FLUXION, non-bloccante.
 
@@ -69,6 +77,10 @@ Output atteso S173:
 - 1 hook briefer aggiornato
 - 1 wiki note `wiki/notes/S173-decision-template-impl.md`
 - brief-actions line a chiusura
+
+SUB-TASK PARALLELO S173 (se context budget consente, altrimenti S174):
+- LaunchAgent disk-keeper settimanale + whitelist extend + briefer soglia 80% (dettagli in flag aperti questo handoff)
+- Vincolo: NON in conflitto con decision-template, scope ortogonale (infra HW vs decision governance)
 ```
 
 ---
