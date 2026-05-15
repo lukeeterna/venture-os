@@ -1,36 +1,39 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-05-15T17:31:12Z`
-**Sessione**: `c8ea1b36-3e23-47ad-90c3-9e60adc4c534`
+**Generato**: `2026-05-15T17:54:03Z`
+**Sessione**: `75bcc75b-bb56-44d6-b6a2-b2a37973b768`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: committed: a5dd601
-**Last commit**: `a5dd601 auto-close session c8ea1b36-3e23-47ad-90c3-9e60adc4c534 @ 2026-05-15T17:31:12Z`
+**Commit auto**: DIRTY (vedi /Volumes/MontereyT7/venture-os/.claude/SESSION_DIRTY.md)
+**Last commit**: `819a399 auto-close session 75bcc75b-bb56-44d6-b6a2-b2a37973b768 @ 2026-05-15T17:51:35Z`
 
 ## Ultimi 5 commit
 ```
+819a399 auto-close session 75bcc75b-bb56-44d6-b6a2-b2a37973b768 @ 2026-05-15T17:51:35Z
 a5dd601 auto-close session c8ea1b36-3e23-47ad-90c3-9e60adc4c534 @ 2026-05-15T17:31:12Z
 44eb911 auto-close session c8ea1b36-3e23-47ad-90c3-9e60adc4c534 @ 2026-05-15T17:29:40Z
 f952330 auto-close session c8ea1b36-3e23-47ad-90c3-9e60adc4c534 @ 2026-05-15T17:04:32Z
 563d9a2 auto-close session c8ea1b36-3e23-47ad-90c3-9e60adc4c534 @ 2026-05-15T16:49:30Z
-c94d1b6 auto-close session c8ea1b36-3e23-47ad-90c3-9e60adc4c534 @ 2026-05-15T16:48:05Z
 ```
 
 ## File modificati nell'ultimo commit
 ```
 M	.claude/NEXT_SESSION_PROMPT.md
-M	wiki/HANDOFF-VOS-S173-decision-template-disk-keeper.md
+M	briefs/2026-05-15.md
+M	components/morning-briefer/briefer.py
+A	components/session-health/health.py
+A	wiki/notes/S174-session-health-impl.md
 ```
 
 ## Ultimo prompt utente (estratto)
 ```
-[{"tool_use_id":"toolu_01WDq6BFptVN3QwEBzk9wexe","type":"tool_result","content":"The file /Volumes/MontereyT7/venture-os/wiki/HANDOFF-VOS-S173-decision-template-disk-keeper.md has been updated successfully."}]
+context 9% come procediamo , next session?
 ```
 
 ## Ultimi turni assistant
 ```
-Output atteso: 1 file health.py + 1 hook briefer + wiki/notes/S174-session-health-impl.md + brief-actions line.
-```
-Tutto pronto. Brief-actions line già appesa da te. S173 chiuso definitivamente.
+- Riduce backlog S175 da 7 a 6 flag, libera sessione successiva per gap #3/#4 che richiedono context completo.
+- Pattern bash-wrapper-fragile in plist VOS è side-discovery S173 già diagnosticato: applicare stesso fix di disk-keeper, non investigazione greenfield.
+Procedo o vuoi chiudere S174 verde qui e aprire S175 dedicato?
 ```
 
 ## Come riprendere

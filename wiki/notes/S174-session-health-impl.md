@@ -129,7 +129,7 @@ NON sovradimensiono: nessun DB, nessuna UI, nessun daemon, nessuna dependency (s
 
 ## Flag aperti per S175
 
-1. **heretic-retry-d23 broken** (status 78, side-discovery S173): non chiuso in S174 — scope primario session-health completato, secondario rimandato per chiusura ordinata. Migrare bash wrapper plist a Python direct pattern.
+1. ~~heretic-retry-d23 broken~~ ✅ CHIUSO S174 (deload + archive, non migrate — vedi sezione sotto).
 2. **Gap #3 pipeline-runner**: dopo S174, sessione dedicata.
 3. **Gap #4 llm-router multi-role**: dopo S174, sessione dedicata.
 4. **OQ-02 Guardian deep research zero-cost client**: scout `edge-inference-mobile`.
@@ -137,23 +137,58 @@ NON sovradimensiono: nessun DB, nessuna UI, nessun daemon, nessuna dependency (s
 6. **Calibration session-health `CHARS_PER_TOKEN`**: confronto vs `/context` reale (autocritica punto 1).
 7. **SessionEnd hook** (Claude Code) o LaunchAgent 10min: enforcement automatico (autocritica punto 3.b).
 
+## Task secondario S174 — heretic-retry-d23 ✅ CHIUSO
+
+**Decisione CTO: deload + archive, NON migrate-to-Python-direct.**
+
+### Investigazione
+- `launchctl list`: `-	78	com.luke.vos.heretic-retry-d23` (exit 78 = EX_CONFIG, conferma side-discovery S173 bash-wrapper-fragile)
+- Plist: bash wrapper `/bin/bash -c "/bin/bash scripts/heretic-d23-retry.sh ..."` con cwd-relative path → pattern noto rotto in Big Sur user-domain (TCC su /Volumes/MontereyT7).
+- Script body `heretic-d23-retry.sh`: ricerca fiscale D-23 (regime forfettario L.190/2014 isolation da pignoramento Equitalia art.19 DPR 602/1973), prompt heretic uncensored 04:30 daily.
+
+### Motivazione deload (non migrate)
+Memoria `feedback_premature_optimization.md` esplicita:
+> "NO ricerche legale/fiscale (P.IVA, pignoramento, ATECO, trust) finché payment evidence reale received. Defer queue, procedi MVP tecnico."
+
+Migrare a Python direct un componente che viola vincolo founder DECIDED = lavoro su componente che non deve girare. Anti-pattern.
+
+### Azioni eseguite
+1. `launchctl unload ~/Library/LaunchAgents/com.luke.vos.heretic-retry-d23.plist` (exit 0) ✓
+2. Archive plist → `wiki/raw/archived-launchagents/com.luke.vos.heretic-retry-d23.plist.archived-S174`
+3. Archive script → `wiki/raw/archived-scripts/heretic-d23-retry.sh.archived-S174`
+4. Deviation log → `state/blueprint-deviations.jsonl` task=`heretic-retry-d23-decision`
+5. Output esistenti `state/heretic-outputs/d23-*.md` (3 file 14 mag): NON cancellati, restano storico read-only.
+
+### Trade-off
+Pro: rispetto vincolo founder, riduce noise launchctl status 78, libera 04:30 slot.
+Contro: se founder cambia idea post-revenue (P.IVA aperta, payment evidence ricevuta), riabilitare richiede unarchive + re-load plist (5min). Reversibile.
+
+### Pattern-recognition (vincolo #11)
+- Pattern S159 mitigation B6 3-line check applicato: (1) D-XX rif = memory `feedback_premature_optimization.md` (2) vincolo founder DECIDED rispettato (3) fonte dati = script body inline. ✓
+- Pattern bash-wrapper-fragile LaunchAgent: 2/2 casi chiusi nel ciclo S173-S174 (disk-keeper migrate Python-direct, heretic-retry-d23 archive). Sub-pattern chiuso.
+
+---
+
 ## Prompt resume S175
 
 ```
-Sessione S175 VOS. Chiusura task secondario S174 + scelta gap successivo.
+Sessione S175 VOS. S174 chiuso VERDE (primario session-health + secondario heretic-retry-d23 deload).
 
 LEGGI:
-- /Volumes/MontereyT7/venture-os/wiki/notes/S174-session-health-impl.md (gap #2 chiuso)
-- /Volumes/MontereyT7/venture-os/wiki/HANDOFF-VOS-S173-decision-template-disk-keeper.md (flag heretic-retry-d23)
+- /Volumes/MontereyT7/venture-os/wiki/notes/S174-session-health-impl.md (gap #2 chiuso + heretic deload)
+- /Volumes/MontereyT7/venture-os/wiki/VOS-COMPLETION-AUDIT-S172.md (ranking gap originale)
 
-TASK CANDIDATI (scegli UNO, no parallelo):
-1. heretic-retry-d23 plist status 78: investigare `scripts/heretic-d23-retry.sh`,
-   migrare a Python direct pattern (come disk-keeper S173) o deload se obsoleto.
-   ETA: 30-60min.
-2. gap #3 pipeline-runner MVP (orchestratore discuss→plan→execute con commit
-   atomici). Verifica overlap con skill `gsd:*` prima di implementare.
-3. gap #4 llm-router multi-role expansion (`reasoning`, `coding`, `vision`, `cheap`
-   roles oltre attuale `long_context`).
+TASK CANDIDATO RACCOMANDATO (decisione CTO, vincolo #3):
+Gap #3 pipeline-runner MVP. Motivo: dopo decision-template (S173) e session-health
+(S174), pipeline-runner è infra orchestration più impattante. Pre-verifica overlap
+con skill `gsd:*` (10min lettura) prima di implementare. Se overlap >70% → pivot
+gap #4 llm-router multi-role expansion (reasoning/coding/vision/cheap roles oltre
+attuale long_context).
+
+NON FARE:
+- OQ-02 Guardian deep research (sessione vos-scout dedicata)
+- OQ-01 pulizia smartphone scope (discovery founder dedicata)
+- Calibration session-health CHARS_PER_TOKEN (defer fino primo falso positivo)
 
 VINCOLI: CLAUDE.md v1.1 invariati.
 ```
