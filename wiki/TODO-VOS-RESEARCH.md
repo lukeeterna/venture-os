@@ -7,7 +7,7 @@
 
 ## Pending research
 
-(vuoto — popolato durante Q&A founder one-by-one)
+- [ ] **Test Claude Code memory federation fattibilità** | Trigger: prima cosa next VOS session | Scope: VOS Phase 2.2 decision (Q2 founder S170-post-close). Test 15 min: drop 1 file in `~/.claude/projects/-Users-macbook-Documents-combaretrovamiauto-enterprise/memory/feedback_test_federation.md` da script VOS, poi apertura terminal ARGOS verifica se SessionStart lo legge. Se SI → P2.2 fattibile via rsync. Se NO → sostituire con SessionStart hook injection (estensione P2.1).
 
 ---
 
