@@ -1,35 +1,37 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-05-15T14:25:39Z`
+**Generato**: `2026-05-15T14:37:57Z`
 **Sessione**: `05e8394a-a24b-4840-9c9a-fee26263135e`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: committed: e0eb07c
-**Last commit**: `e0eb07c auto-close session 05e8394a-a24b-4840-9c9a-fee26263135e @ 2026-05-15T14:25:39Z`
+**Commit auto**: committed: 4215799
+**Last commit**: `4215799 auto-close session 05e8394a-a24b-4840-9c9a-fee26263135e @ 2026-05-15T14:37:57Z`
 
 ## Ultimi 5 commit
 ```
+4215799 auto-close session 05e8394a-a24b-4840-9c9a-fee26263135e @ 2026-05-15T14:37:57Z
 e0eb07c auto-close session 05e8394a-a24b-4840-9c9a-fee26263135e @ 2026-05-15T14:25:39Z
 cf55143 auto-close session 05e8394a-a24b-4840-9c9a-fee26263135e @ 2026-05-15T14:22:32Z
 119c08b PROMPT-S171-ARGOS v2.2 — fix residui Twilio + rimossa ricerca fiscale (vincoli founder)
 5a65f00 auto-close session 05e8394a-a24b-4840-9c9a-fee26263135e @ 2026-05-15T14:13:18Z
-906ce29 auto-close session 05e8394a-a24b-4840-9c9a-fee26263135e @ 2026-05-15T14:12:04Z
 ```
 
 ## File modificati nell'ultimo commit
 ```
 M	.claude/NEXT_SESSION_PROMPT.md
+A	wiki/TODO-VOS-RESEARCH.md
+A	wiki/VOS-IMPROVEMENT-PROPOSAL.md
 ```
 
 ## Ultimo prompt utente (estratto)
 ```
-il contatore mostra 36% context . riapriamo sesisone se ritieni di aver superato il 50% e rifacciamo review. questo  mi auguro comporterà ore di lavoro inutile risparmiato, coss ne pensi cto?
+[{"tool_use_id":"toolu_01VcZ5nzt7PnFiEdfmJkgaXY","type":"tool_result","content":"(Bash completed with no output)","is_error":false}]
 ```
 
 ## Ultimi turni assistant
 ```
-- Se serve coordinazione cross-progetto post terminali → ri-apri VOS con `/Volumes/MontereyT7/venture-os` cwd
-- Brief mattutino 2026-05-15 ha già messaggio nel SessionStart hook (validation window + tool-scout) — prossima sessione VOS lo affronterà
-Procedo chiusura verde S170-post-close VOS. Buon lavoro su ARGOS+FLUXION terminali. Quando torni qui troverai memory + commit + brief aggiornati.
+7. Research items → `~/venture-os/wiki/TODO-VOS-RESEARCH.md`
+⚠️ **Heads-up context budget** (hook 55%, contatore UI 40-45%): se review ritorna LUNGA + applico molti fix + Q&A esteso → potrei chiudere prima delle ultime domande. In quel caso: handoff strutturato con file persistenti (proposal v2 + TODO + memory) per nuova sessione VOS.
+Aspetto output Claude.ai.
 ```
 
 ## Come riprendere
