@@ -1,12 +1,16 @@
 # config/routing.yaml — VOS routing config
 # Bootstrap S5 STEP 1 (2026-05-09). Update S5b → v2. S5c → v3. S5e → v4 (Cerebras verified).
 # S11c-prereq (2026-05-13) → v5: categoria `uncensored` (blueprint sez 15.11 heretic-handler).
+# S170 (2026-05-14) → v5.1: 3 field_change applied from routing-drift run 20260514T055152Z.
+#   1. gemini-2.5-flash context_window 1000000 → 1048576 (upstream accuracy)
+#   2. gemini-2.5-pro context_window 1000000 → 1048576 (upstream accuracy)
+#   3. meta-llama/llama-3.3-70b-instruct:free context_window 131072 → 65536 (REGRESSION -50%, see notes)
 # Aggiornamento runtime: routing-refresh notturno (CLAUDE.md "vincoli invarianti").
 # Vincolo #1: ogni entry ha last_verified + sources upstream verificati.
 # Vincolo #5: free-tier first, soglia hard €30/mese tracciata in state/costs.jsonl.
 
-version: 5
-last_verified: 2026-05-13
+version: 5.1
+last_verified: 2026-05-14
 last_verified_method: real_http_call  # vincolo #11, no doc-only
 # S8 FASE 2.1 (2026-05-12) routing-http-verify.py: 5/5 verified post key setup
 #   google  gemini-2.5-flash               → verified (present in /v1beta/models)
@@ -38,7 +42,7 @@ models:
     model_id: gemini-2.5-flash
     provider: google
     api_endpoint: https://generativelanguage.googleapis.com/v1beta
-    context_window: 1000000
+    context_window: 1048576  # S170 drift apply: was 1000000, upstream confirms 1048576
     output_tokens_max: 65536
     cost_per_1m_in: 0.0
     cost_per_1m_out: 0.0
@@ -47,7 +51,7 @@ models:
     rate_limit_rpd: 250
     rate_limit_tpm: 250000
     auth_env: GEMINI_API_KEY
-    last_verified: 2026-05-12
+    last_verified: 2026-05-14
     last_verified_method: real_http_call  # S8 routing-http-verify: catalog match
     sources:
       - https://ai.google.dev/gemini-api/docs/rate-limits
@@ -68,13 +72,13 @@ models:
     model_id: gemini-2.5-pro
     provider: google
     api_endpoint: https://generativelanguage.googleapis.com/v1beta
-    context_window: 1000000
+    context_window: 1048576  # S170 drift apply: was 1000000, upstream confirms 1048576
     output_tokens_max: 65536
     cost_per_1m_in: 1.25  # tier ≤200K input
     cost_per_1m_out: 10.0
     free_tier: false
     auth_env: GEMINI_API_KEY
-    last_verified: 2026-05-12
+    last_verified: 2026-05-14
     last_verified_method: real_http_call  # S8: presente in /v1beta/models, paid quota
     sources:
       - https://ai.google.dev/gemini-api/docs/pricing
@@ -132,25 +136,28 @@ models:
     model_id: meta-llama/llama-3.3-70b-instruct:free
     provider: openrouter
     api_endpoint: https://openrouter.ai/api/v1
-    context_window: 131072
+    context_window: 65536  # S170 drift: REGRESSION upstream da 131072 → 65536 (-50%)
     output_tokens_max: 4096
     cost_per_1m_in: 0.0
     cost_per_1m_out: 0.0
     free_tier: true
     rate_limit_rpm: 20
     auth_env: OPENROUTER_API_KEY
-    last_verified: 2026-05-12
+    last_verified: 2026-05-14
     last_verified_method: real_http_call  # S8: catalog match, key setupata
     sources:
       - https://openrouter.ai/models?q=llama-3.3
     notes: |
-      VERIFICATO 2026-05-12 S8 routing-http-verify: presente in /v1/models OpenRouter
-      con key Luke. Scope chiave: VOS only (preferenza Luke, non enforced server-side
-      — limit credit/rpm su openrouter.ai dashboard se serve hard scope).
-      Backup secondario long_context: scatta SOLO se Gemini flash down.
-      Caveat: output_tokens_max=4096 inferiore a Gemini (65536). Karpathy compilation
-      può produrre >4K tokens output → chunking richiesto in adapter VOS se openrouter
-      attivo. Ok per fallback emergency, marginale come primary.
+      VERIFICATO 2026-05-12 S8 routing-http-verify: presente in /v1/models OpenRouter.
+      ⚠️ S170 DRIFT REGRESSION 2026-05-14: upstream ha dimezzato context_window
+      da 131072 a 65536. Impatto Karpathy compilation: input max ridotto a ~50K righe
+      (era ~100K). Per ARGOS handoff >50K righe servono chunking 2-pass o fallback
+      a gemini-flash 1M ctx. NON cambia priority chain (gemini-flash primary 1M
+      basta solo da solo). Backup secondario ora ancora più marginale.
+      Scope chiave: VOS only (preferenza Luke, non enforced server-side).
+      Caveat persistente: output_tokens_max=4096 inferiore a Gemini (65536).
+      Trigger riconsiderare chain: se OpenRouter introduce variante :free con
+      ctx ≥131K e RPM ≥20 (es. qwen3-next-80b candidate S170 model_added).
 
   # S11c-prereq (2026-05-13) — heretic-handler uncensored chain.
   # Blueprint sez 15.11 + sez 232-235. Use case: brainstorming strategico ARGOS
