@@ -133,6 +133,16 @@
 - V2 pulizia smartphone IN SCOPE (Q4 founder "deve essere completo"): D-04 resta OPEN ma scope-included nel roadmap Guardian. Discovery V2 NON blocker V1 MVP, ma deve essere planning entro lo stesso ciclo (parallelo dopo OQ-02.3 backend setup).
 - Founder S178 self-dogfooding: test casa Luke con 2 EZVIZ → P1 production gating (D-03) accelerato (Luke disponibile fisicamente).
 **Ref**: RESEARCH-OQ02-zero-cost-client.md (S177 v1 + S178 v2 amendment), founder S178 raw Q1-Q5, `~/fall-poc/run_upstream.py` (D-02), EZVIZ RTSP url in NEXT_SESSION_PROMPT.md S93 riga 80
+
+**S179 validation update (2026-05-15)**: deploy Oracle Free Tier POSPOSTO S180 (signup interattivo Luke + carta credito non disponibile real-time). Fallback PRE-EMPTIVE attivato: stand-in backend iMac Luke (già operativo: mosquitto:1883 + go2rtc:8554 RTSP-proxy 2 EZVIZ + run_upstream.py 789 LOC ONNX YOLO11n-pose). E2E architettura D-06 validata su iMac:
+- (i) Camera-agnostic ingest verified: go2rtc proxy `rtsp://admin:QSTOZH@192.168.1.4:554/H.264` → `localhost:8554/soggiorno` consumed by `run_upstream.py` (15 fps steady).
+- (ii) Backend inference live: YOLO11n-pose ONNX + LSTM + MOG2 motion-gate + S89 temporal verification — 90s smoke f=1290 zero crash post-fix, PENDING→CANCELED (lost_subject) cycle working.
+- (iii) Bug regressione critica trovato + fixed: variable shadowing `t0` (timestamp init line 531 vs ip_set[0] list line 714, post-S102.2 introduction) → rename `track0` (file `~/fall-poc/run_upstream.py.bak-s179-pre-fix` preserved). Bug bloccava chain `time.time() - t0` (TypeError float-list) prima di MQTT publish ALERT.
+- (iv) Notify layer chain E2E verified: bridge `~/fall-poc/mqtt_fcm_bridge.py` (86 LOC, NEW S179) subscriber MQTT `zeroclaw/guardian/fall` → POST FCM HTTP v1 body format → endpoint stub `127.0.0.1:9999`. 3/3 ALERT simulated forwarded status=200. Production swap: set env `FCM_ENDPOINT=https://fcm.googleapis.com/v1/projects/<PROJECT_ID>/messages:send` + `FCM_AUTH=<bearer>` (Firebase signup S180).
+- (v) Bandwidth measured 706 Kbps en0 LAN sostenuto (RTSP EZVIZ + background noise) su 60s window. Target D-06 "<500 Kbps motion-gated" NON centrato perché frame-sampling source-side non implementato — apre **OQ-02.5** (frame-skip logic upstream del decode quando MOG2 motion=OFF, current code decode-all-then-skip-LSTM). Non blocker MVP, ottimizzazione bandwidth client.
+- (vi) D-02 stack PRESERVED come da decisione (rename `t0`→`track0` interno, semantica invariata, zero modifica MQTT topic/payload schema).
+**OQ-02.3 closure**: VERDE su path iMac stand-in. Oracle ARM A1 = S180 P0 (Luke interactive signup).
+
 <!-- last_reviewed: 2026-05-15 -->
 
 ---
