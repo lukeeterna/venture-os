@@ -8,6 +8,13 @@
 # Aggiornamento runtime: routing-refresh notturno (CLAUDE.md "vincoli invarianti").
 # Vincolo #1: ogni entry ha last_verified + sources upstream verificati.
 # Vincolo #5: free-tier first, soglia hard €30/mese tracciata in state/costs.jsonl.
+# S175 (2026-05-15) POLICY demand-driven role addition:
+#   Nuovo `role:` aggiunto SOLO quando ≥1 componente VOS attivo dichiara dependency
+#   nel proprio source. NO ruoli speculativi (reasoning/coding/vision/cheap) senza
+#   consumer reale. Verifica consumer prima di aggiungere:
+#     grep -r "_resolve_chain(role='<NAME>')" components/
+#   Motivazione: audit S172 Gap #4 deload S175 dopo verifica 0/13 consumer per
+#   ruoli generic listati. Vedi wiki/notes/S175-gaps-3-4-deload.md.
 
 version: 5.1
 last_verified: 2026-05-14

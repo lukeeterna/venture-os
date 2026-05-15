@@ -37,12 +37,14 @@ Note operative:
 
 ## 2. Gap critici dichiarati nel prompt vs realtà filesystem
 
-| Gap dichiarato | Stato reale |
-|----------------|-------------|
-| `llm-router` | **PARZIALMENTE PRESENTE**: `_shared/llm_router.py` S9 copre solo role=`long_context` (Gemini fb). Multi-role (`reasoning`, `coding`, `vision`, `cheap`) non implementato. Gap = espansione, non assenza. |
-| `pipeline-runner` | **MISSING**: nessun orchestratore phases discuss→plan→execute con commit atomici nei components VOS. Esiste in skill `gsd:*` (terzo-parte), non in VOS-core. |
-| `session-health` | **MISSING**: `host-monitor` probe macchina, NON sessione Claude (context %, turn count, drift). Vincolo #7 oggi gestito manuale via `/context`. |
-| `decision-template` | **MISSING (scaffolding)**: `wiki/projects/ARGOS/DECISIONS.md` (884 righe, D-XX strutturate), `wiki/projects/FLUXION/DECISIONS.md` (95 righe, thin), `wiki/projects/Guardian/DECISIONS.md` **assente**. Skill `pre-action-check` esiste ma coverage 2/3 progetti. |
+| Gap dichiarato | Stato reale | Risoluzione |
+|----------------|-------------|-------------|
+| `llm-router` | **PARZIALMENTE PRESENTE**: `_shared/llm_router.py` S9 copre solo role=`long_context` (Gemini fb). Multi-role (`reasoning`, `coding`, `vision`, `cheap`) non implementato. Gap = espansione, non assenza. | **DELOAD S175** — no demand reale (0/13 consumer per ruoli speculativi). Policy "demand-driven role addition" aggiunta a routing.yaml header. Vedi `wiki/notes/S175-gaps-3-4-deload.md`. |
+| `pipeline-runner` | **MISSING**: nessun orchestratore phases discuss→plan→execute con commit atomici nei components VOS. Esiste in skill `gsd:*` (terzo-parte), non in VOS-core. | **DELOAD S175** — overlap ~85% con skill `gsd:*` (autonomous, execute-phase, next, manager, plan-phase, verify-work, quick). Implementare = duplicare upstream Anthropic-distributed. Vedi `wiki/notes/S175-gaps-3-4-deload.md`. |
+| `session-health` | **MISSING**: `host-monitor` probe macchina, NON sessione Claude (context %, turn count, drift). Vincolo #7 oggi gestito manuale via `/context`. | **IMPLEMENTED S174** — probe + briefer signal. Vedi `wiki/notes/S174-session-health-impl.md`. |
+| `decision-template` | **MISSING (scaffolding)**: `wiki/projects/ARGOS/DECISIONS.md` (884 righe, D-XX strutturate), `wiki/projects/FLUXION/DECISIONS.md` (95 righe, thin), `wiki/projects/Guardian/DECISIONS.md` **assente**. Skill `pre-action-check` esiste ma coverage 2/3 progetti. | **IMPLEMENTED S173** — validator + template + Guardian backfill. |
+
+**Closure audit S172: 4/4 gap risolti** (2 implemented S173-S174, 2 deload-with-rationale S175).
 
 ---
 
