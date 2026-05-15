@@ -1,36 +1,36 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-05-15T17:29:40Z`
+**Generato**: `2026-05-15T17:31:12Z`
 **Sessione**: `c8ea1b36-3e23-47ad-90c3-9e60adc4c534`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: committed: 44eb911
-**Last commit**: `44eb911 auto-close session c8ea1b36-3e23-47ad-90c3-9e60adc4c534 @ 2026-05-15T17:29:40Z`
+**Commit auto**: committed: a5dd601
+**Last commit**: `a5dd601 auto-close session c8ea1b36-3e23-47ad-90c3-9e60adc4c534 @ 2026-05-15T17:31:12Z`
 
 ## Ultimi 5 commit
 ```
+a5dd601 auto-close session c8ea1b36-3e23-47ad-90c3-9e60adc4c534 @ 2026-05-15T17:31:12Z
 44eb911 auto-close session c8ea1b36-3e23-47ad-90c3-9e60adc4c534 @ 2026-05-15T17:29:40Z
 f952330 auto-close session c8ea1b36-3e23-47ad-90c3-9e60adc4c534 @ 2026-05-15T17:04:32Z
 563d9a2 auto-close session c8ea1b36-3e23-47ad-90c3-9e60adc4c534 @ 2026-05-15T16:49:30Z
 c94d1b6 auto-close session c8ea1b36-3e23-47ad-90c3-9e60adc4c534 @ 2026-05-15T16:48:05Z
-13b9c2e auto-close session 06fdb91a-e32a-4103-9130-9bdf932d676f @ 2026-05-15T16:29:37Z
 ```
 
 ## File modificati nell'ultimo commit
 ```
 M	.claude/NEXT_SESSION_PROMPT.md
-A	wiki/HANDOFF-VOS-S173-decision-template-disk-keeper.md
+M	wiki/HANDOFF-VOS-S173-decision-template-disk-keeper.md
 ```
 
 ## Ultimo prompt utente (estratto)
 ```
-[{"tool_use_id":"toolu_01EiMLUqnyrBvGuHAJ5WPVFF","type":"tool_result","content":"File created successfully at: /Volumes/MontereyT7/venture-os/wiki/HANDOFF-VOS-S173-decision-template-disk-keeper.md"}]
+[{"tool_use_id":"toolu_01WDq6BFptVN3QwEBzk9wexe","type":"tool_result","content":"The file /Volumes/MontereyT7/venture-os/wiki/HANDOFF-VOS-S173-decision-template-disk-keeper.md has been updated successfully."}]
 ```
 
 ## Ultimi turni assistant
 ```
-echo '{"date": "2026-05-15", "brief_read": true, "action_taken": "S173-closed-handoff-S174-ready", "source_match": false, "notes": "Gap #1 decision-template MVP completato + 3/5 flag handoff S174 chiusi in S173 esteso (CLAUDE.md Guardian scope, validator daily scheduling, disk-keeper LaunchAgent + whitelist + briefer critical threshold). SSD MacBook 86%→83%. Next session: gap #2 session-health priority."}' >> ~/venture-os/state/brief-actions.jsonl
+Output atteso: 1 file health.py + 1 hook briefer + wiki/notes/S174-session-health-impl.md + brief-actions line.
 ```
-Tutto il resto (LaunchAgent, validator, briefer) è già auto-attivo. Puoi spegnere ora — il LaunchAgent disk-keeper triggererà Lunedì 09:00 o al prossimo RunAtLoad (login Mac).
+Tutto pronto. Brief-actions line già appesa da te. S173 chiuso definitivamente.
 ```
 
 ## Come riprendere

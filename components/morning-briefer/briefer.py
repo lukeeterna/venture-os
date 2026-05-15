@@ -29,6 +29,7 @@ TOOL_SCOUT_DIFF = VOS_ROOT / "state" / "tool-scout-diff.jsonl"
 SARA_GATE_RUNS = VOS_ROOT / "state" / "sara-gate-runs.jsonl"
 ROUTING_DRIFT = VOS_ROOT / "state" / "routing-drift.jsonl"
 DECISION_VALIDATION = VOS_ROOT / "state" / "decision-validation.jsonl"
+SESSION_HEALTH = VOS_ROOT / "state" / "session-health.jsonl"
 BRIEFS_DIR = VOS_ROOT / "briefs"
 BRIEFS_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -426,6 +427,28 @@ def _signals(mac: Optional[dict], imac: Optional[dict], projects: dict) -> list:
                     sigs.append(f"DECISIONS.md missing: {', '.join(missing_all)} — backfill richiesto (pre-action-check disattivo)")
         except Exception as e:  # noqa: BLE001
             _log_error("decision-validation parse fail", e)
+
+    # Session-health (S174): ultima probe sopra soglia (vincolo #7 anti-drift S159)
+    if SESSION_HEALTH.exists():
+        try:
+            with open(SESSION_HEALTH) as f:
+                ls = [ln for ln in f if ln.strip()]
+            if ls:
+                last = json.loads(ls[-1])
+                overall = last.get("overall", "ok")
+                if overall != "ok":
+                    ctx = last.get("context_pct") or 0
+                    tc = last.get("turn_count") or 0
+                    dr = last.get("drift_signals") or 0
+                    age = last.get("session_age_minutes") or 0
+                    age_h = round(age / 60.0, 1) if age else 0
+                    sid = (last.get("session_id") or "?")[:8]
+                    sigs.append(
+                        f"session-health {overall.upper()} (sid={sid} {age_h}h / {tc} turn / ctx {ctx}% / drift {dr}) "
+                        f"— vincolo #7 chiudi sessione"
+                    )
+        except Exception as e:  # noqa: BLE001
+            _log_error("session-health parse fail", e)
     return sigs
 
 
