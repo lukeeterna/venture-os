@@ -128,9 +128,9 @@ Output atteso S174:
 - brief-actions line a chiusura
 - (se secondario): heretic-retry-d23 plist fixed o deload + deviation log
 
-DOMANDE PRELIMINARI A FOUNDER (vincolo #3 eccezione scope, NON tecnica):
-- session-health probe accesso a `~/.claude/projects/<encoded>/<session>.jsonl`: OK leggere il proprio transcript per probe? (Privacy/scope check.)
-- Soglia turn_count default 80: ok o preferisci diversa? (Default ragionevole pre-revenue, tunable.)
+DECISIONI TECNICHE PRE-DEFINITE (vincolo #3, non chiedere a founder):
+- Accesso `~/.claude/projects/<encoded>/<session>.jsonl` = OK (infra VOS self-monitoring, no privacy issue).
+- Soglie default: context_pct >=50% warn, >=70% critical (vincolo #7) | turn_count >=80 warn, >=120 critical | drift_signals >=3 warn. Tunable via config se serve.
 ```
 
 ---
