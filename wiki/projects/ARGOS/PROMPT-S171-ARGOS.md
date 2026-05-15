@@ -73,16 +73,13 @@ cat ~/Documents/combaretrovamiauto-enterprise/.planning/ROADMAP.md | grep -A20 "
 ### P1 — Research microdealer commissione (P2.A, 4-agent thread sequenziali, 2-3h)
 Research-protocol-v2 4-agent **sequenziali** (NO parallel — single founder + single Claude instance = context switch costoso, vincolo #7). Output: `wiki/projects/ARGOS/RESEARCH-MICRODEALER-COMMISSIONE.md` con sezioni:
 
-**Agent 1 — Profilo segmento + verifica fiscale PRIORITARIA**:
+**Agent 1 — Profilo segmento**:
 
-⛔ **STEP 0 BLOCKING agent 1**: verificare PRIMA di tutto il resto:
-- Regime forfettario **effettivamente applicabile a commercio auto ATECO 45.11/47.xx**? Limite €85k 2025-2026 è coefficient-based (commercio dettaglio coefficient 0.40, applicato a revenue determina reddito imponibile)
-- Se NON applicabile o coefficient rende uneconomical per dealer commission → **escalate founder, target D-28 da ridefinire**
-- Fonte: Agenzia Entrate forfettario coefficient table, circolare 2024 forfettario commercio
+⛔ **VINCOLO FOUNDER INSINDACABILE**: NO ricerche legale/fiscale (P.IVA, regime forfettario, ATECO, pignoramento, trust) — memory `feedback_premature_optimization.md`. Defer queue fino a payment evidence reale. Agent 1 si concentra solo su pain points operativi + stack tech + canali, NON su qualificatori fiscali.
 
-Poi se step 0 passa:
 - Dati demografici micro-dealer auto Italia (count, geo distribution, age tier, gender)
 - Stack tecnologico typical (WA business? CRM? landing? marketplace listing)
+- Modello business commissione informale (come operano, come fatturano i cliente — operativo, NON fiscale)
 - Fonti: Federauto, Confapi PMI Auto, AsConAuto, Istat commercio auto
 
 **Agent 2 — Pain points + needs**:
@@ -224,8 +221,7 @@ Solo se P5 verde:
 1. **Numero mystery shopper Layer 2 REAL** (per dealer veri post-test): test E2E S171 usa `3314928901` (FLUXION, founder controlla entrambi lati). Per real outreach Layer 2 su dealer veri serve numero DIVERSO da `3281536308` (ARGOS Luca Ferretti brand) E da `3314928901` (FLUXION Erica brand). Opzioni:
    - (a) 2° SIM/numero attivo che possiamo usare? — quale?
    - (b) Burner number temporaneo (es. Tally / GoogleVoice / TextNow gratuiti)?
-   - (c) Twilio number €1/mese dedicato mystery shopper Argos
-   **Raccomandazione CTO**: (a) se disponibile, (c) come backup low-cost professional, (b) solo MVP iniziale.
+   **Vincolo founder insindacabile**: NO Twilio (viola #5 zero-capex). Se né (a) né (b) viable → blocker resta aperto, NO aggiramento paid.
 
 2. **Canali specifici Layer 1**: Reddit/Telegram/FB groups dealer auto Italia commissione — hai pointer a gruppi specifici già conosciuti? Senza pointer founder, Agent 3 ricerca blind richiede 60+ min. Con pointer → 15min validation.
 
@@ -291,5 +287,4 @@ File rilevanti:
 Founder apre terminal ARGOS, copia-incolla questo prompt. Tu (Claude ARGOS-instance) parti da:
 1. **Rispondi prima ai HARD BLOCKER DUBBI #1, #3, #7** (block until clarified). SOFT DUBBI #2/#4/#5/#6 procedi con default proposti (non bloccanti).
 2. Poi **P0 AMBRA audit SEQUENZIALE → P1 research microdealer** (NO parallel — single founder + single Claude instance = context switch costoso, vincolo #7)
-3. P1 Agent 1 **STEP 0 BLOCKING**: verifica regime forfettario ATECO commercio auto applicabile. Se NO → escalate founder, target D-28 da ridefinire prima di proseguire
-4. Sequenza P2-P6 dopo P0+P1 verdi
+3. Sequenza P2-P6 dopo P0+P1 verdi (NO step ricerca fiscale/legale — vincolo founder insindacabile NO P.IVA NESSUN REGIME)
