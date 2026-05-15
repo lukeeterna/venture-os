@@ -1,0 +1,87 @@
+# DECISION-entry.yaml — schema canonico DECIDED entries (DECISIONS.md per progetto)
+#
+# Scopo: definire campi richiesti/opzionali per ogni entry D-NN. Consumed da:
+#   - components/decision-validator/validate.py  (validazione cross-progetto)
+#   - skills/pre-action-check/SKILL.md           (3-line check: D-XX rif + vincolo + fonte)
+#   - components/morning-briefer/briefer.py      (Segnali: entries stale >90gg)
+#
+# Convenzione formato file: markdown append-only (NO YAML frontmatter dentro DECISIONS.md).
+# Il validator estrae i campi via regex dal markdown. Questo file è LO SCHEMA, non un'entry.
+#
+# Pattern markdown atteso (estratto da ARGOS DECISIONS.md, file canonico di riferimento):
+#
+#   ## D-NN — Titolo (YYYY-MM-DD, sessione)
+#   **Status**: DECIDED | OPEN | SUPERSEDED-by-D-MM
+#   **Contesto**: 2-3 righe
+#   **Opzioni considerate**: 2-4 bullet           (opzionale, FLUXION lo omette)
+#   **Decisione**: 1-2 righe + chi
+#   **Conseguenze**: 2-4 bullet operativi
+#   **Ref**: path1, path2, vincolo #N
+#   <!-- last_reviewed: YYYY-MM-DD -->            (opzionale, fallback = decided_at)
+
+schema_version: 1
+last_updated: 2026-05-15
+
+# Header parsing (riga `## D-NN — Title (date, session)`)
+# Date tollerante: YYYY-MM-DD canonico, YYYY-MM legacy (warning, no fail).
+header_regex: '^##\s+(D-\d{2,3})\s+—\s+(.+?)\s+\((\d{4}-\d{2}(?:-\d{2})?),\s*(.+?)\)\s*$'
+header_groups:
+  - id            # D-NN (es. D-01, D-26)
+  - title         # testo libero pre-parentesi
+  - decided_at    # ISO YYYY-MM-DD (canonico) o YYYY-MM (legacy, soft)
+  - session       # es. "S73", "S171-VOS-coord"
+
+# Campi required (errore se mancante → exit 1)
+required_fields:
+  - id
+  - title
+  - status        # da `**Status**:` — match enum
+  - decided_at
+  - contesto      # da `**Contesto**:`
+  - decisione     # da `**Decisione**:`
+
+# Campi optional (warn-only, no fail)
+optional_fields:
+  - opzioni_considerate     # **Opzioni considerate**:
+  - conseguenze             # **Conseguenze**:
+  - ref                     # **Ref**: (fonte dati, vincolo #N, path research)
+  - founder_input           # estratto da `**Status**: DECIDED (founder S... raw "...")`
+  - last_reviewed           # HTML comment `<!-- last_reviewed: YYYY-MM-DD -->`
+  - supersedes              # estratto da `**Status**: SUPERSEDED-by-D-MM`
+
+# Status enum (validator rifiuta valori fuori lista).
+# Emoji prefix (es. `⚠️ **SUPERSEDED-INVALIDATED**`) stripata prima del match.
+# Suffix `-by-D-NN` / `-INVALIDATED` / `-until-payment-evidence` / `-pillar2-...` accettata.
+status_enum:
+  - DECIDED
+  - OPEN
+  - SUPERSEDED          # incl. SUPERSEDED-by-D-MM, SUPERSEDED-INVALIDATED
+  - DEFERRED            # incl. DEFERRED-until-payment-evidence (D-23/D-24 ARGOS)
+  - PROPOSED            # entry in flight, pending research/founder approval
+
+# Stale policy (briefer hook consumer)
+stale_days: 90          # decided_at + 90gg senza last_reviewed → flag stale
+stale_status_filter:    # solo questi status sono soggetti a stale check
+  - DECIDED
+
+# Pattern markdown ausiliari (validator usa direttamente)
+field_patterns:
+  status: '^\*\*Status\*\*:\s*(.+?)$'
+  contesto: '^\*\*Contesto\*\*:\s*(.+?)$'
+  opzioni_considerate: '^\*\*Opzioni considerate\*\*:\s*(.+?)$'
+  decisione: '^\*\*Decisione(?:\s+proposta)?\*\*:?\s*(.+?)$'
+  conseguenze: '^\*\*Conseguenze\*\*:\s*(.+?)$'
+  ref: '^\*\*Ref\*\*:\s*(.+?)$'
+  last_reviewed: '<!--\s*last_reviewed:\s*(\d{4}-\d{2}-\d{2})\s*-->'
+  founder_input_in_status: '\(founder\s+\S+\s+raw\s+"([^"]+)"'
+  supersedes_in_status: 'SUPERSEDED-by-(D-\d{2,3})'
+
+# Output sink (validator scrive qui)
+output_log: state/decision-validation.jsonl
+
+# Exit codes
+exit_codes:
+  ok: 0
+  malformed_entry: 1
+  schema_error: 2
+  io_error: 3

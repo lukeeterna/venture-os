@@ -28,6 +28,7 @@ GIT_PUSH_LOG = VOS_ROOT / "state" / "git-push.log"
 TOOL_SCOUT_DIFF = VOS_ROOT / "state" / "tool-scout-diff.jsonl"
 SARA_GATE_RUNS = VOS_ROOT / "state" / "sara-gate-runs.jsonl"
 ROUTING_DRIFT = VOS_ROOT / "state" / "routing-drift.jsonl"
+DECISION_VALIDATION = VOS_ROOT / "state" / "decision-validation.jsonl"
 BRIEFS_DIR = VOS_ROOT / "briefs"
 BRIEFS_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -394,6 +395,34 @@ def _signals(mac: Optional[dict], imac: Optional[dict], projects: dict) -> list:
                         pass
         except Exception as e:  # noqa: BLE001
             _log_error("routing-drift parse fail", e)
+
+    # Decision-validator (S173): ultimo run → stale entries DECIDED >90gg + malformed
+    if DECISION_VALIDATION.exists():
+        try:
+            with open(DECISION_VALIDATION) as f:
+                ls = [ln for ln in f if ln.strip()]
+            if ls:
+                last = json.loads(ls[-1])
+                proj_reports = last.get("projects") or []
+                stale_all, malformed_all, missing_all = [], [], []
+                for r in proj_reports:
+                    p = r.get("project", "?")
+                    if r.get("missing_file"):
+                        missing_all.append(p)
+                    for s in r.get("stale") or []:
+                        stale_all.append(f"{p}/{s['id']}")
+                    if r.get("malformed"):
+                        malformed_all.append(f"{p} ({len(r['malformed'])})")
+                if malformed_all:
+                    sigs.append(f"DECISIONS malformed: {', '.join(malformed_all)} — review wiki/projects/")
+                if stale_all:
+                    head = ", ".join(stale_all[:3])
+                    tail = f" +{len(stale_all)-3}" if len(stale_all) > 3 else ""
+                    sigs.append(f"DECISIONS stale >90gg: {head}{tail} — aggiungere `<!-- last_reviewed: YYYY-MM-DD -->`")
+                if missing_all:
+                    sigs.append(f"DECISIONS.md missing: {', '.join(missing_all)} — backfill richiesto (pre-action-check disattivo)")
+        except Exception as e:  # noqa: BLE001
+            _log_error("decision-validation parse fail", e)
     return sigs
 
 
