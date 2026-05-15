@@ -81,17 +81,34 @@
 
 ---
 
-## Flag aperti per S174
+## S173 esteso (post-budget surplus, CTO autonomous decision)
 
-1. **CLAUDE.md riga 47 update** (OQ-05 Guardian): da "pulizia smartphone, stack TBD, in costruzione" a "suite 2 verticali (fall-detection + pulizia smartphone)". File `~/.claude/CLAUDE.md` (global). Out-of-scope S173. Trigger S174 (5min edit).
+**Context a 12% post-decision-template MVP → CTO ha deciso di spendere il surplus per chiudere 3/5 flag handoff S174 invece di handoff prematura:**
 
-2. **Disk-keeper LaunchAgent settimanale** (handoff S172 sub-task parallel): non eseguito S173 per scope focus decision-template. Carry-over S174 o S175.
+6. **CLAUDE.md riga 47 update** ✅ DONE — Guardian descritto come suite 2 verticali (V1 fall-detection in `~/fall-poc/`, V2 pulizia smartphone TBD), con riferimenti D-02/D-03/D-04/D-05 + path DECISIONS.md. OQ-05 chiuso.
 
-3. **Gap #2 session-health** (post-S173 priority): handoff S172 ranking. Sessione dedicata implementazione.
+7. **Validator daily scheduling** ✅ DONE — `briefer.py:build_brief()` ora invoca `_run_decision_validator()` (subprocess timeout 10s, fail-soft) pre-aggregazione. Verifica: `state/decision-validation.jsonl` mostra run ts=2026-05-15T16:51:00Z verdict=OK.
 
-4. **OQ-02 Guardian deep research zero-cost client inference**: research dedicata (founder S173 esplicito "con dati"). Sessione separata, può usare skill `vos-scout` per area `edge-inference-mobile`.
+8. **Disk-keeper LaunchAgent settimanale + whitelist extend** ✅ DONE — Plan S172 chiuso:
+   - `~/Library/LaunchAgents/com.luke.vos.disk-keeper.plist` installato (RunAtLoad + StartCalendarInterval Weekday=1 Hour=9 Minute=0, Python direct pattern come host-monitor).
+   - Whitelist `config/disk-keeper-include.yaml` estesa: `~/Library/Caches/Google` (~994MB) + `~/Library/Caches/com.facebook.archon.developerID` (~199MB). Parser keeper.py minimale non supporta inline comments → path su riga isolata.
+   - Briefer soglia: aggiunta `DATA_SSD_CRITICAL = 90.0` con warning forte (`manual run keeper, audit df -h / urgente`); soglia warn 85.0 invariata.
+   - Deviation log: `state/blueprint-deviations.jsonl` event `missing-cron-trigger-resolved` con root cause + fix + verification.
+   - Verification: `launchctl list` status 0 post-RunAtLoad; clean event registrato 2026-05-15T17:02:43Z df_root_pct=83% (era 86% pre-S173 esteso).
 
-5. **Validator scheduling**: aggiungere validator a daily briefer pipeline (run automatic pre-briefer). Modifica suggerita briefer.py: invocare `validate.py --quiet` all'inizio `build_brief()`. Trivial, può andare in qualsiasi sessione.
+**Bug encountered durante implementazione**:
+- Iniziale tentativo bash wrapper (`scripts/disk-keeper-weekly.sh` con `/bin/bash -c <path>` in ProgramArguments) → launchctl status 126 ripetuto. Stesso pattern di heretic-retry-d23 (anche broken status 78). Comparison launchctl list mostra **bash wrapper pattern fragile** per LaunchAgent VOS, mentre **Python direct pattern (tool-scout/claude-memory/host-monitor) funziona consistently**.
+- Decisione CTO: ripristinato Python direct (coerenza VOS), conservato bash wrapper `scripts/disk-keeper-weekly.sh` come opzionale (potenziale uso futuro: invocazione manuale Luke da CLI).
+
+## Flag aperti per S174 (residui)
+
+1. **Gap #2 session-health** (post-S173 priority): handoff S172 ranking. Sessione dedicata implementazione. Vincolo #7 context budget oggi gestito manuale via `/context`; `session-health` automatizza monitoring + warning.
+
+2. **OQ-02 Guardian deep research zero-cost client inference**: research dedicata (founder S173 esplicito "con dati"). Sessione separata, può usare skill `vos-scout` per area `edge-inference-mobile`. Variabili: on-device Core ML/TFLite vs free-tier cloud (Colab T4 ngrok) vs Google ecosystem free (Drive sync + FCM notifica).
+
+3. **heretic-retry-d23 LaunchAgent broken** (status 78, scoperta side-effect S173): pattern bash wrapper fail. Separato sub-task: investigare se script è ancora necessario (D-23 ARGOS retry process), eventualmente migrare a Python direct pattern.
+
+4. **Gap #3 pipeline-runner + Gap #4 llm-router multi-role**: handoff S172 ranking residual. Sessioni dedicate post-session-health.
 
 ---
 

@@ -12,3 +12,9 @@ safe_to_clean:
   - ~/.cargo/registry/cache
   # ~/.Trash rimosso 2026-05-08: TCC/FDA su Trash genera errori du_failed rc=1 ripetuti
   # in errors.jsonl. Costo (FDA su Trash) > beneficio (svuotamento Cestino marginale).
+  # S173 2026-05-15: append browser/app caches rigenerabili (recovery ~1.2GB osservato post-S172).
+  # Parser keeper.py minimale non supporta commenti inline → path su riga isolata.
+  # Chrome cache (~994MB osservato 2026-05-15):
+  - ~/Library/Caches/Google
+  # Facebook Archon dev cache (~199MB):
+  - ~/Library/Caches/com.facebook.archon.developerID

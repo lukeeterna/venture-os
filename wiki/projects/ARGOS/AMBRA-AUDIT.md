@@ -198,7 +198,36 @@ D-28 DECIDED: target = micro-dealer stock <20, P.IVA forfettaria 5-15%, modello 
 
 ---
 
-## 6. Retune plan P3 (proposta concreta)
+## 6. Retune plan P3 (proposta concreta) — **P3 COMPLETED S173 (2026-05-15)**
+
+**Status post-S173**: P3 retune implementato, 14/14 unit test passanti (`tests/test_ambra_layer3.py`).
+Pending: calibration `<TARGET_LEXICON>` post S175 mystery shopper pilot fisico + D-08 archetipi revalidation post primo deal reale.
+
+### Patch applicate S173 (commit hash: vedi git log)
+
+- `wa-intelligence/response-analyzer.py`:
+  - `PROMPT_MODULES['identity_post_handoff']` (nuovo) — line ~313
+  - `PROMPT_MODULES['hard_rules_post_handoff']` (nuovo, ban ARGOS condizionale) — line ~342
+  - `PROMPT_MODULES['target_lexicon']` (nuovo, D-28 commissione lexicon) — line ~365
+  - `build_system_prompt(archetype, cls_type, handoff_source='cold', is_micro_dealer=False)` — branching post-handoff
+  - `ResponseValidator.validate(..., handoff_source='cold')` — propaga al `_check_banned_words` per ban "argos" condizionale
+  - Wire-up main: legge `dealer.get('handoff_source')` + `dealer.get('is_micro_dealer')` da DB conversations
+- `wa-intelligence/state_machine.py`:
+  - `ensure_state_columns()` aggiunge `handoff_source TEXT DEFAULT 'cold'` + `is_micro_dealer INTEGER DEFAULT 0`
+  - `is_post_handoff(dealer)`, `set_handoff_source(db_path, dealer_id, source)`, `set_is_micro_dealer(db_path, dealer_id, value)` helper
+  - `VALID_HANDOFF_SOURCES = ('cold', 'mystery_shopper', 'referral')` enum applicato lato applicazione
+- `wa-intelligence/argos_knowledge_base.md`:
+  - Sezione COSTI → sotto-sezione **"Modello commissione"** (D-28)
+  - Sezione FISCALITA' → sotto-sezione **"Regime forfettario"** (esenzione TD17)
+  - Sezione OBIEZIONI → nuova "Lavoro su richiesta cliente, non tengo stock"
+  - Sezione GARANZIA → sotto-sezione **"Money-back guarantee primi 1-3 deal"** chiarito ARGOS-funded (D-15)
+- `migrations/s173_handoff_source.sql`:
+  - Migration additive idempotente per backfill conversations esistenti
+- `tests/test_ambra_layer3.py`:
+  - 14 test in 3 classi: `TestLayer3PromptBuilding` (5), `TestLayer3ResponseValidator` (5), `TestLayer3StateMachineHelpers` (4)
+
+### Plan originale P3 (storico — per riferimento)
+
 
 ### 6.1 Modifiche `response-analyzer.py`
 

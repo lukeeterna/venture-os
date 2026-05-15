@@ -38,6 +38,7 @@ EXCLUDE_PATTERNS = ("chrome_profile", "whatsapp-session", "heavy_ad", "first_par
 
 # Soglie segnali brief
 DATA_SSD_WARN = 85.0
+DATA_SSD_CRITICAL = 90.0  # S173: soglia critica, raccomandazione manual run keeper o df audit
 UPTIME_WARN_H = 720  # 30gg
 
 MESI_IT = [
@@ -285,7 +286,9 @@ def _signals(mac: Optional[dict], imac: Optional[dict], projects: dict) -> list:
     sigs = []
     if mac:
         data = mac.get("disk_data_used_pct") or 0
-        if data >= DATA_SSD_WARN:
+        if data >= DATA_SSD_CRITICAL:
+            sigs.append(f"SSD MacBook CRITICO ({data}%) — manual run `disk-keeper --execute --yes` ora, audit `df -h /` urgente")
+        elif data >= DATA_SSD_WARN:
             sigs.append(f"SSD MacBook al limite ({data}%), pulizia raccomandata")
         up = mac.get("uptime_hours") or 0
         if up >= UPTIME_WARN_H:
@@ -457,7 +460,20 @@ def _tool_landscape_top_github_by_project(top_n: int = 3) -> list:
         return []
 
 
+def _run_decision_validator() -> None:
+    """Pre-aggregazione: invoca validator (S173) per refresh stale/malformed signals.
+    Fail-soft: errore validator non blocca briefer (exit code non controllato)."""
+    try:
+        subprocess.run(
+            ["python3", str(VOS_ROOT / "components" / "decision-validator" / "validate.py"), "--quiet"],
+            timeout=10, check=False, capture_output=True,
+        )
+    except Exception as e:  # noqa: BLE001
+        _log_error("decision-validator invoke fail", e)
+
+
 def build_brief(today: date) -> str:
+    _run_decision_validator()
     inv = _read_inventory()
     mac = _last_macbook_probe()
     imac = _imac_probe_via_ssh()
