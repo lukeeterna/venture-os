@@ -16,7 +16,7 @@ Verdetto per componente (LOC = righe file principale; output = evidenza ultima e
 | 1 | `_shared/` (llm_router + founder_bridge shim + mount_check) | 598+38+40 | importato da karpathy/heretic (S9 router prod-validated, 12 call gemini-flash fb=0) | **ATTIVO** |
 | 2 | `brief-tracker/` (score + validator) | 128+69 | `brief-actions.jsonl` validato fino 14 mag, score window 7-14gg operativa | **ATTIVO** |
 | 3 | `claude-memory-backup/` (backup.sh + rotate-imac.sh) | 53+57 | `claude-memory-rsync.log` rsync OK 14 mag 07:51 (LaunchAgent RunAtLoad) | **ATTIVO** |
-| 4 | `disk-keeper/` (keeper.py) | 249 | `disk-keeper-log.jsonl` ultimo 8 mag (580B). Mai eseguito post-S5. SSD MacBook oggi a 85% — segnale brief 15 mag — keeper non triggered | **STUB** |
+| 4 | `disk-keeper/` (keeper.py) | 249 | `disk-keeper-log.jsonl` 15 mag run multiple (cleanup pip 1.7GB, Google cache 1GB). LaunchAgent `com.luke.vos.disk-keeper` weekly lunedì 09:00 verificato S176 (last_exit=0, RunAtLoad=true) | **ATTIVO** |
 | 5 | `founder-bridge/` (browser.py) | 114 | shim importato da heretic-handler, callable (no log dedicato, side-effect su browser) | **ATTIVO** |
 | 6 | `heretic-handler/` (handler.py) | 279 | `heretic-outputs/d23-*.md` 3 file 14 mag 11:46 (deepseek-v4-flash D-23 ARGOS) | **ATTIVO** |
 | 7 | `host-monitor/` (monitor.py + check-runatload.sh) | 132+96 | `host-monitor.jsonl` 15 mag 17:48 (MacBook + iMac SSH probe) | **ATTIVO** |
@@ -27,10 +27,10 @@ Verdetto per componente (LOC = righe file principale; output = evidenza ultima e
 | 12 | `sara-gate-orchestrator/` (orchestrator.py) | 235 | **Zero output in state/.** Nessun JSON report sara-release, nessun audit per-verticale presente. Wrapper su `FLUXION/scripts/sara-release-gate.sh` mai invocato production. | **STUB** |
 | 13 | `tool-scout/` (scouter.py) | 391 | `tool-landscape.jsonl` 12 mag 16:50 (settimana ISO 2026-W20), diff in `tool-scout-diff.jsonl` consumato da briefer | **ATTIVO** |
 
-**Sintesi**: 11 ATTIVI / 2 STUB (disk-keeper, sara-gate-orchestrator) / 0 MISSING / 0 SUPERSEDED.
+**Sintesi (aggiornata S176)**: 12 ATTIVI / 1 STUB (sara-gate-orchestrator) / 0 MISSING / 0 SUPERSEDED.
 
 Note operative:
-- `disk-keeper` STUB ma SSD MacBook 85% oggi → keeper.py va eseguito manuale o messo in cron settimanale. Non è gap di codice, è gap di trigger.
+- `disk-keeper` ATTIVO da S176 (verifica fattuale: LaunchAgent era già installato pre-S172, audit S172 ne ignorava lo state per check basato solo su log datati). Hardening S176: stdout/stderr in `~/Library/Logs/VOS/` (T7 rifiutato da launchd `EX_CONFIG=78`). Vedi `wiki/notes/S176-disk-keeper-launchagent-hardening.md`.
 - `sara-gate-orchestrator` STUB perché dipendenza upstream (FLUXION self-hosted runner) non attivata. Pre-revenue FLUXION = non bloccante.
 
 ---
