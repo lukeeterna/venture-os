@@ -1,37 +1,36 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-05-15T19:27:26Z`
+**Generato**: `2026-05-15T19:30:24Z`
 **Sessione**: `2a284c2c-ad77-4952-b7c0-208a95e9fc7d`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: committed: 9343ade
-**Last commit**: `9343ade auto-close session 2a284c2c-ad77-4952-b7c0-208a95e9fc7d @ 2026-05-15T19:27:26Z`
+**Commit auto**: no-changes
+**Last commit**: `add0af3 S179 Guardian OQ-02.3 closure: iMac stand-in E2E + bridge MQTT-FCM + bug fix`
 
 ## Ultimi 5 commit
 ```
+add0af3 S179 Guardian OQ-02.3 closure: iMac stand-in E2E + bridge MQTT-FCM + bug fix
 9343ade auto-close session 2a284c2c-ad77-4952-b7c0-208a95e9fc7d @ 2026-05-15T19:27:26Z
 74c5e29 auto-close session 6e50075f-0789-48eb-9bbc-829d44d03067 @ 2026-05-15T19:12:17Z
 4d6c2a1 auto-close session 6e50075f-0789-48eb-9bbc-829d44d03067 @ 2026-05-15T19:10:14Z
 83064b3 auto-close session 6e50075f-0789-48eb-9bbc-829d44d03067 @ 2026-05-15T19:02:14Z
-d829d34 auto-close session 6e50075f-0789-48eb-9bbc-829d44d03067 @ 2026-05-15T18:54:45Z
 ```
 
 ## File modificati nell'ultimo commit
 ```
 M	.claude/NEXT_SESSION_PROMPT.md
-M	state/blueprint-deviations.jsonl
-M	wiki/projects/Guardian/DECISIONS.md
+A	wiki/projects/Guardian/HANDOFF-S180.md
 ```
 
 ## Ultimo prompt utente (estratto)
 ```
-[{"tool_use_id":"toolu_01LqmeNTPrRWxLVLDvsaWmqz","type":"tool_result","content":"The file /Users/macbook/.claude/NEXT_SESSION_PROMPT.md has been updated successfully."}]
+[{"tool_use_id":"toolu_01MWzj8yTZq1tridqXjokseb","type":"tool_result","content":"add0af3 S179 Guardian OQ-02.3 closure: iMac stand-in E2E + bridge MQTT-FCM + bug fix\n9343ade auto-close session 2a284c2c-ad77-4952-b7c0-208a95e9fc7d @ 2026-05-15T19:27:26Z\n74c5e29 auto-close session 6e50075f-0789-48eb-9bbc-829d44d03067 @ 2026-05-15T19:12:17Z\n---imac remote---\nadd0af3457fe76d22a86d42d68ff26c4a7f97a9d\trefs/heads/master\n---github remote---\nadd0af3457fe76d22a86d42d68ff26c4a7f97a9d\trefs/heads/mas
 ```
 
 ## Ultimi turni assistant
 ```
-3. **Pattern errore**: run_upstream.py ha latent regression bug (S102.2 add senza test pre-PENDING). Manca CI/test suite. Bug 2 settimane in production stack pre-S179 trigger casuale. Vale auditare gli altri S9X-S10X add per shadowing simili. Defer S181 sprint dedicato.
-4. **Sovradimensione**: FCM HTTP v1 body format già implementato bridge senza che Firebase project esista. Funziona perché stub accetta tutto; in prod Firebase rifiuta payload se PROJECT_ID errato. Non bloccante, ma flag che validation reale = S180.
-**Vincoli S179**: #3 CTO call unilaterale ✓, #4 critica strutturale ✓, #6 nessun PARTIAL ✓, #10 output verificato (log grep evidenza ✓), #11 pattern recognition root cause shadowing ✓. Context budget OK.
+- `~/fall-poc/mqtt_fcm_bridge.py` (86 LOC NEW)
+- `~/fall-poc/run_upstream.py.bak-s179-pre-fix` (backup)
+Vuoi che faccia commit + push anche su repo iMac fall-poc via SSH?
 ```
 
 ## Come riprendere
