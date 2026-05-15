@@ -1,4 +1,7 @@
-# Prompt S171 — ARGOS terminal — re-baseline target + mystery shopper + E2E test fino bonifico
+# Prompt S171 — ARGOS terminal — re-baseline target + mystery shopper + E2E test fino bonifico (v2.1 post-review)
+
+> **Versione**: v2 (S170-post-close) + v2.1 patch (review CTO peer 2026-05-15): 3 BLOCKER + 7 HIGH applicati.
+> Issues: Twilio capex removed, P0→P1 sequenziale, P5 manual reconciliation esplicito, P3 receiver clean number prefer, Agent 1 STEP 0 ATECO verify, P4 API creds dubbio #7, P5 step 10 DocuSeal NO firma, P2 weights tentative, Subito.it removed Layer 1 commissione, P0 cross-workspace mount fallback.
 
 > **Workspace**: terminal Claude Code con `cwd ~/Documents/combaretrovamiauto-enterprise`
 > **NON** in terminal VOS. Decisione split S170 close.
@@ -31,7 +34,7 @@
 - **Numeri WA confermati** (founder S170-post-close 2026-05-14):
   - `3281536308` = numero personale founder, **brandato ARGOS "Luca Ferretti"** (outbound brand identity)
   - `3314928901` = numero FLUXION, brandato "Erica Fluxion" (FLUXION sales agent) — **per ARGOS test E2E** founder lo usa come endpoint controllato (entrambi lati simulati founder, branding irrilevante in test)
-  - Per **mystery shopper Layer 2 REAL** (futuro post-test, dealer veri): serve numero DIVERSO da entrambi (TBD: 2° SIM founder OR burner free OR Twilio €1/mese)
+  - Per **mystery shopper Layer 2 REAL** (futuro post-test, dealer veri): serve numero DIVERSO da entrambi (TBD: 2° SIM founder OR burner free). **NO Twilio €1/mese** (viola vincolo #5 zero-capex). Se nessuna delle 2 viable → blocker resta aperto, NO aggiramento paid.
 - IBAN multipli config DOPO pipeline funziona
 
 ---
@@ -45,6 +48,19 @@ Critical path: D-27 Layer 3 depends. Domande aperte:
 - Cascade LLM mapping (Groq primary? OpenRouter fallback)?
 - Test coverage?
 
+**Pre-step OBBLIGATORIO (cross-workspace check)**:
+```bash
+# Verify T7 storage mounted per write VOS wiki cross-workspace
+if [ ! -d "/Volumes/MontereyT7/venture-os" ]; then
+  echo "T7 UNMOUNTED — fallback path locale"
+  AUDIT_PATH="$HOME/Documents/combaretrovamiauto-enterprise/.audit/AMBRA-AUDIT.md"
+  mkdir -p "$(dirname $AUDIT_PATH)"
+  echo "TODO: post-task sync verso /Volumes/MontereyT7/venture-os/wiki/projects/ARGOS/" > /tmp/AMBRA-AUDIT-followup.txt
+else
+  AUDIT_PATH="/Volumes/MontereyT7/venture-os/wiki/projects/ARGOS/AMBRA-AUDIT.md"
+fi
+```
+
 ```bash
 # Discovery AMBRA codebase
 find ~/Documents/combaretrovamiauto-enterprise -type f \( -name "*ambra*" -o -name "*AMBRA*" \) 2>/dev/null
@@ -52,14 +68,20 @@ grep -r "ambra\|AMBRA" ~/Documents/combaretrovamiauto-enterprise/wa-intelligence
 cat ~/Documents/combaretrovamiauto-enterprise/.planning/ROADMAP.md | grep -A20 "Phase 6\|AMBRA"
 ```
 
-**Done when**: file `wiki/projects/ARGOS/AMBRA-AUDIT.md` con stato corrente + gap to Phase 6 production-ready.
+**Done when**: file `$AUDIT_PATH` (VOS wiki se T7 mounted, fallback locale altrimenti) con stato corrente + gap to Phase 6 production-ready. Se fallback: git note follow-up sync VOS.
 
-### P1 — Research microdealer commissione (P2.A, 4-agent thread, 2-3h)
-Research-protocol-v2 4-agent parallel. Output: `wiki/projects/ARGOS/RESEARCH-MICRODEALER-COMMISSIONE.md` con sezioni:
+### P1 — Research microdealer commissione (P2.A, 4-agent thread sequenziali, 2-3h)
+Research-protocol-v2 4-agent **sequenziali** (NO parallel — single founder + single Claude instance = context switch costoso, vincolo #7). Output: `wiki/projects/ARGOS/RESEARCH-MICRODEALER-COMMISSIONE.md` con sezioni:
 
-**Agent 1 — Profilo segmento**:
+**Agent 1 — Profilo segmento + verifica fiscale PRIORITARIA**:
+
+⛔ **STEP 0 BLOCKING agent 1**: verificare PRIMA di tutto il resto:
+- Regime forfettario **effettivamente applicabile a commercio auto ATECO 45.11/47.xx**? Limite €85k 2025-2026 è coefficient-based (commercio dettaglio coefficient 0.40, applicato a revenue determina reddito imponibile)
+- Se NON applicabile o coefficient rende uneconomical per dealer commission → **escalate founder, target D-28 da ridefinire**
+- Fonte: Agenzia Entrate forfettario coefficient table, circolare 2024 forfettario commercio
+
+Poi se step 0 passa:
 - Dati demografici micro-dealer auto Italia (count, geo distribution, age tier, gender)
-- Regime fiscale forfettario applicabilità auto commercio (limite €85k revenue, codice ATECO 45.11)
 - Stack tecnologico typical (WA business? CRM? landing? marketplace listing)
 - Fonti: Federauto, Confapi PMI Auto, AsConAuto, Istat commercio auto
 
@@ -70,10 +92,21 @@ Research-protocol-v2 4-agent parallel. Output: `wiki/projects/ARGOS/RESEARCH-MIC
 - Pain trust/credibility (cliente finale chiede certificazioni)
 - Fonti: forum Reddit r/automobili / r/ItaliaCarOwners (lurk), Telegram groups, FB groups
 
-**Agent 3 — Channel discovery**:
-- DOVE micro-dealer vivono online: Telegram groups specifici, FB groups (search "dealer auto Italia commissione"), Reddit, forum specializzati (es. AutoScout24 Italia community, mobile.de forum IT users), eventi locali (Salone Auto Bologna, fiere fascia bassa)
-- DOVE vendono: Subito.it (segnale: dealer profile con 5-15 auto + annunci EU), AutoScout24.it (search dealer pages), siti propri minori
-- Output: lista 10+ canali ranked per ROI scouting
+**Agent 3 — Channel discovery (re-focus post-S170 lessons)**:
+
+⚠️ **NO Subito.it / AutoScout24 listings come canale primario commissione**. Lezione S170 wave 1: dealer commissione NON listano stock pubblico — fanno scouting on-demand. Subito identifica dealer-piazzalino-piccolo (stock 5-15) = target SBAGLIATO (ripete fail mode wave 1).
+
+Canali primari target commissione:
+- **Gruppi WhatsApp/Telegram chiusi** dealer commissione (invite-only — research come accedere)
+- **Passaparola** + network locali (eventi fisici, fiere fascia bassa)
+- **FB Groups privati** "dealer auto Italia commissione" / "import auto" (private/closed, request join)
+- **Eventi fisici**: Salone Auto Bologna, fiere camionisti+auto Nord, mercati auto Sud (Caserta, Foggia tradizionali)
+- **Forum specializzati** dealer-only (AutoScout24 Italia community section dealer, mobile.de forum IT users)
+
+Canali secondari (low priority, signal weak):
+- Reddit r/automobili / r/ItaliaCarOwners (per pain points capture passive, NON per acquisition)
+
+Output: lista canali ranked per accessibility (gratuito + entry friction) e signal density commissione. Target ≥5 canali primari validati esistenti.
 
 **Agent 4 — Lessico + culturale**:
 - Slang micro-dealer commissione (es. "trovami una macchina", "lavoro su commissione", "porto auto da fuori", "tarata", "spesa")
@@ -93,13 +126,17 @@ SELECT region, COUNT(*) FROM dealers WHERE stock_size < 20 GROUP BY region;
 -- Quanti dei 18 attuali sono target valido?
 ```
 
-**Step 2 — Re-calibrate CoVe v4 scoring**:
-- Feature weights per target micro-commissione:
-  - `few_listings` weight HIGH (era 2.0 → propose 4.0)
-  - `brand_diversity` weight LOW (era 2.0 → propose 0.5)
-  - `premium_pct` moderate (mantieni 1.5)
+**Step 2 — Re-calibrate CoVe v4 scoring (TENTATIVE weights, NO validation pretesa S171)**:
+
+⚠️ **Pesi sono PROPOSAL qualitativa, non fit empirico**. Senza ground truth labeled (wave 1 burned NON sono label valid) re-calibration arbitrary. Validation empirica = next 10 contatti wave 2 reali (P5 + outreach post-S171).
+
+- Feature weights tentative per target micro-commissione (propose + rationale):
+  - `few_listings` weight HIGH (era 2.0 → tentative 4.0) — rationale: micro stock = signal target
+  - `brand_diversity` weight LOW (era 2.0 → tentative 0.5) — rationale: commissione = generic scout, no brand premium
+  - `premium_pct` moderate (mantieni 1.5) — rationale: premium fit Argos service value
   - NEW feature: `pivot_signal` (dealer commissione=fa scouting clienti, signal via descrizione annuncio "su richiesta" / "trovo io")
-- Soglia `fit_argos`: re-test su top-10 dealer per coerenza
+- Soglia `fit_argos`: TENTATIVE re-test su top-10 dealer per coerenza
+- **Validation block S171**: pesi marcati come `[tentative-pending-empirical-validation]` in config. Validate over next 10 contacts wave 2.
 
 **Step 3 — Extension scout Nord/Centro/Isole**:
 - Open Q #10: 0 dealer Nord/Centro/Isole in dataset attuale
@@ -115,13 +152,20 @@ Diagnostic + fix come specificato precedentemente:
 3. Inspect `wa-daemon.js` poll/send logic
 4. Identify root cause: poll race / Baileys retry / schema missing UNIQUE
 5. Fix design + implementation
-6. **Verify fix**: 3 test outbound consecutivi su founder phone 3314928901 → exactly 1 msg ricevuto per ogni outbound. Solo se 3/3 = 1 msg → P3 verde.
+6. **Verify fix**: 3 test outbound consecutivi su numero founder receiver (**PREFER numero personal NON brandato** se disponibile per cross-brand log cleanliness; fallback `3314928901` accettato con disclaimer cross-brand log noise). Sender = daemon ARGOS (numero whitelist `3281536308` Luca Ferretti brand). Exactly 1 msg ricevuto per ogni outbound. Solo se 3/3 = 1 msg → P3 verde.
 
 ### P4 — Design approach scaltro D-27 Layer 1/2/3 artifacts (3-4h, depends P0+P1)
-**Layer 1 setup**:
-- PRAW Python (Reddit API) → join r/ItaliaCarOwners r/automobili r/ItaliaCareerHelp
-- Telethon Python (Telegram) → join groups identificati P1 Agent 3
-- Subito.it scraping (rate-limited, existing scraper config)
+
+⛔ **Pre-check API credentials** (P4 Layer 1 BLOCKED senza queste):
+- Reddit app credentials configurate? (`REDDIT_CLIENT_ID` + `REDDIT_CLIENT_SECRET` in `.env`)
+- Telegram api_id + api_hash configurati? (`TG_API_ID` + `TG_API_HASH` in `.env`)
+- Se mancanti: founder setup 15 min ciascuno free (reddit.com/prefs/apps + my.telegram.org/apps)
+
+**Layer 1 setup** (post-API creds):
+- Telethon Python (Telegram) → join groups identificati P1 Agent 3 (canale primario commissione)
+- FB Groups manual join + scrape ufficiale Graph API se accessibile (review compliance)
+- PRAW Python (Reddit) → r/automobili r/ItaliaCarOwners (canale secondary, pain points listening only)
+- **NO Subito.it scraping** come Layer 1 commissione discovery (S170 lesson: target sbagliato)
 - Output: `tools/layer1-scout.py` con join + listen + lessico match filter
 
 **Layer 2 mystery shopper script template**:
@@ -146,14 +190,20 @@ Diagnostic + fix come specificato precedentemente:
 7. Argos invia dossier servizio + chiede dealer di richiedere auto specifica (NON push)
 8. Dealer Mario chiede auto specifica (es. BMW X3 anno 2022 km <50k)
 9. Argos scout fittizio + invia preview dossier protected (D-25 image-shield)
-10. Dealer accetta pre-deal contract (DocuSeal D-22/D-24, founder firma test)
+10. **DocuSeal email send verification ONLY** (NO firma actual): verify che DocuSeal invia request email correttamente al dealer-test address. Founder NON firma a sé stesso (zero learning su flow umano, testa solo software send). Step 11 procede simulando "firma avvenuta" via DB update manuale.
 11. Argos invia quote formale auto + condizioni
 12. Dealer accetta → **bonifico simbolico €0-1** su IBAN test Argos
-13. Sistema riceve bonifico (manual reconciliation o webhook PSD2 se setup)
+13. **Sistema riceve bonifico — MANUAL RECONCILIATION ONLY** in S171 (founder verifica bonifico arrivato in banca + trigger manuale step 14). **NO webhook PSD2** in S171 (richiede provider Open Banking paid Tink/Fabrick/TrueLayer = viola #5). Webhook PSD2 = backlog post-S171.
 14. Trigger post-payment: dossier finale + tracking auto fittizio (es. "auto presa in carico spedizioniere, ETA 7gg")
 15. Closure cycle: delivery confirm, dealer feedback
 
-**Done when**: 15-step cycle completato senza intervento manuale extra (oltre founder simulation dealer). Tutti msg correctly sent/received, payment received-trigger fired, dossier+tracking arrived.
+**Done when**: 15-step cycle completato. **Interventi manuali ESPLICITAMENTE attesi** (no zero-touch S171):
+- Founder simulation dealer (step 1-12, 14) — accettato
+- Founder manual reconciliation bonifico (step 13) — accettato
+- Founder NON firma DocuSeal (step 10) — by design
+- Sistema esegue: tutti msg sent/received, classifier output coerente, dossier+tracking generati post-trigger step 13.
+
+**Trade-off esplicito accettato**: P5 testa la *meccanica software*, NON il *flusso umano dealer reale*. Layer 2 mystery shopper "verde su P5" ≠ "ready per dealer reali wave 2". Wave 2 reali richiedono ulteriore validation flow.
 
 ### P6 — IBAN multipli config (1h, depends P5 verde)
 Solo se P5 verde:
@@ -165,6 +215,11 @@ Solo se P5 verde:
 ---
 
 ## DUBBI FOUNDER da chiarire (vincolo "SE HAI DUBBI CHIEDI")
+
+**Classifica hard blocker vs soft preference**:
+- ⛔ **HARD BLOCKER** (P0/P4 non parte senza risposta): #1 numero, #3 AMBRA stato, #7 API creds Reddit/Telegram
+- 🟡 **SOFT PREFERENCE** (default proposto accettabile, sblocca con risposta minima o auto-default): #2 canali pointer, #4 IBAN routing, #5 stile esempi, #6 auto fittizia
+
 
 1. **Numero mystery shopper Layer 2 REAL** (per dealer veri post-test): test E2E S171 usa `3314928901` (FLUXION, founder controlla entrambi lati). Per real outreach Layer 2 su dealer veri serve numero DIVERSO da `3281536308` (ARGOS Luca Ferretti brand) E da `3314928901` (FLUXION Erica brand). Opzioni:
    - (a) 2° SIM/numero attivo che possiamo usare? — quale?
@@ -180,7 +235,8 @@ Solo se P5 verde:
 
 5. **Stile italiano "senza americanate"**: hai esempi concreti di tono che funziona vs tono che NON funziona? (es. screenshot conversazione tua che ha funzionato, NDA permitting)
 
-6. **Auto fittizia P5 test**: hai preferenza brand/modello/anno per simulation? (default: BMW Serie 3 2021 km 45000)
+6. **Auto fittizia P5 test**: hai preferenza brand/modello/anno per simulation? (default: BMW Serie 3 2021 km 45000) — 🟡 SOFT
+7. **API credentials Reddit + Telegram** già configurate in `~/Documents/combaretrovamiauto-enterprise/.env`? Reddit (`REDDIT_CLIENT_ID` + `REDDIT_CLIENT_SECRET`), Telegram (`TG_API_ID` + `TG_API_HASH`). Se mancanti: founder setup 15 min ciascuno gratuito (reddit.com/prefs/apps + my.telegram.org/apps) — ⛔ HARD BLOCKER P4 Layer 1
 
 ---
 
@@ -233,6 +289,7 @@ File rilevanti:
 ## Start trigger
 
 Founder apre terminal ARGOS, copia-incolla questo prompt. Tu (Claude ARGOS-instance) parti da:
-1. **Rispondi prima ai 6 DUBBI FOUNDER** (block until clarified — non procedere blind su mystery shopper senza numero 2°)
-2. Poi P0 AMBRA audit + P1 research microdealer parallel
-3. Sequenza P2-P6 dopo unblock dubbi
+1. **Rispondi prima ai HARD BLOCKER DUBBI #1, #3, #7** (block until clarified). SOFT DUBBI #2/#4/#5/#6 procedi con default proposti (non bloccanti).
+2. Poi **P0 AMBRA audit SEQUENZIALE → P1 research microdealer** (NO parallel — single founder + single Claude instance = context switch costoso, vincolo #7)
+3. P1 Agent 1 **STEP 0 BLOCKING**: verifica regime forfettario ATECO commercio auto applicabile. Se NO → escalate founder, target D-28 da ridefinire prima di proseguire
+4. Sequenza P2-P6 dopo P0+P1 verdi
