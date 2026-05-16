@@ -24,7 +24,7 @@ Oracle Free Tier ARM A1 setup DEFERRED S180 (signup interactive Luke).
 4. SSH key MacBook upload, security list port 22 + outbound TLS
 5. Verifica `ssh ubuntu@<oracle_ip>` connect → record IP in `~/venture-os/state/guardian-infra.jsonl`
 
-**Rischio noto** (verifica fattuale S179): Oracle ARM A1 EU region cronicamente "Out of Capacity" post-2024. Se OOC ripetuto: fallback Frankfurt → AMS (Amsterdam) → US-Phoenix (latency 150ms ma capacity stabile, accettabile per fall-alert con cooldown 30s).
+**Rischio noto** (verifica fattuale S180, claim S179 corretto): Frankfurt provisioning ARM A1 tipicamente ~5min (community OCI 2026), NON "cronicamente OOC". Sono US regions quelle con OOC ore/giorni. Workaround standard se primo tentativo OOC: retry loop ogni 1-2min con OCI CLI script (rif. Hitrov medium guide). Fallback preemptive AMS/Phoenix NON necessario — solo se Frankfurt OOC persiste >24h dopo retry.
 
 ### P1 — Deploy stack iMac → Oracle migration
 
@@ -33,15 +33,25 @@ Oracle Free Tier ARM A1 setup DEFERRED S180 (signup interactive Luke).
 3. Install mosquitto broker su Oracle (`apt install mosquitto mosquitto-clients`, config user/pass identici iMac)
 4. NAT traversal RTSP cam → Oracle: raccomandazione **Tailscale mesh** (b)
    - (a) reverse SSH tunnel autossh MacBook → Oracle expose go2rtc 8554 — fragile, single point of failure
-   - (b) **Tailscale exit-node iMac (S16a già installato)** Oracle entra in mesh, RTSP raggiungibile via Tailscale IP — zero-cost forever-free 100 device, no port-forward router casa Luke
+   - (b) **Tailscale exit-node iMac (S16a già installato)** Oracle entra in mesh, RTSP raggiungibile via Tailscale IP — zero-cost Personal plan free-forever **6 utenti + user devices UNLIMITED** (pricing change 2026-04-08, claim S179 "100 device" obsoleto). Attenzione: "tagged resources" (subnet router) hanno limiti per piano — verificare se iMac/Oracle vanno taggati come subnet-router in fase P1.
 
 ### P2 — Firebase project + FCM HTTP v1 production
 
 1. Luke esegue: https://console.firebase.google.com/ → new project "guardian-alerts"
 2. Cloud Messaging → service account JSON download (key per OAuth2 bearer token)
 3. Genera bearer token: `gcloud auth application-default print-access-token` o firebase-admin SDK
-4. Swap `FCM_ENDPOINT` env in `mqtt_fcm_bridge.py`: `https://fcm.googleapis.com/v1/projects/<PROJECT_ID>/messages:send`
+4. Swap `FCM_ENDPOINT` env in `mqtt_fcm_bridge.py`: `https://fcm.googleapis.com/v1/projects/<PROJECT_ID>/messages:send` (endpoint verificato Firebase docs 2026-05-16)
 5. Test token: register dummy Android device → verify push notification ricevuta
+
+### P2.5 — OAuth2 token refresh nel bridge (gap implementativo S179) — **HIGH**
+
+Token OAuth2 FCM HTTP v1 ha vita ~1h (Google security model). Bridge stub S179 `mqtt_fcm_bridge.py` NON implementa refresh logic → push silenziosamente fail dopo prima ora deploy.
+
+1. Scope OAuth2 richiesto: `https://www.googleapis.com/auth/firebase.messaging`
+2. Implement refresh: `google-auth` Python lib (`from google.oauth2 import service_account`) — `credentials.refresh(Request())` quando `credentials.expired==True`
+3. Pattern: check `expired` PRIMA di ogni publish FCM, refresh se needed (no daemon thread per ridurre attack surface)
+4. Test: mock clock +61min → verify refresh trigger automatico
+5. Logging: emit `bridge.token.refreshed` su `state/guardian-infra.jsonl` per audit
 
 ### P3 — V2 pulizia smartphone discovery (D-04 OPEN closure)
 
