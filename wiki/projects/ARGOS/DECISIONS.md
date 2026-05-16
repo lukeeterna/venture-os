@@ -824,6 +824,86 @@ Argos Import
 
 ---
 
+## D-30 — Workflow contatto venditore EU per foto/info mancanti via ARGOS broker (2026-05-16, S176)
+
+**Status**: BACKLOG-conditional (founder S176 raw "avevo proposto contatto automatico per richiesta immagini mancanti direttamente al venditore EU")
+**Contesto**: PDF dossier S176 BMW X1 Autohero Center Dordrecht ha 6 foto valide (10 unique URL, 4 duplicate/404). Foto interni assenti dall'annuncio AS24 NL upstream. Founder propone workflow: dealer chiede foto extra → ARGOS contatta venditore EU per request → ARGOS forwarda foto a dealer (zero contatto diretto dealer↔venditore).
+**Decisione**:
+- Workflow **DESIGN CONFERMATO COERENTE D-21** (ARGOS communication-broker-garante eBay-style, sempre in mezzo)
+- Implementation **BACKLOG** post primo deal chiuso (S176 E2E pagamento verde)
+- MVP iniziale **manuale** founder: founder personalmente invia email/WA al portale venditore quando dealer chiede foto extra, forwarda risultato. NO automation prima 3+ richieste reali dimostrano demand effettivo.
+- Automation trigger: ≥3 dealer reali (post primo deal) hanno chiesto foto extra → giustifica modulo dashboard `request_seller_extra_media` (email template per portale + status tracking risposta + forward dealer via WA quando arrivano)
+**Conseguenze**:
+- S176 procede STEP 6-9 con PDF 6-foto attuale (no blocker)
+- Primo dealer reale post-S176: se chiede foto extra, founder esegue MVP manuale → log richiesta in BACKLOG.md per counting trigger automation
+- Pattern errore evitato S158-S163: scope creep features prima E2E pagamento chiuso
+- Rischio tasso risposta venditori EU cold ~5-15% accettabile in MVP manuale (zero dev cost), inaccettabile post-automation se SLA promesso dealer
+**Ref**: founder S176 raw richiesta, D-21 communication-broker workflow, critica strutturale 4 punti S176 (assunzione tasso risposta, scope creep, sovradimensiono primo dealer), pattern S158-S163 scope creep evitato
+
+---
+
+## D-32 — Sanitizer refactor LaMa→Pillow rectangle (D-25 compliance restore, BLOCKER Day 1 reale) (2026-05-16, S176)
+
+**Status**: BLOCKER-Day-1-reale-S176-bis (founder S176 raw "perche viene stravolto il posteriore in questo modo? no si puo semplicemente cancellare il testo?")
+**Contesto**: Sanity check S176 immagini originali AS24 NL vs sanitized PDF ha rilevato regression visuale strutturale. Pipeline attuale `src/cove/image_sanitizer.py` = banner crop + PaddleOCR PP-OCRv5 detect + **LaMa inpaint** (mask + generate). Caso X1 posteriore: PaddleOCR ha detected "AUTOHERO" (targa venditore) + "X1" + "xDrive 25e" come testo → mask espansa ~30% portellone+paraurti → LaMa generativo ha inferito "metallo liscio" → effetto ammaccatura paraurti + targa scomparsa + scritta "xDrive 25e" inghiottita. Pattern noto LaMa: mask >15% area = hallucination strutturale. Violazione D-25 (Pillow-only stack no OpenCV, già DECIDED 2026-05-14 S167).
+**Root cause**:
+- LaMa = modello generativo inpaint, designed per *riempire creativamente* (es. rimuovere persona da paesaggio), NON per coprire targa/logo
+- PaddleOCR detect ha padding bbox espanso → mask oversized
+- Whitelist features auto (modello/trim/brand) ASSENTE → PaddleOCR maschera anche "X1/xDrive/BMW" che sono identità auto, NON identità venditore
+**Critica strutturale 4 punti**:
+1. Assunzione sbagliata "LaMa = qualità superiore rectangle solido" — falso per task "cancella testo"
+2. Rompe già adesso, non a 30gg: dealer che vede 1 foto distorta = trust kill istantaneo
+3. Pattern noto: hallucination LaMa documentata IOPaint forum + Reddit r/StableDiffusion
+4. Sovradimensionamento: pipeline 3-stage + 200MB checkpoint + 5s/foto per job che `PIL.ImageDraw.rectangle()` fa in 30 righe + 50ms
+**Decisione**:
+- **Refactor sanitizer S176-bis** post-S176 E2E pagamento VERDE
+- Sostituire `_inpaint_with_lama()` con `_draw_solid_fill()`:
+  - Per testo `seller_name` / portal logo / targa → rettangolo grigio neutro (#5a5a5a, color-match paint auto se rilevabile, altrimenti gaussian blur σ=20 su bbox)
+  - **Whitelist hardcoded protetta** (NEVER mask): modelli `X1|X3|X5|A4|Q5|Classe C|Classe E|GLC|GLE|...`, trim `xDrive|quattro|AMG|M-Sport|S line|...`, logo brand `BMW|Audi|Mercedes-Benz|Volkswagen|...`
+  - Mask SOLO: targa rettangolo + seller_name + URL portale visibile
+- Stack: Pillow-only (D-25 compliance restored). Zero LaMa. Zero PaddleOCR mask expansion. Zero hallucination.
+- Effort stimato: ~30 righe Python + lista whitelist 50-100 entries
+**Sequenza**:
+1. S176 prosegue STEP 7-9 con PDF attuale (TEST_FOUNDER simulato, D-11 test pipeline non visual-locked)
+2. **S176-bis URGENTE** post-S176 VERDE: refactor sanitizer Pillow + sanity check 5 foto reali side-by-side
+3. S177 dossier ampliamento 12 sezioni (D-31) — DOPO sanitizer green
+**Conseguenze**:
+- Day 1 dealer reale BLOCKED fino S176-bis VERDE (D-15 founder HITL primi 1-3 deal)
+- D-25 violation S163-S176 documentata: pattern S159 "ridendo S163 ha fixato dylib ma introdotto regression visuale" — vincolo #11 strutturale, root cause = drift LaMa post S163 fix tentativo
+- D-17 AI Visual Inspection pilot bloccante reaffirmed: visual sanity check obbligatorio PRIMA shipping production
+**Ref**: founder S176 raw + side-by-side AS24 X1 originale vs PDF sanitized, D-25 Pillow-only stack DECIDED 2026-05-14, vincolo #11 pattern strutturale, D-15 founder HITL primi 1-3 deal, D-17 AI Visual pilot bloccante
+
+---
+
+## D-31 — Dossier ampliamento implementation gap-first, no research esterna shotgun (2026-05-16, S176)
+
+**Status**: DEFERRED-S177 (founder S176 raw "ho chiesto di ampliare in maniera importante i dati in modo da consegnare un dossier completo")
+**Contesto**: PDF S176 BMW X1 ha 3 pagine, 8 sezioni implementate in `tools/scripts/pdf_generator_enterprise.py` (logo header, executive summary, details & scoring, financial analysis, opportunity intelligence, verification, photo gallery, footer). D-18 target = 12 sezioni core + appendix expandable → **gap implementazione 4 sezioni**. Founder propone delegate research a Gemini/Claude/Perplexity FREE o VOS per scoprire ampliamento.
+**Opzioni considerate**:
+- (a) Delegate research a 3 LLM esterni shotgun → scartata (no clarity su WHAT cercare, costo cognitive scattered)
+- (b) Gap-analysis interna prima → root cause distinguibile {implementation vs data-availability vs fonte-esterna}
+**Decisione**:
+- **NO research esterna in S176**. Stop ampliamento dossier in S176, scope-lock chiusura E2E pagamento TEST_FOUNDER (vincolo #6 sprint VERDE)
+- **S177 dedicato** post-S176 VERDE: gap-analysis interna 30min:
+  1. Leggere D-18 wiki struttura 12 sezioni
+  2. Mappare JSON CoVe disponibile (verified S176: VIN, ADAC katalog, fraud_flags, cove_score, listing_url, color, variant, power_hp, transmission, fuel_type, seller_type, country) vs sezioni renderizzate in PDF attuale
+  3. Output tabella `dato → sezione → fonte (interna-noprint | interna-missing-field | esterna-FREE)`
+  4. Solo categoria `esterna-FREE` giustifica prompt research mirato singola fonte (no shotgun 3 LLM)
+- **Vincolo #2 ricerca attiva applicato**: ricerca = ultimo step dopo gap-analysis interna, non primo
+**Conseguenze**:
+- S176 chiude E2E pagamento con PDF 8-sezioni attuale = baseline VERDE
+- S177 produce gap-analysis fact-based prima eventuale research esterna
+- Pattern S158→S163 evitato: ampliamento complessità DOPO baseline E2E chiusa, non prima
+- Primo dealer reale post-S176 riceve PDF 8-sezioni MVP — Bolidem (219 recensioni 4.8/5) NON ha dossier 12 sezioni, conta TRUST relazionale primo dealer
+**Critica strutturale 4 punti accettata founder**:
+1. Assunzione (codice ha dati ma non renderizza) verificabile in S177 gap-analysis
+2. Rompe a 30/60gg se aggiungo sezioni che richiedono manual research per veicolo (non scalabile)
+3. Errore noto S158-S163 = aggiungere complessità prima stabilizzare baseline
+4. Sovradimensiono 12 sezioni per primo dealer dove conta TRUST, non COMPLETEZZA
+**Ref**: founder S176 raw richiesta ampliamento, D-18 target struttura 12 sezioni, vincolo #2 ricerca attiva, vincolo #6 sprint scope-lock, pattern S158→S163 sunk-cost
+
+---
+
 # Indice cronologico
 
 | # | Titolo | Status | Data | Sessione |
@@ -862,8 +942,11 @@ Argos Import
 | D-27 | Approach scaltro mystery shopper hybrid 3-layer | PROPOSED-pending-research-P2.A | 2026-05-14 | S170-post-close |
 | D-28 | Target profile ARGOS = micro-dealer commissione P.IVA forfettaria stock<20 | DECIDED | 2026-05-14 | S170-post-close |
 | D-29 | WA 3314928901 condiviso ARGOS+FLUXION zero-cost pre-revenue; Twilio post-1°-revenue | DECIDED | 2026-05-15 | S171-VOS-coord |
+| D-30 | Workflow contatto venditore EU foto extra via ARGOS broker | BACKLOG-conditional-MVP-manuale | 2026-05-16 | S176 |
+| D-31 | Dossier ampliamento gap-analysis-first, no research shotgun | DEFERRED-S177 | 2026-05-16 | S176 |
+| D-32 | Sanitizer refactor LaMa→Pillow rectangle (D-25 compliance restore) | BLOCKER-Day-1-reale-S176-bis | 2026-05-16 | S176 |
 
-**Totale**: 34 entry (31 DECIDED + 1 PROPOSED + 1 OPEN-ipotesi D-08 + 1 SUPERSEDED-by-D-14 D-03 + 1 SUPERSEDED-by-D-27/D-28 D-26). Founder Q1-Q5 closed via S11c-strategic. Pattern S159 evitato: D-17 AI Visual pilot bloccante PRIMA shipping. S167 workflow evolution data-driven via protocollo v2 automated. S170 lessons: D-26 V5 INVALIDATED post wave 1 — target wrong (stock 30-200 dealer contattati invece micro-commissione <20) + bug daemon dedup (Open Q #12). D-27 mystery shopper inverso paradigm pending research. D-28 target profile definitivo.
+**Totale**: 37 entry (31 DECIDED + 1 PROPOSED + 1 OPEN-ipotesi D-08 + 1 SUPERSEDED-by-D-14 D-03 + 1 SUPERSEDED-by-D-27/D-28 D-26 + 1 BACKLOG-conditional D-30 + 1 DEFERRED-S177 D-31 + 1 BLOCKER-Day-1-reale D-32). Founder Q1-Q5 closed via S11c-strategic. Pattern S159 evitato: D-17 AI Visual pilot bloccante PRIMA shipping. S167 workflow evolution data-driven via protocollo v2 automated. S170 lessons: D-26 V5 INVALIDATED post wave 1 — target wrong (stock 30-200 dealer contattati invece micro-commissione <20) + bug daemon dedup (Open Q #12). D-27 mystery shopper inverso paradigm pending research. D-28 target profile definitivo.
 
 # Open questions / Risks
 
