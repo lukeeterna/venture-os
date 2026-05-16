@@ -1,36 +1,36 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-05-16T19:30:12Z`
+**Generato**: `2026-05-16T19:44:07Z`
 **Sessione**: `9d4965e5-e6d5-4643-95a9-63697ac6d77b`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: committed: 022cce0
-**Last commit**: `022cce0 auto-close session 9d4965e5-e6d5-4643-95a9-63697ac6d77b @ 2026-05-16T19:30:12Z`
+**Commit auto**: committed: 34047c2
+**Last commit**: `34047c2 auto-close session 9d4965e5-e6d5-4643-95a9-63697ac6d77b @ 2026-05-16T19:44:07Z`
 
 ## Ultimi 5 commit
 ```
+34047c2 auto-close session 9d4965e5-e6d5-4643-95a9-63697ac6d77b @ 2026-05-16T19:44:07Z
+54385c9 chore(FLUXION-S254): DECISIONS D-05 ephemeral port + D-06 magazzino + 7 Open Q
 022cce0 auto-close session 9d4965e5-e6d5-4643-95a9-63697ac6d77b @ 2026-05-16T19:30:12Z
 5611d0d auto-close session 9d4965e5-e6d5-4643-95a9-63697ac6d77b @ 2026-05-16T19:19:48Z
 719b42b auto-close session 9d4965e5-e6d5-4643-95a9-63697ac6d77b @ 2026-05-16T19:14:57Z
-b944404 auto-close session 9d4965e5-e6d5-4643-95a9-63697ac6d77b @ 2026-05-16T19:08:15Z
-ce611d5 auto-close session 9d4965e5-e6d5-4643-95a9-63697ac6d77b @ 2026-05-16T19:05:50Z
 ```
 
 ## File modificati nell'ultimo commit
 ```
 M	.claude/NEXT_SESSION_PROMPT.md
-M	wiki/projects/FLUXION/DECISIONS.md
+M	wiki/projects/Guardian/DECISIONS.md
 ```
 
 ## Ultimo prompt utente (estratto)
 ```
-mi devi fare le domande e allinearci . una alla volta ti rispondo e allineiamo anche questo sistema e gli diamo un nome "degno". che ne pensi ?
+[{"tool_use_id":"toolu_018XWrNfUxSVsU6ZDfbEfmHL","type":"tool_result","content":"The file /Volumes/MontereyT7/venture-os/wiki/projects/Guardian/DECISIONS.md has been updated successfully."}]
 ```
 
 ## Ultimi turni assistant
 ```
-**Mia raccomandazione**: **(b) commerciale**. Tutto il tuo linguaggio degli ultimi 30 minuti ("il sistema verrà distribuito", "il cliente non è in grado", "non voglio responsabilità", "ogni cliente si paghi infra") presuppone modello commerciale. Inoltre hai 3 venture attive (ARGOS/FLUXION/Guardian) tutte commerciali — Guardian solo personale sarebbe l'eccezione.
-**Trade-off onesto se (b)**: ti tocca aprire P.IVA forfettaria (vincolo memory `feedback_premature_optimization`: defer fino a payment evidence reale, ok aspettare primo cliente pagante). Responsabilità su prodotto salvavita = peso reale (vedi Q7 GDPR/legale dopo). Ma è quello che fai già con ARGOS/FLUXION.
-**(a) o (b)?**
+- Logistica: serve magazzino piccolo (10-20 scatole pronte casa tua) + corriere + supporto post-installazione (chat/telefono se cliente non riesce wizard).
+- Capitale iniziale: per 10 scatole = €800-1200 stock iniziale. **Soluzione zero-capitale Luke**: drop-shipping → cliente paga upfront, tu ordini hw, configuri al volo, spedisci. 5-7 giorni delivery.
+**(a) (b) o (c)?**
 ```
 
 ## Come riprendere
