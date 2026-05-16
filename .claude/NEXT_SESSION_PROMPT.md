@@ -1,36 +1,35 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-05-16T19:08:15Z`
+**Generato**: `2026-05-16T19:14:57Z`
 **Sessione**: `9d4965e5-e6d5-4643-95a9-63697ac6d77b`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: committed: b944404
-**Last commit**: `b944404 auto-close session 9d4965e5-e6d5-4643-95a9-63697ac6d77b @ 2026-05-16T19:08:15Z`
+**Commit auto**: committed: 719b42b
+**Last commit**: `719b42b auto-close session 9d4965e5-e6d5-4643-95a9-63697ac6d77b @ 2026-05-16T19:14:57Z`
 
 ## Ultimi 5 commit
 ```
+719b42b auto-close session 9d4965e5-e6d5-4643-95a9-63697ac6d77b @ 2026-05-16T19:14:57Z
 b944404 auto-close session 9d4965e5-e6d5-4643-95a9-63697ac6d77b @ 2026-05-16T19:08:15Z
 ce611d5 auto-close session 9d4965e5-e6d5-4643-95a9-63697ac6d77b @ 2026-05-16T19:05:50Z
 b94711e auto-close session 9d4965e5-e6d5-4643-95a9-63697ac6d77b @ 2026-05-16T19:01:48Z
 5ee4a5f auto-close session 9d4965e5-e6d5-4643-95a9-63697ac6d77b @ 2026-05-16T19:00:48Z
-328468d auto-close session 9d4965e5-e6d5-4643-95a9-63697ac6d77b @ 2026-05-16T18:55:28Z
 ```
 
 ## File modificati nell'ultimo commit
 ```
 M	.claude/NEXT_SESSION_PROMPT.md
-M	wiki/projects/FLUXION/DECISIONS.md
 ```
 
 ## Ultimo prompt utente (estratto)
 ```
-la mia idea è che ogni cliente si paghi la propria infrastruttura , non voglio resposabilità . hai compreso cio che dico?
+l'installazione con lo script come ai pensato che sia per il cliente? le complessità della creaziine di account oracle la sensibilità di inserimento carta credito , il cliente non è in grado di farlo , i backup su gdrive di wa , la lista della spesa , le funzioni "domotiche " dell'assistente Luna sullo smartphone , le sveglie , gli appuntamenti i backup delle foto dello smartphone e la gestione della memoria, la "lettura " delle bolletta della luce e gas dalla mail e la contabilizzazione (sem
 ```
 
 ## Ultimi turni assistant
 ```
-Scrivo **D-07 (supersede D-06 sul punto ownership backend)**: "Backend Oracle è del cliente, distribuito 1-a-1, software vendor model."
-Poi stop al loop Oracle MIO che gira (per ora non serve fretta — è macchina dev), e ripianifico la roadmap su: installer + app caregiver.
-Procedo a scrivere D-07 e fermare il loop?
+- Eventuali altri doc Guardian
+Poi torno con: (a) lista feature reali Guardian, (b) target user reale, (c) constraint iOS+Android, (d) NUOVA architettura coerente — non re-rebrandata sulle mie assunzioni.
+OK procedere con lettura?
 ```
 
 ## Come riprendere
