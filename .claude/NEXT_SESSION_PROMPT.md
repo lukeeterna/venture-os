@@ -1,36 +1,35 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-05-16T19:44:07Z`
+**Generato**: `2026-05-16T19:47:20Z`
 **Sessione**: `9d4965e5-e6d5-4643-95a9-63697ac6d77b`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: committed: 34047c2
-**Last commit**: `34047c2 auto-close session 9d4965e5-e6d5-4643-95a9-63697ac6d77b @ 2026-05-16T19:44:07Z`
+**Commit auto**: DIRTY (vedi /Volumes/MontereyT7/venture-os/.claude/SESSION_DIRTY.md)
+**Last commit**: `640e717 auto-close session 9d4965e5-e6d5-4643-95a9-63697ac6d77b @ 2026-05-16T19:45:39Z`
 
 ## Ultimi 5 commit
 ```
+640e717 auto-close session 9d4965e5-e6d5-4643-95a9-63697ac6d77b @ 2026-05-16T19:45:39Z
 34047c2 auto-close session 9d4965e5-e6d5-4643-95a9-63697ac6d77b @ 2026-05-16T19:44:07Z
 54385c9 chore(FLUXION-S254): DECISIONS D-05 ephemeral port + D-06 magazzino + 7 Open Q
 022cce0 auto-close session 9d4965e5-e6d5-4643-95a9-63697ac6d77b @ 2026-05-16T19:30:12Z
 5611d0d auto-close session 9d4965e5-e6d5-4643-95a9-63697ac6d77b @ 2026-05-16T19:19:48Z
-719b42b auto-close session 9d4965e5-e6d5-4643-95a9-63697ac6d77b @ 2026-05-16T19:14:57Z
 ```
 
 ## File modificati nell'ultimo commit
 ```
 M	.claude/NEXT_SESSION_PROMPT.md
-M	wiki/projects/Guardian/DECISIONS.md
 ```
 
 ## Ultimo prompt utente (estratto)
 ```
-[{"tool_use_id":"toolu_018XWrNfUxSVsU6ZDfbEfmHL","type":"tool_result","content":"The file /Volumes/MontereyT7/venture-os/wiki/projects/Guardian/DECISIONS.md has been updated successfully."}]
+a , ma discutiamone bene.. in italia ovunque , tutto automatizzato 0 sbatti per me , tutto "automatizzato" e configurabile semplicemente dal cliente grazie al setup mechanic
 ```
 
 ## Ultimi turni assistant
 ```
-- Logistica: serve magazzino piccolo (10-20 scatole pronte casa tua) + corriere + supporto post-installazione (chat/telefono se cliente non riesce wizard).
-- Capitale iniziale: per 10 scatole = €800-1200 stock iniziale. **Soluzione zero-capitale Luke**: drop-shipping → cliente paga upfront, tu ordini hw, configuri al volo, spedisci. 5-7 giorni delivery.
-**(a) (b) o (c)?**
+3. **OTA updates affidabili** (hub aggiorna sé stesso senza intervento)
+4. **Supporto matrice hw**: ogni cam/hub model = test + edge case
+**Ho capito bene?** Se sì, salvo D-08 e vado a Q3 (quale hub + quale lista hw certificata).
 ```
 
 ## Come riprendere
