@@ -944,6 +944,30 @@ Decisione: opzione 1 prima scelta quando trigger attivo, opzione 3 come ponte te
 - Pagamenti automatici operativi (quando ARGOS/FLUXION generano revenue)
 - Espansione social-publisher (YouTube + TikTok + Mastodon + Bluesky)
 
+### 14.3 FASE D — Claude Code Autonomy & Orchestration (S181 piano nuovo 2026-05-16)
+
+**Trigger attivazione**: dati 60 sessioni ARGOS+FLUXION mostrano 4 Agent invocations totali (98% delegation gap). Pattern S159 vivo: CC fa direttamente task delegabili → context bloat + qualità mediocre + costo Opus su task low-stakes (47-84x più caro di DeepSeek). Critica founder S180 esplicita: "pretendo che CC operi autonomo e CREI quello che gli serve".
+
+**11 pattern orchestrazione enterprise** (best practice Anthropic 2026 verified):
+- **P0** Hook UserPromptSubmit deterministic — enforcement delega su keyword complessità
+- **P1** Skill `vos-auto-router` — orchestrator-workers pattern (intent → agent + model selection)
+- **P2** Skill `vos-agent-factory` — auto-create agent .md on-demand quando dominio nuovo
+- **P3** Skill `vos-llm-router` — chiama OpenRouter routing.yaml v5.1 esistente (DeepSeek/Gemini/Kimi) per task delegabili
+- **P4** Regola #0 CLAUDE.md global "delegation-first mandatory" (soft enforcement ridondante)
+- **P5** Statusline warning 5+ tool consecutive senza Task spawn
+- **P6** Plan-and-Execute pattern (Opus pianifica, DeepSeek/Gemini eseguono, economia 90%)
+- **P7** Reviewer chain anti-hallucination (code-reviewer + fact-checker + decision-validator)
+- **P8** Eval framework multi-dim continuous (task success + cost + latency + safety, dashboard weekly)
+- **P9** Meta-monitor agent `cc-meta-monitor` (auto-detect anti-pattern in session jsonl)
+- **P10** Learning extractor (mining session log → memory feedback rules auto-proposed)
+- **P11** Voice integration via Luna NLU (deferred S182)
+
+**Obiettivo strutturale**: sistema enterprise per non-developer founder = trust senza audit linea-per-linea (eval+reviewer), cost-efficient (heterogeneous LLM 90% saving), self-improving (meta-monitor + learning), auto-creating (agent factory), observable (dashboard).
+
+**Costo target**: <€15/mese LLM (vs €30/mese soglia hard CLAUDE.md vincolo #5). Tracking real-time `state/costs.jsonl`.
+
+**Implementation**: vedi `wiki/HANDOFF-S181-cc-autonomy-orchestration.md` (12 turn, ~90 min totali, 4 wave + validation). Reversibile (commit dedicato `s181-cc-autonomy`).
+
 ---
 
 ## 15. Appendice — 20 famiglie di componenti concreti
