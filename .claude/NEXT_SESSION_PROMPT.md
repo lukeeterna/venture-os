@@ -1,18 +1,18 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-05-16T18:48:55Z`
+**Generato**: `2026-05-16T18:51:10Z`
 **Sessione**: `9d4965e5-e6d5-4643-95a9-63697ac6d77b`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: committed: 340e52e
-**Last commit**: `340e52e auto-close session 9d4965e5-e6d5-4643-95a9-63697ac6d77b @ 2026-05-16T18:48:55Z`
+**Commit auto**: committed: bee6c49
+**Last commit**: `bee6c49 auto-close session 9d4965e5-e6d5-4643-95a9-63697ac6d77b @ 2026-05-16T18:51:10Z`
 
 ## Ultimi 5 commit
 ```
+bee6c49 auto-close session 9d4965e5-e6d5-4643-95a9-63697ac6d77b @ 2026-05-16T18:51:10Z
 340e52e auto-close session 9d4965e5-e6d5-4643-95a9-63697ac6d77b @ 2026-05-16T18:48:55Z
 40cfa7d auto-close session 9d4965e5-e6d5-4643-95a9-63697ac6d77b @ 2026-05-16T18:46:49Z
 96637ca auto-close session 9d4965e5-e6d5-4643-95a9-63697ac6d77b @ 2026-05-16T18:46:00Z
 107fc23 auto-close session 9d4965e5-e6d5-4643-95a9-63697ac6d77b @ 2026-05-16T18:38:13Z
-9847d3e auto-close session 9d4965e5-e6d5-4643-95a9-63697ac6d77b @ 2026-05-16T16:37:56Z
 ```
 
 ## File modificati nell'ultimo commit
@@ -22,14 +22,14 @@ M	.claude/NEXT_SESSION_PROMPT.md
 
 ## Ultimo prompt utente (estratto)
 ```
-e ti sempbra affidabile, come soluzione? dimmi tu
+[{"tool_use_id":"toolu_01QokCKtz8oSJqAVy97hEFX2","type":"tool_result","content":"1\t# Guardian — DECISIONS.md\n2\t\n3\t> Architecture Decision Records lean (5-field schema). Append-only.\n4\t> Mai cancellare entry SUPERSEDED — sostituirne lo Status e linkare alla nuova D-NN.\n5\t> Cross-reference ARGOS/FLUXION DECISIONS.md per decisioni cross-progetto.\n6\t>\n7\t> **Schema entry**:\n8\t> ```\n9\t> ## D-NN — Titolo (YYYY-MM-DD, sessione)\n10\t> **Status**: OPEN | DECIDED | SUPERSEDED-by-D-M
 ```
 
 ## Ultimi turni assistant
 ```
-**Alternativa più semplice ma meno affidabile**: cron su iMac (uptime 95h confermato dal brief mattutino). Stesso script ma su hardware sempre acceso. Setup 5 min. Va giù se iMac va giù o internet casa giù.
-**Mia raccomandazione**: GitHub Actions. Smonto il loop attuale, scrivo workflow `.github/workflows/oracle-arm-launch.yml`, push, e da quel momento Oracle è in monitoring 24/7 senza tue dipendenze. MacBook può dormire normale.
-Procedo?
+- Oracle ARM A1 resta target produzione cliente — sposto retry su GitHub Actions (gira 24/7 gratis indipendente da tuo hw)
+- Quando Oracle arriva, switch backend produzione senza fretta
+Procedo a: (a) stop loop MacBook, (b) setup GitHub Actions workflow retry, (c) update handoff con strategia chiara.
 ```
 
 ## Come riprendere
