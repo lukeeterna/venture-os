@@ -1,36 +1,36 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-05-16T09:05:14Z`
+**Generato**: `2026-05-16T09:16:14Z`
 **Sessione**: `252a9b70-9ea7-4529-85f2-e624e605d355`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: committed: 896b499
-**Last commit**: `896b499 auto-close session 252a9b70-9ea7-4529-85f2-e624e605d355 @ 2026-05-16T09:05:14Z`
+**Commit auto**: committed: 41048c0
+**Last commit**: `41048c0 auto-close session 252a9b70-9ea7-4529-85f2-e624e605d355 @ 2026-05-16T09:16:14Z`
 
 ## Ultimi 5 commit
 ```
+41048c0 auto-close session 252a9b70-9ea7-4529-85f2-e624e605d355 @ 2026-05-16T09:16:14Z
 896b499 auto-close session 252a9b70-9ea7-4529-85f2-e624e605d355 @ 2026-05-16T09:05:14Z
 d30fc45 auto-close session 252a9b70-9ea7-4529-85f2-e624e605d355 @ 2026-05-16T08:53:57Z
 50728d8 auto-close session 252a9b70-9ea7-4529-85f2-e624e605d355 @ 2026-05-16T08:51:12Z
 c51c734 auto-close session 252a9b70-9ea7-4529-85f2-e624e605d355 @ 2026-05-16T08:27:40Z
-2f4e024 auto-close session 252a9b70-9ea7-4529-85f2-e624e605d355 @ 2026-05-16T08:21:18Z
 ```
 
 ## File modificati nell'ultimo commit
 ```
 M	.claude/NEXT_SESSION_PROMPT.md
-M	state/cc-violations.jsonl
+A	wiki/projects/Guardian/HANDOFF-S180-oracle-bootstrap-PAUSED.md
 ```
 
 ## Ultimo prompt utente (estratto)
 ```
-[{"tool_use_id":"toolu_019RWxdcSYVPu2CxjUBxLWUz","type":"tool_result","content":"Command running in background with ID: b34a372ao. Output is being written to: /private/tmp/claude-501/-Volumes-MontereyT7-venture-os/252a9b70-9ea7-4529-85f2-e624e605d355/tasks/b34a372ao.output","is_error":false}]
+[{"tool_use_id":"toolu_017v4MaP3f8uHvEdLWAdzD74","type":"tool_result","content":"The file /Volumes/MontereyT7/venture-os/wiki/projects/Guardian/HANDOFF-S180-oracle-bootstrap-PAUSED.md has been updated successfully."}]
 ```
 
 ## Ultimi turni assistant
 ```
-Copia-incolla qui in chat l'intero blocco `[DEFAULT] ... key_file=...` (sono 6 righe). Oppure solo le righe `user=`, `tenancy=`, `region=` se preferisci.
-⚠️ **NON serve copiare la private key** — quella sta solo sul tuo MacBook in `~/.oci/oci_api_key.pem` e non deve mai uscire.
-Quando incolli, io scrivo `~/.oci/config`, testo auth con `oci iam region list`, e proseguo con VCN + instance launch.
+> **"riprendi oracle handoff"**
+Io leggo `HANDOFF-S180-oracle-bootstrap-PAUSED.md`, reinstallo oci-cli (1 comando, ~60s con sistema sano), e ti dò di nuovo il blocco public key da incollare in console Oracle. **Riprendiamo da step 2.2 esatto** (upload API key in OCI Console). Niente perso, niente da ripetere.
+Vincolo #6 chiusura verde rispettato: handoff strutturato + prompt resume in 4 parole, no stato PARTIAL.
 ```
 
 ## Come riprendere

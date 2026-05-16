@@ -73,6 +73,28 @@
 
 ---
 
+## D-04 — Verticali reali = 8 macro x 50 micro (riconciliazione count) (2026-05-16, S248)
+
+**Status**: DECIDED (verifica fattuale codice `src/types/setup.ts` `MICRO_CATEGORIE` S248)
+**Contesto**: D-01 menziona "9 verticali settori SMB" come riferimento di alto livello. Codice reale `src/types/setup.ts` espone 8 macro (medico, beauty, hair, auto, wellness, professionale, pet, formazione) e 50 micro-categorie. CLAUDE.md progetto riga 263 diceva erroneamente "6 macro x 17 sotto-verticali". Task S248 D3 ha richiesto riconciliazione doc.
+**Opzioni considerate**:
+- Superseding D-01 (eccessivo: D-01 corretta sostanza prodotto)
+- Edit inline D-01 (vietato: append-only)
+- Nuova entry D-04 riconciliante (scelta)
+**Decisione**:
+- Source of truth count verticali = codice `src/types/setup.ts` (`MACRO_CATEGORIE` + `MICRO_CATEGORIE`)
+- Numero macro: **8** (medico, beauty, hair, auto, wellness, professionale, pet, formazione)
+- Numero micro totale: **50** (medico 10 + beauty 7 + hair 6 + auto 7 + wellness 6 + professionale 5 + pet 4 + formazione 5)
+- D-01 conserva valore storico ("9 settori" era riferimento commerciale alto livello pre-codice maturo)
+**Conseguenze**:
+- CLAUDE.md progetto riga 263 aggiornato a "8 macro x 50 micro-verticali" (commit S248)
+- PRD-FLUXION-COMPLETE.md riga 151 aggiornato (commit S248)
+- Open question #4 "Landing per-verticale 9 settori" → ridenominare implicitamente: produzione landing per macro+micro principali (non vincolato a 9)
+- Skill `fluxion-landing-generator` deve leggere `MICRO_CATEGORIE` runtime, non hardcoded
+**Ref**: codice `src/types/setup.ts`, S248 plan `.claude/NEXT_SESSION_PROMPT.manual.md` Task 1
+
+---
+
 # Indice cronologico
 
 | # | Titolo | Status | Data | Sessione |
@@ -80,8 +102,9 @@
 | D-01 | Prodotto = gestionale SMB con Voice Agent AI Sara | DECIDED | 2026-05-15 | S171-VOS-coord |
 | D-02 | WA 3314928901 condiviso pre-revenue; Twilio post-1°-cliente | DECIDED | 2026-05-15 | S171-VOS-coord |
 | D-03 | Ehiweb = contatto aperto no reseller; wizard onboarding self-serve | DECIDED | 2026-05-15 | S171-VOS-coord |
+| D-04 | Verticali reali = 8 macro x 50 micro (riconciliazione count vs D-01) | DECIDED | 2026-05-16 | S248 |
 
-**Totale**: 3 entry DECIDED. File iniziato S171-VOS-coord post-correzione errore documentazione "video marketing" propagato CLAUDE.md user.
+**Totale**: 4 entry DECIDED. File iniziato S171-VOS-coord post-correzione errore documentazione "video marketing" propagato CLAUDE.md user.
 
 ---
 
