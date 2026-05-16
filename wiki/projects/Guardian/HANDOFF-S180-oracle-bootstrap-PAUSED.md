@@ -35,7 +35,7 @@ Account Oracle Cloud Free Tier **attivato**:
 - [x] P1 Step 2.3 — Configuration File Preview ricevuto da Luke (user OCID, tenancy OCID, region eu-milan-1, fingerprint)
 - [x] P1 Step 3 — ~/.oci/config scritto, key_file path corretto, `oci iam region list` PASS (auth dopo 20s propagazione)
 - [x] P1 Step 4 — VCN 10.0.0.0/16 + IGW + Route Table default → IGW + Security List (SSH 22 TCP, Tailscale 41641 UDP, ICMP PMTU) + Public Subnet 10.0.1.0/24. OCIDs salvati in `wiki/projects/Guardian/oracle-resource-ids.env`
-- [~] P1 Step 5 — Launch in RETRY LOOP. Script `/tmp/oracle-launch-retry.sh` patched per gestire network timeout come transient (sleep 60s) vs OOC (sleep 300s). PID 47302 (1° loop PID 40488 morto su net glitch min 25, ora corretto). Log `/tmp/oracle-launch-retry.log`. Success scrive `/tmp/oracle-launch-success.json`. Image Ubuntu 22.04 aarch64 `...4nrshfsc...`. Monitor `b5v6nnen4` persistent emette su INSTANCE_RUNNING/FATAL/OOC_progress/NET_progress.
+- [~] P1 Step 5 — Launch in RETRY LOOP v2 (PID 81238). PRECEDENTI LOOP HIT HTTP 429 (rate limit per-user, 22 attempts in 2h47 + 1 shot manuale). Script v2: cool-down 60min embedded, poi OOC=30min, 429=90min, NET=5min. Monitor `ba3xdsccp` persistent. Lesson: Oracle Always Free rate-limits launch_instance per-user, 5min interval troppo aggressivo.
 - [ ] P1 Step 6 — Claude output Public IP + scrive ~/.ssh/config alias `oracle-arm` + test connect
 
 ## PROSSIMI 3 COMANDI AL RESTART
