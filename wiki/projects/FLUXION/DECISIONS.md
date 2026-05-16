@@ -103,8 +103,10 @@
 | D-02 | WA 3314928901 condiviso pre-revenue; Twilio post-1°-cliente | DECIDED | 2026-05-15 | S171-VOS-coord |
 | D-03 | Ehiweb = contatto aperto no reseller; wizard onboarding self-serve | DECIDED | 2026-05-15 | S171-VOS-coord |
 | D-04 | Verticali reali = 8 macro x 50 micro (riconciliazione count vs D-01) | DECIDED | 2026-05-16 | S248 |
+| D-05 | Ephemeral port HTTP Bridge + Voice Pipeline (no hardcode 3001/3002) | DECIDED | 2026-05-16 | S254 |
+| D-06 | Modulo Magazzino con sottoscorta + popup riordino per verticali product-heavy | OPEN | 2026-05-16 | S254 |
 
-**Totale**: 4 entry DECIDED. File iniziato S171-VOS-coord post-correzione errore documentazione "video marketing" propagato CLAUDE.md user.
+**Totale**: 5 entry DECIDED + 1 OPEN. File iniziato S171-VOS-coord post-correzione errore documentazione "video marketing" propagato CLAUDE.md user.
 
 ---
 
