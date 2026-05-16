@@ -31,11 +31,11 @@ Account Oracle Cloud Free Tier **attivato**:
 - [x] P1 Step 1 — Genera API keypair PEM (DONE, files in ~/.oci/)
 - [x] P1 Step 2.0 — pipx installed (1.7.1 via brew)
 - [x] P1 Step 2.1 — oci-cli 3.82.0 installato (pipx metadata ancora corrotto ma binary funzionante via symlink manuale in ~/.local/bin/oci → ~/.local/pipx/venvs/oci-cli/bin/oci)
-- [ ] P1 Step 2.2 — **Luke deve fare**: console OCI → My profile → API keys → Add API key → paste public key (~/.oci/oci_api_key_public.pem)
-- [ ] P1 Step 2.3 — Luke copia "Configuration File Preview" da console e incolla in chat (user OCID, tenancy OCID, region, fingerprint)
-- [ ] P1 Step 3 — Claude scrive ~/.oci/config + test `oci iam region list`
-- [ ] P1 Step 4 — Claude crea VCN + subnet + IGW + security list via CLI
-- [ ] P1 Step 5 — Claude launch ARM A1 instance Ubuntu 22.04 4 OCPU 24GB Milan AD-1 con SSH pub key embedded, retry loop OOC con backoff (single-AD region)
+- [x] P1 Step 2.2 — API key uploaded in console, fingerprint match confermato (8d:4a:...:cf)
+- [x] P1 Step 2.3 — Configuration File Preview ricevuto da Luke (user OCID, tenancy OCID, region eu-milan-1, fingerprint)
+- [x] P1 Step 3 — ~/.oci/config scritto, key_file path corretto, `oci iam region list` PASS (auth dopo 20s propagazione)
+- [x] P1 Step 4 — VCN 10.0.0.0/16 + IGW + Route Table default → IGW + Security List (SSH 22 TCP, Tailscale 41641 UDP, ICMP PMTU) + Public Subnet 10.0.1.0/24. OCIDs salvati in `wiki/projects/Guardian/oracle-resource-ids.env`
+- [~] P1 Step 5 — Launch in RETRY LOOP (1° tentativo OOC, atteso). Script `/tmp/oracle-launch-retry.sh` gira detached PID 40488, retry ogni 5 min. Log `/tmp/oracle-launch-retry.log`. Success scrive `/tmp/oracle-launch-success.json`. Image Ubuntu 22.04 aarch64 ocid `...4nrshfsc...`. Monitor task `b5v6nnen4` emette su INSTANCE_RUNNING/FATAL/OOC_progress.
 - [ ] P1 Step 6 — Claude output Public IP + scrive ~/.ssh/config alias `oracle-arm` + test connect
 
 ## PROSSIMI 3 COMANDI AL RESTART
