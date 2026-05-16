@@ -1,35 +1,36 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-05-16T08:53:57Z`
+**Generato**: `2026-05-16T09:05:14Z`
 **Sessione**: `252a9b70-9ea7-4529-85f2-e624e605d355`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: committed: d30fc45
-**Last commit**: `d30fc45 auto-close session 252a9b70-9ea7-4529-85f2-e624e605d355 @ 2026-05-16T08:53:57Z`
+**Commit auto**: committed: 896b499
+**Last commit**: `896b499 auto-close session 252a9b70-9ea7-4529-85f2-e624e605d355 @ 2026-05-16T09:05:14Z`
 
 ## Ultimi 5 commit
 ```
+896b499 auto-close session 252a9b70-9ea7-4529-85f2-e624e605d355 @ 2026-05-16T09:05:14Z
 d30fc45 auto-close session 252a9b70-9ea7-4529-85f2-e624e605d355 @ 2026-05-16T08:53:57Z
 50728d8 auto-close session 252a9b70-9ea7-4529-85f2-e624e605d355 @ 2026-05-16T08:51:12Z
 c51c734 auto-close session 252a9b70-9ea7-4529-85f2-e624e605d355 @ 2026-05-16T08:27:40Z
 2f4e024 auto-close session 252a9b70-9ea7-4529-85f2-e624e605d355 @ 2026-05-16T08:21:18Z
-8b96c75 auto-close session 252a9b70-9ea7-4529-85f2-e624e605d355 @ 2026-05-16T08:19:16Z
 ```
 
 ## File modificati nell'ultimo commit
 ```
 M	.claude/NEXT_SESSION_PROMPT.md
+M	state/cc-violations.jsonl
 ```
 
 ## Ultimo prompt utente (estratto)
 ```
-puoi tramite api o altro "gestire tu " queste cose come le config per evitare fraintendimenti? rispondi con DATI
+[{"tool_use_id":"toolu_019RWxdcSYVPu2CxjUBxLWUz","type":"tool_result","content":"Command running in background with ID: b34a372ao. Output is being written to: /private/tmp/claude-501/-Volumes-MontereyT7-venture-os/252a9b70-9ea7-4529-85f2-e624e605d355/tasks/b34a372ao.output","is_error":false}]
 ```
 
 ## Ultimi turni assistant
 ```
-- [OCI CLI install (docs.oracle.com)](https://docs.oracle.com/en-us/iaas/Content/API/SDKDocs/cliinstall.htm)
-- [API key setup (docs.oracle.com)](https://docs.oracle.com/en-us/iaas/Content/API/Concepts/apisigningkey.htm)
-- [Compute instance launch CLI](https://docs.oracle.com/en-us/iaas/tools/oci-cli/3.x/oci_cli_docs/cmdref/compute/instance/launch.html)
+Copia-incolla qui in chat l'intero blocco `[DEFAULT] ... key_file=...` (sono 6 righe). Oppure solo le righe `user=`, `tenancy=`, `region=` se preferisci.
+⚠️ **NON serve copiare la private key** — quella sta solo sul tuo MacBook in `~/.oci/oci_api_key.pem` e non deve mai uscire.
+Quando incolli, io scrivo `~/.oci/config`, testo auth con `oci iam region list`, e proseguo con VCN + instance launch.
 ```
 
 ## Come riprendere
