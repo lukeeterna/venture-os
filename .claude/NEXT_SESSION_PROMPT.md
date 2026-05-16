@@ -1,35 +1,36 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-05-16T18:51:10Z`
+**Generato**: `2026-05-16T18:57:02Z`
 **Sessione**: `9d4965e5-e6d5-4643-95a9-63697ac6d77b`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: committed: bee6c49
-**Last commit**: `bee6c49 auto-close session 9d4965e5-e6d5-4643-95a9-63697ac6d77b @ 2026-05-16T18:51:10Z`
+**Commit auto**: DIRTY (vedi /Volumes/MontereyT7/venture-os/.claude/SESSION_DIRTY.md)
+**Last commit**: `328468d auto-close session 9d4965e5-e6d5-4643-95a9-63697ac6d77b @ 2026-05-16T18:55:28Z`
 
 ## Ultimi 5 commit
 ```
+328468d auto-close session 9d4965e5-e6d5-4643-95a9-63697ac6d77b @ 2026-05-16T18:55:28Z
 bee6c49 auto-close session 9d4965e5-e6d5-4643-95a9-63697ac6d77b @ 2026-05-16T18:51:10Z
 340e52e auto-close session 9d4965e5-e6d5-4643-95a9-63697ac6d77b @ 2026-05-16T18:48:55Z
 40cfa7d auto-close session 9d4965e5-e6d5-4643-95a9-63697ac6d77b @ 2026-05-16T18:46:49Z
 96637ca auto-close session 9d4965e5-e6d5-4643-95a9-63697ac6d77b @ 2026-05-16T18:46:00Z
-107fc23 auto-close session 9d4965e5-e6d5-4643-95a9-63697ac6d77b @ 2026-05-16T18:38:13Z
 ```
 
 ## File modificati nell'ultimo commit
 ```
 M	.claude/NEXT_SESSION_PROMPT.md
+M	state/cc-violations.jsonl
 ```
 
 ## Ultimo prompt utente (estratto)
 ```
-[{"tool_use_id":"toolu_01QokCKtz8oSJqAVy97hEFX2","type":"tool_result","content":"1\t# Guardian — DECISIONS.md\n2\t\n3\t> Architecture Decision Records lean (5-field schema). Append-only.\n4\t> Mai cancellare entry SUPERSEDED — sostituirne lo Status e linkare alla nuova D-NN.\n5\t> Cross-reference ARGOS/FLUXION DECISIONS.md per decisioni cross-progetto.\n6\t>\n7\t> **Schema entry**:\n8\t> ```\n9\t> ## D-NN — Titolo (YYYY-MM-DD, sessione)\n10\t> **Status**: OPEN | DECIDED | SUPERSEDED-by-D-M
+non mi hai risposto ancora, tu hai capito che il sistema verrà distribuito? solo si o no
 ```
 
 ## Ultimi turni assistant
 ```
-- Oracle ARM A1 resta target produzione cliente — sposto retry su GitHub Actions (gira 24/7 gratis indipendente da tuo hw)
-- Quando Oracle arriva, switch backend produzione senza fretta
-Procedo a: (a) stop loop MacBook, (b) setup GitHub Actions workflow retry, (c) update handoff con strategia chiara.
+- [Oracle Cloud Free Tier FAQ on capacity](https://www.oracle.com/cloud/free/faq/)
+- [Oracle Cloud Free Tier guide GitHub gist](https://gist.github.com/rssnyder/51e3cfedd730e7dd5f4a816143b25dbd?permalink_comment_id=4015735)
+Sì.
 ```
 
 ## Come riprendere
