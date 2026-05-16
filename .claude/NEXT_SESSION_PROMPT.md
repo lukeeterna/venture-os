@@ -1,18 +1,18 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-05-16T19:05:50Z`
+**Generato**: `2026-05-16T19:08:15Z`
 **Sessione**: `9d4965e5-e6d5-4643-95a9-63697ac6d77b`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: committed: ce611d5
-**Last commit**: `ce611d5 auto-close session 9d4965e5-e6d5-4643-95a9-63697ac6d77b @ 2026-05-16T19:05:50Z`
+**Commit auto**: committed: b944404
+**Last commit**: `b944404 auto-close session 9d4965e5-e6d5-4643-95a9-63697ac6d77b @ 2026-05-16T19:08:15Z`
 
 ## Ultimi 5 commit
 ```
+b944404 auto-close session 9d4965e5-e6d5-4643-95a9-63697ac6d77b @ 2026-05-16T19:08:15Z
 ce611d5 auto-close session 9d4965e5-e6d5-4643-95a9-63697ac6d77b @ 2026-05-16T19:05:50Z
 b94711e auto-close session 9d4965e5-e6d5-4643-95a9-63697ac6d77b @ 2026-05-16T19:01:48Z
 5ee4a5f auto-close session 9d4965e5-e6d5-4643-95a9-63697ac6d77b @ 2026-05-16T19:00:48Z
 328468d auto-close session 9d4965e5-e6d5-4643-95a9-63697ac6d77b @ 2026-05-16T18:55:28Z
-bee6c49 auto-close session 9d4965e5-e6d5-4643-95a9-63697ac6d77b @ 2026-05-16T18:51:10Z
 ```
 
 ## File modificati nell'ultimo commit
@@ -23,14 +23,14 @@ M	wiki/projects/FLUXION/DECISIONS.md
 
 ## Ultimo prompt utente (estratto)
 ```
-è affidabile quindi la soluzone che mi stai facendo fare con oracle?
+la mia idea è che ogni cliente si paghi la propria infrastruttura , non voglio resposabilità . hai compreso cio che dico?
 ```
 
 ## Ultimi turni assistant
 ```
-**Verità onesta**: Oracle Free Tier è giusto per **validare prodotto su 2-4 famiglie**. Non è infra produzione per business "Guardian salva-anziani" che vende a 50+ clienti.
-**Quando avere prima revenue** (anche 5-10 clienti paganti €15-30/mese), si rivede l'architettura su infra paid affidabile (Hetzner ARM €4/mese per N=4 clienti, Hetzner CPX21 €6/mese per N=8 clienti, etc). Allora SLA reale 99.9% e SPOF mitigabile con 2° server.
-**Adesso, in questa fase pre-revenue**: Oracle Free Tier è il **migliore compromesso disponibile** con vincolo #5 zero-cost. Non è "affidabile produzione vera" — è "affidabile per validare se il prodotto vende".
+Scrivo **D-07 (supersede D-06 sul punto ownership backend)**: "Backend Oracle è del cliente, distribuito 1-a-1, software vendor model."
+Poi stop al loop Oracle MIO che gira (per ora non serve fretta — è macchina dev), e ripianifico la roadmap su: installer + app caregiver.
+Procedo a scrivere D-07 e fermare il loop?
 ```
 
 ## Come riprendere
