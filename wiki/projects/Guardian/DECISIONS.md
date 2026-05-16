@@ -147,6 +147,27 @@
 
 ---
 
+## D-07 — Scope distribuzione = prodotto commerciale, no overhead legale pre-revenue (2026-05-16, S180-oracle-bootstrap)
+
+**Status**: DECIDED (founder S180 raw "B, ma senza ansie, per ora dobbiamo farlo funzionare, niente p.iva, niente stress oneri")
+**Contesto**: NORTH_STAR pulizia-smartphone (24 apr) dichiara progetto "personale non commerciale, €0 revenue, NO multi-tenant/SaaS, NO iOS, cliente=famiglia Luke". Founder S180 evolve scope: distribuibile a clienti terzi pagati ("il sistema verrà distribuito", "il cliente non è in grado"). NORTH_STAR obsoleto su 3 punti (commerciale/iOS/multi-tenant).
+**Opzioni considerate**:
+- (a) Mantenere personale famiglia + amici (status NORTH_STAR aprile)
+- (b) Commerciale full con P.IVA + GDPR DPA + contratti pre-MVP (overhead pre-revenue)
+- (c) **Commerciale lean: funzionalità prima, overhead legale/fiscale defer fino payment evidence reale** (founder S180 explicit)
+**Decisione**: Opzione (c). Guardian = prodotto commerciale distribuibile a terzi. **Overhead legale/fiscale (P.IVA, GDPR formale DPA, contratti, T&C, privacy policy, responsabilità civile)** = DEFERRED fino primo cliente pagante (allineato memory `feedback_premature_optimization.md`).
+**Conseguenze**:
+- NORTH_STAR pulizia-smartphone OBSOLETO sui 3 punti (commerciale OK, iOS TBD Q4, multi-tenant TBD). Da rivedere in S181 post Q1-Q8 closure.
+- Discovery V2 (D-04 OPEN) e scope dettagliato V1 continuano (Q2-Q8 next).
+- Vincolo founder #5 zero-cost reinterpretato: zero-cost LUKE (no spese da te), cliente paga sua infra (vedi Q3 next).
+- Sales/marketing/business model decisions ALL defer post-funzionalità validata su 2-3 cliente test.
+- Pattern S159 mitigation: ogni proposta tecnica successiva rif D-07 + memory `feedback_premature_optimization` per evitare drift "ottimizziamo legale ora".
+
+**Ref**: founder S180 raw "per ora facciamolo funzionare", NORTH_STAR ~/Documents/pulizia-smartphone/.claude/NORTH_STAR.md (obsoleto post-S180), memory `feedback_premature_optimization.md`
+<!-- last_reviewed: 2026-05-16 -->
+
+---
+
 # Indice cronologico
 
 | # | Titolo | Status | Data | Sessione |
@@ -157,8 +178,9 @@
 | D-04 | Verticale pulizia smartphone scope dettagliato | OPEN | 2026-05-15 | S173-VOS-coord |
 | D-05 | Architettura clienti zero-cost IP cam + smartphone (research-pending) | SUPERSEDED-by-D-06 | 2026-05-15 | S173-VOS-coord |
 | D-06 | Architettura cliente camera-agnostic RTSP + Oracle Free Tier backend Luke | DECIDED | 2026-05-15 | S178-VOS-coord |
+| D-07 | Scope distribuzione = prodotto commerciale, no overhead legale pre-revenue | DECIDED | 2026-05-16 | S180-oracle-bootstrap |
 
-**Totale**: 5 DECIDED + 1 OPEN + 1 SUPERSEDED. D-06 supera D-05 post deep research S177-S178 e founder validation Q1-Q5.
+**Totale**: 6 DECIDED + 1 OPEN + 1 SUPERSEDED. D-07 evolve NORTH_STAR aprile (obsoleto), allinea con memory premature_optimization.
 
 ---
 
