@@ -1,0 +1,1 @@
+- [Skills vos-llm-router e vos-auto-router create S181](project_vos_skills_s181.md) — skill vos-llm-router (P3) e vos-auto-router (P1) create in ~/.claude/skills/. Wrapper sopra router.py esistente, no nuovi script.
