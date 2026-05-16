@@ -28,7 +28,7 @@ Account Oracle Cloud Free Tier **attivato**:
 
 - [x] P1 Step 1 — Genera API keypair PEM (DONE, files in ~/.oci/)
 - [x] P1 Step 2.0 — pipx installed (1.7.1 via brew)
-- [ ] P1 Step 2.1 — Install oci-cli via pipx (FALLITO: exit 0 ma metadata missing — install killato a metà per system stress. REINSTALL al restart: `pipx uninstall oci-cli 2>/dev/null; pipx install oci-cli`)
+- [x] P1 Step 2.1 — oci-cli 3.82.0 installato (pipx metadata ancora corrotto ma binary funzionante via symlink manuale in ~/.local/bin/oci → ~/.local/pipx/venvs/oci-cli/bin/oci)
 - [ ] P1 Step 2.2 — **Luke deve fare**: console OCI → My profile → API keys → Add API key → paste public key (~/.oci/oci_api_key_public.pem)
 - [ ] P1 Step 2.3 — Luke copia "Configuration File Preview" da console e incolla in chat (user OCID, tenancy OCID, region, fingerprint)
 - [ ] P1 Step 3 — Claude scrive ~/.oci/config + test `oci iam region list`
