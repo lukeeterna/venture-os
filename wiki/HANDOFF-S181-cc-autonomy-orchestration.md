@@ -508,6 +508,43 @@ Cosa NON faresti in questo piano se fossi tu, e perché?
 - Hook test in isolated session prima di commit produzione
 - Reversibile: TUTTI i nuovi file in commit dedicato `s181-cc-autonomy`, revert con `git revert` se rompe
 
+## STATO LASCIATO IN S181 (WAVE 1 DONE — 2026-05-16 chiusura verde)
+
+**WAVE 1 completata** (P0+P1+P3+P4):
+
+| Item | Path | Stato |
+|------|------|-------|
+| P0 hook delegation enforcement | `~/.claude/hooks/user_prompt_route_enforce.py` | ✓ E2E test 3/3 pass |
+| P0 hook registrazione | `~/.claude/settings.json` (+ `.bak`) | ✓ idempotente |
+| P1 orchestrator-workers skill | `~/.claude/skills/vos-auto-router/SKILL.md` | ✓ loaded |
+| P3 LLM router skill | `~/.claude/skills/vos-llm-router/SKILL.md` | ✓ loaded |
+| P3 building block | `/Volumes/MontereyT7/venture-os/components/llm-router/router.py` | ✓ commit 3f7274c |
+| P4 regola #0 mandatory | `~/.claude/CLAUDE.md` (prima dei 12 vincoli) | ✓ |
+| Audit log delegation | `~/venture-os/state/delegation-enforcement.jsonl` | ✓ 2 entry test |
+
+**Test E2E hook**:
+1. `"implementa hook backend API"` → injection `backend-architect` ✓
+2. `"analizza tutti gli handoff..."` → injection `vos-llm-router:long_context` ✓
+3. Stdin malformato → exit 0 silente (fail-soft) ✓
+
+**Critica strutturale rilevata dagli agents (da affrontare WAVE 2+)**:
+- Anti-pattern coesistenza: `~/.claude/hooks/prompt-router.sh` orfano (non registrato in settings.json). Se in futuro registrato → doppia injection contraddittoria. **Azione**: consolidare/eliminare in WAVE 2.
+- vos-llm-router NO check preventivo quota Gemini Flash 250 RPD. **Azione P8**: aggiungere a eval-tracker.
+- `delegation-enforcement.jsonl` cresce senza rotazione. **Azione**: logrotate weekly in P8.
+- Schema PLAN JSON vos-auto-router sovradimensionato per task ≤3 step (overhead/friction). **Azione**: documentare opt-out per task semplici.
+- Matrice dispatch keyword diventa stale a 60gg se nuovi agent on-demand creati. **Azione P2 agent-factory**: auto-update keyword matrix all'insert.
+
+**Entry point WAVE 2**: spawn `ai-engineer` con prompt P2 (agent-factory skill) + P7 (3 reviewer agents: code-reviewer/research-fact-checker/decision-validator).
+
+**OQ-S181 da rispondere PRIMA di WAVE 2** (governance/budget):
+- OQ-S181-1: cap mensile costs.jsonl €30 hard (vincolo #5) o €15 conservative?
+- OQ-S181-2: agent-factory genera in `_generated/` subdir o main `agents/`?
+- OQ-S181-3: hook UserPromptSubmit skip-pable con flag esplicito utente (es. `[no-delegate]`)?
+
+**Commit WAVE 1**: file deliverable in `~/.claude/` (scope globale vincolo #12, fuori repo VOS). VOS repo contiene solo update handoff + state log gitignored.
+
+---
+
 ## STATO LASCIATO IN S180
 
 - **Loop Oracle ARM A1** retry attivo background (PID 81238, log /tmp/oracle-launch-retry.log, monitor task ba3xdsccp). 
