@@ -95,6 +95,54 @@
 
 ---
 
+## D-05 — Ephemeral port allocation HTTP Bridge + Voice Pipeline (no hardcode 3001/3002) (2026-05-16, S254)
+
+**Status**: DECIDED (CTO-driven post bug discovery S254, vincolo enterprise-grade FLUXION CLAUDE.md guardrail #2)
+**Contesto**: Audit S254 ha rilevato `src-tauri/src/http_bridge.rs:149` `bind("127.0.0.1:3001")` hardcoded + `voice-agent/main.py:347,1058,1358` default `3002` (parzialmente mitigato da `--port` CLI). Preflight check `commands/preflight.rs:286-288` rileva collision ma è informativo non risolvente. Su `AddrInUse` l'errore in `lib.rs:709` è swallowed → app parte ma Sara muta, MCP rotto, Voice Agent feature morti. Conflitti reali documentati: Skype Classic, Docker Desktop, Rails dev server (porta 3000-3001), IIS Express, AirPlay sotto certe config.
+**Opzioni considerate**:
+- A. Range scan fallback (3001→3011→3021... 10 tentativi) — quick fix ~2-3h, meno robusto
+- B. Ephemeral port (`bind 127.0.0.1:0`) + service discovery via `$APP_DATA/runtime.json` + Tauri command `get_bridge_port()` — pattern Slack/Discord/Cursor/Zoom, ~6-8h refactor cross-component
+- C. Status quo (preflight informativo, cliente PMI si arrangia) — rotto, refund-driver
+**Decisione**: **B (Ephemeral)** — pattern industriale per app desktop con sidecar HTTP. Frontend `invoke('get_bridge_port')` invece di hardcode. Voice Pipeline lanciata con env `FLUXION_BRIDGE_PORT=N`. MCP server legge `runtime.json`. Stesso pattern per voice 3002. Owner: backend-architect + frontend-developer + voice-engineer (sessione dedicata pre-launch).
+**Conseguenze**:
+- P0 pre-launch: nessuna distribuzione public finché D-05 non implementato (rischio reputation Capterra/G2 "non funziona post-install")
+- Effort stimato ~6-8h FILE CRITICI cross-component → sessione dedicata mente fresca <40% context (rule context-budget-gate)
+- Aggiunto a sprint S184-S188 backlog come P0.5 (tra P1 Ehiweb e P2 Win MSI)
+- Backward compat: legacy `--port` CLI voice-agent mantenuto, ephemeral è default
+- Test E2E obbligatorio: simulare conflict (avviare server dummy su 3001 PRIMA di app) → app deve trovare porta alternativa e funzionare end-to-end
+**Ref**: bug discovery S254, `http_bridge.rs:149`, `preflight.rs:286-288`, `voice-agent/main.py:347`, CLAUDE.md FLUXION guardrail #2 "ENTERPRISE GRADE"
+
+---
+
+## D-06 — Modulo Magazzino con sottoscorta + popup riordino per verticali product-heavy (2026-05-16, S254)
+
+**Status**: OPEN (founder input S254 raw: "gestione magazzino per le PMI che necessitano... parrucchiere colori infinite texture per riordino si rende conto quando finisce, estetista identico... popup di riordino quando prodotti vanno in sottoscorta")
+**Contesto**: FLUXION attualmente non ha modulo magazzino/inventory. Founder ha identificato gap per verticali product-heavy (hair, beauty in primis) dove il professionista usa prodotti consumabili (colori parrucchiere con N texture/marche, creme estetista, smalti, maschere). Pain point: si accorgono di aver finito solo davanti al cliente. Bisogno: tracking giacenza + alert sottoscorta + popup riordino contestuale.
+**Opzioni considerate**: TBD post-research
+- A. Modulo magazzino full-fledged (catalogo prodotti, fornitori, ordini, ricezione, scarico per servizio) — scope grande, sovrapposto a P2 suppliers S254
+- B. Modulo "lite" inventory-only (giacenza + alert sottoscorta + popup riordino manuale via WA fornitore) — scope contenuto, integrabile con `suppliers` esistente
+- C. Solo alert checklist semplice (founder inserisce manualmente lista prodotti + soglie + reminder calendario) — minimal viable
+- D. Verticale-specific (attivabile solo per verticali product-heavy, off per medico/professionale/formazione che non hanno consumabili)
+**Decisione**: PENDING — richiede research vertical-researcher + ux-researcher prima di plan.
+**Research questions (per S256+ dedicata)**:
+1. Quali dei 50 micro-verticali hanno bisogno REALE di magazzino? (hair: tutti; beauty: estetista/depilatoria sì, makeup-artist forse; medico: dentista/podologo materiale consumabile sì, psicologo no; auto: officine pneumatici/ricambi sì, autolavaggio no; pet: toelettatura sì, vet sì; wellness: massaggi oli sì, yoga no; professionale: probabilmente no; formazione: no)
+2. Granularità prodotto: SKU semplice (nome + quantità) o variant matrix (es. colore parrucchiere = brand × tonalità × volume)?
+3. Decremento giacenza: manuale (operatore scarica post-servizio) o automatico (link servizio→prodotti consumati con quantità default)?
+4. Trigger popup riordino: soglia fissa, soglia % rispetto stock iniziale, predizione consumo (cliente avg/mese)?
+5. Integrazione fornitori: lookup `suppliers` table + WA template "Ordine prodotti X Y Z" pre-compilato + send via WhatsApp service?
+6. Competitor benchmark: Treatwell, Fresha, Mindbody, Vagaro hanno magazzino? Come? (gold standard 2026)
+**Conseguenze attese**:
+- Nuova table `prodotti` (id, nome, sku, fornitore_id FK suppliers, giacenza_attuale, soglia_sottoscorta, unita_misura)
+- Nuova table `movimenti_magazzino` (id, prodotto_id, tipo enum carico/scarico/rettifica, quantita, servizio_id FK nullable, operatore_id FK, data)
+- Nuova UI page `/magazzino` (filtri per categoria, alert sottoscorta evidenziato)
+- Hook frontend `use-magazzino.ts` + popup contestuale `MagazzinoSottoscortaAlert.tsx` (trigger su login + dopo scarico servizio)
+- Possibile estensione P2 suppliers (S254 Cat 3) per includere PII encryption sui nuovi `prodotti` (probabile NO, prodotti non sono PII)
+- Vertical-scoped: attivabile/disattivabile per verticale tramite `setup.ts` MICRO_CATEGORIE flag `has_inventory: true`
+**Trigger ripresa**: post launch base (Cat 3 chiusi + Step E + P1 operatori + P2 suppliers + D-05 ephemeral port). Sessione dedicata `vertical-researcher` agent + `ux-researcher` agent per discriminare A/B/C/D + roadmap dettagliata.
+**Ref**: founder raw S254 messaggio chat, gap competitor `vertical-researcher` agent S139 routing
+
+---
+
 # Indice cronologico
 
 | # | Titolo | Status | Data | Sessione |
@@ -118,3 +166,5 @@
 4. **Landing per-verticale 9 settori**: produzione tramite skill `fluxion-landing-generator`. Trigger: post P0+P1 working.
 5. **Video demo Sara per verticale**: produzione tramite skill `fluxion-video-creator`. 1 settore alla volta. Trigger: post P5 outreach iniziato.
 6. **Switch Twilio post-1°-revenue**: monitorare arrivo primo bonifico €497. Trigger acquisto numero dedicato + setup persona "Erica Fluxion" su profilo WA Twilio.
+7. **D-05 implementazione (P0 pre-launch)**: ephemeral port HTTP Bridge + Voice Pipeline. Owner: backend-architect + frontend-developer + voice-engineer. Effort ~6-8h sessione dedicata. Trigger: prima sessione post-S254 con context <40% baseline.
+8. **D-06 research (modulo magazzino)**: spawn `vertical-researcher` + `ux-researcher` agents per discriminare opzioni A/B/C/D + identificare verticali target + competitor benchmark Fresha/Treatwell/Mindbody/Vagaro. Trigger: post Cat 3 close + D-05 done.
