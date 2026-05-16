@@ -9,7 +9,9 @@ Account Oracle Cloud Free Tier **attivato**:
 - Cloud Account: `gianlucadistasi81`
 - Username: `gianlucadistasi81@gmail.com`
 - Tenancy: `gianlucadistasi81`
-- Home region scelta: **Frankfurt** (assunto, da confermare al restart in console)
+- Home region scelta: **Italy Northwest / Milan (`eu-milan-1`)** — CONFERMATO da Luke 2026-05-16, LOCKED per Always Free (non cambiabile)
+- Availability Domain: **eu-milan-1-AD-1** (single-AD region, no fallback AD-2/AD-3)
+- Strategia OOC: retry loop su AD-1 con exponential backoff (Milan meno saturata di Frankfurt storicamente)
 
 ## CREDENTIAL GIÀ GENERATE SU MACBOOK (NON ripetere generazione)
 
@@ -33,7 +35,7 @@ Account Oracle Cloud Free Tier **attivato**:
 - [ ] P1 Step 2.3 — Luke copia "Configuration File Preview" da console e incolla in chat (user OCID, tenancy OCID, region, fingerprint)
 - [ ] P1 Step 3 — Claude scrive ~/.oci/config + test `oci iam region list`
 - [ ] P1 Step 4 — Claude crea VCN + subnet + IGW + security list via CLI
-- [ ] P1 Step 5 — Claude launch ARM A1 instance Ubuntu 22.04 4 OCPU 24GB Frankfurt AD-1 con SSH pub key embedded, retry loop OOC su AD-2/AD-3
+- [ ] P1 Step 5 — Claude launch ARM A1 instance Ubuntu 22.04 4 OCPU 24GB Milan AD-1 con SSH pub key embedded, retry loop OOC con backoff (single-AD region)
 - [ ] P1 Step 6 — Claude output Public IP + scrive ~/.ssh/config alias `oracle-arm` + test connect
 
 ## PROSSIMI 3 COMANDI AL RESTART
@@ -68,7 +70,7 @@ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPxpm38IQhgxQlQxQUTF0UxB4VG3WL9LPgVeG5r76zc6
 
 ## VINCOLI CONFERMATI
 
-- Region Frankfurt (Always Free supports ARM A1 Flex)
+- Region Milan eu-milan-1 (Always Free supports ARM A1 Flex, home region locked)
 - Shape: `VM.Standard.A1.Flex` OCPU=4 RAM=24GB
 - Image: Canonical Ubuntu 22.04 (NON 24.04, NON Oracle Linux)
 - Boot volume: default 47GB (limite gratuito 200GB block storage)
