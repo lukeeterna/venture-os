@@ -1,18 +1,18 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-05-18T18:00:51Z`
+**Generato**: `2026-05-18T18:05:30Z`
 **Sessione**: `5c1a196f-1a9d-4377-8edd-6257cefdc711`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: committed: baa752a
-**Last commit**: `baa752a auto-close session 5c1a196f-1a9d-4377-8edd-6257cefdc711 @ 2026-05-18T18:00:51Z`
+**Commit auto**: committed: ec5ea40
+**Last commit**: `ec5ea40 auto-close session 5c1a196f-1a9d-4377-8edd-6257cefdc711 @ 2026-05-18T18:05:30Z`
 
 ## Ultimi 5 commit
 ```
+ec5ea40 auto-close session 5c1a196f-1a9d-4377-8edd-6257cefdc711 @ 2026-05-18T18:05:30Z
 baa752a auto-close session 5c1a196f-1a9d-4377-8edd-6257cefdc711 @ 2026-05-18T18:00:51Z
 d316c07 auto-close session c5118b5e-5777-49f9-8147-a39c285a98ed @ 2026-05-18T17:53:39Z
 64988f1 auto-close session c5118b5e-5777-49f9-8147-a39c285a98ed @ 2026-05-18T17:51:29Z
 6c9642b S181 WAVE 3 done: P9 cc-meta-monitor + P6 plan-and-execute
-b221704 auto-close session c5118b5e-5777-49f9-8147-a39c285a98ed @ 2026-05-18T09:15:00Z
 ```
 
 ## File modificati nell'ultimo commit
@@ -22,14 +22,14 @@ M	.claude/NEXT_SESSION_PROMPT.md
 
 ## Ultimo prompt utente (estratto)
 ```
-[{"tool_use_id":"toolu_01MpNuNQhztfdqWk6E8gvifG","type":"tool_result","content":"1\t# HANDOFF S181 — CC Autonomy + Orchestration Setup\n2\t\n3\t> Generato S180 (2026-05-16) post critica Luke \"CC deve operare autonomo, delegare, creare strumenti se servono\".\n4\t> **Vincolo nuovo non sindacabile**: Claude Code DEVE delegare proattivamente a sub-agents/skills/LLM economici. Pattern S159 ricaduta (non delegare → faccio io più veloce → context bloat + qualità mediocre) deve essere prevenut
+[{"tool_use_id":"toolu_018EREQZV7jGGWGQFPWZ5ZB8","type":"tool_result","content":"1\t# Brief mattutino — 18 maggio 2026\n2\t\n3\t## Risorse\n4\t- **MacBook**: CPU 79.7%, RAM 58.7%, Data SSD 81.2%, T7 1.9%, uptime 0.04h\n5\t- **iMac**: CPU 57.3%, RAM 63.7%, Data SSD 42.9%, T7 0.0%, uptime 95.26h\n6\t\n7\t## Progetti\n8\t- **ARGOS**: 9 DB, principale `dealer_network.sqlite` 6 tabelle — dealers=18, market_listings=0, market_price_changes=0 | handoff 0/2000 righe\n9\t- **FLUXION**: 16 DB, princip
 ```
 
 ## Ultimi turni assistant
 ```
-- `session-health WARN sid=75bcc75b` (vincolo #7 chiudi sessione vecchia)
-**Prossimo step concreto che propongo**: piano JSON ARGOS competitor (3 subtask: scrape competitor pages micro-dealer commissione + estrai pricing/value-prop + sintesi differenziale Luca Ferretti) → `plan_execute.py` → cost reale + delegation reale.
-Procedo a costruire piano JSON, o vuoi prima check su uno dei flag brief (routing-drift / DECISIONS malformed)?
+Aggiungere a `~/.zshrc` un alias `brief` che stampa brief del giorno. Quando apri terminal in venture-os, lanci `brief` (o lo metti in auto-run nello shell init) e vedi subito tutto **prima** di parlare con me. Manteniamo anche l'injection nel mio context così abbiamo sync brief-Claude e brief-Luke.
+**Alternativa più automatica**: hook `SessionStart` aggiunge stampa stderr del brief — verifico se CC mostra stderr hook nel terminale (doc Anthropic dice no per UserPromptSubmit, ma SessionStart potrebbe differire).
+**Raccomandazione singola** (vincolo #3): faccio alias `brief` + modifico hook per fare anche un `tee` su `/tmp/vos-last-brief.md` così Luke ha sempre file accessibile da terminale. 30 secondi di setup. Procedo?
 ```
 
 ## Come riprendere
