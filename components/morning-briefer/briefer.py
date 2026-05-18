@@ -30,6 +30,7 @@ SARA_GATE_RUNS = VOS_ROOT / "state" / "sara-gate-runs.jsonl"
 ROUTING_DRIFT = VOS_ROOT / "state" / "routing-drift.jsonl"
 DECISION_VALIDATION = VOS_ROOT / "state" / "decision-validation.jsonl"
 SESSION_HEALTH = VOS_ROOT / "state" / "session-health.jsonl"
+RECOMMENDED_PROMPT_HISTORY = VOS_ROOT / "state" / "recommended-prompt-history.jsonl"
 BRIEFS_DIR = VOS_ROOT / "briefs"
 BRIEFS_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -495,6 +496,134 @@ def _run_decision_validator() -> None:
         _log_error("decision-validator invoke fail", e)
 
 
+# Mapping anomalie → (signature, template). Hardcoded V1 (refactor a YAML solo se >5 regole).
+# signature = chiave stabile per anti-stale tracking (NON il testo del prompt, che può cambiare).
+_ARGOS_CRITICAL_TABLES = ("market_listings", "market_price_changes")
+
+
+def _detect_anomaly(projects: dict) -> Optional[dict]:
+    """Ritorna {signature, prompt} top-priority o None. Priorità: anomalia DB > DECISIONS > no_db."""
+    # P1: ARGOS scraping fermo (tabelle critiche vuote)
+    argos = (projects or {}).get("ARGOS")
+    if argos:
+        main_db = _select_main_db(argos.get("db_files", []))
+        if main_db:
+            probe = _probe_db_readonly(main_db)
+            if probe:
+                empty = [t for t in _ARGOS_CRITICAL_TABLES if probe["counts"].get(t) == 0]
+                if empty:
+                    return {
+                        "signature": f"argos_empty_{'_'.join(empty)}",
+                        "prompt": (
+                            f"ARGOS: {', '.join(empty)} =0. Indaga scraper "
+                            f"(WA daemon duplicate bug? bot detection? cron non gira?). "
+                            f"Tool candidato: invisible_playwright se bot-detected. "
+                            f"Verifica se stato atteso prima di agire."
+                        ),
+                    }
+
+    # P2: DECISIONS.md malformed (last entry decision-validation.jsonl)
+    if DECISION_VALIDATION.exists():
+        try:
+            with open(DECISION_VALIDATION) as f:
+                last = None
+                for ln in f:
+                    ln = ln.strip()
+                    if ln:
+                        last = ln
+            if last:
+                d = json.loads(last)
+                malformed = d.get("malformed_by_project") or {}
+                # cerca progetto con count > 0
+                offender = next(((p, c) for p, c in malformed.items() if c and c > 0), None)
+                if offender:
+                    pname, count = offender
+                    return {
+                        "signature": f"decisions_malformed_{pname}",
+                        "prompt": (
+                            f"Fix DECISIONS.md malformed: {pname} ({count} entry). "
+                            f"Review wiki/projects/{pname}/DECISIONS.md, ripristina sintassi D-XX."
+                        ),
+                    }
+        except Exception as e:  # noqa: BLE001
+            _log_error("decision-validation parse fail", e)
+
+    # P3: progetto senza DB rilevati
+    for pname, pinfo in (projects or {}).items():
+        if len(pinfo.get("db_files", [])) == 0:
+            return {
+                "signature": f"no_db_{pname}",
+                "prompt": (
+                    f"{pname}: 0 DB rilevati in inventory. "
+                    f"Verifica path projects-inventory.yaml o progetto fermo."
+                ),
+            }
+
+    return None
+
+
+def _prompt_stale_days(signature: str, today: date) -> int:
+    """Conta giorni consecutivi (immediatamente precedenti oggi) con stessa signature. 0 = primo giorno."""
+    if not RECOMMENDED_PROMPT_HISTORY.exists():
+        return 0
+    try:
+        with open(RECOMMENDED_PROMPT_HISTORY) as f:
+            entries = [json.loads(ln) for ln in f if ln.strip()]
+    except Exception as e:  # noqa: BLE001
+        _log_error("prompt-history read fail", e)
+        return 0
+
+    # ordina per data decrescente, conta consecutivi con stessa signature partendo da ieri
+    by_date = {e.get("date"): e.get("signature") for e in entries if e.get("date")}
+    count = 0
+    d = today
+    from datetime import timedelta
+    while True:
+        d = d - timedelta(days=1)
+        sig = by_date.get(d.isoformat())
+        if sig == signature:
+            count += 1
+        else:
+            break
+    return count
+
+
+def _append_prompt_history(signature: str, today: date) -> None:
+    """Append idempotente: skip se entry stessa data+signature già presente (multiple run/giorno)."""
+    try:
+        iso = today.isoformat()
+        if RECOMMENDED_PROMPT_HISTORY.exists():
+            with open(RECOMMENDED_PROMPT_HISTORY) as f:
+                for ln in f:
+                    if not ln.strip():
+                        continue
+                    try:
+                        d = json.loads(ln)
+                    except Exception:
+                        continue
+                    if d.get("date") == iso and d.get("signature") == signature:
+                        return  # già scritto oggi
+        entry = {"date": iso, "signature": signature}
+        with open(RECOMMENDED_PROMPT_HISTORY, "a") as f:
+            f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+    except Exception as e:  # noqa: BLE001
+        _log_error("prompt-history write fail", e)
+
+
+def _recommended_prompt(projects: dict, today: date) -> Optional[str]:
+    """Ritorna stringa pronta per il brief (con eventuale suffix anti-stale), o None."""
+    anomaly = _detect_anomaly(projects)
+    if not anomaly:
+        return None
+    sig = anomaly["signature"]
+    text = anomaly["prompt"]
+    stale = _prompt_stale_days(sig, today)
+    if stale > 0:
+        text += f" (ripetuto {stale}gg)"
+    _append_prompt_history(sig, today)
+    return text
+
+
 def build_brief(today: date) -> str:
     _run_decision_validator()
     inv = _read_inventory()
@@ -522,6 +651,13 @@ def build_brief(today: date) -> str:
             lines.append(f"- {s}")
         lines.append("")
 
+    # Azione consigliata oggi (S-NEW: top anomaly → prompt operativo, con anti-stale)
+    rec = _recommended_prompt(projects, today)
+    if rec:
+        lines.append("## Azione consigliata oggi")
+        lines.append(rec)
+        lines.append("")
+
     # AI tools rilevanti questa settimana (Layer 1 tool-scout GitHub filtered by capability-needs)
     gh_top = _tool_landscape_top_github_by_project(top_n=3)
     if gh_top:
@@ -542,12 +678,10 @@ def build_brief(today: date) -> str:
     lines.append(f"echo '{payload}' >> ~/venture-os/state/brief-actions.jsonl")
     lines.append("```")
 
-    # Trim a 50 righe priorità: Risorse > Segnali > Progetti > Footer
-    if len(lines) > 50:
-        # Strategia: rimuovi segnali eccedenti partendo dal basso fino a rientrare
-        # (mantiene sempre Risorse + Progetti + Footer)
-        _log_error(f"brief sopra 50 righe ({len(lines)}), trim segnali")
-        lines = lines[:50]
+    # Trim a 60 righe (era 50, alzato per "Azione consigliata oggi")
+    if len(lines) > 60:
+        _log_error(f"brief sopra 60 righe ({len(lines)}), trim coda")
+        lines = lines[:60]
     return "\n".join(lines) + "\n"
 
 
