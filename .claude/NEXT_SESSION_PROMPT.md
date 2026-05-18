@@ -1,36 +1,35 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-05-18T08:43:45Z`
+**Generato**: `2026-05-18T08:44:16Z`
 **Sessione**: `af302b7a-6d6e-4972-8a53-ddc925c1102f`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: committed: 55feed4
-**Last commit**: `55feed4 auto-close session af302b7a-6d6e-4972-8a53-ddc925c1102f @ 2026-05-18T08:43:45Z`
+**Commit auto**: committed: bac8883
+**Last commit**: `bac8883 auto-close session af302b7a-6d6e-4972-8a53-ddc925c1102f @ 2026-05-18T08:44:16Z`
 
 ## Ultimi 5 commit
 ```
+bac8883 auto-close session af302b7a-6d6e-4972-8a53-ddc925c1102f @ 2026-05-18T08:44:16Z
 55feed4 auto-close session af302b7a-6d6e-4972-8a53-ddc925c1102f @ 2026-05-18T08:43:45Z
 3aee304 auto-close session af302b7a-6d6e-4972-8a53-ddc925c1102f @ 2026-05-18T08:42:15Z
 edf460e auto-close session af302b7a-6d6e-4972-8a53-ddc925c1102f @ 2026-05-18T08:41:26Z
 4ae10a3 auto-close session af302b7a-6d6e-4972-8a53-ddc925c1102f @ 2026-05-18T08:38:52Z
-82be9f7 auto-close session af302b7a-6d6e-4972-8a53-ddc925c1102f @ 2026-05-18T08:35:48Z
 ```
 
 ## File modificati nell'ultimo commit
 ```
 M	.claude/NEXT_SESSION_PROMPT.md
-M	state/cc-violations.jsonl
 ```
 
 ## Ultimo prompt utente (estratto)
 ```
-Una sola conferma da te ora: vuoi il pre-push check git log --oneline imac/master..HEAD o vai diretto col push? , dimmi se ci stimo dilungando oppure è utile
+come riparto con VOS?
 ```
 
 ## Ultimi turni assistant
 ```
-# poi: cat .claude/NEXT_SESSION_PROMPT.manual.md
-```
-Sessione VOS chiusa **VERDE**. Buona caccia ARGOS S172.
+- Commit master `c4db718` (sync iMac OK)
+- Prompt ARGOS S172 e Claude.ai workflow assemblati in wiki/state
+Non serve incollarti niente. Apri e basta, io so dove riprendere.
 ```
 
 ## Come riprendere
