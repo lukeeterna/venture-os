@@ -1,36 +1,36 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-05-18T07:18:07Z`
+**Generato**: `2026-05-18T07:24:04Z`
 **Sessione**: `af302b7a-6d6e-4972-8a53-ddc925c1102f`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: committed: 6820b1d
-**Last commit**: `6820b1d auto-close session af302b7a-6d6e-4972-8a53-ddc925c1102f @ 2026-05-18T07:18:07Z`
+**Commit auto**: committed: 452957f
+**Last commit**: `452957f auto-close session af302b7a-6d6e-4972-8a53-ddc925c1102f @ 2026-05-18T07:24:04Z`
 
 ## Ultimi 5 commit
 ```
+452957f auto-close session af302b7a-6d6e-4972-8a53-ddc925c1102f @ 2026-05-18T07:24:04Z
 6820b1d auto-close session af302b7a-6d6e-4972-8a53-ddc925c1102f @ 2026-05-18T07:18:07Z
 b680921 auto-close session af302b7a-6d6e-4972-8a53-ddc925c1102f @ 2026-05-18T07:11:10Z
 dac1fd7 auto-close session af302b7a-6d6e-4972-8a53-ddc925c1102f @ 2026-05-18T06:43:32Z
 2f0e53d auto-close session af302b7a-6d6e-4972-8a53-ddc925c1102f @ 2026-05-18T06:39:23Z
-cca828e auto-close session af302b7a-6d6e-4972-8a53-ddc925c1102f @ 2026-05-18T06:37:01Z
 ```
 
 ## File modificati nell'ultimo commit
 ```
 M	.claude/NEXT_SESSION_PROMPT.md
-D	.claude/SESSION_DIRTY.md
+M	briefs/2026-05-18.md
 ```
 
 ## Ultimo prompt utente (estratto)
 ```
-[{"tool_use_id":"toolu_01WbaA2zDwGJTWepfzd5rXpN","type":"tool_result","content":"The file /Users/macbook/.claude/projects/-Volumes-MontereyT7-venture-os/memory/MEMORY.md has been updated successfully."}]
+[{"tool_use_id":"toolu_01QBveXpduMdMu3BsmPGvz4S","type":"tool_result","content":"=== 1. costs.jsonl popolato? ===\n-rw-r--r--  1 macbook  staff  17524 16 Mag 23:15 /Volumes/MontereyT7/venture-os/state/costs.jsonl\n      55 /Volumes/MontereyT7/venture-os/state/costs.jsonl\n\n=== 2. briefer.py runtime reale ===\n/usr/local/opt/python@3.13/bin/python3  > /dev/null 2>&1  0,29s user 0,13s system 67% cpu 0,627 total\n\n=== 3. Pattern flock già usato? ===\n/Volumes/MontereyT7/venture-os/components//cl
 ```
 
 ## Ultimi turni assistant
 ```
----
-## E ora il commit WAVE 2
-Hai detto "direi di sì". Procedo commit `S181 WAVE 2 done: agent factory + reviewer chain (P2+P7)` su repo VOS (2 file modificati: HANDOFF + MEMORY appena aggiornato + l'eventuale NEXT_SESSION_PROMPT.md). Confermi una seconda volta? Poi chiudo VOS verde e domani (o quando rientri) apriamo brief pattern + WAVE 3.
+Luke: prima di mandare la mia risposta a Claude.ai, c'è qualcosa che vuoi cambiare nei 7 default? Specialmente:
+- Punto 5 (pattern propose-confirm) ti convince?
+- `[health]` come tag separato o derivato da duration (`>1h` = pesante schiena)?
 ```
 
 ## Come riprendere
