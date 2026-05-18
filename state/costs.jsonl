@@ -53,3 +53,36 @@
 {"ts": "2026-05-16T21:14:05.842021+00:00", "model": "gemini-2.5-flash", "provider": "google", "role": "long_context", "in_tok": 37, "out_tok": 129, "cost_usd": 0.0, "latency_ms": 8483}
 {"ts": "2026-05-16T21:14:14.955416+00:00", "model": "deepseek/deepseek-chat", "provider": "openrouter", "role": "code_review", "in_tok": 25, "out_tok": 304, "cost_usd": 0.000279, "latency_ms": 8935}
 {"ts": "2026-05-16T21:15:35.205831+00:00", "model": "gemini-2.5-flash", "provider": "google", "role": "cheap", "in_tok": 77, "out_tok": 62, "cost_usd": 0.0, "latency_ms": 7010}
+{"ts": "2026-05-18T17:43:48Z", "model": "mock/long_context", "role": "long_context", "in_tok": 12, "out_tok": 14, "cost_usd": 0.0, "latency_ms": 134, "plan_id": "plan_mock_test_001", "subtask_id": "s1"}
+{"ts": "2026-05-18T17:43:48Z", "model": "mock/code_review", "role": "code_review", "in_tok": 10, "out_tok": 12, "cost_usd": 0.0, "latency_ms": 180, "plan_id": "plan_mock_test_001", "subtask_id": "s2"}
+{"ts": "2026-05-18T17:43:48Z", "model": "mock/long_context", "role": "long_context", "in_tok": 13, "out_tok": 14, "cost_usd": 0.0, "latency_ms": 138, "plan_id": "plan_mock_test_001", "subtask_id": "s3"}
+{"ts": "2026-05-18T17:43:48Z", "model": "mock/long_context", "role": "long_context", "in_tok": 97, "out_tok": 14, "cost_usd": 0.0, "latency_ms": 122, "plan_id": "plan_mock_test_001", "subtask_id": "aggregator"}
+{"ts": "2026-05-18T17:44:00Z", "model": "mock/cheap", "role": "cheap", "in_tok": 4, "out_tok": 8, "cost_usd": 0.0, "latency_ms": 261, "plan_id": "plan_mock_deps_001", "subtask_id": "s1"}
+{"ts": "2026-05-18T17:44:00Z", "model": "mock/cheap", "role": "cheap", "in_tok": 6, "out_tok": 8, "cost_usd": 0.0, "latency_ms": 275, "plan_id": "plan_mock_deps_001", "subtask_id": "s2"}
+{"ts": "2026-05-18T17:44:00Z", "model": "mock/cheap", "role": "cheap", "in_tok": 6, "out_tok": 8, "cost_usd": 0.0, "latency_ms": 189, "plan_id": "plan_mock_deps_001", "subtask_id": "s3"}
+{"ts": "2026-05-18T17:44:00Z", "model": "mock/long_context", "role": "long_context", "in_tok": 81, "out_tok": 14, "cost_usd": 0.0, "latency_ms": 289, "plan_id": "plan_mock_deps_001", "subtask_id": "aggregator"}
+{"ts": "2026-05-18T17:45:27Z", "model": "mock/reasoning", "role": "reasoning", "in_tok": 2, "out_tok": 8, "cost_usd": 0.0, "latency_ms": 112, "plan_id": "plan_mock_high_cost", "subtask_id": "s1"}
+{"ts": "2026-05-18T17:45:27Z", "model": "mock/reasoning", "role": "reasoning", "in_tok": 2, "out_tok": 8, "cost_usd": 0.0, "latency_ms": 140, "plan_id": "plan_mock_high_cost", "subtask_id": "s1"}
+{"ts": "2026-05-18T17:45:27Z", "model": "mock/reasoning", "role": "reasoning", "in_tok": 2, "out_tok": 8, "cost_usd": 0.0, "latency_ms": 298, "plan_id": "plan_mock_high_cost", "subtask_id": "s1"}
+{"ts": "2026-05-18T17:45:27Z", "model": "mock/reasoning", "role": "reasoning", "in_tok": 2, "out_tok": 8, "cost_usd": 0.0, "latency_ms": 277, "plan_id": "plan_mock_high_cost", "subtask_id": "s1"}
+{"ts": "2026-05-18T17:45:27Z", "model": "mock/reasoning", "role": "reasoning", "in_tok": 2, "out_tok": 8, "cost_usd": 0.0, "latency_ms": 297, "plan_id": "plan_mock_high_cost", "subtask_id": "s1"}
+{"ts": "2026-05-18T17:45:28Z", "model": "mock/long_context", "role": "long_context", "in_tok": 103, "out_tok": 14, "cost_usd": 0.0, "latency_ms": 240, "plan_id": "plan_mock_high_cost", "subtask_id": "aggregator"}
+{"ts": "2026-05-18T17:45:35.387854+00:00", "model": "deepseek/deepseek-chat", "provider": "openrouter", "role": "reasoning", "in_tok": 7, "out_tok": 89, "cost_usd": 8.1e-05, "latency_ms": 6818}
+{"ts": "2026-05-18T17:45:35Z", "model": "deepseek/deepseek-chat", "role": "reasoning", "in_tok": 7, "out_tok": 89, "cost_usd": 8.1e-05, "latency_ms": 7096, "plan_id": "test_cost_block", "subtask_id": "s2"}
+{"ts": "2026-05-18T17:45:35.582228+00:00", "model": "deepseek/deepseek-chat", "provider": "openrouter", "role": "reasoning", "in_tok": 7, "out_tok": 99, "cost_usd": 9e-05, "latency_ms": 7013}
+{"ts": "2026-05-18T17:45:35Z", "model": "deepseek/deepseek-chat", "role": "reasoning", "in_tok": 7, "out_tok": 99, "cost_usd": 9e-05, "latency_ms": 7285, "plan_id": "test_cost_block", "subtask_id": "s3"}
+{"ts": "2026-05-18T17:45:40.406133+00:00", "model": "deepseek/deepseek-chat", "provider": "openrouter", "role": "reasoning", "in_tok": 7, "out_tok": 178, "cost_usd": 0.000161, "latency_ms": 11834}
+{"ts": "2026-05-18T17:45:40Z", "model": "deepseek/deepseek-chat", "role": "reasoning", "in_tok": 7, "out_tok": 178, "cost_usd": 0.000161, "latency_ms": 12108, "plan_id": "test_cost_block", "subtask_id": "s1"}
+{"ts": "2026-05-18T17:45:43.257547+00:00", "model": "deepseek/deepseek-chat", "provider": "openrouter", "role": "reasoning", "in_tok": 7, "out_tok": 52, "cost_usd": 4.9e-05, "latency_ms": 7572}
+{"ts": "2026-05-18T17:45:43Z", "model": "deepseek/deepseek-chat", "role": "reasoning", "in_tok": 7, "out_tok": 52, "cost_usd": 4.9e-05, "latency_ms": 7832, "plan_id": "test_cost_block", "subtask_id": "s4"}
+{"ts": "2026-05-18T17:45:44.717501+00:00", "model": "deepseek/deepseek-chat", "provider": "openrouter", "role": "reasoning", "in_tok": 7, "out_tok": 114, "cost_usd": 0.000104, "latency_ms": 4144}
+{"ts": "2026-05-18T17:45:44Z", "model": "deepseek/deepseek-chat", "role": "reasoning", "in_tok": 7, "out_tok": 114, "cost_usd": 0.000104, "latency_ms": 4312, "plan_id": "test_cost_block", "subtask_id": "s6"}
+{"ts": "2026-05-18T17:45:47.303023+00:00", "model": "deepseek/deepseek-chat", "provider": "openrouter", "role": "reasoning", "in_tok": 7, "out_tok": 130, "cost_usd": 0.000118, "latency_ms": 11516}
+{"ts": "2026-05-18T17:45:47Z", "model": "deepseek/deepseek-chat", "role": "reasoning", "in_tok": 7, "out_tok": 130, "cost_usd": 0.000118, "latency_ms": 11710, "plan_id": "test_cost_block", "subtask_id": "s5"}
+{"ts": "2026-05-18T17:45:51.888217+00:00", "model": "deepseek/deepseek-chat", "provider": "openrouter", "role": "reasoning", "in_tok": 7, "out_tok": 99, "cost_usd": 9e-05, "latency_ms": 8457}
+{"ts": "2026-05-18T17:45:51Z", "model": "deepseek/deepseek-chat", "role": "reasoning", "in_tok": 7, "out_tok": 99, "cost_usd": 9e-05, "latency_ms": 8628, "plan_id": "test_cost_block", "subtask_id": "s7"}
+{"ts": "2026-05-18T17:46:03.319777+00:00", "model": "gemini-2.5-flash", "provider": "google", "role": "long_context", "in_tok": 892, "out_tok": 558, "cost_usd": 0.0, "latency_ms": 11246}
+{"ts": "2026-05-18T17:46:20Z", "model": "mock/long_context", "role": "long_context", "in_tok": 12, "out_tok": 14, "cost_usd": 0.0, "latency_ms": 131, "plan_id": "plan_mock_test_001", "subtask_id": "s1"}
+{"ts": "2026-05-18T17:46:20Z", "model": "mock/code_review", "role": "code_review", "in_tok": 10, "out_tok": 12, "cost_usd": 0.0, "latency_ms": 164, "plan_id": "plan_mock_test_001", "subtask_id": "s2"}
+{"ts": "2026-05-18T17:46:21Z", "model": "mock/long_context", "role": "long_context", "in_tok": 13, "out_tok": 14, "cost_usd": 0.0, "latency_ms": 286, "plan_id": "plan_mock_test_001", "subtask_id": "s3"}
+{"ts": "2026-05-18T17:46:21Z", "model": "mock/long_context", "role": "long_context", "in_tok": 97, "out_tok": 14, "cost_usd": 0.0, "latency_ms": 235, "plan_id": "plan_mock_test_001", "subtask_id": "aggregator"}

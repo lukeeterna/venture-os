@@ -578,6 +578,68 @@ Cosa NON faresti in questo piano se fossi tu, e perché?
 
 ---
 
+## STATO LASCIATO IN S181 WAVE 3 (DONE — 2026-05-18 chiusura verde)
+
+**WAVE 3 completata** (P8 eval-tracker + P9 meta-monitor + P6 plan-and-execute):
+
+| Item | Path | Stato |
+|------|------|-------|
+| P8 eval module | `components/eval-tracker/eval.py` + `eval_dashboard_core.py` | ✓ 18KB, T7 mount guard + fallback |
+| P8 dashboard script | `scripts/eval-dashboard.sh` | ✓ 4.6KB, logrotate weekly su eval.jsonl + delegation-enforcement.jsonl |
+| P8 LaunchAgent | `~/Library/LaunchAgents/com.vos.eval-dashboard.plist` | ✓ ATTIVO 07:00 daily (`launchctl list` confirmed) |
+| P8 auto-review hook | `~/.claude/hooks/auto_code_review.py` | ✓ PostToolUse Edit\|Write, threshold 20 righe, registered settings.json |
+| P9 meta-monitor agent | `~/.claude/agents/cc-meta-monitor.md` | ✓ 3.5KB sonnet tools=[Read,Glob,Grep,Bash] |
+| P9 monitor script | `components/cc-meta-monitor/monitor.py` | ✓ 27KB, 5 anti-pattern rules (delegation_gap, search_loop, edit_revert, context_pollution, blind_execution) |
+| P9 LaunchAgent | `~/Library/LaunchAgents/com.vos.cc-meta-monitor.plist` | ✓ ATTIVO ogni 30min (`launchctl list` confirmed) |
+| P6 plan-execute | `components/llm-router/plan_execute.py` | ✓ 23KB, parallel thread pool 3 concurrent, topological deps, cost gate $1 |
+| P6 router skill ext | `~/.claude/skills/vos-auto-router/SKILL.md` | ✓ 13.7KB, sezione plan-and-execute added |
+
+**Test E2E 13/13 PASS** (5 P8 + 8 P9+P6).
+
+**Real-time validation**: 3 entry già in `state/cc-anti-patterns.jsonl` da sessione corrente S181 WAVE 1+2+3 (rilevato `delegation_gap` HIGH count=15 — monitor funziona, ironia auto-rilevante).
+
+**Settings.json patch P8**: backup `.bak.s181-wave3-20260518-105842`, PostToolUse hook entry aggiunto, JSON valid post-patch.
+
+**Critica strutturale rilevata WAVE 3 (da affrontare S182+)**:
+- **Edit-revert detection fragile** (P9 monitor): confronta stringhe esatte, pattern reale Luke "rifai" produce Edit diversi non invertibili. Fix S182: track Edit su stesso file entro 3 turn indipendente da contenuto.
+- **monitor.py RAM blow-up** se sessione >5k turns (T7 USB load >5s). Fix: streaming parse line-by-line.
+- **Threshold 20 righe auto_code_review** aggressivo per refactor TSX FLUXION → alert fatigue rischio. Fix: override per-progetto via `~/.claude/settings.local.json`.
+- **plan_execute costs.jsonl duplicati** se stesso `plan_id` re-run. Fix: dedup pre-append in costs.jsonl writer.
+- **EUR/USD rate hardcoded 1.10** in eval-dashboard. Fix: move config + auto-refresh weekly.
+- **Timezone format silent skip** (`Z` vs `+00:00`) in eval_dashboard_core. Fragile, fix robusto datetime.fromisoformat with normalization.
+
+**Comandi attivazione LaunchAgent eseguiti S181 WAVE 3**:
+```bash
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.vos.eval-dashboard.plist     # DONE
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.vos.cc-meta-monitor.plist    # DONE
+```
+
+Rollback (se necessario):
+```bash
+launchctl bootout gui/$(id -u) ~/Library/LaunchAgents/com.vos.eval-dashboard.plist
+launchctl bootout gui/$(id -u) ~/Library/LaunchAgents/com.vos.cc-meta-monitor.plist
+```
+
+**Esempio plan-execute pronto per Luke** (cost stimato ~$0.00 gemini-flash free + deepseek $0.0006):
+```bash
+# Salva in /tmp/piano_argos.json (3 subtask: competitor + commissione + sintesi)
+python3 /Volumes/MontereyT7/venture-os/components/llm-router/plan_execute.py /tmp/piano_argos.json
+```
+
+**Commit WAVE 3**: file `~/.claude/` (scope globale vincolo #12) fuori repo VOS. VOS repo commit contiene:
+- `components/eval-tracker/` (P8)
+- `components/cc-meta-monitor/` (P9)
+- `components/llm-router/plan_execute.py` (P6)
+- `scripts/eval-dashboard.sh` (P8)
+- update HANDOFF S181 (questo file)
+
+**Entry point S182** (post-WAVE 3):
+1. **Opzione A — Applica WAVE 3 a use case reale**: prima invocazione plan_execute con piano ARGOS competitor analysis. Misura cost reale vs stimato.
+2. **Opzione B — WAVE 3 critiche fix**: prossima sessione affronta 6 critiche elencate sopra prima di scaling.
+3. **Opzione C — ARGOS S172 deliverable merge** (workspace separato `~/Documents/combaretrovamiauto-enterprise`).
+
+---
+
 ## STATO LASCIATO IN S180
 
 - **Loop Oracle ARM A1** retry attivo background (PID 81238, log /tmp/oracle-launch-retry.log, monitor task ba3xdsccp). 
