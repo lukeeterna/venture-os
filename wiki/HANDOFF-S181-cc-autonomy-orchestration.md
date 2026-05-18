@@ -545,6 +545,39 @@ Cosa NON faresti in questo piano se fossi tu, e perché?
 
 ---
 
+## STATO LASCIATO IN S181 WAVE 2 (DONE — 2026-05-18 chiusura verde)
+
+**WAVE 2 completata** (P2 agent-factory + P7 reviewer chain):
+
+| Item | Path | Stato |
+|------|------|-------|
+| P2 agent-factory skill | `~/.claude/skills/vos-agent-factory/SKILL.md` | ✓ 8.7KB, registered in skill list |
+| P2 generation dir | `~/.claude/agents/_generated/` | ✓ created empty |
+| P7 code reviewer | `~/.claude/agents/code-reviewer.md` | ✓ 5.8KB sonnet-4-6 tools=[Read,Bash,Glob,Grep] |
+| P7 research fact-checker | `~/.claude/agents/research-fact-checker.md` | ✓ 6.5KB sonnet-4-6 tools=[WebSearch,WebFetch,Read] |
+| P7 decision validator | `~/.claude/agents/decision-validator.md` | ✓ 9.4KB sonnet-4-6 tools=[Read,Glob,Grep] |
+
+**Decisioni founder OQ-S181 chiuse**:
+- OQ-S181-1 = **two-tier €15 soft (auto-downgrade :free) / €30 hard (block)**. Vincolo #5 inviolato, alert preventivo a target operativo handoff.
+- OQ-S181-2 = **`~/.claude/agents/_generated/` subdir**. Audit + cleanup + namespace segregation.
+- OQ-S181-3 = **skip flag `[no-delegate:<reason>]` con reason whitelist** [`one-step`, `cached-context`, `read-only`, `human-research`]. Reason fuori whitelist = warning no skip. Implementazione hook deferred (no modifica WAVE 2 al hook P0 esistente).
+
+**Critica strutturale rilevata dall'agent ai-engineer (da affrontare WAVE 3)**:
+- T7 mount check assente in agent-factory protocol — se T7 non montato, audit jsonl fallisce silenzioso. **Azione WAVE 3**: aggiungere `os.path.ismount('/Volumes/MontereyT7')` guard.
+- `dispatch-matrix.jsonl` cresce senza consumer fino a P9 meta-monitor (S182+). Accettabile latente.
+- `_generated/` cap 50 raggiunto a ritmo 2/settimana in 6 mesi — qualità media degrada senza review umana periodica. **Azione**: review trimestrale manuale o auto-archive >90gg unused.
+- WebSearch geografico US-only → research-fact-checker UNVERIFIABLE da Italia su molti claim. **Azione**: fallback WebFetch direct su 2+ URL noti come secondary source minimum.
+- Pattern S159 ricaduta: reviewer chain manuale → main salta review sotto pressione contesto. **Azione WAVE 3 P8**: PostToolUse hook `auto_code_review.py` su Edit/Write con diff_lines >20 estensioni `[.py,.sh,.ts,.tsx]` auto-spawn code-reviewer. Latency cost: 3-8s/Edit accettabile.
+
+**Entry point WAVE 3** (P6+P8+P9):
+1. Spawn `devops-automator` con prompt P8 (eval framework + dashboard cron + PostToolUse auto_code_review hook) → return components/eval-tracker/ + hook script + settings.json patch
+2. Spawn `ai-engineer` con prompt P9 (meta-monitor agent + components/cc-meta-monitor/) + P6 (vos-auto-router plan-and-execute extension) → return monitor.py + router extension
+3. Test E2E completo orchestration
+
+**Commit WAVE 2**: 4 file deliverable in `~/.claude/` (scope globale). VOS repo: solo update questo HANDOFF + NEXT_SESSION_PROMPT.
+
+---
+
 ## STATO LASCIATO IN S180
 
 - **Loop Oracle ARM A1** retry attivo background (PID 81238, log /tmp/oracle-launch-retry.log, monitor task ba3xdsccp). 
