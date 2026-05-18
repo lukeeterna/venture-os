@@ -504,25 +504,48 @@ _ARGOS_CRITICAL_TABLES = ("market_listings", "market_price_changes")
 def _detect_anomaly(projects: dict) -> Optional[dict]:
     """Ritorna {signature, prompt} top-priority o None. Priorità: anomalia DB > DECISIONS > no_db."""
     # P1: ARGOS scraping fermo (tabelle critiche vuote)
+    # Query diretta su tabelle critiche (bypass probe limit tables[:3]) per evitare silent fail.
     argos = (projects or {}).get("ARGOS")
     if argos:
         main_db = _select_main_db(argos.get("db_files", []))
         if main_db:
-            probe = _probe_db_readonly(main_db)
-            if probe:
-                empty = [t for t in _ARGOS_CRITICAL_TABLES if probe["counts"].get(t) == 0]
-                if empty:
-                    return {
-                        "signature": f"argos_empty_{'_'.join(empty)}",
-                        "prompt": (
-                            f"ARGOS: {', '.join(empty)} =0. Indaga scraper "
-                            f"(WA daemon duplicate bug? bot detection? cron non gira?). "
-                            f"Tool candidato: invisible_playwright se bot-detected. "
-                            f"Verifica se stato atteso prima di agire."
-                        ),
-                    }
+            empty = []
+            try:
+                conn = sqlite3.connect(f"file:{main_db}?mode=ro", uri=True, timeout=5)
+                try:
+                    cur = conn.cursor()
+                    cur.execute("PRAGMA busy_timeout=5000")
+                    cur.execute(
+                        "SELECT name FROM sqlite_master WHERE type='table' "
+                        "AND name NOT LIKE 'sqlite_%'"
+                    )
+                    existing = {r[0] for r in cur.fetchall()}
+                    for t in _ARGOS_CRITICAL_TABLES:
+                        if t not in existing:
+                            continue
+                        try:
+                            cur.execute(f'SELECT COUNT(*) FROM "{t}"')
+                            if cur.fetchone()[0] == 0:
+                                empty.append(t)
+                        except sqlite3.Error as e:
+                            _log_error(f"anomaly count fail {t}", e)
+                finally:
+                    conn.close()
+            except sqlite3.Error as e:
+                _log_error(f"anomaly probe ARGOS fail", e)
+            if empty:
+                return {
+                    "signature": f"argos_empty_{'_'.join(empty)}",
+                    "prompt": (
+                        f"ARGOS: {', '.join(empty)} =0. Indaga scraper "
+                        f"(WA daemon duplicate bug? bot detection? cron non gira?). "
+                        f"Tool candidato: invisible_playwright se bot-detected. "
+                        f"Verifica se stato atteso prima di agire."
+                    ),
+                }
 
     # P2: DECISIONS.md malformed (last entry decision-validation.jsonl)
+    # Schema reale: {"projects": [{"project": "X", "malformed": [...]}], ...}
     if DECISION_VALIDATION.exists():
         try:
             with open(DECISION_VALIDATION) as f:
@@ -533,18 +556,17 @@ def _detect_anomaly(projects: dict) -> Optional[dict]:
                         last = ln
             if last:
                 d = json.loads(last)
-                malformed = d.get("malformed_by_project") or {}
-                # cerca progetto con count > 0
-                offender = next(((p, c) for p, c in malformed.items() if c and c > 0), None)
-                if offender:
-                    pname, count = offender
-                    return {
-                        "signature": f"decisions_malformed_{pname}",
-                        "prompt": (
-                            f"Fix DECISIONS.md malformed: {pname} ({count} entry). "
-                            f"Review wiki/projects/{pname}/DECISIONS.md, ripristina sintassi D-XX."
-                        ),
-                    }
+                for proj in d.get("projects") or []:
+                    malformed = proj.get("malformed") or []
+                    if malformed:
+                        pname = proj.get("project", "?")
+                        return {
+                            "signature": f"decisions_malformed_{pname}",
+                            "prompt": (
+                                f"Fix DECISIONS.md malformed: {pname} ({len(malformed)} entry). "
+                                f"Review wiki/projects/{pname}/DECISIONS.md, ripristina sintassi D-XX."
+                            ),
+                        }
         except Exception as e:  # noqa: BLE001
             _log_error("decision-validation parse fail", e)
 
@@ -563,25 +585,35 @@ def _detect_anomaly(projects: dict) -> Optional[dict]:
 
 
 def _prompt_stale_days(signature: str, today: date) -> int:
-    """Conta giorni consecutivi (immediatamente precedenti oggi) con stessa signature. 0 = primo giorno."""
+    """Conta giorni consecutivi (immediatamente precedenti oggi) con stessa signature. 0 = primo giorno.
+
+    Tollerante a righe corrotte (skip individuale, no azzeramento globale).
+    Cap a 365 giorni per evitare loop O(N) su history multi-anno.
+    """
     if not RECOMMENDED_PROMPT_HISTORY.exists():
         return 0
+    entries = []
     try:
         with open(RECOMMENDED_PROMPT_HISTORY) as f:
-            entries = [json.loads(ln) for ln in f if ln.strip()]
+            for ln in f:
+                ln = ln.strip()
+                if not ln:
+                    continue
+                try:
+                    entries.append(json.loads(ln))
+                except json.JSONDecodeError as e:
+                    _log_error("prompt-history corrupt line skipped", e)
     except Exception as e:  # noqa: BLE001
         _log_error("prompt-history read fail", e)
         return 0
 
-    # ordina per data decrescente, conta consecutivi con stessa signature partendo da ieri
     by_date = {e.get("date"): e.get("signature") for e in entries if e.get("date")}
+    from datetime import timedelta
     count = 0
     d = today
-    from datetime import timedelta
-    while True:
+    while count < 365:
         d = d - timedelta(days=1)
-        sig = by_date.get(d.isoformat())
-        if sig == signature:
+        if by_date.get(d.isoformat()) == signature:
             count += 1
         else:
             break
