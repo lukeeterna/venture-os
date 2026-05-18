@@ -86,3 +86,11 @@
 {"ts": "2026-05-18T17:46:20Z", "model": "mock/code_review", "role": "code_review", "in_tok": 10, "out_tok": 12, "cost_usd": 0.0, "latency_ms": 164, "plan_id": "plan_mock_test_001", "subtask_id": "s2"}
 {"ts": "2026-05-18T17:46:21Z", "model": "mock/long_context", "role": "long_context", "in_tok": 13, "out_tok": 14, "cost_usd": 0.0, "latency_ms": 286, "plan_id": "plan_mock_test_001", "subtask_id": "s3"}
 {"ts": "2026-05-18T17:46:21Z", "model": "mock/long_context", "role": "long_context", "in_tok": 97, "out_tok": 14, "cost_usd": 0.0, "latency_ms": 235, "plan_id": "plan_mock_test_001", "subtask_id": "aggregator"}
+{"ts": "2026-05-18T17:52:43.046337+00:00", "model": "deepseek/deepseek-chat", "provider": "openrouter", "role": "code_review", "in_tok": 91, "out_tok": 230, "cost_usd": 0.000234, "latency_ms": 8091}
+{"ts": "2026-05-18T17:52:43Z", "model": "deepseek/deepseek-chat", "role": "code_review", "in_tok": 91, "out_tok": 230, "cost_usd": 0.000234, "latency_ms": 8509, "plan_id": "plan_argos_microdealer_s181_validation", "subtask_id": "s2"}
+{"ts": "2026-05-18T17:52:45.213001+00:00", "model": "gemini-2.5-flash", "provider": "google", "role": "long_context", "in_tok": 86, "out_tok": 78, "cost_usd": 0.0, "latency_ms": 10257}
+{"ts": "2026-05-18T17:52:45Z", "model": "gemini-2.5-flash", "role": "long_context", "in_tok": 86, "out_tok": 78, "cost_usd": 0.0, "latency_ms": 10675, "plan_id": "plan_argos_microdealer_s181_validation", "subtask_id": "s1"}
+{"ts": "2026-05-18T17:52:56.477697+00:00", "model": "gemini-2.5-flash", "provider": "google", "role": "long_context", "in_tok": 81, "out_tok": 128, "cost_usd": 0.0, "latency_ms": 11016}
+{"ts": "2026-05-18T17:52:56Z", "model": "gemini-2.5-flash", "role": "long_context", "in_tok": 81, "out_tok": 128, "cost_usd": 0.0, "latency_ms": 11247, "plan_id": "plan_argos_microdealer_s181_validation", "subtask_id": "s3"}
+{"ts": "2026-05-18T17:53:06.404487+00:00", "model": "gemini-2.5-flash", "provider": "google", "role": "long_context", "in_tok": 481, "out_tok": 79, "cost_usd": 0.0, "latency_ms": 9760}
+{"ts": "2026-05-18T17:53:06Z", "model": "gemini-2.5-flash", "role": "long_context", "in_tok": 481, "out_tok": 79, "cost_usd": 0.0, "latency_ms": 9916, "plan_id": "plan_argos_microdealer_s181_validation", "subtask_id": "aggregator"}
