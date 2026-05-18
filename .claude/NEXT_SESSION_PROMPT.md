@@ -1,18 +1,18 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-05-18T19:11:05Z`
+**Generato**: `2026-05-18T20:08:11Z`
 **Sessione**: `5e1b04e8-68a3-4c24-af8a-e960dd1fcd0d`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: committed: c3fc19d
-**Last commit**: `c3fc19d auto-close session 5e1b04e8-68a3-4c24-af8a-e960dd1fcd0d @ 2026-05-18T19:11:05Z`
+**Commit auto**: committed: 97c1de8
+**Last commit**: `97c1de8 auto-close session 5e1b04e8-68a3-4c24-af8a-e960dd1fcd0d @ 2026-05-18T20:08:11Z`
 
 ## Ultimi 5 commit
 ```
+97c1de8 auto-close session 5e1b04e8-68a3-4c24-af8a-e960dd1fcd0d @ 2026-05-18T20:08:11Z
 c3fc19d auto-close session 5e1b04e8-68a3-4c24-af8a-e960dd1fcd0d @ 2026-05-18T19:11:05Z
 b2b545b auto-close session 5e1b04e8-68a3-4c24-af8a-e960dd1fcd0d @ 2026-05-18T18:58:31Z
 db92edc auto-close session 5e1b04e8-68a3-4c24-af8a-e960dd1fcd0d @ 2026-05-18T18:52:45Z
 5b31c29 auto-close session 5e1b04e8-68a3-4c24-af8a-e960dd1fcd0d @ 2026-05-18T18:47:18Z
-3bc6bb6 auto-close session 5e1b04e8-68a3-4c24-af8a-e960dd1fcd0d @ 2026-05-18T18:43:11Z
 ```
 
 ## File modificati nell'ultimo commit
@@ -24,14 +24,14 @@ M	components/morning-briefer/briefer.py
 
 ## Ultimo prompt utente (estratto)
 ```
-[{"tool_use_id":"toolu_01UHtu6nvtZX539xbmZLDH4U","type":"tool_result","content":"## Azione consigliata oggi\nARGOS: market_listings, market_price_changes =0. Indaga scraper (WA daemon duplicate bug? bot detection? cron non gira?). Tool candidato: invisible_playwright se bot-detected. Verifica se stato atteso prima di agire. (ripetuto 3gg)","is_error":false}]
+[{"tool_use_id":"toolu_01Pifo8UXNRBUBtYzxXcrPXW","type":"tool_result","content":" M .claude/NEXT_SESSION_PROMPT.md\n M briefs/2026-05-18.md\n M components/morning-briefer/briefer.py","is_error":false}]
 ```
 
 ## Ultimi turni assistant
 ```
-- `market_listings=0` non distingue "scraping rotto" da "stato atteso pre-launch" → mitigato con suffix "Verifica se stato atteso prima di agire"
-- Mapping `ARGOS→market_listings` hardcoded inline → refactor a YAML solo se servono >5 regole
-**Next step suggerito**: code-reviewer pre-commit. Procedo?
+| Fix MED + retest | ✅ P1 query diretta / P2 schema corretto / history tollerante / cap 365 |
+Il brief di domani (e i successivi) emetterà la sezione "Azione consigliata oggi" che oggi dirigerebbe ARGOS scraping investigation. Se Luke risolve `market_listings`, il prompt cambia signature → counter ricomincia da 0.
+**Time-to-revenue next**: indagare scraping ARGOS (=l'azione che il brief ora suggerisce). Vuoi aprire sessione separata su ARGOS oppure procedo qui?
 ```
 
 ## Come riprendere
