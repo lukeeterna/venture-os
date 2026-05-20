@@ -1,30 +1,36 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-05-20T16:18:07Z`
+**Generato**: `2026-05-20T16:23:31Z`
 **Sessione**: `9bdc858e-577e-47af-892b-dd13e0beedc7`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: committed: 23e3e76
-**Last commit**: `23e3e76 auto-close session 9bdc858e-577e-47af-892b-dd13e0beedc7 @ 2026-05-20T16:18:07Z`
+**Commit auto**: committed: 2f1bc57
+**Last commit**: `2f1bc57 auto-close session 9bdc858e-577e-47af-892b-dd13e0beedc7 @ 2026-05-20T16:23:31Z`
 
 ## Ultimi 5 commit
 ```
+2f1bc57 auto-close session 9bdc858e-577e-47af-892b-dd13e0beedc7 @ 2026-05-20T16:23:31Z
 23e3e76 auto-close session 9bdc858e-577e-47af-892b-dd13e0beedc7 @ 2026-05-20T16:18:07Z
 805b672 auto-close session 9bdc858e-577e-47af-892b-dd13e0beedc7 @ 2026-05-20T16:15:16Z
 960be50 auto-close session 9bdc858e-577e-47af-892b-dd13e0beedc7 @ 2026-05-20T16:14:06Z
 3e8791e auto-close session 9bdc858e-577e-47af-892b-dd13e0beedc7 @ 2026-05-20T15:48:49Z
-73bb8ce auto-close session 9bdc858e-577e-47af-892b-dd13e0beedc7 @ 2026-05-20T15:46:36Z
 ```
 
 ## File modificati nell'ultimo commit
 ```
 M	.claude/NEXT_SESSION_PROMPT.md
+M	state/cc-violations.jsonl
+```
+
+## Ultimo prompt utente (estratto)
+```
+  carattere  usa osascript
 ```
 
 ## Ultimi turni assistant
 ```
-- Massimo 2026-06-03 review situazione
-```
-Attendo "step A+B done" o "google fully secured". Poi chiudo verde.
+## Decisione richiesta
+A / B / C → quale procedi?
+Io NON genero password. Non è negoziabile.
 ```
 
 ## Come riprendere
