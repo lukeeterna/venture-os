@@ -1,6 +1,6 @@
 # Plan Execution: plan_mock_deps_001
 
-Generated: 2026-05-18T17:44:00Z
+Generated: 2026-05-20T11:41:24Z
 Task: Test dipendenze topologiche: s1 → s2 → s3
 
 ---

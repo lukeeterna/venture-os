@@ -47,9 +47,11 @@ T7_MOUNT = "/Volumes/MontereyT7"
 VOS_ROOT = Path(T7_MOUNT) / "venture-os"
 STATE_DIR = VOS_ROOT / "state"
 PLAN_EXEC_DIR = STATE_DIR / "plan-executions"
+PLAN_SNAPSHOTS_DIR = STATE_DIR / "plan-snapshots"
 COSTS_LOG = STATE_DIR / "costs.jsonl"
 EVAL_PY = VOS_ROOT / "components" / "eval-tracker" / "eval.py"
 ROUTER_PY = VOS_ROOT / "components" / "llm-router" / "router.py"
+ROUTING_YAML = VOS_ROOT / "config" / "routing.yaml"
 
 # Mappa model_target → router role
 MODEL_TARGET_TO_ROLE = {
@@ -411,6 +413,117 @@ def _run_aggregator(
 
 
 # ---------------------------------------------------------------------------
+# State snapshot (RISK #1 mitigation — additive, zero behaviour change)
+# ---------------------------------------------------------------------------
+
+def _routing_yaml_hash() -> str:
+    """SHA256 delle prime 4096 byte di routing.yaml. Ritorna 'absent' se non esiste."""
+    try:
+        data = ROUTING_YAML.read_bytes()[:4096]
+        return hashlib.sha256(data).hexdigest()[:16]
+    except Exception:
+        return "absent"
+
+
+def _env_api_key_names() -> list:
+    """Restituisce i NOMI delle env var che sembrano API key. MAI i valori."""
+    key_patterns = ("API_KEY", "TOKEN", "SECRET", "OPENROUTER", "GOOGLE", "DEEPSEEK")
+    return sorted(
+        k for k in os.environ
+        if any(p in k.upper() for p in key_patterns)
+    )
+
+
+def _snapshot_path(plan_id: str, ts_str: str) -> Path:
+    """
+    Calcola path snapshot. Se file esiste già (idempotenza: stesso piano 2x),
+    appende suffix incrementale per differenziare le due esecuzioni.
+    """
+    PLAN_SNAPSHOTS_DIR.mkdir(parents=True, exist_ok=True)
+    # Sanifica plan_id: solo alfanumerici, trattini, underscore
+    safe_id = "".join(c if c.isalnum() or c in "-_" else "_" for c in plan_id)
+    base = PLAN_SNAPSHOTS_DIR / f"snapshot_{safe_id}_{ts_str}.json"
+    if not base.exists():
+        return base
+    # Già esiste: appendi suffix incrementale (idempotenza guarantee)
+    for i in range(1, 100):
+        candidate = PLAN_SNAPSHOTS_DIR / f"snapshot_{safe_id}_{ts_str}_{i:02d}.json"
+        if not candidate.exists():
+            return candidate
+    return base  # Fallback: sovrascrive dopo 100 (non raggiungibile in pratica)
+
+
+def _write_snapshot_pre(plan: dict, plan_id: str, ts_str: str) -> Optional[Path]:
+    """
+    Scrive snapshot pre-esecuzione con piano JSON + env metadata.
+    Atomic write: tmpfile + os.rename (garantisce no write parziale).
+    Ritorna Path del file creato, o None se T7 non montato / errore write.
+    """
+    if not _t7_mounted():
+        sys.stderr.write(
+            f"[plan-execute] ERROR snapshot: T7 non montato a {T7_MOUNT}. "
+            "Snapshot saltato.\n"
+        )
+        return None
+
+    snap_path = _snapshot_path(plan_id, ts_str)
+    snapshot = {
+        "schema_version": "1",
+        "plan_id": plan_id,
+        "ts_start": ts_str,
+        "plan": plan,
+        "env_meta": {
+            "python_version": sys.version,
+            "working_dir": os.getcwd(),
+            "routing_yaml_hash": _routing_yaml_hash(),
+            "api_key_env_names": _env_api_key_names(),
+        },
+        "execution_result": None,  # Verrà popolato da _append_snapshot_result
+    }
+
+    tmp_path = snap_path.with_suffix(".tmp")
+    try:
+        tmp_path.write_text(json.dumps(snapshot, indent=2, ensure_ascii=False), encoding="utf-8")
+        os.rename(str(tmp_path), str(snap_path))
+        sys.stderr.write(f"[plan-execute] Snapshot pre: {snap_path}\n")
+        return snap_path
+    except Exception as exc:
+        sys.stderr.write(f"[plan-execute] WARN snapshot write failed: {exc}\n")
+        try:
+            tmp_path.unlink(missing_ok=True)
+        except Exception:
+            pass
+        return None
+
+
+def _append_snapshot_result(snap_path: Optional[Path], result: dict, ts_end: str) -> None:
+    """
+    Appende execution_result al snapshot esistente (legge → modifica → atomic rewrite).
+    Fail-soft: se snapshot non esiste o errore, logga e torna.
+    """
+    if snap_path is None or not snap_path.exists():
+        return
+    try:
+        snapshot = json.loads(snap_path.read_text(encoding="utf-8"))
+        snapshot["execution_result"] = {
+            "ts_end": ts_end,
+            "status": "error" if "error" in result else "success",
+            "total_cost_usd": result.get("total_cost_usd", 0.0),
+            "total_latency_ms": result.get("total_latency_ms", 0),
+            "subtask_statuses": {
+                r["id"]: r.get("status", "unknown")
+                for r in result.get("subtask_results", [])
+            },
+            "error": result.get("error"),
+        }
+        tmp_path = snap_path.with_suffix(".tmp")
+        tmp_path.write_text(json.dumps(snapshot, indent=2, ensure_ascii=False), encoding="utf-8")
+        os.rename(str(tmp_path), str(snap_path))
+    except Exception as exc:
+        sys.stderr.write(f"[plan-execute] WARN snapshot result append failed: {exc}\n")
+
+
+# ---------------------------------------------------------------------------
 # Core executor
 # ---------------------------------------------------------------------------
 
@@ -423,13 +536,19 @@ def execute_plan(plan: dict, use_mock: bool = False) -> dict:
     subtasks = plan.get("subtasks", [])
     aggregator_model = plan.get("aggregator_model", "gemini-flash")
 
+    # --- Snapshot pre-esecuzione (RISK #1 mitigation) ---
+    _snap_ts = datetime.datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
+    _snap_path = _write_snapshot_pre(plan, plan_id, _snap_ts)
+
     if not subtasks:
-        return {"error": "piano senza subtask", "plan_id": plan_id}
+        _early = {"error": "piano senza subtask", "plan_id": plan_id}
+        _append_snapshot_result(_snap_path, _early, _now_iso())
+        return _early
 
     # Pre-flight: stima costo
     estimated_cost = _estimate_cost_usd(subtasks)
     if estimated_cost > COST_BLOCK_THRESHOLD and not use_mock:
-        return {
+        _blocked = {
             "error": "cost_limit_exceeded",
             "plan_id": plan_id,
             "estimated_cost_usd": round(estimated_cost, 4),
@@ -440,6 +559,8 @@ def execute_plan(plan: dict, use_mock: bool = False) -> dict:
                 "oppure spezza il piano in fasi."
             ),
         }
+        _append_snapshot_result(_snap_path, _blocked, _now_iso())
+        return _blocked
 
     if estimated_cost > COST_WARN_THRESHOLD and not use_mock:
         sys.stderr.write(
@@ -451,7 +572,9 @@ def execute_plan(plan: dict, use_mock: bool = False) -> dict:
     try:
         waves = _topological_sort(subtasks)
     except ValueError as exc:
-        return {"error": str(exc), "plan_id": plan_id}
+        _topo_err = {"error": str(exc), "plan_id": plan_id}
+        _append_snapshot_result(_snap_path, _topo_err, _now_iso())
+        return _topo_err
 
     sys.stderr.write(
         f"[plan-execute] Piano {plan_id}: {len(subtasks)} subtask in {len(waves)} wave\n"
@@ -533,6 +656,9 @@ def execute_plan(plan: dict, use_mock: bool = False) -> dict:
         "aggregated_summary_md_path": str(summary_path),
         "aggregated_summary": summary_text[:500] + "..." if len(summary_text) > 500 else summary_text,
     }
+
+    # --- Snapshot post-esecuzione (append result) ---
+    _append_snapshot_result(_snap_path, final_report, _now_iso())
 
     return final_report
 

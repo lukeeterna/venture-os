@@ -1,0 +1,54 @@
+{
+  "schema_version": "1",
+  "plan_id": "plan_mock_test_001",
+  "ts_start": "20260520T114315Z",
+  "plan": {
+    "plan_id": "plan_mock_test_001",
+    "task_description": "Test piano sintetico 3 subtask: analisi + code_review + sintesi",
+    "subtasks": [
+      {
+        "id": "s1",
+        "description": "Analizza i pattern di utilizzo nei log VOS degli ultimi 7 giorni.",
+        "model_target": "gemini-flash",
+        "expected_output_format": "bullet list",
+        "dependencies": []
+      },
+      {
+        "id": "s2",
+        "description": "Review del codice del componente eval-tracker per conformità vincoli S181.",
+        "model_target": "deepseek",
+        "expected_output_format": "bullet list issues",
+        "dependencies": []
+      },
+      {
+        "id": "s3",
+        "description": "Sintetizza i risultati di s1 e s2 in una raccomandazione operativa per Luke.",
+        "model_target": "gemini-flash",
+        "expected_output_format": "markdown <500 token",
+        "dependencies": [
+          "s1",
+          "s2"
+        ]
+      }
+    ],
+    "aggregator_model": "gemini-flash"
+  },
+  "env_meta": {
+    "python_version": "3.13.2 (main, Mar 18 2025, 16:42:12) [Clang 13.0.0 (clang-1300.0.29.30)]",
+    "working_dir": "/Volumes/MontereyT7/venture-os/components/llm-router",
+    "routing_yaml_hash": "be717a2d9f1ba1da",
+    "api_key_env_names": []
+  },
+  "execution_result": {
+    "ts_end": "2026-05-20T11:43:16Z",
+    "status": "success",
+    "total_cost_usd": 0.0,
+    "total_latency_ms": 789,
+    "subtask_statuses": {
+      "s1": "success",
+      "s2": "success",
+      "s3": "success"
+    },
+    "error": null
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "schema_version": "1",
+  "plan_id": "plan_mock_deps_001",
+  "ts_start": "20260520T114124Z",
+  "plan": {
+    "plan_id": "plan_mock_deps_001",
+    "task_description": "Test dipendenze topologiche: s1 → s2 → s3",
+    "subtasks": [
+      {
+        "id": "s1",
+        "description": "Step 1: raccolta dati",
+        "model_target": "cheap",
+        "expected_output_format": "plain",
+        "dependencies": []
+      },
+      {
+        "id": "s2",
+        "description": "Step 2: elaborazione (dipende da s1)",
+        "model_target": "cheap",
+        "expected_output_format": "plain",
+        "dependencies": [
+          "s1"
+        ]
+      },
+      {
+        "id": "s3",
+        "description": "Step 3: sintesi (dipende da s2)",
+        "model_target": "cheap",
+        "expected_output_format": "plain",
+        "dependencies": [
+          "s2"
+        ]
+      }
+    ],
+    "aggregator_model": "gemini-flash"
+  },
+  "env_meta": {
+    "python_version": "3.13.2 (main, Mar 18 2025, 16:42:12) [Clang 13.0.0 (clang-1300.0.29.30)]",
+    "working_dir": "/Volumes/MontereyT7/venture-os/components/llm-router",
+    "routing_yaml_hash": "be717a2d9f1ba1da",
+    "api_key_env_names": []
+  },
+  "execution_result": {
+    "ts_end": "2026-05-20T11:41:24Z",
+    "status": "success",
+    "total_cost_usd": 0.0,
+    "total_latency_ms": 914,
+    "subtask_statuses": {
+      "s1": "success",
+      "s2": "success",
+      "s3": "success"
+    },
+    "error": null
+  }
+}
