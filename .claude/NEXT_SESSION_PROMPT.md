@@ -1,18 +1,18 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-05-20T16:15:16Z`
+**Generato**: `2026-05-20T16:18:07Z`
 **Sessione**: `9bdc858e-577e-47af-892b-dd13e0beedc7`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: committed: 805b672
-**Last commit**: `805b672 auto-close session 9bdc858e-577e-47af-892b-dd13e0beedc7 @ 2026-05-20T16:15:16Z`
+**Commit auto**: committed: 23e3e76
+**Last commit**: `23e3e76 auto-close session 9bdc858e-577e-47af-892b-dd13e0beedc7 @ 2026-05-20T16:18:07Z`
 
 ## Ultimi 5 commit
 ```
+23e3e76 auto-close session 9bdc858e-577e-47af-892b-dd13e0beedc7 @ 2026-05-20T16:18:07Z
 805b672 auto-close session 9bdc858e-577e-47af-892b-dd13e0beedc7 @ 2026-05-20T16:15:16Z
 960be50 auto-close session 9bdc858e-577e-47af-892b-dd13e0beedc7 @ 2026-05-20T16:14:06Z
 3e8791e auto-close session 9bdc858e-577e-47af-892b-dd13e0beedc7 @ 2026-05-20T15:48:49Z
 73bb8ce auto-close session 9bdc858e-577e-47af-892b-dd13e0beedc7 @ 2026-05-20T15:46:36Z
-e3df43e auto-close session 9bdc858e-577e-47af-892b-dd13e0beedc7 @ 2026-05-20T15:24:35Z
 ```
 
 ## File modificati nell'ultimo commit
@@ -20,16 +20,11 @@ e3df43e auto-close session 9bdc858e-577e-47af-892b-dd13e0beedc7 @ 2026-05-20T15:
 M	.claude/NEXT_SESSION_PROMPT.md
 ```
 
-## Ultimo prompt utente (estratto)
-```
-Continue with Google"
-```
-
 ## Ultimi turni assistant
 ```
-- Prompt #5 layer 2 integration = appena tornerai sul tema (ma non oggi)
-- Apri SOLO terminal ARGOS S172 fino primo €800
-Source: [Google Account Security best practices](https://support.google.com/accounts/answer/46526)
+- Massimo 2026-06-03 review situazione
+```
+Attendo "step A+B done" o "google fully secured". Poi chiudo verde.
 ```
 
 ## Come riprendere
