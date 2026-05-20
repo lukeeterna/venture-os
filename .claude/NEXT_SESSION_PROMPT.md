@@ -1,18 +1,18 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-05-20T19:00:25Z`
+**Generato**: `2026-05-20T19:02:47Z`
 **Sessione**: `9bdc858e-577e-47af-892b-dd13e0beedc7`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: no-changes
-**Last commit**: `afbf80d fix: memory rule VOS distingue sessione meta vs architettura installata`
+**Commit auto**: committed: 68ef483
+**Last commit**: `68ef483 auto-close session 9bdc858e-577e-47af-892b-dd13e0beedc7 @ 2026-05-20T19:02:47Z`
 
 ## Ultimi 5 commit
 ```
+68ef483 auto-close session 9bdc858e-577e-47af-892b-dd13e0beedc7 @ 2026-05-20T19:02:47Z
 afbf80d fix: memory rule VOS distingue sessione meta vs architettura installata
 9a409f4 auto-close S182: memory rule VOS pause sine die pre primo €800 ARGOS
 6397e04 auto-close session 9bdc858e-577e-47af-892b-dd13e0beedc7 @ 2026-05-20T18:54:05Z
 a4ebdc2 auto-close session 9bdc858e-577e-47af-892b-dd13e0beedc7 @ 2026-05-20T18:51:57Z
-c3b7a77 auto-close S182: security claude.ai + ARGOS S183 prompt + control-tower S184 design + memory rules
 ```
 
 ## File modificati nell'ultimo commit
@@ -22,14 +22,14 @@ M	.claude/NEXT_SESSION_PROMPT.md
 
 ## Ultimo prompt utente (estratto)
 ```
-[{"tool_use_id":"toolu_01HLx2QTswpAXQCgBgZkRHnc","type":"tool_result","content":"afbf80d fix: memory rule VOS distingue sessione meta vs architettura installata\n9a409f4 auto-close S182: memory rule VOS pause sine die pre primo €800 ARGOS\n6397e04 auto-close session 9bdc858e-577e-47af-892b-dd13e0beedc7 @ 2026-05-20T18:54:05Z\n---\n\n## Ultimo prompt utente (estratto)\n```\n[{\"tool_use_id\":\"toolu_01DmYvRZK9UxYB1jEUhEpx8E\",\"type\":\"tool_result\",\"content\":\"[master 9a409f4] auto-close S1
+context reale 39% !!! continua a fare il tuo dovere e fallo bene? segui sempre i protocolli VOS!!
 ```
 
 ## Ultimi turni assistant
 ```
-- Emergenza cross-progetto reale
-- NO altri trigger
-L'architettura VOS continua lavorare per te invisibile mentre fai €800. Vai.
+3. Tu fai 10 validazioni veloci 1 min/file (10 min totali)
+4. ARGOS esegue A5 baseline pytest → mi riporti output
+Pronto. Procedi col copy/paste in ARGOS.
 ```
 
 ## Come riprendere
