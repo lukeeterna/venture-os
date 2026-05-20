@@ -1,35 +1,37 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-05-20T17:44:30Z`
+**Generato**: `2026-05-20T17:55:30Z`
 **Sessione**: `9bdc858e-577e-47af-892b-dd13e0beedc7`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: DIRTY (vedi /Volumes/MontereyT7/venture-os/.claude/SESSION_DIRTY.md)
-**Last commit**: `c2e8b7a auto-close session 9bdc858e-577e-47af-892b-dd13e0beedc7 @ 2026-05-20T17:39:11Z`
+**Commit auto**: committed: 6b12686
+**Last commit**: `6b12686 auto-close session 9bdc858e-577e-47af-892b-dd13e0beedc7 @ 2026-05-20T17:55:30Z`
 
 ## Ultimi 5 commit
 ```
+6b12686 auto-close session 9bdc858e-577e-47af-892b-dd13e0beedc7 @ 2026-05-20T17:55:30Z
 c2e8b7a auto-close session 9bdc858e-577e-47af-892b-dd13e0beedc7 @ 2026-05-20T17:39:11Z
 e09b72f auto-close session 9bdc858e-577e-47af-892b-dd13e0beedc7 @ 2026-05-20T17:05:39Z
 07fa82f auto-close session 9bdc858e-577e-47af-892b-dd13e0beedc7 @ 2026-05-20T16:36:45Z
 689eac8 auto-close session 9bdc858e-577e-47af-892b-dd13e0beedc7 @ 2026-05-20T16:35:19Z
-6cd54ac auto-close session 9bdc858e-577e-47af-892b-dd13e0beedc7 @ 2026-05-20T16:34:55Z
 ```
 
 ## File modificati nell'ultimo commit
 ```
 M	.claude/NEXT_SESSION_PROMPT.md
+A	.claude/SESSION_DIRTY.md
+A	wiki/HANDOFF-S183-sanitizer-definitive.md
 ```
 
 ## Ultimo prompt utente (estratto)
 ```
-context tuo 31% hai sempreindicatore sfasato. mi serve riscontro con output di termnale argos, poi come da protocollo VOS cci confrontiamo con claude ai ok ? solo si o no
+[{"tool_use_id":"toolu_01RtbJ7zD7RRvSpYVPEixWkW","type":"tool_result","content":"-rw-r--r--@ 1 macbook  staff  5512931 30 Mar 18:38 ARGOS_BMW_X3_2022_Stile_Car_ee60eed0.pdf\n---\nkMDItemContentType   = \"com.adobe.pdf\"\nkMDItemNumberOfPages = 5\nShell cwd was reset to /Volumes/MontereyT7/venture-os","is_error":false}]
 ```
 
 ## Ultimi turni assistant
 ```
-4. Sovradimensiono soluzione hybrid: forse footer 15% mask + ripristino S163 Vision (era 4/4 OK su STESSO seller Autohaus Isernhagen) è sufficient, no S180 complesso
-Sessione VOS chiude ordinata. Aspetta tuo "fatto" o "PDF marzo OK/FAIL".
-sì
+Conferma "**chiudo VOS, apro S183 dopo**" → sessione termina ordinata verde.
+OR "**continua ora**" → io continuo ma sforerò context 60% certo entro 2 turni, violazione vincolo #7. Te lo segnalo come fail strutturale.
+Mia raccomandazione CTO: **chiudi verde, apri S183 fresh con context budget pulito + prompt resume sopra**.
 ```
 
 ## Come riprendere
