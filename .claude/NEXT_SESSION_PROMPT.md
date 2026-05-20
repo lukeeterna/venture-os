@@ -1,38 +1,36 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-05-20T10:43:39Z`
+**Generato**: `2026-05-20T10:49:35Z`
 **Sessione**: `9bdc858e-577e-47af-892b-dd13e0beedc7`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: committed: e051632
-**Last commit**: `e051632 auto-close session 9bdc858e-577e-47af-892b-dd13e0beedc7 @ 2026-05-20T10:43:39Z`
+**Commit auto**: committed: 6ae66cf
+**Last commit**: `6ae66cf auto-close session 9bdc858e-577e-47af-892b-dd13e0beedc7 @ 2026-05-20T10:49:35Z`
 
 ## Ultimi 5 commit
 ```
+6ae66cf auto-close session 9bdc858e-577e-47af-892b-dd13e0beedc7 @ 2026-05-20T10:49:35Z
 e051632 auto-close session 9bdc858e-577e-47af-892b-dd13e0beedc7 @ 2026-05-20T10:43:39Z
 c8389bd auto-close session 9bdc858e-577e-47af-892b-dd13e0beedc7 @ 2026-05-20T10:21:15Z
 6e4eb5d auto-close session 9bdc858e-577e-47af-892b-dd13e0beedc7 @ 2026-05-20T10:14:13Z
 46f890f auto-close session 9bdc858e-577e-47af-892b-dd13e0beedc7 @ 2026-05-20T10:12:47Z
-1b43d81 auto-close session 9bdc858e-577e-47af-892b-dd13e0beedc7 @ 2026-05-20T10:03:12Z
 ```
 
 ## File modificati nell'ultimo commit
 ```
 M	.claude/NEXT_SESSION_PROMPT.md
-A	.claude/SESSION_DIRTY.md
-M	state/cc-violations.jsonl
-A	wiki/projects/ARGOS/HANDOFF-S173-WA-DEDUP.md
+D	.claude/SESSION_DIRTY.md
 ```
 
 ## Ultimo prompt utente (estratto)
 ```
-[{"tool_use_id":"toolu_01EN1J21CecLC1pLAJZ2CmUX","type":"tool_result","content":"# Analisi Graphify - Solo Fatti dal README\n\n## 1) Riconoscimento Entità Cross-Document\n**Non documentato**. Il README menziona \"concepts and relationships\" e \"god nodes\" ma non specifica capacità di entity recognition tipo \"cliente Mario Rossi parlato il 2026-03-12\".\n\n## 2) Voice/Audio Input\n**No**. Supporta solo: \"code, PDFs, markdown, screenshots, diagrams, whiteboard photos, even images in other la
+[{"tool_use_id":"toolu_011iHpM5wH2bL3ffgQKZnBB7","type":"tool_result","content":"# Graphify: Use Cases, Examples & Workflows from Official Docs\n\n## 1) Query Examples with Output\n\nThe README documents three query command patterns:\n\n**Query**: `\"what connects attention to the optimizer?\"` – Searches relationships between concepts across the codebase.\n\n**Path**: `\"DigestAuth\" \"Response\"` – Finds shortest connection between two entities.\n\n**Explain**: `\"SwinTransformer\"` – Re
 ```
 
 ## Ultimi turni assistant
 ```
 Sources:
-- [safishamsi/graphify GitHub repo](https://github.com/safishamsi/graphify)
-- [Graphify README on GitHub](https://github.com/safishamsi/graphify/blob/main/README.md)
+- [safishamsi/graphify use cases README](https://github.com/safishamsi/graphify)
+- [Tool-scout config VOS](~/venture-os/config/tool-scout-areas.yaml)
 ```
 
 ## Come riprendere
