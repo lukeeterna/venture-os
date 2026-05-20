@@ -1,35 +1,37 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-05-20T18:42:00Z`
+**Generato**: `2026-05-20T18:51:57Z`
 **Sessione**: `9bdc858e-577e-47af-892b-dd13e0beedc7`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: no-changes
-**Last commit**: `c3b7a77 auto-close S182: security claude.ai + ARGOS S183 prompt + control-tower S184 design + memory rules`
+**Commit auto**: committed: a4ebdc2
+**Last commit**: `a4ebdc2 auto-close session 9bdc858e-577e-47af-892b-dd13e0beedc7 @ 2026-05-20T18:51:57Z`
 
 ## Ultimi 5 commit
 ```
+a4ebdc2 auto-close session 9bdc858e-577e-47af-892b-dd13e0beedc7 @ 2026-05-20T18:51:57Z
 c3b7a77 auto-close S182: security claude.ai + ARGOS S183 prompt + control-tower S184 design + memory rules
 a5b614e auto-close session 9bdc858e-577e-47af-892b-dd13e0beedc7 @ 2026-05-20T18:34:04Z
 e89629c auto-close session 9bdc858e-577e-47af-892b-dd13e0beedc7 @ 2026-05-20T18:29:02Z
 08b5838 auto-close session 9bdc858e-577e-47af-892b-dd13e0beedc7 @ 2026-05-20T18:22:27Z
-a597306 auto-close session 9bdc858e-577e-47af-892b-dd13e0beedc7 @ 2026-05-20T18:16:20Z
 ```
 
 ## File modificati nell'ultimo commit
 ```
+M	.claude/NEXT_SESSION_PROMPT.manual.md
 M	.claude/NEXT_SESSION_PROMPT.md
+M	state/cc-violations.jsonl
 ```
 
 ## Ultimo prompt utente (estratto)
 ```
-[{"tool_use_id":"toolu_01H3buXhB9uFEapR5FxjGeUr","type":"tool_result","content":"[master c3b7a77] auto-close S182: security claude.ai + ARGOS S183 prompt + control-tower S184 design + memory rules\n 1 file changed, 77 insertions(+), 42 deletions(-)\n rewrite .claude/NEXT_SESSION_PROMPT.md (99%)","is_error":false}]
+come eseguo la nuova sesisone? argos ho dato il prompt e sta eseguendo
 ```
 
 ## Ultimi turni assistant
 ```
-- Memory rules salvate
-- Trigger riapertura documentati
-Pronto per `/exit`.
+## Digit `/exit` quando pronto
+Sessione S182 verde. Commit `c3b7a77` pulito. ARGOS terminal lavora autonomous. FLUXION terminal lavora autonomous. Memory salvata. Resume documentato.
+Vai.
 ```
 
 ## Come riprendere
