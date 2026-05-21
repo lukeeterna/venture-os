@@ -1,35 +1,36 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-05-21T11:56:44Z`
-**Sessione**: `3d808710-9bfc-4e3d-94b4-edfa7ace4886`
+**Generato**: `2026-05-21T14:26:18Z`
+**Sessione**: `2f766532-dff9-44e3-8cf7-17c9e2fb71da`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: committed: 2a9b70a
-**Last commit**: `2a9b70a auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-21T11:56:44Z`
+**Commit auto**: committed: 29e4d8d
+**Last commit**: `29e4d8d auto-close session 2f766532-dff9-44e3-8cf7-17c9e2fb71da @ 2026-05-21T14:26:18Z`
 
 ## Ultimi 5 commit
 ```
+29e4d8d auto-close session 2f766532-dff9-44e3-8cf7-17c9e2fb71da @ 2026-05-21T14:26:18Z
 2a9b70a auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-21T11:56:44Z
 70b4700 auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-21T11:48:15Z
 dae2ede auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-21T11:36:37Z
 d6cd057 auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-21T11:12:35Z
-f2f73de auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-21T11:09:19Z
 ```
 
 ## File modificati nell'ultimo commit
 ```
 M	.claude/NEXT_SESSION_PROMPT.md
+M	state/cc-violations.jsonl
 ```
 
 ## Ultimo prompt utente (estratto)
 ```
-[{"tool_use_id":"toolu_01B7yk4QVPxLMPDS1dQc8iqR","type":"tool_result","content":"The file /Users/macbook/.claude/projects/-Volumes-MontereyT7-venture-os/memory/MEMORY.md has been updated successfully."}]
+config
 ```
 
 ## Ultimi turni assistant
 ```
-- [paddo.dev — Claude Code Hidden MCP Flag: 32k Tokens Back](https://paddo.dev/blog/claude-code-hidden-mcp-flag/)
-- [claudefa.st — Settings Reference](https://claudefa.st/blog/guide/settings-reference)
-- [threads ykdojo — ENABLE_TOOL_SEARCH lazy load](https://www.threads.com/@ykdojo/post/DTcDpTzFPTa)
+2. **Config VOS** — file in `~/venture-os/config/` (routing.yaml, projects-whitelist.yaml, tool-scout-areas.yaml, ecc.)
+3. **Config progetto attivo** — ARGOS/FLUXION/Guardian specifico
+Quale?
 ```
 
 ## Come riprendere
