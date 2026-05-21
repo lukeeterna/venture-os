@@ -1,36 +1,35 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-05-21T14:26:18Z`
-**Sessione**: `2f766532-dff9-44e3-8cf7-17c9e2fb71da`
+**Generato**: `2026-05-21T14:29:19Z`
+**Sessione**: `3d808710-9bfc-4e3d-94b4-edfa7ace4886`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: committed: 29e4d8d
-**Last commit**: `29e4d8d auto-close session 2f766532-dff9-44e3-8cf7-17c9e2fb71da @ 2026-05-21T14:26:18Z`
+**Commit auto**: committed: 8a8cedc
+**Last commit**: `8a8cedc auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-21T14:29:19Z`
 
 ## Ultimi 5 commit
 ```
+8a8cedc auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-21T14:29:19Z
 29e4d8d auto-close session 2f766532-dff9-44e3-8cf7-17c9e2fb71da @ 2026-05-21T14:26:18Z
 2a9b70a auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-21T11:56:44Z
 70b4700 auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-21T11:48:15Z
 dae2ede auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-21T11:36:37Z
-d6cd057 auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-21T11:12:35Z
 ```
 
 ## File modificati nell'ultimo commit
 ```
 M	.claude/NEXT_SESSION_PROMPT.md
-M	state/cc-violations.jsonl
 ```
 
 ## Ultimo prompt utente (estratto)
 ```
-config
+[{"tool_use_id":"toolu_01Py7bpKFPZWnJUudwZUd6h1","type":"tool_result","content":"OK: JSON valid, env added, autoUpdates preserved, hooks intact","is_error":false}]
 ```
 
 ## Ultimi turni assistant
 ```
-2. **Config VOS** — file in `~/venture-os/config/` (routing.yaml, projects-whitelist.yaml, tool-scout-areas.yaml, ecc.)
-3. **Config progetto attivo** — ARGOS/FLUXION/Guardian specifico
-Quale?
+- [Dan Vega X — MCP 25%→14%](https://x.com/therealdanvega/status/2014800390999429334)
+- [claudefa.st — MCP Tool Search 95% context save](https://claudefa.st/blog/tools/mcp-extensions/mcp-tool-search)
+- [code.claude.com — MCP docs](https://code.claude.com/docs/en/mcp)
 ```
 
 ## Come riprendere
