@@ -5,9 +5,32 @@ compiled_at: 2026-05-12T16:38:52Z
 model: gemini-2.5-flash
 source_files: 2
 compiler: karpathy-compiler v2 (multi-pass capable)
+status: PAUSED_SINE_DIE
+paused_at: 2026-05-21
+paused_by: founder CTO decision (memory feedback_guardian_pause_sine_die.md)
+reopen_trigger: ARGOS first €800 revenue OR FLUXION first Stripe sale
 ---
 
-## Stato attuale verificato
+## ⏸️ STATUS: PAUSED SINE DIE (2026-05-21)
+
+**Trigger riapertura (OR-condition, primo che scatta)**:
+1. ARGOS chiude primo €800 revenue reale (payment evidence)
+2. FLUXION chiude B-4 Stripe E2E + primo customer sale confermato
+
+**Decisione architetturale preservata** (D-06 ready per riapertura):
+- IP cam wifi (Tapo C100/C200/C210 wired RTSP commodity €20-40)
+- Oracle Free Tier ARM A1 backend Luke (run_upstream.py D-02 PRESERVED)
+- FCM gratis unlimited per push notify caregiver
+- V1 stack yolov8n+LSTM cliente sunsetted, mantenuto solo iMac casa Luke dev/dogfooding
+- V2 pulizia smartphone scope OPEN, business model DEFERRED
+
+**File on-disk preservati** (non cancellare): `~/fall-poc/`, `~/Documents/pulizia-smartphone/`
+
+**Razionale pausa**: V1 mercato commodity smartwatch saturato 2026 (Apple Watch, Galaxy Watch 8, Bay Alarm), V2 0 progresso 6gg, bandwidth Luke saturato ARGOS+FLUXION, vincolo S173 max 3 attivi violato de facto. Vedi memory `feedback_guardian_pause_sine_die.md`.
+
+---
+
+## Stato attuale verificato (snapshot pre-pausa, 2026-05-12)
 
 *   Il goal di S58 era risolvere il FP multi-person strutturale (S57) causato dal calcolo della prediction LSTM solo per `ip_set[0]` e dal controllo `all_persons_in_safe_zone` su ogni bbox. (S58)
 *   Il fix per S58 è stato deployato in `~/fall-poc/run_upstream.py` (323 LOC). (S58)
