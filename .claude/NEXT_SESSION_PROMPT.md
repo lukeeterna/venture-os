@@ -1,35 +1,36 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-05-21T16:53:06Z`
+**Generato**: `2026-05-21T16:56:44Z`
 **Sessione**: `3d808710-9bfc-4e3d-94b4-edfa7ace4886`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: committed: 8609bc4
-**Last commit**: `8609bc4 auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-21T16:53:06Z`
+**Commit auto**: committed: 4c69ede
+**Last commit**: `4c69ede auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-21T16:56:44Z`
 
 ## Ultimi 5 commit
 ```
+4c69ede auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-21T16:56:44Z
 8609bc4 auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-21T16:53:06Z
 5ab3998 auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-21T16:50:59Z
 c64755b auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-21T16:45:28Z
 3e50ef9 auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-21T16:43:17Z
-8a8cedc auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-21T14:29:19Z
 ```
 
 ## File modificati nell'ultimo commit
 ```
 M	.claude/NEXT_SESSION_PROMPT.md
+M	wiki/projects/Guardian/COMPILED-STATE.md
 ```
 
 ## Ultimo prompt utente (estratto)
 ```
-[{"tool_use_id":"toolu_01JF8Jprn8mdqrEjKQVgwguZ","type":"tool_result","content":"=== GUARDIAN — ultimo lavoro ===\ntotal 160\ndrwx------+ 31 macbook  staff    992 20 Mag 12:51 ..\ndrwxr-xr-x  12 macbook  staff    384 16 Mag 20:43 .git\ndrwxr-xr-x  27 macbook  staff    864 16 Mag 18:09 scripts\ndrwxr-xr-x  37 macbook  staff   1184 16 Mag 18:03 .planning\n---\n-rw-r--r--  1 macbook  staff  17899 16 Mag 21:43 /Volumes/MontereyT7/venture-os/wiki/projects/Guardian/DECISIONS.md\n-rw-r--r--  1 macboo
+[{"tool_use_id":"toolu_011G8Q4XoN4HicjLyoUh88cM","type":"tool_result","content":"logged","is_error":false}]
 ```
 
 ## Ultimi turni assistant
 ```
-**ARGOS sessione separata**: a 70% context, vicina HARD_STOP. Probabilmente sta per chiudere autonomamente. Non interferisco.
-**FLUXION sessione separata**: 65% + chiusura ordinata in vista con NEXT_SESSION_PROMPT.manual.md già scritto. OK.
-**VOS work**: STOP per oggi. Memoria S182 (VOS pause sine die pre-€800) si applica. Tutta questa sessione di oggi (analisi pacchetto + ENABLE_TOOL_SEARCH + meta-discussion) è stata ai limiti di S182 — vale solo per il finding cliff Big Sur che ha prevenuto un incident. Resto è scope creep meta che ho fatto perché tu hai chiesto.
+- **FLUXION sessione** (65% ctx): NEXT_SESSION_PROMPT.manual.md pronto per S279 Track B Stripe. Chiusura ordinata in vista.
+- **Questa sessione VOS-meta**: dovrei chiudere anch'io. Carico cumulativo cross-sessione = bandwidth tua. Loop Guardian chiuso, ENABLE_TOOL_SEARCH applicato, niente altro pending di valore in questa sessione.
+Vuoi che chiuda questa sessione VOS-meta (auto-close ordinato + commit memorie + NEXT_SESSION_PROMPT), così resti su ARGOS+FLUXION dove c'è revenue work?
 ```
 
 ## Come riprendere
