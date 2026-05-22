@@ -29,10 +29,15 @@ VIOLATION_GATE_LOG   = VOS_STATE / "cc-violations.jsonl"
 BLUEPRINT_DEVIATIONS = VOS_STATE / "blueprint-deviations.jsonl"
 GUIDE_LOG            = VOS_STATE / "guide-log.jsonl"
 CHILDWATCH_HISTORY   = VOS_STATE / "childwatch-history.jsonl"
+PRODUCTION_CLAIM_LOG = VOS_STATE / "production-claim.jsonl"
 
-# production_claim_gate.py NON logga su file (verificato in source).
-# Conteggio non disponibile da log → report lo dichiara esplicitamente.
+# production_claim_gate.py ora logga su PRODUCTION_CLAIM_LOG (registrato come
+# Stop hook in ~/.claude/settings.json il 2026-05-22).
+# Trigger (d) di CONFRONTO CLAUDE.AI resta SILENT finché il log non ha ≥3 giorni
+# di copertura reale (primo ts ≥72h fa) — finestra di calibrazione contro
+# falsi positivi dei pattern READY_CLAIM larghi.
 PRODUCTION_CLAIM_HOOK = HOME / "venture-os" / "components" / "production_claim_gate.py"
+PRODUCTION_CLAIM_CALIBRATION_HOURS = 72
 
 # Gate-state per progetto
 GATE_PATHS = {
@@ -194,12 +199,37 @@ def section_regole():
             label = {3: "liste A/B/C/D", 9: "'hai ragione' diplomatico"}.get(vincolo, f"vincolo #{vincolo}")
             alerts.append(f"violation_gate vincolo #{vincolo} ({label}) scattato {cnt}× oggi — CC ricade strutturalmente sul pattern.")
 
-    # production_claim_gate (silent — non logga su file)
-    if PRODUCTION_CLAIM_HOOK.exists():
-        lines.append("production_claim_gate: attivo (Stop hook) — NON logga su file, conteggio non rilevabile.")
-        lines.append("  → per misurare attivazioni serve aggiungere append jsonl in production_claim_gate.py")
-    else:
+    # production_claim_gate (legge production-claim.jsonl dal 2026-05-22)
+    pc_calibrated = False
+    pc_total_count = 0
+    n_block_today = 0
+    if not PRODUCTION_CLAIM_HOOK.exists():
         lines.append("production_claim_gate: NON installato")
+    else:
+        pc = read_jsonl(PRODUCTION_CLAIM_LOG)
+        pc_total_count = len(pc)
+        pc_today = filter_today(pc)
+        n_block_today = len(pc_today)
+        lines.append(f"production_claim_gate: {n_block_today} block oggi (totale jsonl: {pc_total_count})")
+        if pc_today:
+            last = pc_today[-1]
+            preview = (last.get("blocked_message_preview") or "").replace("\n", " ").strip()
+            if len(preview) > 120:
+                preview = preview[:117] + "..."
+            proj = last.get("project") or "?"
+            lines.append(f"  ultimo block: [{proj}] {preview}")
+        # Stato calibrazione (per trigger d in CONFRONTO CLAUDE.AI)
+        if pc_total_count > 0:
+            first_ts = parse_ts(pc[0].get("ts", ""))
+            if first_ts:
+                age_h = (datetime.now(timezone.utc) - first_ts).total_seconds() / 3600
+                if age_h >= PRODUCTION_CLAIM_CALIBRATION_HOURS:
+                    pc_calibrated = True
+                else:
+                    hrs_left = PRODUCTION_CLAIM_CALIBRATION_HOURS - age_h
+                    lines.append(f"  calibrazione: trigger (d) SILENT — servono ancora {hrs_left:.1f}h di dati reali (totale {age_h:.1f}h/{PRODUCTION_CLAIM_CALIBRATION_HOURS}h)")
+        else:
+            lines.append(f"  calibrazione: trigger (d) SILENT — log vuoto (atteso primo block dalla prossima Stop sessione)")
 
     # blueprint-deviations (contesto)
     bd = read_jsonl(BLUEPRINT_DEVIATIONS)
@@ -211,7 +241,12 @@ def section_regole():
         lines.append("")
         for a in alerts:
             lines.append(f"  ALERT: {a}")
-    return "\n".join(lines), alerts
+    pc_state = {
+        "calibrated": pc_calibrated,
+        "n_block_today": n_block_today,
+        "total": pc_total_count,
+    }
+    return "\n".join(lines), alerts, pc_state
 
 # --- Sezione LOOP (CAPACITÀ 2) ---
 
@@ -323,7 +358,7 @@ def section_prossimo_passo():
 
 # --- Sezione CONFRONTO CLAUDE.AI (CAPACITÀ 3) ---
 
-def section_confronto(loop_alerts, regole_alerts, next_action):
+def section_confronto(loop_alerts, regole_alerts, next_action, pc_state):
     lines = ["=== CONFRONTO CLAUDE.AI ==="]
     triggers = []
     payload_hints = []
@@ -366,8 +401,12 @@ def section_confronto(loop_alerts, regole_alerts, next_action):
             triggers.append(f"(c) regressione: {proj}/{ring} VERIFIED → {st}")
         payload_hints.append("childwatch-history entry prima/dopo regressione + ultimo commit area")
 
-    # d. production_claim ≥2 block — NON misurabile (hook silent)
-    # Skip senza falsi positivi.
+    # d. production_claim ≥2 block oggi (solo se calibration window ≥72h superata).
+    # Finché non calibrato → trigger SILENT, no raccomandazione Claude.ai per non
+    # inquinare con falsi positivi dei pattern READY_CLAIM larghi.
+    if pc_state.get("calibrated") and pc_state.get("n_block_today", 0) >= 2:
+        triggers.append(f"(d) production_claim_gate ha bloccato {pc_state['n_block_today']}× oggi — CC vuole dichiarare ready ma i dati non lo confermano")
+        payload_hints.append("ultime 2 entry production-claim.jsonl + gate-state del progetto coinvolto")
 
     if triggers:
         lines.append("RACCOMANDATO confronto Claude.ai ORA.")
@@ -400,13 +439,13 @@ def main():
     print(f"=== VOS GUIDE {now} ===\n")
 
     print(section_stato()); print()
-    regole_out, regole_alerts = section_regole()
+    regole_out, regole_alerts, pc_state = section_regole()
     print(regole_out); print()
     loop_out, loop_alerts = section_loop()
     print(loop_out); print()
     pp_out, next_action = section_prossimo_passo()
     print(pp_out); print()
-    confronto_out, triggers = section_confronto(loop_alerts, regole_alerts, next_action)
+    confronto_out, triggers = section_confronto(loop_alerts, regole_alerts, next_action, pc_state)
     print(confronto_out)
 
     append_guide_log(next_action, triggers)

@@ -1,0 +1,94 @@
+{
+  "project": "FLUXION",
+  "updated_at": "2026-05-22T20:45:00Z",
+  "schema_source": "~/venture-os/VOS-PRODUCTION-PROTOCOL.md Parte 5.1",
+  "chain_map_source": "VOS-PRODUCTION-PROTOCOL.md Parte 4.2 (7 anelli)",
+  "chain_map": {
+    "1_landing_signup": "MISSING",
+    "2_checkout_stripe": "EXISTS",
+    "3_pagamento_confermato": "EXISTS",
+    "4_licenza_generata": "EXISTS",
+    "5_email_consegna": "EXISTS",
+    "6_attivazione_app": "EXISTS",
+    "7_sales_agent_wa": "MISSING"
+  },
+  "chain_map_evidence": {
+    "1_landing_signup": {
+      "command_protocol": "npm run test:e2e:signup",
+      "command_exists": false,
+      "real_output": "package.json scripts: nessuno script 'test:e2e:signup'. Esistono solo e2e:run:mac (wdio Tauri desktop), e2e:playwright (e2e-tests/), e2e:smoke. In e2e-tests/tests/: accessibility, clienti, dashboard, impostazioni, mock-debug, screenshots, smoke, user-journeys, visual. Nessun file *signup* o *lead*. Handler proxy lead-magnet.ts esiste ma non e2e-tested.",
+      "verdict_reason": "Nessun test E2E lead-capture eseguibile. MISSING."
+    },
+    "2_checkout_stripe": {
+      "command_protocol": "npm run test:e2e:checkout",
+      "command_exists": false,
+      "real_output": "Nessuno script 'test:e2e:checkout'. fluxion-proxy/src/routes/stripe-webhook.ts handler esistente. fluxion-proxy/tests/stripe-webhook.test.ts vitest 4/4 PASS (signature verify, missing email, unknown tier, happy path) ma 100% mocked. Nessun PaymentIntent reale mai creato.",
+      "verdict_reason": "Handler + unit test mocked esistono. EXISTS, non VERIFIED (zero esecuzione reale)."
+    },
+    "3_pagamento_confermato": {
+      "command_protocol": "stripe trigger payment_intent.succeeded",
+      "command_exists": false,
+      "real_output": "`which stripe` → 'stripe not found'. Stripe CLI non installato MacBook. Webhook handler ha signature HMAC-SHA256 testato unit (stripe-webhook.test.ts test 'invalid signature → 400'). Nessun trigger CLI mai eseguito.",
+      "verdict_reason": "Logica signature verify esiste e testata in isolato. EXISTS. VERIFIED richiede stripe CLI + endpoint deploy + curl reale."
+    },
+    "4_licenza_generata": {
+      "command_protocol": "npm run test:license",
+      "command_exists": false,
+      "real_output": "Nessuno script 'test:license'. Ed25519 sign/verify: src-tauri/src/commands/license_ed25519.rs + cargo test 5/5 PASS (S277: roundtrip, tampered payload, tampered sig, wrong pubkey, canonical-json determinism). Integration license_revoke 5/5 PASS (S280). Stripe-webhook test asserisce KV `purchase:{email}` creation (mocked). Mai emessa licenza da pagamento reale.",
+      "verdict_reason": "Logica firma+revoke 10/10 PASS in unit/integration. EXISTS. Catena payment→license-emit reale mai eseguita."
+    },
+    "5_email_consegna": {
+      "command_protocol": "npm run test:email",
+      "command_exists": false,
+      "real_output": "Nessuno script. Handlers fluxion-proxy/src/routes/: admin-resend.ts, admin-email-test.ts, activate-by-email.ts. stripe-webhook.test.ts test 'happy path' asserisce email_sent=true via mockFetch su Resend API (NON reale). Nessun RESEND_TEST_KEY in dashboard testato live (S282 setup: chiave creata + persistita iMac, mai esercitata via deploy).",
+      "verdict_reason": "Handler + mock test esistono. EXISTS. VERIFIED richiede Resend test inbox con email reale ricevuta."
+    },
+    "6_attivazione_app": {
+      "command_protocol": "manuale, app desktop Tauri",
+      "command_exists": null,
+      "real_output": "src-tauri/src/commands/license_ed25519.rs: activate_license_ed25519 + get_license_status + sync_license_status_from_phone_home (S280) + check_feature_access + check_vertical_access. Tutti compilano (cargo check 33s zero error S281). Activation testata su license_cache locale via unit/integration. App desktop Tauri ha mai-attivato licenza-da-pagamento-reale? NO — sempre license seed di test.",
+      "verdict_reason": "Codice attivazione esiste e cargo-test PASS. EXISTS. Mai eseguita activation reale post-Stripe."
+    },
+    "7_sales_agent_wa": {
+      "command_protocol": "n/a (Phase 12, NON iniziato)",
+      "command_exists": false,
+      "real_output": "Protocollo VOS Parte 4.2 marca esplicitamente '❌ noto'. WhatsApp Business API NON integrata per outreach sales (esiste solo whatsapp-service.cjs per post-booking voice agent Sara, scope diverso).",
+      "verdict_reason": "Phase 12 non avviata. MISSING (acknowledged in protocol)."
+    }
+  },
+  "safety_suite": {
+    "total": 8,
+    "passed": 0,
+    "last_run": null,
+    "note": "FSAF-01..08 (Parte 4.3) richiedono Stripe CLI + worker test deployato + 4 chiavi TEST + endpoint URL stabile. Worker test NON deployato (S282 blocker: CLOUDFLARE_API_TOKEN morto + CF dashboard outage). 13/13 vitest mocked PASS NON sostituiscono safety suite."
+  },
+  "data_quality_suite": {
+    "total": 4,
+    "passed": 0,
+    "accuracy": null,
+    "last_run": null,
+    "note": "FDQ-01..04 (full flow success card, SCA, refund, dispute) — zero esecuzioni reali."
+  },
+  "e2e_real_run_observed": false,
+  "production_ready": false,
+  "blocking_reason": "Anelli 1 e 7 MISSING (signup E2E inesistente, sales agent Phase 12 non avviato). Anelli 2-6 EXISTS ma mai VERIFIED: comandi npm protocol (test:e2e:signup, test:e2e:checkout, test:license, test:email) inesistenti in package.json; Stripe CLI non installato MacBook; worker test mai deployato (CF token dead + outage S282). Nessuna pipeline payment→license→email mai eseguita su card 4242 reale.",
+  "prerequisites_status": {
+    "verified_at": "2026-05-22T20:45:00Z",
+    "CF_API_TOKEN": "DEAD (re-verify live 2026-05-22T20:45Z: success=False code=1000 'Invalid API Token'. Token cfat_C... 53char ancora quello S189-B morto. S283 step 2 'founder crea nuovo token FLUXION-Track-B-S283' MAI eseguito).",
+    "STRIPE_TEST_SECRET_KEY": "OK_LIVE (re-verify 2026-05-22T20:45Z: GET /v1/balance → stripe_auth_ok=True, livemode=False, sk_test... 107char)",
+    "STRIPE_TEST_PUBLISHABLE_KEY": "MISSING (grep -iE 'publishable' su iMac .env → zero match. Mai persistita.)",
+    "RESEND_TEST_KEY": "PRESENT_UNTESTED (re_DDP... 36char su iMac .env come RESEND_API_KEY_TEST, mai esercitata live — richiede deploy worker)",
+    "STRIPE_WEBHOOK_SECRET_TEST": "MISSING (creabile solo post-deploy worker test → blocked by CF_API_TOKEN dead)",
+    "stripe_cli_installed": false,
+    "wrangler_env_test_block": "OK (S282 added in fluxion-proxy/wrangler.toml, KV namespace test = PLACEHOLDER non creato — blocked by CF_API_TOKEN dead)"
+  },
+  "first_real_run_attempted_at": "2026-05-22T20:45:00Z",
+  "first_real_run_result": "ABORT_AT_PRE_STEP",
+  "first_real_run_abort_reason": "3 blocker hard: (1) CF_API_TOKEN dead → wrangler deploy --env test impossibile, (2) STRIPE_PUBLISHABLE_KEY_TEST mai persistita → Checkout user-side flow blocked, (3) Stripe CLI non installato MacBook → stripe trigger/listen indisponibili. Chain-map anelli 2-6 restano EXISTS (zero promozione a VERIFIED). Safety suite 0/8 invariato.",
+  "infra_observed": {
+    "tunnel_prod_cloudflared_pid": 6785,
+    "tunnel_uuid": "3cccf30f-f260-496b-9c0c-e77fe8b77c23",
+    "tunnel_target": "http://localhost:3010",
+    "warning": "Token CF prod 'fluxion-tunnel' NON rollare — runtime tunnel attivo phone-home clienti."
+  }
+}
