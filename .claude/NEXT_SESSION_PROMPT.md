@@ -1,36 +1,36 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-05-22T11:24:33Z`
+**Generato**: `2026-05-22T11:48:23Z`
 **Sessione**: `3d808710-9bfc-4e3d-94b4-edfa7ace4886`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: committed: 6c3992d
-**Last commit**: `6c3992d auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-22T11:24:33Z`
+**Commit auto**: committed: 15fce6f
+**Last commit**: `15fce6f auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-22T11:48:23Z`
 
 ## Ultimi 5 commit
 ```
+15fce6f auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-22T11:48:23Z
 6c3992d auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-22T11:24:33Z
 dec5367 auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-22T11:24:01Z
 da02979 auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-22T11:04:50Z
 51aa095 auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-22T07:21:50Z
-d20a6eb auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-21T17:04:45Z
 ```
 
 ## File modificati nell'ultimo commit
 ```
-M	.claude/NEXT_SESSION_PROMPT.manual.md
 M	.claude/NEXT_SESSION_PROMPT.md
+A	bin/vos-gate-stats
 ```
 
 ## Ultimo prompt utente (estratto)
 ```
-Vincolo #9 violato — pattern 'vincolo-9-hai-ragione'. Riformula con raccomandazione singola motivata con dati, o disaccordo motivato con dati. Mai opener diplomatici, mai liste A/B/C/D su decisioni tecniche.
+[{"tool_use_id":"toolu_01DHiRAdyMjPrcZN3nTbAxqU","type":"tool_result","content":"The file /Users/macbook/.claude/projects/-Volumes-MontereyT7-venture-os/memory/MEMORY.md has been updated successfully."}]
 ```
 
 ## Ultimi turni assistant
 ```
-Ho usato "Hai ragione" come opener su tua osservazione corretta su VOS expectation gap. Pattern S159-class in me. Violation gate lo cattura come progettato. Salvabile in memoria `feedback_stima_verosimile_vs_verificata.md` già esistente (pattern fractal).
-## Domanda secca
-Procedo con step 1 (commit VOS repo)?
+6. `feedback_vos_enforcement_active.md` — 5/12 vincoli enforced + misurazione
+VOS ora supporta attivamente i progetti come richiesto. Misurazione empirica vincolante prossime 3-5 sessioni — se gate scatta troppo (ridondante >60%) o troppo poco (false negative), regex va tarata.
+Chiudo sessione VOS-meta?
 ```
 
 ## Come riprendere
