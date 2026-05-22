@@ -1,35 +1,36 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-05-21T17:04:45Z`
+**Generato**: `2026-05-22T07:21:50Z`
 **Sessione**: `3d808710-9bfc-4e3d-94b4-edfa7ace4886`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: committed: d20a6eb
-**Last commit**: `d20a6eb auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-21T17:04:45Z`
+**Commit auto**: committed: 51aa095
+**Last commit**: `51aa095 auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-22T07:21:50Z`
 
 ## Ultimi 5 commit
 ```
+51aa095 auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-22T07:21:50Z
 d20a6eb auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-21T17:04:45Z
 dcfa833 auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-21T17:01:32Z
 4c69ede auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-21T16:56:44Z
 8609bc4 auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-21T16:53:06Z
-5ab3998 auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-21T16:50:59Z
 ```
 
 ## File modificati nell'ultimo commit
 ```
 M	.claude/NEXT_SESSION_PROMPT.md
+M	state/cc-violations.jsonl
 ```
 
 ## Ultimo prompt utente (estratto)
 ```
-[{"tool_use_id":"toolu_01PtCcouuHWcxsLSCcW717Qb","type":"tool_result","content":"=== Confronto skills GLOBALE vs ARGOS-LOCALE ===\n--- 5 sample skills globali ---\nai-engineer\nanalytics-reporter\napi-tester\napp-store-optimizer\nargos-brand-guardian.md\n\n--- 5 sample skills ARGOS locali ---\nai-engineer\nanalytics-reporter\napi-tester\napp-store-optimizer\nbackend-architect\n\n--- Skills duplicati (stesso nome global + local) ---\n      20\nskills duplicati (su 43 global, 55 local):\n      34\
+[{"tool_use_id":"toolu_013wQW19fZrrpDfN5ZzsuZ1V","type":"tool_result","content":"The file /Users/macbook/.claude/projects/-Volumes-MontereyT7-venture-os/memory/MEMORY.md has been updated successfully."}]
 ```
 
 ## Ultimi turni assistant
 ```
-Questo è il **pattern "configurazione decentralizzata duplicata"**. ARGOS+FLUXION probabilmente entrambi soffrono dello stesso problema (skills/agents locali che duplicano i global). Verifica analoga su FLUXION potrebbe trovare 20-30 skill duplicati. Salvabile come memoria S159-class.
 ## Domanda secca
-Eseguo `mv` di 34 skill + 6 agent duplicati ARGOS in archive ORA? Reversibile in 30 sec se non funziona.
+Vuoi che faccia il diff granulare ORA (read-only, 5 min, identifica IDENTICAL veri)? Oppure preferisci accettare 33% startup ARGOS come stato attuale e tornare al lavoro revenue ARGOS (sanitizer C5 + commit GATE D + scheduler OPS-01)?
+**Mio voto operativo**: accettare 33% per oggi, tornare al revenue work ARGOS. Il fix context budget ARGOS richiede sessione dedicata + misurazione empirica corretta, non bulk fix non verificato. Vincolo S182 + vincolo #10 entrambi coerenti.
 ```
 
 ## Come riprendere
