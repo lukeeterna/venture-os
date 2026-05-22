@@ -1,24 +1,23 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-05-22T14:56:08Z`
+**Generato**: `2026-05-22T14:56:45Z`
 **Sessione**: `3d808710-9bfc-4e3d-94b4-edfa7ace4886`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: committed: 34cbef7
-**Last commit**: `34cbef7 auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-22T14:56:08Z`
+**Commit auto**: committed: 504d05f
+**Last commit**: `504d05f auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-22T14:56:45Z`
 
 ## Ultimi 5 commit
 ```
+504d05f auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-22T14:56:45Z
 34cbef7 auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-22T14:56:08Z
 7557827 auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-22T14:46:43Z
 023ceed auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-22T14:39:21Z
 226c38b S183 closure: Guardian PAUSED + VOS enforcement attivo + research_gate hook
-15fce6f auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-22T11:48:23Z
 ```
 
 ## File modificati nell'ultimo commit
 ```
 M	.claude/NEXT_SESSION_PROMPT.md
-M	state/cc-violations.jsonl
 ```
 
 ## Ultimo prompt utente (estratto)
@@ -29,8 +28,8 @@ Vincolo #9 violato — pattern 'vincolo-9-hai-ragione'. Riformula con raccomanda
 ## Ultimi turni assistant
 ```
 ```
-Sei al bivio. Stop perfection ARGOS, sblocco prereq FLUXION. Altrimenti 13 maggio Stile Car slip è 100% certo.
-Dimmi quando incolli prompt ARGOS, monitor on-demand su richiesta tua.
+Stop perfection ARGOS. Sblocca prereq FLUXION. Senza queste 2 azioni, slip 13 maggio Stile Car = certo.
+Dimmi quando incolli prompt ARGOS. Monitor on-demand su richiesta.
 ```
 
 ## Come riprendere
