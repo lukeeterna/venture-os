@@ -1,9 +1,9 @@
 {
   "project": "ARGOS",
-  "updated_at": "2026-05-22T17:25:00Z",
-  "updated_by": "VOS Fase A mappatura empirica, sessione 3d808710",
+  "updated_at": "2026-05-22T17:50:00Z",
+  "updated_by": "VOS Fase A + anello #1 fix verificato empirico (Step 1-2-3 PASS)",
   "chain_map": {
-    "1_scrape": "EXISTS",
+    "1_scrape": "VERIFIED",
     "2_cove": "EXISTS",
     "3_dossier_pdf": "EXISTS_VERIFIED_PARTIAL",
     "4_sanitizer": "EXISTS_VERIFIED_PARTIAL",
@@ -15,11 +15,15 @@
   },
   "evidence_per_link": {
     "1_scrape": {
+      "state": "VERIFIED",
+      "verified_at": "2026-05-22T17:50:00Z",
       "code_files": ["tools/scrapers/autoscout_scraper.py","tools/scrapers/mobile_de_scraper.py","tools/scrapers/base_scraper.py"],
-      "execution_test": "ImportError: attempted relative import with no known parent package (autoscout_scraper.py:24)",
-      "output_storico_db": "market_listings count=0 (dealer_network.sqlite)",
-      "cove_tracker_duckdb": "file is not a database (798MB corrotto)",
-      "classification_reason": "modulo esiste ma execution diretto fallisce + DB output vuoto. Mai validato con input URL reale recente con output verificato."
+      "step1_db_recovery": "cove_tracker.duckdb NON corrotto: header DUCK magic offset 0x08, apre RO con duckdb 1.4.4, 15 tabelle, vehicle_listings=125 record. Brief alert 'file is not a database' era version mismatch CLI tool (falso allarme).",
+      "step2_import_fix": "autoscout_scraper.py:24 'from .base_scraper import BaseScraper' (relative). Fix: eseguire come modulo `python3 -m tools.scrapers.autoscout_scraper`. Zero modifiche package, altri relative import preservati.",
+      "step3_root_cause": "AutoScoutScraper.scrape() chiamato da CLI NON chiamava upsert_listing. Solo BaseScraper.run_all() lo faceva. Fix CLI main: loop `upsert_listing(lst)` sui listing returned. Blast radius = solo CLI main.",
+      "step3_execution": "ARGOS_DB_PATH=$(pwd)/dealer_network.sqlite python3 -m tools.scrapers.autoscout_scraper --make BMW --model 'Serie 3' --country DE --pages 1",
+      "step3_db_proof": "market_listings count=21 (dopo 2 run). Record reale ispezionato: autoscout24_de_2dbabd12692f, BMW Serie 3 d Advantage 2020, 72.345km, €21.995, seller Auto GEMO GmbH, 10 image_urls, first_seen 2026-05-22T15:26:12Z.",
+      "lavoro_non_chiuso": "ARGOS_DB_PATH default punta a ~/Documents/app-antigravity-auto/dealer_network.sqlite (path iMac, non esiste su MacBook). Stesso pattern OPS-01 scheduler PM2 LaunchAgent broken (utente gianlucadistasi vs macbook). Da decidere: aggiornare default o documentare override obbligatorio. Non blocca VERIFIED ma è regression risk."
     },
     "2_cove": {
       "code_files": ["src/cove/cove_engine_v4.py","src/cove/scraper_cove_pipeline.py","src/cove/cove_tracker.py","src/cove/cove_params_calibrated.py"],
@@ -72,8 +76,8 @@
   "data_quality_suite": { "total": 8, "passed": 0, "accuracy": null, "last_run": null, "status": "NOT_WRITTEN" },
   "e2e_real_run_observed": false,
   "production_ready": false,
-  "blocking_reason": "Anello #1 SCRAPE non VERIFIED (ImportError + market_listings=0 + cove_tracker.duckdb corrotto). Tutta la catena downstream dipende da scrape funzionante con output reale verificato. Inoltre anello #6 INBOX MISSING (tabella messages non esiste). Anello #9 HITL EXISTS_BUGGY con CRITICAL SAFETY bug 'sent=1 approvata=0'.",
-  "anello_piu_a_monte_non_verified": "#1_scrape",
-  "next_work_unico": "Verifica empirica anello #1: import path fix (relative→package o python -m), esecuzione su URL reale autoscout24/mobile.de, output JSON valido scritto in DB. SOLO DOPO scrape VERIFIED si passa anello successivo.",
-  "what_NOT_to_do": "NO lavoro su sanitizer #4 (siamo già in loop 48h), NO Phase 6 AMBRA, NO Phase 4 outreach. NO stima giorni. NO 'production ready' dichiarazioni."
+  "blocking_reason": "Anello #1 VERIFIED 2026-05-22 (Step 1-2-3 PASS, market_listings 0→21). Anello #6 INBOX MISSING (tabella messages non esiste né locale né iMac). Anello #9 HITL EXISTS_BUGGY con CRITICAL SAFETY bug 'sent=1 approvata=0'. Catena downstream da #2 in giù non più bloccata da scrape.",
+  "anello_piu_a_monte_non_verified": "#2_cove",
+  "next_work_unico": "Verifica empirica anello #2 CoVe: esecuzione su record reale market_listings (es. autoscout24_de_2dbabd12692f BMW Serie 3 appena scrapeato). Output: Si score + recommendation. Pipeline scraper_cove_pipeline.py o cove_engine_v4 chiamato con DB record reale. SOLO DOPO #2 VERIFIED si passa #3.",
+  "what_NOT_to_do": "NO lavoro su sanitizer #4 (loop 48h chiuso con S183-ter D-32 pure), NO Phase 6 AMBRA, NO Phase 4 outreach. NO stima giorni. NO 'production ready' dichiarazioni. NO sistemazione ARGOS_DB_PATH default ora (registrato come knock-on, non blocca #2)."
 }
