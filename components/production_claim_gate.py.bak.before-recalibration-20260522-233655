@@ -19,18 +19,17 @@ from pathlib import Path
 
 VOS_STATE = Path.home() / "venture-os" / "state"
 
-# Pattern di "dichiarazione di completamento" — stretti (post-recalibration 2026-05-22).
-# Rimossi i larghi ("(tutto|sistema) (funziona|...)", "pipeline (funzionante|...)", "E2E funzionante",
-# "gate (verde|passed|ok)") che catturavano frasi di lavoro normali ("ora il sistema funziona
-# dopo il fix"). Mantenute solo dichiarazioni esplicite di production-readiness o stime giorni-a-revenue.
+# Pattern di "dichiarazione di completamento" (IT + EN)
 READY_CLAIM_PATTERNS = [
     r"\bproduction[- ]?ready\b",
     r"\bpronto per (la )?produzione\b",
-    r"\bE2E (verificato|validato|completo|passa)\b",
+    r"\bE2E (funzionante|ok|completo|verificato|passa)\b",
+    r"\bpipeline (funzionante|completa|pronta)\b",
+    r"\b(tutto|sistema) (funziona|pronto|completo|done)\b",
+    r"\bgate (verde|passed|ok)\b",
     r"\bgiorni[- ]a[- ]revenue\b",
     r"\bdistance[- ]to[- ]revenue\b",
     r"\b\d+\s*(giorni|gg|days)\s*(a|to|per|al)\s*(€|revenue|primo|sale)\b",
-    r"\bdeploy(are)? in produzione\b",
 ]
 
 PROJECT_PATTERNS = {
@@ -60,48 +59,10 @@ def load_gate_state(project):
         return None
 
 
-def _counter_path(session_id):
-    sid_safe = re.sub(r"[^A-Za-z0-9_.-]", "_", session_id or "unknown")
-    return Path("/tmp") / f"vos-pclaim-{sid_safe}.count"
-
-
-def _read_counter(session_id):
-    p = _counter_path(session_id)
-    if not p.exists():
-        return 0
-    try:
-        return int(p.read_text().strip() or "0")
-    except Exception:
-        return 0
-
-
-def _bump_counter(session_id):
-    p = _counter_path(session_id)
-    n = _read_counter(session_id) + 1
-    try:
-        p.write_text(str(n))
-    except Exception:
-        pass
-    return n
-
-
 def main():
     try:
         payload = json.load(sys.stdin)
     except Exception:
-        sys.exit(0)
-
-    # FIX 1a — anti-loop ufficiale: se stop_hook_active=True (CC sta già continuando
-    # per effetto di un block precedente), NON ribloccare. Logga e exit pulito.
-    # Fonte: doc Anthropic + Agent SDK hooks reference (campo standard Stop hook).
-    session_id = payload.get("session_id", "") or "unknown"
-    if payload.get("stop_hook_active", False):
-        try:
-            entry = {"ts": datetime.now(timezone.utc).isoformat(), "session_id": session_id,
-                     "loop_guard_active": True, "note": "stop_hook_active=true → no block"}
-            (VOS_STATE / "production-claim.jsonl").open("a", encoding="utf-8").write(json.dumps(entry, ensure_ascii=False) + "\n")
-        except Exception:
-            pass
         sys.exit(0)
 
     msg = payload.get("last_assistant_message", "") or ""
@@ -125,7 +86,7 @@ def main():
             f"~/venture-os/state/gate-state-{project}.json NON esiste. "
             f"Prima esegui Fase A (chain-map) del VOS-PRODUCTION-PROTOCOL. "
             f"Vietato dichiarare ready o stimare giorni senza chain-map verificata.",
-            project=project, msg=msg, session_id=session_id
+            project=project, msg=msg
         )
         return
 
@@ -143,7 +104,7 @@ def main():
             f"Riformula con lo STATO REALE degli anelli (VERIFIED/EXISTS/MISSING), "
             f"non con una dichiarazione di 'ready' o una stima in giorni. "
             f"Il numero vero e' 'anelli VERIFIED su totale', non 'giorni-a-revenue'.",
-            project=project, msg=msg, session_id=session_id
+            project=project, msg=msg
         )
         return
 
@@ -151,27 +112,11 @@ def main():
     sys.exit(0)
 
 
-def block(reason, project=None, msg="", session_id="unknown"):
-    # FIX 1b — counter per session_id: al 2° trigger sulla stessa sessione,
-    # degrada a observe-only (logga ma NON emette decision:block).
-    count = _bump_counter(session_id)
-    observe_only = count >= 2
+def block(reason, project=None, msg=""):
     try:
-        entry = {
-            "ts": datetime.now(timezone.utc).isoformat(),
-            "session_id": session_id,
-            "project": project,
-            "reason": reason,
-            "blocked_message_preview": (msg or "")[:300],
-            "block_count_session": count,
-            "observe_only": observe_only,
-        }
+        entry = {"ts": datetime.now(timezone.utc).isoformat(), "project": project, "reason": reason, "blocked_message_preview": (msg or "")[:300]}
         (VOS_STATE / "production-claim.jsonl").open("a", encoding="utf-8").write(json.dumps(entry, ensure_ascii=False) + "\n")
-    except Exception:
-        pass
-    if observe_only:
-        # Logga ma non bloccare: anti-loop secondario (cintura su bretelle stop_hook_active).
-        sys.exit(0)
+    except Exception: pass
     print(json.dumps({"decision": "block", "reason": reason}, ensure_ascii=False))
     sys.exit(0)
 

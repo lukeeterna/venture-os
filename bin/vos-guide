@@ -253,16 +253,41 @@ def section_regole():
     pc_calibrated = False
     pc_total_count = 0
     n_block_today = 0
+    # FIX 3 — distinguere "ATTIVO silenzioso" (hook registrato in settings.json + 0 block)
+    # da "NON ATTIVO" (hook non registrato, sistema cieco). No metrica zombie.
+    pc_registered = False
+    try:
+        import json as _json
+        with open(Path.home() / ".claude" / "settings.json", "r", encoding="utf-8") as _f:
+            _stop_hooks = _json.load(_f).get("hooks", {}).get("Stop", [])
+        for _entry in _stop_hooks:
+            for _h in _entry.get("hooks", []):
+                if "production_claim_gate.py" in (_h.get("command") or ""):
+                    pc_registered = True
+                    break
+            if pc_registered:
+                break
+    except Exception:
+        pass
+
     if not PRODUCTION_CLAIM_HOOK.exists():
-        lines.append("production_claim_gate: NON installato")
+        lines.append("production_claim_gate: NON installato (file script mancante)")
+    elif not pc_registered:
+        lines.append("production_claim_gate: NON ATTIVO — script presente ma non registrato in settings.json hooks.Stop (sistema cieco a claim premature)")
     else:
         pc = read_jsonl(PRODUCTION_CLAIM_LOG)
         pc_total_count = len(pc)
         pc_today = filter_today(pc)
-        n_block_today = len(pc_today)
-        lines.append(f"production_claim_gate: {n_block_today} block oggi (totale jsonl: {pc_total_count})")
-        if pc_today:
-            last = pc_today[-1]
+        # Distingui block reali da entry observe_only / loop_guard
+        pc_blocks_today = [r for r in pc_today if r.get("block_count_session", 0) >= 1 and not r.get("observe_only", False) and not r.get("loop_guard_active", False)]
+        n_block_today = len(pc_blocks_today)
+        if n_block_today == 0:
+            lines.append(f"production_claim_gate: ATTIVO, 0 block oggi (nessun claim premature rilevato) — totale jsonl: {pc_total_count}")
+        else:
+            lines.append(f"production_claim_gate: ATTIVO, {n_block_today} block oggi (totale jsonl: {pc_total_count})")
+        # Mostra solo l'ultimo BLOCK reale (esclude observe_only/loop_guard entries)
+        if pc_blocks_today:
+            last = pc_blocks_today[-1]
             preview = (last.get("blocked_message_preview") or "").replace("\n", " ").strip()
             if len(preview) > 120:
                 preview = preview[:117] + "..."
