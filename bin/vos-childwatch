@@ -1,0 +1,276 @@
+#!/usr/bin/env python3
+"""
+VOS Child-Watch — monitor passivo ARGOS+FLUXION via gate-state JSON.
+Stdlib only, Big Sur compatible, no daemon, no pip deps.
+
+Output: report markdown italiano per copy a Claude.ai + append history JSONL.
+"""
+import json
+import os
+import sys
+from datetime import datetime, timezone, timedelta
+from pathlib import Path
+
+HOME = Path.home()
+VOS_STATE = HOME / "venture-os" / "state"
+HISTORY = VOS_STATE / "childwatch-history.jsonl"
+
+# Candidate gate-state paths per progetto (priorità: progetto-locale → VOS fallback)
+GATE_PATHS = {
+    "ARGOS": [
+        HOME / "Documents/combaretrovamiauto-enterprise/.planning/gate-state-ARGOS.json",
+        VOS_STATE / "gate-state-ARGOS.json",
+    ],
+    "FLUXION": [
+        Path("/Volumes/MontereyT7/FLUXION/.planning/gate-state-FLUXION.json"),
+        VOS_STATE / "gate-state-FLUXION.json",
+    ],
+}
+
+# Path da verificare esistenza (alert se referenziati ma assenti)
+PATH_HARDCODED_CHECKS = {
+    "ARGOS": [
+        ("ARGOS_DB_PATH default", HOME / "Documents/app-antigravity-auto/dealer_network.sqlite"),
+        ("CLAUDE.md scoutauto cwd", HOME / "Documents/app-antigravity-auto"),
+    ],
+}
+
+STATE_SYMBOL = {
+    "VERIFIED": "✅",
+    "EXISTS_VERIFIED_PARTIAL": "🟡",
+    "EXISTS": "⚠️",
+    "EXISTS_PARTIAL": "⚠️",
+    "EXISTS_BUGGY": "🔴",
+    "MISSING": "❌",
+}
+
+
+def normalize_schema(raw):
+    """Gestisce 2 schemi: VOS (chain_map dict str) e ARGOS (rings dict nested)."""
+    if not raw:
+        return raw
+    if "chain_map" not in raw and "rings" in raw:
+        # ARGOS schema: rings.<anello>.state → chain_map.<anello> = state
+        chain = {}
+        for anello, info in raw.get("rings", {}).items():
+            if isinstance(info, dict):
+                chain[anello] = info.get("state", "UNKNOWN")
+        raw["chain_map"] = chain
+    return raw
+
+
+def load_gate(project):
+    """Restituisce (data, path_usato, errore_str_or_None). Preferisce gate-state con chain_map non vuoto."""
+    last_err = None
+    last_path = None
+    candidates_loaded = []
+    for p in GATE_PATHS.get(project, []):
+        try:
+            if p.exists():
+                with p.open() as f:
+                    raw = json.load(f)
+                raw = normalize_schema(raw)
+                candidates_loaded.append((raw, str(p)))
+        except json.JSONDecodeError as e:
+            last_err = f"JSON corrotto: {e}"
+            last_path = str(p)
+        except Exception as e:
+            last_err = f"errore lettura: {e}"
+            last_path = str(p)
+    # Preferisce candidato con più anelli VERIFIED, poi più completo
+    if candidates_loaded:
+        candidates_loaded.sort(key=lambda x: -(len(x[0].get("chain_map", {}))))
+        return candidates_loaded[0][0], candidates_loaded[0][1], None
+    return None, last_path, last_err or "gate-state file MANCANTE in tutte le location"
+
+
+def build_bar(chain_map):
+    """Trasforma chain_map dict in barra ✅⚠️❌."""
+    if not chain_map:
+        return "[----------]"
+    ordered = sorted(chain_map.items(), key=lambda kv: kv[0])
+    return "[" + "".join(STATE_SYMBOL.get(v, "?") for _, v in ordered) + "]"
+
+
+def count_verified(chain_map):
+    if not chain_map:
+        return 0, 0
+    total = len(chain_map)
+    verified = sum(1 for v in chain_map.values() if v == "VERIFIED")
+    return verified, total
+
+
+def is_stale(updated_at_str, hours=48):
+    """True se updated_at è più vecchio di N ore."""
+    if not updated_at_str:
+        return True
+    try:
+        # Tollera Z e +00:00
+        if updated_at_str.endswith("Z"):
+            updated_at_str = updated_at_str[:-1] + "+00:00"
+        dt = datetime.fromisoformat(updated_at_str)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return (datetime.now(timezone.utc) - dt) > timedelta(hours=hours)
+    except Exception:
+        return True
+
+
+def detect_regression(project, current_chain):
+    """Confronta chain_map corrente con ultimo run in history. True se regressione."""
+    regressions = []
+    if not HISTORY.exists():
+        return regressions
+    try:
+        last_run = None
+        with HISTORY.open() as f:
+            for line in f:
+                try:
+                    entry = json.loads(line)
+                    if entry.get("project") == project:
+                        last_run = entry
+                except Exception:
+                    continue
+        if not last_run:
+            return regressions
+        prev_chain = last_run.get("chain_map", {})
+        order = {"VERIFIED": 4, "EXISTS_VERIFIED_PARTIAL": 3, "EXISTS": 2, "EXISTS_PARTIAL": 2,
+                "EXISTS_BUGGY": 1, "MISSING": 0}
+        for anello, curr_state in current_chain.items():
+            prev_state = prev_chain.get(anello)
+            if prev_state and order.get(curr_state, 0) < order.get(prev_state, 0):
+                regressions.append(f"{anello}: {prev_state} → {curr_state}")
+    except Exception:
+        pass
+    return regressions
+
+
+def check_hardcoded_paths(project):
+    """Verifica path che dovrebbero esistere; ritorna lista anomalie."""
+    anomalies = []
+    for label, path in PATH_HARDCODED_CHECKS.get(project, []):
+        if not path.exists():
+            anomalies.append(f"path inesistente: {label} → {path}")
+    return anomalies
+
+
+def compute_ready(data):
+    """production_ready = chain tutto VERIFIED AND safety completa AND e2e osservato."""
+    if not data:
+        return False
+    chain = data.get("chain_map", {})
+    if not chain:
+        return False
+    if not all(v == "VERIFIED" for v in chain.values()):
+        return False
+    safety = data.get("safety_suite", {})
+    total = safety.get("total", 0)
+    passed = safety.get("passed", 0)
+    if total == 0 or passed < total:
+        return False
+    return bool(data.get("e2e_real_run_observed", False))
+
+
+def render_project(project, data, path_used, err):
+    """Restituisce (block_markdown, dict_per_history, lista_azioni_luke)."""
+    actions_luke = []
+    anomalies = []
+
+    if err or not data:
+        block = f"{project:7} [---------] gate-state MANCANTE/ERRORE\n        path provato: {path_used or 'nessun candidato'}\n        errore: {err or 'sconosciuto'}"
+        if project == "FLUXION":
+            actions_luke.append(f"creare {GATE_PATHS['FLUXION'][1]} (manca completamente)")
+        return block, {"project": project, "error": err, "path": path_used}, actions_luke
+
+    chain = data.get("chain_map", {})
+    bar = build_bar(chain)
+    verified, total = count_verified(chain)
+    safety = data.get("safety_suite", {})
+    s_passed = safety.get("passed", 0)
+    s_total = safety.get("total", 0)
+    e2e = data.get("e2e_real_run_observed", False)
+    e2e_str = "SI" if e2e else "NO"
+    ready = compute_ready(data)
+    ready_str = "✅" if ready else "❌"
+    blocking = data.get("blocking_reason", "n/a")
+    next_link = data.get("anello_piu_a_monte_non_verified", "n/a")
+
+    # Anomalie
+    regressions = detect_regression(project, chain)
+    for r in regressions:
+        anomalies.append(f"REGRESSIONE: {r}")
+    if is_stale(data.get("updated_at"), hours=48):
+        anomalies.append(f"STALE: updated_at vecchio >48h (progetto fermo o in loop)")
+    hardcoded = check_hardcoded_paths(project)
+    for h in hardcoded:
+        anomalies.append(h)
+        actions_luke.append(f"{project}: {h}")
+
+    anomalies_str = "; ".join(anomalies) if anomalies else "nessuna"
+
+    block = (
+        f"{project:7} {bar}  {verified}/{total} verified | safety {s_passed}/{s_total} | "
+        f"E2E real: {e2e_str} | READY: {ready_str}\n"
+        f"        anello a monte da chiudere: {next_link}\n"
+        f"        blocking: {blocking[:200]}\n"
+        f"        anomalie: {anomalies_str}"
+    )
+
+    history_entry = {
+        "ts": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "project": project,
+        "path_used": path_used,
+        "chain_map": chain,
+        "verified_count": verified,
+        "total_links": total,
+        "safety_passed": s_passed,
+        "safety_total": s_total,
+        "e2e_real_run_observed": e2e,
+        "production_ready": ready,
+        "anomalies": anomalies,
+    }
+    return block, history_entry, actions_luke
+
+
+def append_history(entries):
+    try:
+        VOS_STATE.mkdir(parents=True, exist_ok=True)
+        with HISTORY.open("a") as f:
+            for e in entries:
+                f.write(json.dumps(e, ensure_ascii=False) + "\n")
+    except Exception:
+        pass
+
+
+def main():
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    lines = [f"=== VOS CHILD-WATCH {now} ==="]
+    history_entries = []
+    actions_luke_all = []
+
+    for project in ("ARGOS", "FLUXION"):
+        data, path_used, err = load_gate(project)
+        block, hist, actions = render_project(project, data, path_used, err)
+        lines.append(block)
+        history_entries.append(hist)
+        actions_luke_all.extend(actions)
+
+    lines.append("")
+    if actions_luke_all:
+        lines.append("AZIONI LUKE:")
+        for a in actions_luke_all:
+            lines.append(f"  - {a}")
+    else:
+        lines.append("AZIONI LUKE: nessuna (osserva e attendi child output)")
+
+    lines.append("")
+    lines.append("REGOLA VOS: nessuna stima giorni-a-revenue finché production_ready=false.")
+    lines.append("Distance reale = anelli VERIFIED + safety pass + E2E osservato, non giorni.")
+
+    report = "\n".join(lines)
+    print(report)
+    append_history(history_entries)
+
+
+if __name__ == "__main__":
+    main()
