@@ -1,0 +1,183 @@
+#!/usr/bin/env python3
+# ~/venture-os/bin/vos-gate-stats
+# Misurazione empirica del Research Gate sulle prossime 3-5 sessioni.
+#
+# Risponde alle domande di misurazione che Luke ha posto:
+#   - Quanti pattern decisionali vengono effettivamente intercettati?
+#   - False positive (gate scatta dove non serviva)?
+#   - Quante volte la research era GIÀ stata fatta (gate ridondante)?
+#   - Trend per progetto.
+#
+# Uso:
+#   vos-gate-stats                  # ultimi 7 giorni
+#   vos-gate-stats --days 3
+#   vos-gate-stats --project ARGOS
+#   vos-gate-stats --tail           # follow live
+#   vos-gate-stats --json
+
+import argparse
+import json
+import sys
+import time
+from collections import defaultdict
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+
+LOG_FILE = Path.home() / "venture-os" / "state" / "research-gate.jsonl"
+
+
+def iso_to_dt(s):
+    try:
+        return datetime.fromisoformat(s.replace("Z", "+00:00"))
+    except Exception:
+        return None
+
+
+def load(days):
+    if not LOG_FILE.exists():
+        return []
+    cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+    out = []
+    for line in LOG_FILE.read_text(errors="replace").splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            r = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        dt = iso_to_dt(r.get("ts", ""))
+        if dt and dt >= cutoff:
+            out.append(r)
+    return out
+
+
+def analyze(rows, project_filter=None):
+    stats = defaultdict(lambda: {
+        "total_fires": 0,
+        "decision": 0,
+        "irreversible": 0,
+        "factual": 0,
+        "research_already_done": 0,  # gate ridondante (research già fatta)
+        "research_missing": 0,        # gate utile (research mancante)
+        "sessions": set(),
+    })
+    for r in rows:
+        proj = r.get("project", "UNKNOWN")
+        if project_filter and proj != project_filter:
+            continue
+        s = stats[proj]
+        s["total_fires"] += 1
+        s["sessions"].add(r.get("session_id", "?"))
+        if r.get("decision_triggered"):
+            s["decision"] += 1
+        if r.get("irreversible_triggered"):
+            s["irreversible"] += 1
+        if r.get("factual_triggered"):
+            s["factual"] += 1
+        if r.get("research_done_before"):
+            s["research_already_done"] += 1
+        else:
+            s["research_missing"] += 1
+    return stats
+
+
+def fmt(stats, days):
+    if not stats:
+        return f"Nessun firing del Research Gate negli ultimi {days} giorni.\n(Il gate scatta solo su prompt decisionali/irreversibili nei progetti ARGOS/FLUXION/GUARDIAN.)\n"
+    lines = [f"# VOS Research Gate — misurazione ultimi {days} giorni", ""]
+    for proj, s in sorted(stats.items()):
+        n_sessions = len(s["sessions"])
+        redundancy = (s["research_already_done"] / s["total_fires"] * 100) if s["total_fires"] else 0
+        usefulness = (s["research_missing"] / s["total_fires"] * 100) if s["total_fires"] else 0
+        lines.append(f"## {proj}")
+        lines.append(f"- Sessioni con almeno 1 firing: {n_sessions}")
+        lines.append(f"- Firing totali: {s['total_fires']}")
+        lines.append(f"  - di cui decisione architetturale/scelta: {s['decision']}")
+        lines.append(f"  - di cui azione irreversibile/costosa: {s['irreversible']}")
+        lines.append(f"  - con claim fattuali da verificare: {s['factual']}")
+        lines.append(f"- Gate UTILE (research mancava): {s['research_missing']}  ({usefulness:.0f}%)")
+        lines.append(f"- Gate RIDONDANTE (research già fatta): {s['research_already_done']}  ({redundancy:.0f}%)")
+        if redundancy > 60:
+            lines.append(f"  ⚠ Ridondanza alta: il gate scatta spesso dopo research già fatta. "
+                         f"Considera di alzare la soglia di detection (meno trigger).")
+        if usefulness > 70:
+            lines.append(f"  ✓ Gate efficace: nella maggioranza dei casi la research mancava.")
+        lines.append("")
+    lines.append("---")
+    lines.append("Lettura: 'Gate UTILE' alto = il gate sta catturando decisioni prese senza research (buono).")
+    lines.append("'Gate RIDONDANTE' alto = il gate disturba dopo che la research è già stata fatta (da tarare).")
+    lines.append("False positive = controlla i prompt_preview con: cat ~/venture-os/state/research-gate.jsonl | tail")
+    return "\n".join(lines) + "\n"
+
+
+def tail_mode():
+    if not LOG_FILE.exists():
+        print("Nessun log ancora. Il gate scriverà qui al primo firing.", file=sys.stderr)
+        # Crea il file vuoto per poterlo seguire
+        LOG_FILE.parent.mkdir(parents=True, exist_ok=True)
+        LOG_FILE.touch()
+    print(f"Tail live: {LOG_FILE} (Ctrl-C per uscire)")
+    print("-" * 80)
+    pos = LOG_FILE.stat().st_size
+    try:
+        while True:
+            sz = LOG_FILE.stat().st_size
+            if sz < pos:
+                pos = 0
+            if sz > pos:
+                with LOG_FILE.open() as f:
+                    f.seek(pos)
+                    for line in f:
+                        line = line.strip()
+                        if not line:
+                            continue
+                        try:
+                            r = json.loads(line)
+                        except json.JSONDecodeError:
+                            continue
+                        ts = r.get("ts", "")[:19]
+                        proj = r.get("project", "?")
+                        kind = "IRREVERSIBLE" if r.get("irreversible_triggered") else "decision"
+                        rd = "research✓" if r.get("research_done_before") else "research✗"
+                        preview = (r.get("prompt_preview", "") or "")[:60]
+                        print(f"{ts} [{proj}] {kind:<12} {rd}  «{preview}»")
+                    pos = f.tell()
+            time.sleep(1.0)
+    except KeyboardInterrupt:
+        print("\nbye")
+
+
+def main():
+    p = argparse.ArgumentParser(description="VOS Research Gate — misurazione empirica")
+    p.add_argument("--days", type=int, default=7)
+    p.add_argument("--project", default=None)
+    p.add_argument("--json", action="store_true")
+    p.add_argument("--tail", action="store_true")
+    args = p.parse_args()
+
+    if args.tail:
+        tail_mode()
+        return
+
+    rows = load(args.days)
+    stats = analyze(rows, args.project)
+
+    if args.json:
+        out = {}
+        for proj, s in stats.items():
+            out[proj] = {
+                "sessions": len(s["sessions"]),
+                "total_fires": s["total_fires"],
+                "decision": s["decision"],
+                "irreversible": s["irreversible"],
+                "research_missing": s["research_missing"],
+                "research_already_done": s["research_already_done"],
+            }
+        print(json.dumps(out, indent=2, ensure_ascii=False))
+    else:
+        print(fmt(stats, args.days))
+
+
+if __name__ == "__main__":
+    main()
