@@ -14,6 +14,7 @@
 import sys
 import json
 import re
+from datetime import datetime, timezone
 from pathlib import Path
 
 VOS_STATE = Path.home() / "venture-os" / "state"
@@ -84,7 +85,8 @@ def main():
             f"Hai usato linguaggio di completamento/stima per {project}, ma "
             f"~/venture-os/state/gate-state-{project}.json NON esiste. "
             f"Prima esegui Fase A (chain-map) del VOS-PRODUCTION-PROTOCOL. "
-            f"Vietato dichiarare ready o stimare giorni senza chain-map verificata."
+            f"Vietato dichiarare ready o stimare giorni senza chain-map verificata.",
+            project=project, msg=msg
         )
         return
 
@@ -101,7 +103,8 @@ def main():
             f"E2E real run osservata da Luke: {e2e}. "
             f"Riformula con lo STATO REALE degli anelli (VERIFIED/EXISTS/MISSING), "
             f"non con una dichiarazione di 'ready' o una stima in giorni. "
-            f"Il numero vero e' 'anelli VERIFIED su totale', non 'giorni-a-revenue'."
+            f"Il numero vero e' 'anelli VERIFIED su totale', non 'giorni-a-revenue'.",
+            project=project, msg=msg
         )
         return
 
@@ -109,7 +112,11 @@ def main():
     sys.exit(0)
 
 
-def block(reason):
+def block(reason, project=None, msg=""):
+    try:
+        entry = {"ts": datetime.now(timezone.utc).isoformat(), "project": project, "reason": reason, "blocked_message_preview": (msg or "")[:300]}
+        (VOS_STATE / "production-claim.jsonl").open("a", encoding="utf-8").write(json.dumps(entry, ensure_ascii=False) + "\n")
+    except Exception: pass
     print(json.dumps({"decision": "block", "reason": reason}, ensure_ascii=False))
     sys.exit(0)
 
