@@ -1,18 +1,18 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-05-21T17:01:32Z`
+**Generato**: `2026-05-21T17:04:45Z`
 **Sessione**: `3d808710-9bfc-4e3d-94b4-edfa7ace4886`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: committed: dcfa833
-**Last commit**: `dcfa833 auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-21T17:01:32Z`
+**Commit auto**: committed: d20a6eb
+**Last commit**: `d20a6eb auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-21T17:04:45Z`
 
 ## Ultimi 5 commit
 ```
+d20a6eb auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-21T17:04:45Z
 dcfa833 auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-21T17:01:32Z
 4c69ede auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-21T16:56:44Z
 8609bc4 auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-21T16:53:06Z
 5ab3998 auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-21T16:50:59Z
-c64755b auto-close session 3d808710-9bfc-4e3d-94b4-edfa7ace4886 @ 2026-05-21T16:45:28Z
 ```
 
 ## File modificati nell'ultimo commit
@@ -22,14 +22,14 @@ M	.claude/NEXT_SESSION_PROMPT.md
 
 ## Ultimo prompt utente (estratto)
 ```
-[{"tool_use_id":"toolu_016XFP1y4vD8Pggx1DddAeTL","type":"tool_result","content":"=== Session jsonl ATTIVE (last modified < 30 min) ===\n18:50:14 | size=447152 | sid=fc084c11 | cwd=/Volumes/MontereyT7/FLUXION\n18:59:35 | size=576306 | sid=d6a46fe4 | cwd=/Volumes/MontereyT7/FLUXION\n18:59:49 | size=988872 | sid=3d808710 | cwd=/Volumes/MontereyT7/venture/os\n19:00:10 | size=728949 | sid=4390a913 | cwd=/Users/macbook/Documents/combaretrovamiauto/enterprise\n\n=== Stima context% per session attiva ==
+[{"tool_use_id":"toolu_01PtCcouuHWcxsLSCcW717Qb","type":"tool_result","content":"=== Confronto skills GLOBALE vs ARGOS-LOCALE ===\n--- 5 sample skills globali ---\nai-engineer\nanalytics-reporter\napi-tester\napp-store-optimizer\nargos-brand-guardian.md\n\n--- 5 sample skills ARGOS locali ---\nai-engineer\nanalytics-reporter\napi-tester\napp-store-optimizer\nbackend-architect\n\n--- Skills duplicati (stesso nome global + local) ---\n      20\nskills duplicati (su 43 global, 55 local):\n      34\
 ```
 
 ## Ultimi turni assistant
 ```
-- **Opzione full Gap 1** (claude.ai NO pre-revenue): hook UserPromptSubmit che fetch state e inietta system-reminder forzato nell'istanza target. Non costruito, S182.
-Mio voto: **opzione middle** dopo che chiudi le 3 sessioni sopra. È leggera, coerente con S182, chiude il gap specifico che hai chiesto (monitor + nudge chiusura 50%) senza spawnare execution layer.
-Vuoi prima chiudere le 3 sessioni con i prompt sopra, poi quando torni libero parliamo della opzione middle (build 30 min)?
+Questo è il **pattern "configurazione decentralizzata duplicata"**. ARGOS+FLUXION probabilmente entrambi soffrono dello stesso problema (skills/agents locali che duplicano i global). Verifica analoga su FLUXION potrebbe trovare 20-30 skill duplicati. Salvabile come memoria S159-class.
+## Domanda secca
+Eseguo `mv` di 34 skill + 6 agent duplicati ARGOS in archive ORA? Reversibile in 30 sec se non funziona.
 ```
 
 ## Come riprendere
