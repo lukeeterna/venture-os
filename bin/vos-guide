@@ -30,6 +30,7 @@ BLUEPRINT_DEVIATIONS = VOS_STATE / "blueprint-deviations.jsonl"
 GUIDE_LOG            = VOS_STATE / "guide-log.jsonl"
 CHILDWATCH_HISTORY   = VOS_STATE / "childwatch-history.jsonl"
 PRODUCTION_CLAIM_LOG = VOS_STATE / "production-claim.jsonl"
+CONTEXT_BUDGET_LOG   = VOS_STATE / "context-budget.jsonl"
 
 # production_claim_gate.py ora logga su PRODUCTION_CLAIM_LOG (registrato come
 # Stop hook in ~/.claude/settings.json il 2026-05-22).
@@ -155,21 +156,70 @@ def load_gate_state(project):
 
 # --- Sezione STATO ---
 
+def last_session_context_for_project(project):
+    """
+    Ritorna (session_id, startup_pct, close_pct, close_ts) per l'ULTIMA sessione
+    del progetto in context-budget.jsonl. None se nessuna entry.
+    pct DEVE venire dal payload statusline (campo 'pct'), MAI stimato.
+    """
+    if not CONTEXT_BUDGET_LOG.exists():
+        return None
+    rows = read_jsonl(CONTEXT_BUDGET_LOG)
+    proj_rows = [r for r in rows if r.get("project") == project and r.get("session_id") and r.get("session_id") != "unknown"]
+    if not proj_rows:
+        return None
+    # Group by session_id, pick the session whose LAST tick is most recent
+    by_sid = defaultdict(list)
+    for r in proj_rows:
+        by_sid[r["session_id"]].append(r)
+    def last_ts(entries):
+        ts_list = [parse_ts(e.get("ts","")) for e in entries]
+        return max([t for t in ts_list if t], default=datetime.min.replace(tzinfo=timezone.utc))
+    last_sid, last_entries = max(by_sid.items(), key=lambda kv: last_ts(kv[1]))
+    last_entries_sorted = sorted(last_entries, key=lambda e: parse_ts(e.get("ts","")) or datetime.min.replace(tzinfo=timezone.utc))
+    # pct STRICT: solo se è numero, altrimenti None
+    def num_pct(e):
+        p = e.get("pct")
+        return p if isinstance(p, (int, float)) else None
+    startup = num_pct(last_entries_sorted[0])
+    close = num_pct(last_entries_sorted[-1])
+    close_ts = last_entries_sorted[-1].get("ts","")
+    return {"sid": last_sid, "startup": startup, "close": close, "close_ts": close_ts}
+
 def section_stato():
     lines = ["=== STATO ==="]
+    alerts = []
     for proj in ("ARGOS", "FLUXION"):
         path, gs, err = load_gate_state(proj)
         if err:
             lines.append(f"{proj:8s} | gate-state MANCANTE | {err}")
-            continue
-        chain = gs.get("chain_map", {})
-        verified = sum(1 for v in chain.values() if v == "VERIFIED")
-        total = len(chain) if chain else gs.get("total_links", 0)
-        safety_p = gs.get("safety_passed", 0)
-        safety_t = gs.get("safety_total", 0)
-        e2e = gs.get("e2e_real_run_observed", False)
-        ready = gs.get("production_ready", False)
-        lines.append(f"{proj:8s} | {verified}/{total} VERIFIED | safety {safety_p}/{safety_t} | E2E:{e2e} | READY:{ready}")
+        else:
+            chain = gs.get("chain_map", {})
+            verified = sum(1 for v in chain.values() if v == "VERIFIED")
+            total = len(chain) if chain else gs.get("total_links", 0)
+            safety_p = gs.get("safety_passed", 0)
+            safety_t = gs.get("safety_total", 0)
+            e2e = gs.get("e2e_real_run_observed", False)
+            ready = gs.get("production_ready", False)
+            lines.append(f"{proj:8s} | {verified}/{total} VERIFIED | safety {safety_p}/{safety_t} | E2E:{e2e} | READY:{ready}")
+        # Context budget reale (da statusline, MAI stimato)
+        ctx = last_session_context_for_project(proj)
+        if ctx is None:
+            lines.append(f"         context: nessuna entry context-budget.jsonl per {proj}")
+        else:
+            startup_s = f"{ctx['startup']:.1f}%" if ctx["startup"] is not None else "null"
+            close_s   = f"{ctx['close']:.1f}%"   if ctx["close"]   is not None else "null"
+            ts_short = ctx["close_ts"][:16].replace("T", " ")
+            sid_short = ctx["sid"][:8]
+            lines.append(f"         context ultima sess [{sid_short}] startup={startup_s} → close={close_s} @ {ts_short}Z")
+            if ctx["close"] is not None and ctx["close"] > 70:
+                alerts.append(f"{proj}: ultima sessione ha CHIUSO a {ctx['close']:.1f}% (>70%) — violazione vincolo #7. Sessione {sid_short}.")
+            if ctx["startup"] is not None and ctx["startup"] > 35:
+                alerts.append(f"{proj}: ultima sessione è PARTITA a {ctx['startup']:.1f}% (>35%) — startup gonfio. Pruning skill/memorie raccomandato. Sessione {sid_short}.")
+    if alerts:
+        lines.append("")
+        for a in alerts:
+            lines.append(f"  ALERT CONTEXT: {a}")
     return "\n".join(lines)
 
 # --- Sezione REGOLE (CAPACITÀ 1) ---
