@@ -1,0 +1,415 @@
+#!/usr/bin/env python3
+"""
+VOS Guide — supervisione attiva CC su ARGOS/FLUXION/Guardian.
+Stdlib only, Big Sur compatible, no daemon, no auto-fix.
+
+Sezioni report:
+  === STATO ===
+  === REGOLE ===
+  === LOOP ===
+  === PROSSIMO PASSO ===
+  === CONFRONTO CLAUDE.AI ===
+
+NON modifica progetti. Solo lettura log + raccomandazioni.
+"""
+import json
+import os
+import sys
+import subprocess
+from datetime import datetime, timezone, timedelta
+from pathlib import Path
+from collections import Counter, defaultdict
+
+HOME = Path.home()
+VOS_STATE = HOME / "venture-os" / "state"
+
+# --- Sorgenti dati ---
+RESEARCH_GATE_LOG    = VOS_STATE / "research-gate.jsonl"
+VIOLATION_GATE_LOG   = VOS_STATE / "cc-violations.jsonl"
+BLUEPRINT_DEVIATIONS = VOS_STATE / "blueprint-deviations.jsonl"
+GUIDE_LOG            = VOS_STATE / "guide-log.jsonl"
+CHILDWATCH_HISTORY   = VOS_STATE / "childwatch-history.jsonl"
+
+# production_claim_gate.py NON logga su file (verificato in source).
+# Conteggio non disponibile da log → report lo dichiara esplicitamente.
+PRODUCTION_CLAIM_HOOK = HOME / "venture-os" / "components" / "production_claim_gate.py"
+
+# Gate-state per progetto
+GATE_PATHS = {
+    "ARGOS": [
+        HOME / "Documents/combaretrovamiauto-enterprise/.planning/gate-state-ARGOS.json",
+        VOS_STATE / "gate-state-ARGOS.json",
+    ],
+    "FLUXION": [
+        Path("/Volumes/MontereyT7/FLUXION/.planning/gate-state-FLUXION.json"),
+        VOS_STATE / "gate-state-FLUXION.json",
+    ],
+}
+
+# Repo locali per loop-detection git
+PROJECT_REPOS = {
+    "ARGOS":   HOME / "Documents/combaretrovamiauto-enterprise",
+    "FLUXION": Path("/Volumes/MontereyT7/FLUXION"),
+    "Guardian": HOME / "Documents/pulizia-smartphone",
+}
+
+# Decisioni ad alto rischio (trigger c)
+HIGH_RISK_KEYWORDS = (
+    "npm update", "npm install", "pip install", "brew upgrade",
+    "migrazione", "migration", "cambio stack", "deploy ", "deploy:",
+    "git push --force", "drop table", "rm -rf",
+)
+
+# --- Helpers ---
+
+def iso_today_utc():
+    return datetime.now(timezone.utc).date()
+
+def parse_ts(ts):
+    """Parsa ts ISO o date-only. Restituisce datetime aware UTC o None."""
+    if not ts: return None
+    try:
+        if len(ts) == 10:  # "2026-05-21"
+            return datetime.fromisoformat(ts).replace(tzinfo=timezone.utc)
+        return datetime.fromisoformat(ts.replace("Z", "+00:00"))
+    except Exception:
+        return None
+
+def read_jsonl(path):
+    if not path.exists():
+        return []
+    out = []
+    with path.open("r", encoding="utf-8", errors="replace") as f:
+        for ln in f:
+            ln = ln.strip()
+            if not ln: continue
+            try:
+                out.append(json.loads(ln))
+            except json.JSONDecodeError:
+                continue
+    return out
+
+def filter_today(records, ts_field="ts"):
+    today = iso_today_utc()
+    out = []
+    for r in records:
+        dt = parse_ts(r.get(ts_field, ""))
+        if dt and dt.date() == today:
+            out.append(r)
+    return out
+
+def filter_within(records, hours, ts_field="ts"):
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=hours)
+    out = []
+    for r in records:
+        dt = parse_ts(r.get(ts_field, ""))
+        if dt and dt >= cutoff:
+            out.append(r)
+    return out
+
+def normalize_gate_state(gs):
+    """Supporta 2 schemi: VOS (chain_map flat) e .planning (rings nested)."""
+    if not isinstance(gs, dict):
+        return gs
+    if "chain_map" in gs:
+        return gs  # già VOS
+    if "rings" in gs and isinstance(gs["rings"], dict):
+        chain_map = {}
+        for k, v in gs["rings"].items():
+            if isinstance(v, dict) and "state" in v:
+                chain_map[k] = v["state"]
+            elif isinstance(v, str):
+                chain_map[k] = v
+        out = dict(gs)
+        out["chain_map"] = chain_map
+        out.setdefault("total_links", len(chain_map))
+        # anomalie/safety/e2e potrebbero non esserci: lascia default a 0/False
+        return out
+    return gs
+
+def load_gate_state(project):
+    """Ritorna (path_usato, dict|None, err|None). Preferisce file con più info."""
+    best = None  # (path, gs_normalized, verified_count)
+    for p in GATE_PATHS[project]:
+        if p.exists():
+            try:
+                with p.open("r", encoding="utf-8") as f:
+                    gs = normalize_gate_state(json.load(f))
+                chain = gs.get("chain_map", {}) if isinstance(gs, dict) else {}
+                verified = sum(1 for v in chain.values() if v == "VERIFIED")
+                # prima passata: usa il primo che ha dati significativi; altrimenti tieni il "migliore"
+                if best is None or verified > best[2] or len(chain) > len(best[1].get("chain_map", {})):
+                    best = (str(p), gs, verified)
+            except Exception as e:
+                if best is None:
+                    best = (str(p), None, -1)
+                    return str(p), None, f"errore parsing: {e}"
+    if best is None:
+        return None, None, "gate-state MANCANTE in tutte le location"
+    return best[0], best[1], None
+
+# --- Sezione STATO ---
+
+def section_stato():
+    lines = ["=== STATO ==="]
+    for proj in ("ARGOS", "FLUXION"):
+        path, gs, err = load_gate_state(proj)
+        if err:
+            lines.append(f"{proj:8s} | gate-state MANCANTE | {err}")
+            continue
+        chain = gs.get("chain_map", {})
+        verified = sum(1 for v in chain.values() if v == "VERIFIED")
+        total = len(chain) if chain else gs.get("total_links", 0)
+        safety_p = gs.get("safety_passed", 0)
+        safety_t = gs.get("safety_total", 0)
+        e2e = gs.get("e2e_real_run_observed", False)
+        ready = gs.get("production_ready", False)
+        lines.append(f"{proj:8s} | {verified}/{total} VERIFIED | safety {safety_p}/{safety_t} | E2E:{e2e} | READY:{ready}")
+    return "\n".join(lines)
+
+# --- Sezione REGOLE (CAPACITÀ 1) ---
+
+def section_regole():
+    lines = ["=== REGOLE ==="]
+    alerts = []
+
+    # research_gate
+    rg = read_jsonl(RESEARCH_GATE_LOG)
+    rg_today = filter_today(rg)
+    n_fired = sum(1 for r in rg_today if r.get("fired"))
+    n_research_done = sum(1 for r in rg_today if r.get("fired") and r.get("research_done_before"))
+    lines.append(f"research_gate: {n_fired} firing oggi (di cui {n_research_done} con research già fatta)")
+    if n_fired > 5:
+        alerts.append(f"research_gate scattato {n_fired}× oggi — CC sta combattendo il vincolo #2 (ricerca prima di proporre). Problema di fondo, non episodio.")
+
+    # violation_gate (cc-violations.jsonl)
+    vg = read_jsonl(VIOLATION_GATE_LOG)
+    vg_today = filter_today(vg)
+    n_block = sum(1 for v in vg_today if v.get("mode") == "block")
+    by_vincolo = Counter(v.get("vincolo") for v in vg_today if v.get("mode") == "block")
+    breakdown = ", ".join(f"v{k}:{n}" for k, n in sorted(by_vincolo.items()) if k is not None)
+    lines.append(f"violation_gate: {n_block} block oggi" + (f" ({breakdown})" if breakdown else ""))
+    for vincolo, cnt in by_vincolo.items():
+        if cnt and cnt > 5:
+            label = {3: "liste A/B/C/D", 9: "'hai ragione' diplomatico"}.get(vincolo, f"vincolo #{vincolo}")
+            alerts.append(f"violation_gate vincolo #{vincolo} ({label}) scattato {cnt}× oggi — CC ricade strutturalmente sul pattern.")
+
+    # production_claim_gate (silent — non logga su file)
+    if PRODUCTION_CLAIM_HOOK.exists():
+        lines.append("production_claim_gate: attivo (Stop hook) — NON logga su file, conteggio non rilevabile.")
+        lines.append("  → per misurare attivazioni serve aggiungere append jsonl in production_claim_gate.py")
+    else:
+        lines.append("production_claim_gate: NON installato")
+
+    # blueprint-deviations (contesto)
+    bd = read_jsonl(BLUEPRINT_DEVIATIONS)
+    bd_today = filter_today(bd)
+    if bd_today:
+        lines.append(f"blueprint-deviations: {len(bd_today)} nuove deviazioni oggi")
+
+    if alerts:
+        lines.append("")
+        for a in alerts:
+            lines.append(f"  ALERT: {a}")
+    return "\n".join(lines), alerts
+
+# --- Sezione LOOP (CAPACITÀ 2) ---
+
+def section_loop():
+    lines = ["=== LOOP ==="]
+    alerts = []
+
+    # 2a. guide-log next-action repetition
+    if not GUIDE_LOG.exists():
+        lines.append(f"guide-log.jsonl MANCANTE — next-action loop detection inattivo.")
+        lines.append("  → vos-guide non emette ancora next-action (prima run). Atteso a regime: append entry con campo 'next_action' a ogni invocazione.")
+    else:
+        gl = read_jsonl(GUIDE_LOG)
+        gl_recent = filter_within(gl, hours=72)
+        action_counts = Counter(r.get("next_action", "") for r in gl_recent if r.get("next_action"))
+        # Trova next-action attivi (presente nella entry più recente) e ripetuti
+        repeated = [(a, c) for a, c in action_counts.items() if c >= 3]
+        for a, c in repeated:
+            # quanto tempo è "attivo" (prima occorrenza nelle 72h)
+            occ = [parse_ts(r["ts"]) for r in gl_recent if r.get("next_action") == a and parse_ts(r.get("ts",""))]
+            occ = [o for o in occ if o]
+            if not occ: continue
+            age_h = (datetime.now(timezone.utc) - min(occ)).total_seconds() / 3600
+            lines.append(f"next-action ripetuto: '{a[:80]}' ×{c} (attivo da {age_h:.1f}h)")
+            if c >= 3 or age_h > 24:
+                alerts.append(f"Sei bloccato su '{a[:120]}' da {c} tentativi / {age_h:.1f}h. Non è esecuzione, è ostacolo strutturale. STOP. Porta a Claude.ai con: gate-state + ultime 3 entry guide-log.")
+
+    # 2b. git ≥3 commit stesso file in 48h
+    for proj, repo in PROJECT_REPOS.items():
+        if not repo.exists():
+            continue
+        try:
+            r = subprocess.run(
+                ["git", "-C", str(repo), "log", "--since=48 hours ago",
+                 "--name-only", "--pretty=format:%H"],
+                capture_output=True, text=True, timeout=10
+            )
+            if r.returncode != 0:
+                continue
+            files = Counter()
+            for ln in r.stdout.splitlines():
+                ln = ln.strip()
+                if not ln or len(ln) == 40 and all(c in "0123456789abcdef" for c in ln):
+                    continue
+                # è un file path
+                files[ln] += 1
+            hot = [(f, n) for f, n in files.items() if n >= 3]
+            if hot:
+                for f, n in sorted(hot, key=lambda x: -x[1])[:5]:
+                    lines.append(f"{proj}: {n} commit su {f} in 48h")
+                    alerts.append(f"{proj}: {f} toccato {n}× in 48h. Loop di fix. STOP modifiche, porta a Claude.ai con: ultimi 3 diff su quel file + perché il fix non tiene.")
+        except Exception:
+            continue
+
+    if len(lines) == 1:
+        lines.append("nessun loop rilevato.")
+    if alerts:
+        lines.append("")
+        for a in alerts:
+            lines.append(f"  ALERT LOOP: {a}")
+    return "\n".join(lines), alerts
+
+# --- Sezione PROSSIMO PASSO ---
+
+def latest_anomalies_from_childwatch(project):
+    """Ultima lista anomalie registrata da childwatch per project."""
+    cw = read_jsonl(CHILDWATCH_HISTORY)
+    proj_entries = [r for r in cw if r.get("project") == project and r.get("anomalies")]
+    if not proj_entries:
+        return []
+    proj_entries.sort(key=lambda x: parse_ts(x.get("ts","")) or datetime.min.replace(tzinfo=timezone.utc))
+    return proj_entries[-1].get("anomalies", [])
+
+def section_prossimo_passo():
+    lines = ["=== PROSSIMO PASSO ==="]
+    next_action = None
+    for proj in ("ARGOS", "FLUXION"):
+        path, gs, err = load_gate_state(proj)
+        if err or not gs:
+            lines.append(f"{proj}: {err or 'gate-state vuoto'}")
+            continue
+        chain = gs.get("chain_map", {})
+        # Trova primo anello non VERIFIED nell'ordine delle chiavi
+        first_open = None
+        for k, v in chain.items():
+            if v != "VERIFIED":
+                first_open = (k, v)
+                break
+        # Anomalie: gate-state + fallback childwatch-history
+        ano = gs.get("anomalies") or latest_anomalies_from_childwatch(proj)
+        if first_open:
+            ano_msg = f" | anomalie: {len(ano)}" if ano else ""
+            lines.append(f"{proj}: chiudi anello {first_open[0]} (stato attuale: {first_open[1]}){ano_msg}")
+            if ano:
+                for a in ano[:3]:
+                    lines.append(f"  ! {a}")
+            if proj == "ARGOS" and not next_action:
+                # Priorità: fix anomalie path prima dell'anello
+                if any("ARGOS_DB_PATH" in str(a) for a in ano):
+                    next_action = f"ARGOS: PRIMA fix ARGOS_DB_PATH (path default inesistente), POI chiudi {first_open[0]}"
+                else:
+                    next_action = f"ARGOS: chiudi {first_open[0]} (stato {first_open[1]})"
+        else:
+            lines.append(f"{proj}: tutti gli anelli VERIFIED — passa a safety/E2E")
+    if next_action:
+        lines.append("")
+        lines.append(f"AZIONE: {next_action}")
+    return "\n".join(lines), next_action
+
+# --- Sezione CONFRONTO CLAUDE.AI (CAPACITÀ 3) ---
+
+def section_confronto(loop_alerts, regole_alerts, next_action):
+    lines = ["=== CONFRONTO CLAUDE.AI ==="]
+    triggers = []
+    payload_hints = []
+
+    # a. Loop rilevato
+    if loop_alerts:
+        triggers.append("(a) loop rilevato — CC sta girando a vuoto")
+        payload_hints.append("gate-state corrente + alert LOOP qui sopra")
+
+    # b. Decisione irreversibile/costosa pianificata (cerca in next_action e in guide-log)
+    candidates = [next_action or ""]
+    if GUIDE_LOG.exists():
+        gl = read_jsonl(GUIDE_LOG)
+        for r in filter_within(gl, hours=24):
+            candidates.append(str(r.get("next_action", "")))
+    matched_risk = [c for c in candidates if c and any(k in c.lower() for k in HIGH_RISK_KEYWORDS)]
+    if matched_risk:
+        triggers.append(f"(b) decisione ad alto rischio nel piano: {matched_risk[0][:100]}")
+        payload_hints.append("descrizione decisione + razionale + rollback plan")
+
+    # c. Regressione anello VERIFIED → non-VERIFIED (childwatch-history)
+    cw = read_jsonl(CHILDWATCH_HISTORY)
+    by_proj = defaultdict(list)
+    for r in cw:
+        if r.get("chain_map"):
+            by_proj[r["project"]].append(r)
+    regressions = []
+    for proj, entries in by_proj.items():
+        entries_sorted = sorted(entries, key=lambda x: parse_ts(x.get("ts","")) or datetime.min.replace(tzinfo=timezone.utc))
+        # confronto ultime 2
+        if len(entries_sorted) >= 2:
+            prev = entries_sorted[-2].get("chain_map", {})
+            curr = entries_sorted[-1].get("chain_map", {})
+            for ring, state_curr in curr.items():
+                state_prev = prev.get(ring)
+                if state_prev == "VERIFIED" and state_curr != "VERIFIED":
+                    regressions.append((proj, ring, state_curr))
+    if regressions:
+        for proj, ring, st in regressions:
+            triggers.append(f"(c) regressione: {proj}/{ring} VERIFIED → {st}")
+        payload_hints.append("childwatch-history entry prima/dopo regressione + ultimo commit area")
+
+    # d. production_claim ≥2 block — NON misurabile (hook silent)
+    # Skip senza falsi positivi.
+
+    if triggers:
+        lines.append("RACCOMANDATO confronto Claude.ai ORA.")
+        lines.append("Motivo: " + " | ".join(triggers))
+        lines.append("Copia a Claude.ai:")
+        for h in payload_hints:
+            lines.append(f"  - {h}")
+    else:
+        lines.append("Non necessario ora. Procedi col PROSSIMO PASSO.")
+    return "\n".join(lines), triggers
+
+# --- Logging guide-log (per loop-detection futura) ---
+
+def append_guide_log(next_action, triggers):
+    entry = {
+        "ts": datetime.now(timezone.utc).isoformat(),
+        "next_action": next_action or "",
+        "confronto_triggers": triggers,
+    }
+    try:
+        with GUIDE_LOG.open("a", encoding="utf-8") as f:
+            f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+    except Exception as e:
+        print(f"[warn] guide-log append failed: {e}", file=sys.stderr)
+
+# --- Main ---
+
+def main():
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    print(f"=== VOS GUIDE {now} ===\n")
+
+    print(section_stato()); print()
+    regole_out, regole_alerts = section_regole()
+    print(regole_out); print()
+    loop_out, loop_alerts = section_loop()
+    print(loop_out); print()
+    pp_out, next_action = section_prossimo_passo()
+    print(pp_out); print()
+    confronto_out, triggers = section_confronto(loop_alerts, regole_alerts, next_action)
+    print(confronto_out)
+
+    append_guide_log(next_action, triggers)
+
+if __name__ == "__main__":
+    main()
