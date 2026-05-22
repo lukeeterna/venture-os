@@ -1,0 +1,79 @@
+{
+  "project": "ARGOS",
+  "updated_at": "2026-05-22T17:25:00Z",
+  "updated_by": "VOS Fase A mappatura empirica, sessione 3d808710",
+  "chain_map": {
+    "1_scrape": "EXISTS",
+    "2_cove": "EXISTS",
+    "3_dossier_pdf": "EXISTS_VERIFIED_PARTIAL",
+    "4_sanitizer": "EXISTS_VERIFIED_PARTIAL",
+    "5_wa_send": "EXISTS",
+    "6_inbox": "MISSING",
+    "7_ambra_classifier": "EXISTS_PARTIAL",
+    "8_handler": "EXISTS",
+    "9_hitl_approval": "EXISTS_BUGGY"
+  },
+  "evidence_per_link": {
+    "1_scrape": {
+      "code_files": ["tools/scrapers/autoscout_scraper.py","tools/scrapers/mobile_de_scraper.py","tools/scrapers/base_scraper.py"],
+      "execution_test": "ImportError: attempted relative import with no known parent package (autoscout_scraper.py:24)",
+      "output_storico_db": "market_listings count=0 (dealer_network.sqlite)",
+      "cove_tracker_duckdb": "file is not a database (798MB corrotto)",
+      "classification_reason": "modulo esiste ma execution diretto fallisce + DB output vuoto. Mai validato con input URL reale recente con output verificato."
+    },
+    "2_cove": {
+      "code_files": ["src/cove/cove_engine_v4.py","src/cove/scraper_cove_pipeline.py","src/cove/cove_tracker.py","src/cove/cove_params_calibrated.py"],
+      "execution_test": "non eseguito stand-alone in questa Fase A",
+      "storico_s157": "S157 dichiarava 41sec BMW Serie 3, 2 PROCEED su 16 listing — output esisteva 5 maggio",
+      "classification_reason": "codice estensivo presente, ma upstream scrape non verified blocca verifica E2E"
+    },
+    "3_dossier_pdf": {
+      "code_files": ["tools/scripts/pdf_generator_enterprise.py","src/cove/dossier_standard.py"],
+      "output_storico": "dossiers/ contiene 61+ PDF reali, incluso ARGOS_BMW_X3_2021_Stile_Car_68224633.pdf",
+      "classification_reason": "modulo GENERA PDF reali (artefatto on-disk). Manca prova E2E recente (input upstream broken)."
+    },
+    "4_sanitizer": {
+      "code_files": ["src/cove/image_sanitizer.py","tools/scripts/s183_autogen_zones.py"],
+      "output_storico_recente": "/tmp/s183ter_uat_d32pure/argos_s183ter_d32pure_0[0-4].jpg",
+      "uat_status": "S183-ter UAT 3/5 NO-GO secondo commit de0c670 (2026-05-22 16:52). Sample 02 visivo OK (targa coperta, seller coperto, faro visibile)",
+      "classification_reason": "genera output reale recente, ma UAT formale 3/5 NO-GO. Non passa SAFETY suite ipotetica."
+    },
+    "5_wa_send": {
+      "code_files": ["wa-intelligence/wa-daemon.js","wa-intelligence/ecosystem.config.js"],
+      "config_test_founder": ".env contiene TEST_FOUNDER 393314928901",
+      "output_storico_db": "wa_daemon.sqlite iMac ESISTE ma ZERO tabelle (no messages table)",
+      "classification_reason": "daemon presente e configurato, ma DB iMac vuoto = zero invio storico verificabile. Mai validato E2E reale."
+    },
+    "6_inbox": {
+      "code_files": "wa-daemon.js listener inbound (parte del daemon)",
+      "db_messages_locale": "dealer_network.sqlite NON ha tabella messages (tabelle: dealers, market_listings, market_price_changes, sqlite_sequence, market_scraper_runs, market_daily_trends, market_insights)",
+      "db_messages_imac": "wa_daemon.sqlite iMac NESSUNA tabella (DB vuoto)",
+      "claude_md_argos_reference": "'Risposta dealer reale = query su messages table' (CLAUDE.md ARGOS:18) → riferimento a tabella INESISTENTE",
+      "classification_reason": "MISSING — nessuno storage per messaggi inbound verificabile. CLAUDE.md punta a tabella che non esiste."
+    },
+    "7_ambra_classifier": {
+      "code_files": ["tools/dealer_discovery/commission_classifier.py","src/marketing/archetype_classifier.py","src/marketing/train_svm_classifier.py","wa-intelligence/response-analyzer.py (109KB)"],
+      "phase_6_roadmap": "5/5 plans [ ] non implementati (06-01 multi-msg, 06-02 prompt Haiku JSON, 06-03 debounce, 06-04 KB injection, 06-05 anti-ban)",
+      "classification_reason": "classifier components esistono (svm, archetype). Orchestratore conversazionale autonomo (Phase 6 AMBRA) NON IMPLEMENTATO. Stato real: classifier puntuali sì, agente autonomo no."
+    },
+    "8_handler": {
+      "code_files": ["wa-intelligence/telegram-handler.py","src/marketing/objection_handler.py","src/marketing/payment_handler.py"],
+      "execution_storico": "mai validato con messaggio inbound reale (no inbox = anello 6 missing)",
+      "classification_reason": "EXISTS ma upstream missing (#6) = mai testato E2E."
+    },
+    "9_hitl_approval": {
+      "code_files": ["wa-intelligence/telegram-handler.py contains HITL logic"],
+      "bug_noto_backlog": "BACKLOG.md:92-94 PRIORITÀ 4-bis: 'HITL LLM_MULTI bypass: reply approvata=0 ma sent=1 → dealer riceve messaggio non autorizzato'",
+      "saf_suite_status": "SAF-01..08 non eseguiti, suite non scritta",
+      "classification_reason": "EXISTS_BUGGY — gate esiste ma compromesso. CRITICAL SAFETY blocker per outreach reale."
+    }
+  },
+  "safety_suite": { "total": 8, "passed": 0, "last_run": null, "status": "NOT_WRITTEN" },
+  "data_quality_suite": { "total": 8, "passed": 0, "accuracy": null, "last_run": null, "status": "NOT_WRITTEN" },
+  "e2e_real_run_observed": false,
+  "production_ready": false,
+  "blocking_reason": "Anello #1 SCRAPE non VERIFIED (ImportError + market_listings=0 + cove_tracker.duckdb corrotto). Tutta la catena downstream dipende da scrape funzionante con output reale verificato. Inoltre anello #6 INBOX MISSING (tabella messages non esiste). Anello #9 HITL EXISTS_BUGGY con CRITICAL SAFETY bug 'sent=1 approvata=0'.",
+  "anello_piu_a_monte_non_verified": "#1_scrape",
+  "next_work_unico": "Verifica empirica anello #1: import path fix (relative→package o python -m), esecuzione su URL reale autoscout24/mobile.de, output JSON valido scritto in DB. SOLO DOPO scrape VERIFIED si passa anello successivo.",
+  "what_NOT_to_do": "NO lavoro su sanitizer #4 (siamo già in loop 48h), NO Phase 6 AMBRA, NO Phase 4 outreach. NO stima giorni. NO 'production ready' dichiarazioni."
+}
