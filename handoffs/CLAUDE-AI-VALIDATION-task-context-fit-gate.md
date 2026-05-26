@@ -45,11 +45,14 @@ Letteratura rilevante:
 4. Confronto vs context disponibile (1M - boot 50K - margin sicurezza 200K =
    ~750K usable)
 5. Se `task_estimate / context_disponibile > 50%`:
-   - Inietta system-reminder MANDATORY con 3 opzioni:
-     - (a) scope cut esplicito (founder decide quale FASE)
-     - (b) delega via Task tool a subagent (context isolato)
-     - (c) split in N sessioni con handoff esplicito
-   - Forza acknowledgement ("ho letto, scelgo opzione X") prima di partire
+   - Inietta system-reminder MANDATORY comando singolo: "SPLIT obbligatorio.
+     Dichiara quale sotto-FASE esegui in questa sessione (max 50% budget),
+     scrivi handoff esplicito per il resto in prompts/sXXX_remainder.md prima
+     di iniziare qualsiasi lavoro implementativo."
+   - Motivazione raccomandazione singola (vincolo #3 CLAUDE.md): pattern split
+     è già in produzione (naming sXXX_*.md), unico data-validated. Delega
+     subagent ha 98% failure rate empirico (audit 60 sessioni). Scope cut
+     scarica decisione su founder, friction inaccettabile.
 6. Audit log per regressione score futura
 
 **Variante con LLM**: per task complessi, chiamata Gemini Flash gratis
@@ -68,13 +71,10 @@ Trade-off: latency +2s al prompt entry, accuracy ++.
 3. **Soglia 50% è ragionevole?** Su 1M context, 750K usable, soglia 50% = task
    stimato max 375K tokens. Cosa suggerisce la letteratura su safety margin?
 
-4. **Pattern alternativi che dovrei considerare**:
-   - "Speculative pre-flight": CC fa first-pass quick lettura task, emette
-     self-assessment ("questo task richiede ~X tokens, ho Y disponibili,
-     proseguo/scopecut")
-   - "Mandatory subagent dispatch": ogni task multi-step OBBLIGATORIAMENTE
-     delegato a subagent fresh-context, mai eseguito da main
-   - "Session-level task limit": max 1 FASE per sessione, forced handoff
+4. **Il design SPLIT-forcing è corretto data-driven, o esiste alternativa
+   migliore con evidence di funzionamento in produzione su agentic coding
+   assistant?** (NON darmi menu di opzioni, dammi singola raccomandazione
+   motivata con dati o riferimenti letteratura.)
 
 5. **Anti-pattern strutturali da evitare**: cosa sbaglierei se implemento
    come proposto?
