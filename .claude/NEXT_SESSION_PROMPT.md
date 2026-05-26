@@ -1,37 +1,37 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-05-26T17:26:22Z`
+**Generato**: `2026-05-26T17:27:24Z`
 **Sessione**: `9690fad5-e74c-4b6c-a75c-a369063c7537`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: committed: 6407b87
-**Last commit**: `6407b87 auto-close session 9690fad5-e74c-4b6c-a75c-a369063c7537 @ 2026-05-26T17:26:22Z`
+**Commit auto**: committed: 390aa60
+**Last commit**: `390aa60 auto-close session 9690fad5-e74c-4b6c-a75c-a369063c7537 @ 2026-05-26T17:27:24Z`
 
 ## Ultimi 5 commit
 ```
+390aa60 auto-close session 9690fad5-e74c-4b6c-a75c-a369063c7537 @ 2026-05-26T17:27:24Z
 6407b87 auto-close session 9690fad5-e74c-4b6c-a75c-a369063c7537 @ 2026-05-26T17:26:22Z
 d12cabd auto-close session 9690fad5-e74c-4b6c-a75c-a369063c7537 @ 2026-05-26T17:20:30Z
 9ca70fc auto-close session 9690fad5-e74c-4b6c-a75c-a369063c7537 @ 2026-05-25T15:28:35Z
 fb6ddb7 auto-close session 9690fad5-e74c-4b6c-a75c-a369063c7537 @ 2026-05-25T15:00:22Z
-5b7fe58 auto-close session 76f7cb7f-4e65-43cd-858e-bed608565c49 @ 2026-05-22T21:45:59Z
 ```
 
 ## File modificati nell'ultimo commit
 ```
 M	.claude/NEXT_SESSION_PROMPT.md
-A	handoffs/CLAUDE-AI-VALIDATION-task-context-fit-gate.md
+M	handoffs/CLAUDE-AI-VALIDATION-task-context-fit-gate.md
 M	state/cc-violations.jsonl
 ```
 
 ## Ultimo prompt utente (estratto)
 ```
-Vincolo #3 violato — pattern 'vincolo-3-lista-decisionale'. Riformula con raccomandazione singola motivata con dati, o disaccordo motivato con dati. Mai opener diplomatici, mai liste A/B/C/D su decisioni tecniche.
+[{"tool_use_id":"toolu_017UCyiQz6Hb9tiGqH9ci5D7","type":"tool_result","content":"The file /Users/macbook/venture-os/handoffs/CLAUDE-AI-VALIDATION-task-context-fit-gate.md has been updated successfully."}]
 ```
 
 ## Ultimi turni assistant
 ```
-- [Tokalator arxiv 2604.08290](https://arxiv.org/pdf/2604.08290)
-- [Context Engineering for Multi-Agent LLM arxiv 2508.08322](https://arxiv.org/pdf/2508.08322)
-- [Task Decomposition Strategies apxml.com](https://apxml.com/courses/agentic-llm-memory-architectures/chapter-4-complex-planning-tool-integration/task-decomposition-strategies)
+Fix applicato.
+**Design ora**: hook UserPromptSubmit → estimator → se task > 50% budget → **comando singolo SPLIT obbligatorio**, niente menu. Validation prompt aggiornato per chiedere a claude.ai singola raccomandazione data-driven, no menu di alternative.
+`cat ~/venture-os/handoffs/CLAUDE-AI-VALIDATION-task-context-fit-gate.md | pbcopy` → claude.ai web → incollami verdict.
 ```
 
 ## Come riprendere
