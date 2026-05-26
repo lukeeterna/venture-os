@@ -523,7 +523,13 @@ def _run_decision_validator() -> None:
 
 # Mapping anomalie → (signature, template). Hardcoded V1 (refactor a YAML solo se >5 regole).
 # signature = chiave stabile per anti-stale tracking (NON il testo del prompt, che può cambiare).
-_ARGOS_CRITICAL_TABLES = ("market_listings", "market_price_changes")
+# 2026-05-26 correzione: market_listings e market_price_changes erano segnalate come anomalia
+# blocker. Empirica founder: ARGOS vende scouting on-demand + dossier sanitizzato + commissione,
+# NON market intelligence. Tabelle = artefatto interno scouting, vuoto NON è blocker revenue.
+# Vedi memoria project_argos_business_model_real.md.
+# Disabilitato anomaly trigger su queste tabelle finché non c'è metrica vera (es. dossier_prodotti,
+# richieste_dealer, commissioni_incassate). Da rivedere in S+ ARGOS dedicata.
+_ARGOS_CRITICAL_TABLES: tuple = ()
 
 
 def _detect_anomaly(projects: dict) -> Optional[dict]:
