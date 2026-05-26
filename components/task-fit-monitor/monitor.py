@@ -174,6 +174,62 @@ def main() -> int:
             "max": round(max(ratios), 2),
         }
 
+    # --- Bridge file cleanup + multi-session detection (S+ aggiunta 2026-05-26) ---
+    # Cleanup file orfani (sessione morta + bridge non rimosso) e detection di
+    # sessioni concorrenti stesso progetto che potrebbero competere per context.
+    bridge_dir = Path("/tmp")
+    cleaned = 0
+    active_bridges_by_cwd = defaultdict(list)
+    cutoff_orphan = now - timedelta(days=7)
+    cutoff_active = now - timedelta(minutes=30)
+    for bridge_file in bridge_dir.glob("claude-ctx-*.json"):
+        try:
+            mtime = datetime.fromtimestamp(bridge_file.stat().st_mtime, tz=timezone.utc)
+            # Cleanup orfani >7gg
+            if mtime < cutoff_orphan:
+                bridge_file.unlink()
+                cleaned += 1
+                continue
+            # Multi-session detection: file recenti
+            if mtime >= cutoff_active:
+                try:
+                    b = json.loads(bridge_file.read_text())
+                    pct = b.get("used_pct") or 0
+                    if pct >= 40:
+                        # Recupero cwd dal session_peaks log (cross-ref)
+                        sid = b.get("session_id", "?")
+                        cwd_found = None
+                        for p in reversed(peaks):
+                            if p.get("session_id") == sid:
+                                cwd_found = p.get("cwd")
+                                break
+                        cwd_key = cwd_found or "unknown"
+                        active_bridges_by_cwd[cwd_key].append({
+                            "session_id": sid[:8],
+                            "pct": pct,
+                            "state": b.get("budget_state", "?"),
+                        })
+                except (OSError, ValueError):
+                    pass
+        except OSError:
+            continue
+
+    report["stats"]["bridge_cleaned"] = cleaned
+    report["stats"]["active_bridges_by_cwd"] = {
+        k: v for k, v in active_bridges_by_cwd.items() if len(v) > 1
+    }
+
+    # Anomalia 5: multi-sessione concorrente stesso progetto
+    for cwd, sessions in active_bridges_by_cwd.items():
+        if len(sessions) >= 2:
+            report["anomalies"].append({
+                "id": "multi_session_same_project",
+                "severity": "MED",
+                "cwd": cwd,
+                "session_count": len(sessions),
+                "sessions": sessions,
+            })
+
     # --- Calibrazione gate dopo target date ---
     if now >= CALIBRATION_TARGET_DATE and len(joined) >= CALIBRATION_MIN_N:
         report["calibration_ready"] = True
