@@ -1,83 +1,112 @@
-# NEXT_SESSION_PROMPT — VOS S183 closure → ripartenza ARGOS
+# NEXT_SESSION_PROMPT — VOS chiusura 2026-05-26 → ripartenza S+
 
-**Generato**: 2026-05-22 13:15 (override del prompt auto-generato 11:04)
-**Sessione chiusa**: 3d808710-9bfc-4e3d-94b4-edfa7ace4886
-**Durata**: ~1.5 giorni reali, 79+ turn, context picco 25% di 1M (Opus 4.6)
-**Esito**: GREEN — 5 memorie strutturali, 2 modifiche enforcement settings.json, 3 progetti stato chiarito
+**Generato**: 2026-05-26 18:05 UTC (override prompt auto-generato session-end hook)
+**Sessione chiusa**: 9690fad5-e74c-4b6c-a75c-a369063c7537
+**Tipo**: audit cross-progetto + deploy MVP infrastruttura task-context fit
+**Stato**: VERDE — tutto testato, no PARTIAL (vincolo #6)
 
 ---
 
-## Stato finale 3 progetti (verificato empirico 22/5 13:00)
+## Sessione 2026-05-26 — cosa è stato fatto
 
-- **ARGOS** — GATE C/D S183 sanitizer NON committati. Ultimo commit `f8e82c5 wip(S183): GATE A2 closure`. Sessione di ieri chiusa a 75% HARD_STOP senza commit GATE B/C/D. Lavoro UAT sample 5/5 potrebbe essere in working tree non committato. **Verifica `git status` priorità #1 prossima sessione ARGOS.**
-- **FLUXION** — S279 attiva. Ultimo commit `16257e0 test(S279): B-4 Step 3 Worker vitest infra + 13 unit test PASS + phone-home refund gap fix`.
-- **Guardian** — **PAUSED SINE DIE formale** (memoria `feedback_guardian_pause_sine_die.md`). Trigger riapertura: ARGOS €800 OR FLUXION primo Stripe sale. NON RIAPRIRE prima.
+Sessione triggerata da audit Luke su FLUXION S290 (privkey persa, context 71%→81%
+HARD_STOP). Allargata cross-progetto a ARGOS S192 (compact a 100%) e FLUXION S296
+(gate false positive bypass anti-pattern). Ha prodotto:
 
-## Modifiche enforcement applicate (settings.json globale)
+### Fix infrastrutturali (8 file modificati/creati)
 
-Backup: `~/.claude/settings.json.bak.20260521-162810`, `~/.claude/settings.json.bak.20260522-131151-pre-block`.
+**Hooks globali `~/.claude/hooks/`** (fuori repo VOS):
+- `global_context_gate.py` → PreToolUse HARD_BLOCK @80% deny eccetto chiusura
+- `post_compact_validation.py` → nuovo, forza validation prompt post-/compact
+- `task_context_logger.py` → nuovo, MVP v0.1 logger UserPromptSubmit
+- `session_peak_logger.py` → nuovo, Stop bridge consumer
+- `settings.json` → registra i 3 hooks nuovi
 
-```json
-"env": {
-  "ENABLE_TOOL_SEARCH": "true",                  // MCP lazy-load, -11% startup
-  "CLAUDE_VIOLATION_GATE_MODE": "block"          // vincoli #3+#9 enforced HARD
-}
-```
+**Hooks FLUXION `/Volumes/MontereyT7/FLUXION/.claude/hooks/`** (fuori repo VOS):
+- `pre_write_gate.py` → word-boundary + tests/ whitelist + fixture-/test- bypass
+- `context_budget_gate.py` → osascript notification CLOSING_ONLY/HARD_STOP + merge bridge
+- `check-services.sh` → VOS broadcast injection single-shot mechanism
 
-**Effetto su tutte le sessioni CC future** (VOS+ARGOS+FLUXION):
-- Pattern A/B/C/D con keyword decisionale ("preferisci", "vuoi che", "Opzioni") → **block + forced riformulazione**
-- Opener diplomatici "hai ragione" / "Perfetto!" → **block**
-- MCP servers lazy-loaded on-demand (Gmail, Drive, Calendar, HF + ARGOS playwright/sqlite-argos)
+**LaunchAgent `~/Library/LaunchAgents/`** (fuori repo VOS):
+- `com.luke.vos.task-fit-monitor.plist` → daily 08:00 anomaly + calibration tracker
 
-## Memorie nuove salvate (5)
+**Componenti VOS** (in repo):
+- `components/task-fit-monitor/monitor.py` → script daily
+- `components/morning-briefer/briefer.py` → consumer monitor jsonl in sezione Segnali
 
-In `~/.claude/projects/-Volumes-MontereyT7-venture-os/memory/`:
+### Handoff scritti
+- `handoffs/FLUXION-S290-additions.md` → privkey rigenerazione kid v2 + CF token scope
+- `handoffs/CLAUDE-AI-VALIDATION-task-context-fit-gate.md` → verdict claude.ai REVISE + MVP design
 
-1. `feedback_cc_version_big_sur_cliff.md` — CC v2.1.113+ rompe Big Sur (dyld `_ubrk_clone`). MAI npm update CC su MacBook. Safe ≤2.1.112, attuale 2.1.110. Fonti: GH #50383+#50445.
-2. `feedback_guardian_pause_sine_die.md` — Guardian PAUSED formale + trigger OR-condition revenue.
-3. `feedback_graphify_deferred_post_revenue.md` — graphify knowledge graph 50.6k⭐ skip pre-€800.
-4. `feedback_heard_voice_companion_vibe_coding.md` — heardlabs/heard deferred tool dev.
-5. `feedback_stima_verosimile_vs_verificata.md` — pattern S159-class fractal. Diff -r empirico + meccanismo CC verificato + misurazione baseline PRIMA di azione filesystem.
+### Audit deviations (8 nuove entries in state/blueprint-deviations.jsonl)
+- fluxion-context-gate-invisible-delivery (HIGH, fixed)
+- fluxion-bridge-file-race-condition (MED, fixed)
+- fluxion-privkey-tmp-generation-antipattern (HIGH, action required S+ FLUXION)
+- fluxion-pre-write-gate-false-positive-test-fixture (MED, fixed)
+- global-context-gate-no-hard-enforcement (HIGH, fixed)
+- post-compact-no-validation-gate (HIGH, fixed)
+- task-context-fit-gate-mvp-deployed (INFO)
+- sXXX-task-md-needs-budget-phase-field (MED, deferred cross-progetto)
 
-## Findings VOS passive layer (deferred post-revenue)
+### Memoria scritta
+- `project_task_context_fit_mvp.md` → MVP design + calibration plan
+- `MEMORY.md` aggiornato con pointer
 
-- Brief mattutino 22/5 non generato (`morning-brief.md` mancante)
-- cc-meta-monitor LaunchAgent exit=2 (warning)
-- 104 violazioni catturate in `cc-violations.jsonl` in 6gg in log-only — da oggi mode=block effetto enforcement reale
-- 9/18 componenti VOS stato sconosciuto (founder-bridge, heretic-handler, sara-gate-orchestrator, eval-tracker, brief-tracker, session-health, llm-router, decision-validator, karpathy-compiler)
+---
 
-## ARGOS — bug aperti diagnosticati (in `.planning/ROADMAP.md` OPS-01/OPS-02)
+## Per la prossima sessione VOS
 
-1. **OPS-01 scheduler market_intelligence orfano** — root cause `market_listings=0`. Fix: add 4° app PM2 `ecosystem.config.js` con `cron_restart: '0 5 * * 1-5'`. Cleanup LaunchAgent `com.argos.scheduler.plist` broken (path user `gianlucadistasi` + `.duckdb` wrong).
-2. **OPS-02 sanitizer threshold split** — `s183_autogen_zones.py:152` conf_min=0.50 scarta seller_name conf=0.30. Fix: split path A (generic detection conf_min 0.50) vs path B (seller_name match no threshold). Loggato `blueprint-deviations.jsonl` 2026-05-21.
+### Vincoli da rispettare
 
-## Prossima sessione: priorità singola (vincolo #3)
+1. **NO introduzione gate hard SPLIT-forcing prima del 2026-06-09 + N≥50 joined sessions**
+   (verdict claude.ai: "Costruisci prima il logger, la gate dopo i dati")
+2. **NO modifica template sXXX_task.md** senza sessione dedicata cross-progetto
+3. **NO disable `CLAUDE_VIOLATION_GATE_MODE=block`** in settings.json
 
-**Apri terminal ARGOS** (`cd ~/Documents/combaretrovamiauto-enterprise && claude`). Sequenza:
-
-1. `git status` — verifica file UAT S183 GATE B/C in working tree
-2. Se presenti: chiudere GATE D (commit unico finale + push)
-3. Se assenti: ripartire da `prompts/s183_ter_logo_fix.md` (S183-ter già scritto ieri)
-4. Dopo GATE D chiuso: applicare fix OPS-01 scheduler PM2 (root cause `market_listings=0` = priorità revenue)
-5. OPS-02 sanitizer threshold split → sessione dedicata dopo OPS-01
-
-VOS-meta non riaprire oggi. Vincolo S182 attivo. Riaprire VOS-meta SOLO per emergenze cross-progetto reali o per chiusura ARGOS €800 milestone.
-
-## Ripartenza VOS post-revenue (TODO list deferred)
-
-Quando ARGOS €800 OR FLUXION primo Stripe sale:
-- Audit 9 componenti VOS dormienti
-- Debug brief mattutino missing 22/5
-- Debug cc-meta-monitor exit=2
-- Riapertura Guardian (D-06 architecture preserved)
-- Gap 1 minimal (vos-inbox 1 file) SE findings ≥ 3/settimana misurati
-- Karpathy compilation handoff cumulativi se >2000 righe (graphify candidate)
-
-## Commit operations PRIMA di chiudere
+### Comandi rapidi stato
 
 ```bash
-cd /Volumes/MontereyT7/venture-os
-git add wiki/projects/Guardian/COMPILED-STATE.md state/brief-actions.jsonl state/blueprint-deviations.jsonl .claude/NEXT_SESSION_PROMPT.md
-git commit -m "S183 closure: Guardian PAUSED + sanitizer deviation + enforcement block"
-# Memorie file-based persistenti in ~/.claude/projects/.../memory/ — no commit necessario
+# Stato monitor manuale (anomaly detection + calibration readiness)
+python3 ~/venture-os/components/task-fit-monitor/monitor.py
+
+# Statistiche logger correnti (deve crescere monotonicamente con uso CC)
+wc -l ~/venture-os/state/task-fit-scores.jsonl ~/venture-os/state/session-peaks.jsonl
+
+# Correlation rapida quando N >= 50
+python3 -c "
+import json
+from pathlib import Path
+scores = {}
+for line in Path.home().joinpath('venture-os/state/task-fit-scores.jsonl').read_text().splitlines():
+    d = json.loads(line)
+    if d.get('file_detected') and d.get('score_pct_of_1M'):
+        scores[d['session_id']] = d['score_pct_of_1M']
+peaks = {}
+for line in Path.home().joinpath('venture-os/state/session-peaks.jsonl').read_text().splitlines():
+    d = json.loads(line)
+    if d.get('final_context_pct'):
+        peaks[d['session_id']] = d['final_context_pct']
+joined = [(sid, scores[sid], peaks[sid]) for sid in scores if sid in peaks]
+for sid, s, p in sorted(joined, key=lambda x: -x[2]):
+    print(f'{sid[:8]}  score={s:5.1f}%  peak={p:5.1f}%  ratio={p/max(s,0.1):4.1f}x')
+print(f'N={len(joined)}, calibration target 2026-06-09 + N>=50')
+"
 ```
+
+### Trigger per riapertura sessione VOS dedicata
+
+- **2026-06-09**: brief mattutino mostrerà `task-fit-monitor: calibration READY` se N≥50 → apri sessione VOS per analisi correlazione + decidere soglia gate
+- **Anomalia HIGH/CRITICAL** rilevata da monitor → notifica desktop osascript + brief segnale → indaga
+- **Heartbeat silente >24h** task_context_logger o session_peak_logger → fail-soft mascherato, debug hook
+
+### Deferred task aperti (priority MED)
+
+- **`budget_phase` field in template sXXX_task.md** cross-progetto. Claude.ai punto 1 verdict: fix primario è nel template, non hook. Richiede coordinamento ARGOS/FLUXION/Guardian per format canonico. Apri quando hai 3 progetti in fase contemporaneamente stabile.
+
+---
+
+## Reference
+
+- Verdict claude.ai integrale: `~/venture-os/handoffs/CLAUDE-AI-VALIDATION-task-context-fit-gate.md`
+- Handoff FLUXION S290: `~/venture-os/handoffs/FLUXION-S290-additions.md`
+- Audit sessione: `git log --oneline | grep "VOS audit S290"` + `state/blueprint-deviations.jsonl`
