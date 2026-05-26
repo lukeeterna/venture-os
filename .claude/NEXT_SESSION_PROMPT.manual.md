@@ -154,9 +154,21 @@ print(f'N={len(joined)}, calibration target 2026-06-09 + N>=50')
 - **Anomalia HIGH/CRITICAL** rilevata da monitor → notifica desktop osascript + brief segnale → indaga
 - **Heartbeat silente >24h** task_context_logger o session_peak_logger → fail-soft mascherato, debug hook
 
-### Deferred task aperti (priority MED)
+### Deferred task aperti (priority order)
 
-- **`budget_phase` field in template sXXX_task.md** cross-progetto. Claude.ai punto 1 verdict: fix primario è nel template, non hook. Richiede coordinamento ARGOS/FLUXION/Guardian per format canonico. Apri quando hai 3 progetti in fase contemporaneamente stabile.
+1. **[HIGH] VOS Weekly Roadmap Analyzer** — singola raccomandazione strategica aggregata automatica:
+   - File: `~/venture-os/components/weekly-roadmap-analyzer/analyzer.py` (nuovo)
+   - LaunchAgent: `com.luke.vos.weekly-roadmap-analyzer.plist` Mon 09:00
+   - Aggrega: host-monitor (HW trend 7gg), task-fit-monitor (saturation recurrence), cc-violations (vincolo violations stats), tool-scout (adoption/abandonment), costs.jsonl (LLM spend trend), session-health (avg context peak settimana)
+   - Output: `state/weekly-roadmap.md` con TOP-1 raccomandazione settimana (es. "FLUXION 4 saturation eventi questa settimana → priorità refactor handoff template" o "MacBook SSD 89% → cleanup obbligatorio prima venerdì")
+   - Consumer: briefer.py legge il file ogni lunedì + emette in sezione "Roadmap settimanale" del brief
+   - Pattern enterprise: data aggregation + single recommendation (vincolo #3) + autonomous (no founder interruption)
+   - Sessione VOS dedicata, ~1h lavoro
+   - Trigger apertura: brief lunedì mostra anomaly aggregate OR Luke chiede esplicitamente "roadmap VOS"
+
+2. **[MED] `budget_phase` field in template sXXX_task.md** cross-progetto. Claude.ai punto 1 verdict: fix primario è nel template, non hook. Richiede coordinamento ARGOS/FLUXION/Guardian per format canonico. Apri quando hai 3 progetti in fase contemporaneamente stabile.
+
+3. **[LOW] Hot-reload settings.json per CC sessioni vive** — investigare se Anthropic ha API per ricaricare hooks senza riavviare sessione. Oggi: settings.json modifiche si applicano solo da SessionStart successivo, blocca emergency fix in real-time (pattern emerso S290+S192+sessione ARGOS 2077876f corrente). Probabilmente non possibile lato CC, alternativa = signal-based hook reload custom. Research-only first.
 
 ---
 
