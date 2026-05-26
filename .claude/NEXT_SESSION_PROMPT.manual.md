@@ -54,7 +54,62 @@ HARD_STOP). Allargata cross-progetto a ARGOS S192 (compact a 100%) e FLUXION S29
 
 ---
 
-## Per la prossima sessione VOS
+## DECISIONE CTO — Prossima sessione DA APRIRE (non VOS)
+
+VOS non ha pending immediati. Lavoro reale è OPERATIVO sui progetti revenue-blocking.
+
+### Raccomandazione singola data-driven: APRI **ARGOS S193**
+
+**Motivo**: vincolo S173 + memoria `feedback_guardian_pause_sine_die` impone "ARGOS €800
+OR FLUXION primo sale" come trigger ri-allocazione. Brief `market_price_changes=0`
+ripetuto 1gg = scraper not running BLOCCA revenue path ARGOS. Priorità #1 business.
+
+**Comando apertura**:
+```bash
+cd ~/Documents/combaretrovamiauto-enterprise && claude
+```
+
+Primo prompt da scrivere in ARGOS S193:
+```
+leggi prompts/s193_step3_4_luke_physical.md
+```
+
+Quel file ha già GATE STEP 0 hard-blocking che obbliga:
+1. Tu apri /tmp/s192_VALIDATION_PROMPT_FOR_CLAUDE_AI.md, incolli su claude.ai
+2. Incolli verdict in ARGOS S193 al primo AskUserQuestion
+3. Se verdict GO → procedi STEP 3 AMBRA stress + STEP 4 E2E fisico
+4. Se verdict REVISE/FAIL → riapri investigazione S192 claims
+
+**Time-budget richiesto Luke fisico**: ~1-2h continuativa (TEST_FOUNDER AMBRA stress non delegabile).
+
+### Eccezione scope — Se Luke non disponibile fisicamente
+
+Apri **FLUXION S298** invece (technical autonomous task, no founder physical):
+```bash
+cd /Volumes/MontereyT7/FLUXION && claude
+```
+
+Primo prompt FLUXION S298:
+```
+leggi .claude/NEXT_SESSION_PROMPT.manual.md
+```
+
+File ha già pre-flight git-state check + Brevo HTTP API key task + production gate
+META-VINCOLO + Tauri activate-by-payload. **MA prima** Task #0 obbligatorio (audit
+S290 VOS): regen Ed25519 keypair kid v2 (kid v1 BURNED, privkey persa in /tmp/ flush).
+Reference: `~/venture-os/handoffs/FLUXION-S290-additions.md`.
+
+### VOS — NO sessione necessaria
+
+VOS task-context fit monitor gira automatically daily 08:00. Calibration ready
+trigger 2026-06-09. Riapri VOS solo se:
+- Notifica anomaly HIGH/CRITICAL desktop
+- Brief mattutino mostra segnale `task-fit-monitor ...`
+- Heartbeat silente >24h logger
+
+---
+
+## Per la prossima sessione VOS (quando trigger sopra)
 
 ### Vincoli da rispettare
 
