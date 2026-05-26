@@ -128,23 +128,56 @@ def main() -> int:
     report["stats"]["last_peak_ts"] = last_peak.isoformat() if last_peak else None
 
     # --- Anomalia 3: saturazioni ultime 24h ---
+    # Fix metodologico 2026-05-26 sera: deduplicare per session_id (multiple spike
+    # stessa sessione non sono N saturazioni distinte, è UNA sessione misurata N
+    # volte mentre saliva). Correlare con bridge mtime per sapere se sessione
+    # è ANCORA VIVA o già chiusa autonomamente.
     cutoff_24h = now - timedelta(hours=24)
-    saturated_recent = []
+    cutoff_live = now - timedelta(minutes=10)
+    saturated_by_sid = {}
     for p in peaks:
         ts = _parse_ts(p.get("ts", ""))
         pct = p.get("final_context_pct")
+        sid = p.get("session_id", "")
         if ts and ts >= cutoff_24h and isinstance(pct, (int, float)) and pct >= SATURATION_THRESHOLD_PCT:
-            saturated_recent.append({
-                "session_id": p.get("session_id", "?")[:8],
-                "cwd": p.get("cwd", "?"),
-                "pct": pct,
-            })
-    report["stats"]["saturated_sessions_24h"] = len(saturated_recent)
-    if saturated_recent:
+            # Tieni solo max pct per sid (dedup spike progressivi)
+            existing = saturated_by_sid.get(sid)
+            if not existing or pct > existing["pct"]:
+                # Check sessione ancora viva: bridge file mtime < 10min
+                bridge_file = Path(f"/tmp/claude-ctx-{sid}.json")
+                is_alive = False
+                if bridge_file.exists():
+                    try:
+                        bmtime = datetime.fromtimestamp(bridge_file.stat().st_mtime, tz=timezone.utc)
+                        is_alive = bmtime >= cutoff_live
+                    except OSError:
+                        pass
+                saturated_by_sid[sid] = {
+                    "session_id": sid[:8],
+                    "cwd": p.get("cwd", "?"),
+                    "pct": pct,
+                    "session_alive_now": is_alive,
+                }
+    saturated_recent = list(saturated_by_sid.values())
+    saturated_alive = [s for s in saturated_recent if s["session_alive_now"]]
+    report["stats"]["saturated_unique_sessions_24h"] = len(saturated_recent)
+    report["stats"]["saturated_still_alive"] = len(saturated_alive)
+
+    # Severity: CRITICAL solo se sessione ancora viva (azionabile).
+    # HIGH se chiuse autonomamente (pattern preoccupante ma non emergency).
+    if saturated_alive:
         report["anomalies"].append({
-            "id": "saturation_recurrence",
+            "id": "saturation_recurrence_live",
             "severity": "CRITICAL",
+            "count": len(saturated_alive),
+            "sessions": saturated_alive[:5],
+        })
+    elif saturated_recent:
+        report["anomalies"].append({
+            "id": "saturation_recurrence_closed",
+            "severity": "HIGH",
             "count": len(saturated_recent),
+            "note": "sessioni saturate ultime 24h già chiuse autonomamente — pattern da monitorare",
             "sessions": saturated_recent[:5],
         })
 
