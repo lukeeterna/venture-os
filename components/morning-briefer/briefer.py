@@ -450,6 +450,31 @@ def _signals(mac: Optional[dict], imac: Optional[dict], projects: dict) -> list:
                     )
         except Exception as e:  # noqa: BLE001
             _log_error("session-health parse fail", e)
+
+    # task-fit-monitor: consumer ultimo entry, segnale solo se anomalie o calibration ready
+    task_fit_monitor = VOS_ROOT / "state" / "task-fit-monitor.jsonl"
+    if task_fit_monitor.exists():
+        try:
+            with open(task_fit_monitor) as f:
+                lines = [ln for ln in f if ln.strip()]
+            if lines:
+                last = json.loads(lines[-1])
+                anomalies = last.get("anomalies") or []
+                if anomalies:
+                    ids = ", ".join(a.get("id", "?") for a in anomalies[:3])
+                    sev = ",".join({a.get("severity", "?") for a in anomalies})
+                    sigs.append(
+                        f"task-fit-monitor {sev}: {len(anomalies)} anomaly ({ids}) "
+                        f"— review state/task-fit-monitor.jsonl"
+                    )
+                if last.get("calibration_ready"):
+                    n = last.get("stats", {}).get("joined_n", 0)
+                    sigs.append(
+                        f"task-fit-monitor: calibration READY (N={n} joined). "
+                        f"Pronto per introdurre gate hard SPLIT-forcing data-driven."
+                    )
+        except Exception as e:  # noqa: BLE001
+            _log_error("task-fit-monitor parse fail", e)
     return sigs
 
 
