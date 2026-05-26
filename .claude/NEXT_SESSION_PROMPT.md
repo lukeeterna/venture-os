@@ -1,36 +1,35 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-05-26T17:54:56Z`
+**Generato**: `2026-05-26T18:02:34Z`
 **Sessione**: `9690fad5-e74c-4b6c-a75c-a369063c7537`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: committed: 66a7737
-**Last commit**: `66a7737 auto-close session 9690fad5-e74c-4b6c-a75c-a369063c7537 @ 2026-05-26T17:54:56Z`
+**Commit auto**: cosmetic-skip (only NEXT_SESSION_PROMPT.md dirty, no plan/scope change)
+**Last commit**: `d657827 VOS chiusura S+ 2026-05-26: handoff task-context fit MVP`
 
 ## Ultimi 5 commit
 ```
+d657827 VOS chiusura S+ 2026-05-26: handoff task-context fit MVP
+abd82f4 auto-close session 9690fad5-e74c-4b6c-a75c-a369063c7537 @ 2026-05-26T17:57:55Z
 66a7737 auto-close session 9690fad5-e74c-4b6c-a75c-a369063c7537 @ 2026-05-26T17:54:56Z
 dad8bda auto-close session 9690fad5-e74c-4b6c-a75c-a369063c7537 @ 2026-05-26T17:32:38Z
 390aa60 auto-close session 9690fad5-e74c-4b6c-a75c-a369063c7537 @ 2026-05-26T17:27:24Z
-6407b87 auto-close session 9690fad5-e74c-4b6c-a75c-a369063c7537 @ 2026-05-26T17:26:22Z
-d12cabd auto-close session 9690fad5-e74c-4b6c-a75c-a369063c7537 @ 2026-05-26T17:20:30Z
 ```
 
 ## File modificati nell'ultimo commit
 ```
-M	.claude/NEXT_SESSION_PROMPT.md
-A	components/task-fit-monitor/monitor.py
+M	.claude/NEXT_SESSION_PROMPT.manual.md
 ```
 
 ## Ultimo prompt utente (estratto)
 ```
-[{"tool_use_id":"toolu_013pN9eCV6WhqdFTABdMXCkY","type":"tool_result","content":"=== TEST 1: syntax + permessi ===\nmonitor.py OK\n/Users/macbook/Library/LaunchAgents/com.luke.vos.task-fit-monitor.plist: OK\n\n=== TEST 2: python interpreter path verifica ===\nlrwxr-xr-x  1 macbook  admin  56 18 Mar  2025 /usr/local/opt/python@3.13/bin/python3 -> ../Frameworks/Python.framework/Versions/3.13/bin/python3\n\n=== TEST 3: esecuzione monitor manuale (dati attuali) ===\n{\"anomalies\": 0, \"scores\": 5,
+[{"tool_use_id":"toolu_01NGWwivvYuaf51ynjpzi1pj","type":"tool_result","content":"=== Commit finale manuale handoff (auto-close hook farà il resto) ===\n[master d657827] VOS chiusura S+ 2026-05-26: handoff task-context fit MVP\n 1 file changed, 112 insertions(+), 83 deletions(-)\n rewrite .claude/NEXT_SESSION_PROMPT.manual.md (99%)\n\nd657827 VOS chiusura S+ 2026-05-26: handoff task-context fit MVP\nabd82f4 auto-close session 9690fad5-e74c-4b6c-a75c-a369063c7537 @ 2026-05-26T17:57:55Z\n66a7737 a
 ```
 
 ## Ultimi turni assistant
 ```
-## Limite onesto
-Schedule daily 08:00 = **detection latency fino a 24h**. Per saturation events ricorrenti durante la giornata di lavoro, il context gate hot (`global_context_gate.py` HARD_BLOCK @80%, già attivo) lo intercetta in real-time. Il monitor è layer di osservabilità, non di prevention.
-**Next milestone**: 2026-06-09. Quando partirà il monitor quel giorno, leggerà `joined_n` e — se ≥50 — emetterà `calibration_recommendation` per introdurre gate data-driven. Tu vedrai sia stdout LaunchAgent (`~/venture-os/state/logs/task-fit-monitor.out`) sia entry jsonl.
+- **2026-06-09**: brief mattutino mostrerà `calibration READY` se N joined ≥ 50 → sessione dedicata per soglia gate data-driven
+- **Deferred task** budget_phase template sXXX_task.md cross-progetto (priority MED, scope OPEN)
+Sessione chiudibile. `/exit` quando vuoi.
 ```
 
 ## Come riprendere
