@@ -1,35 +1,35 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-05-26T18:02:34Z`
+**Generato**: `2026-05-26T18:31:00Z`
 **Sessione**: `9690fad5-e74c-4b6c-a75c-a369063c7537`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
 **Commit auto**: cosmetic-skip (only NEXT_SESSION_PROMPT.md dirty, no plan/scope change)
-**Last commit**: `d657827 VOS chiusura S+ 2026-05-26: handoff task-context fit MVP`
+**Last commit**: `2434edb claude.ai prompt: production-readiness 2026 ARGOS+FLUXION research-mandatory`
 
 ## Ultimi 5 commit
 ```
-d657827 VOS chiusura S+ 2026-05-26: handoff task-context fit MVP
-abd82f4 auto-close session 9690fad5-e74c-4b6c-a75c-a369063c7537 @ 2026-05-26T17:57:55Z
-66a7737 auto-close session 9690fad5-e74c-4b6c-a75c-a369063c7537 @ 2026-05-26T17:54:56Z
-dad8bda auto-close session 9690fad5-e74c-4b6c-a75c-a369063c7537 @ 2026-05-26T17:32:38Z
-390aa60 auto-close session 9690fad5-e74c-4b6c-a75c-a369063c7537 @ 2026-05-26T17:27:24Z
+2434edb claude.ai prompt: production-readiness 2026 ARGOS+FLUXION research-mandatory
+18634ea task-fit-monitor: dedup saturation + correlate with bridge mtime
+8e4e0f7 VOS handoff: 3 deferred task priority-ordered + weekly roadmap analyzer design
+8dd7fc2 task-fit-monitor: cleanup bridge orfani + multi-session detection
+b8bf6ae VOS handoff: decisione CTO prossima sessione = ARGOS S193 (revenue priority)
 ```
 
 ## File modificati nell'ultimo commit
 ```
-M	.claude/NEXT_SESSION_PROMPT.manual.md
+A	handoffs/CLAUDE-AI-PROMPT-production-readiness-2026.md
 ```
 
 ## Ultimo prompt utente (estratto)
 ```
-[{"tool_use_id":"toolu_01NGWwivvYuaf51ynjpzi1pj","type":"tool_result","content":"=== Commit finale manuale handoff (auto-close hook farà il resto) ===\n[master d657827] VOS chiusura S+ 2026-05-26: handoff task-context fit MVP\n 1 file changed, 112 insertions(+), 83 deletions(-)\n rewrite .claude/NEXT_SESSION_PROMPT.manual.md (99%)\n\nd657827 VOS chiusura S+ 2026-05-26: handoff task-context fit MVP\nabd82f4 auto-close session 9690fad5-e74c-4b6c-a75c-a369063c7537 @ 2026-05-26T17:57:55Z\n66a7737 a
+[{"tool_use_id":"toolu_01BYjiSqb4ECvnm5RTSi2Kia","type":"tool_result","content":"=== A. Cosa c'è ora in clipboard? ===\nprompts/s195_revalidation_full_bundle.md ...\nlunghezza clipboard:       41 char\n\n=== B. Test pbcopy ridiretto + verifica ===\nFile:     6523 char\nClipboard dopo pbcopy:     6523 char\n✅ Clipboard OK\n\nPrime 200 char clipboard:\n# Prompt Claude.ai — Production-Readiness 2026 ARGOS+FLUXION (research mandatory)\n\n**Context**: founder solo (Luke), 3 progetti tech attivi,
 ```
 
 ## Ultimi turni assistant
 ```
-- **2026-06-09**: brief mattutino mostrerà `calibration READY` se N joined ≥ 50 → sessione dedicata per soglia gate data-driven
-- **Deferred task** budget_phase template sXXX_task.md cross-progetto (priority MED, scope OPEN)
-Sessione chiudibile. `/exit` quando vuoi.
+```
+→ selezioni tutto (Cmd+A) → copia (Cmd+C) → paste claude.ai.
+Aspetto verdict per analisi insieme.
 ```
 
 ## Come riprendere
