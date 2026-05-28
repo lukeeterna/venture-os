@@ -1,0 +1,78 @@
+{
+  "session": "S307",
+  "timestamp": "2026-05-28T15:30:00Z",
+  "scope": "FDQ-01 CTO autonomous smoke + Resend domain pre-provisioning",
+  "task_a_inbox_verify": {
+    "method": "Resend API GET /emails/{id} bypass (no Gmail access)",
+    "resend_message_id": "58cf5601-0b53-4ee9-9abc-bdd8279ea42a",
+    "to": "fluxion.gestionale@gmail.com",
+    "from": "FLUXION <onboarding@resend.dev>",
+    "subject": "FLUXION — Hai già attivato la tua licenza?",
+    "last_event": "delivered",
+    "created_at": "2026-05-28 15:09:46.249087+00",
+    "verdict": "GREEN_DELIVERY_CONFIRMED_INFRA",
+    "caveat": "folder placement (inbox/spam/promozioni) NOT visible via Resend API — founder verify residual non-blocking"
+  },
+  "task_b_fdq01_smoke": {
+    "method_1_replay_existing_event": {
+      "event_id": "evt_1TbjH6IW4bHDTsaHJIMfGbbX",
+      "webhook_endpoint": "we_1TaI32IW4bHDTsaHT0wtsmJ4",
+      "outcome": "idempotent_replay_email_already_sent",
+      "verdict": "GREEN_idempotency_working_no_new_email"
+    },
+    "method_2_trigger_fresh_event": {
+      "command": "stripe trigger checkout.session.completed --add metadata[tier]=base",
+      "webhook_status": 200,
+      "code_path_executed": "stripe-webhook.ts S306 fix (Resend, no Brevo)",
+      "resend_outcome": "FAIL_403_validation_error",
+      "resend_error": "You can only send testing emails to your own email address (fluxion.gestionale@gmail.com). To send emails to other recipients, please verify a domain at resend.com/domains, and change the from address to an email using this domain.",
+      "verdict": "RED_PRODUCTION_BLOCKING"
+    }
+  },
+  "critical_finding": {
+    "id": "FBUG-RESEND-SHARED-SENDER-01",
+    "severity": "blocking_pre_launch",
+    "description": "S306 fix (Brevo→Resend swap) uses onboarding@resend.dev shared sender. Resend test-mode restriction: shared sender can only deliver to account-owner verified email. Production E2E with customer.email != fluxion.gestionale@gmail.com → 403 validation_error → license email NEVER delivered → customer cannot activate.",
+    "validation_sources": [
+      "Resend API empirical 403 (fresh Stripe trigger test)",
+      "Resend docs (Managing Domains) — 'sending from default addresses only suitable for initial testing'",
+      "Automation Atlas May 2026 — 'free tier requires 1 verified domain for production'"
+    ],
+    "structural_critique_S306_retroactive": "Tandem research S306 + WebSearch May 2026 confirmed Resend 100/day free tier MA assumption nascosta 'shared sender works for all recipients' → FALSE. Bias confirmation: verified only owner→owner delivery (S306 admin/email-sequence/preview), generalized to all recipients without E2E test with non-owner to-address."
+  },
+  "task_c_promotion": {
+    "original_status_S306": "DEFERRED_post_first_CLOSED_WON",
+    "new_status_S307": "REQUIRED_IMMEDIATE_PRE_LAUNCH",
+    "trigger": "production_blocking_finding_S307_smoke",
+    "founder_actions_required": [
+      "1. Cloudflare Registrar: register fluxion-app.com (~$10.46/year, individual OK, NO VAT P.IVA required)",
+      "2. Cloudflare DNS panel: add 3 records output Resend domain creation (vedi cf_dns_records.txt)",
+      "3. Wait DNS propagation 15min-2h",
+      "4. Resend dashboard or API: trigger domain verification"
+    ],
+    "cto_autonomous_post_founder": [
+      "5. Code change: RESEND_DEFAULT_FROM = 'FLUXION <licenze@fluxion-app.com>'",
+      "6. wrangler deploy --env test",
+      "7. Re-smoke: stripe trigger checkout.session.completed (no metadata override) → expect Resend 200 send",
+      "8. Promote to prod env when verified"
+    ]
+  },
+  "resend_domain_provisioned_pending": {
+    "id": "6f986180-2eaf-41e2-8a40-53ebeefedbf0",
+    "name": "fluxion-app.com",
+    "region": "eu-west-1",
+    "status": "not_started",
+    "dns_records_required": [
+      {"type": "TXT", "name": "resend._domainkey", "value": "p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDqkHv6sGk1C7n0J/Yau0YrcGbM4PifQBtmX1HmCSvr7IsyXk8Ui1GY5qPrgRC+CKInBH2+ArTt6BU7jTVcNrNQ8nn+Ni0hWOu54sGaRFPy1k2qW8bjgU/CYhVefbVQrOBUnsI/1vV3q4z7xH7CWojWo4uKQ5SXQkj7njqecFWFvwIDAQAB", "purpose": "DKIM"},
+      {"type": "MX", "name": "send", "value": "feedback-smtp.eu-west-1.amazonses.com", "priority": 10, "purpose": "SPF MX"},
+      {"type": "TXT", "name": "send", "value": "v=spf1 include:amazonses.com ~all", "purpose": "SPF TXT"}
+    ]
+  },
+  "regola_4_critica_strutturale_S307": {
+    "assunzione_nascosta": "Resend shared sender onboarding@resend.dev assumed working for all recipients — empirically FALSE",
+    "rompe_a_X_giorni": "Day 1 production launch: prima vendita reale → cliente non riceve email license → support storm + refund risk",
+    "pattern_errore_noto": "Resend dev/test sandbox restriction = classic post-mortem nei SaaS, ignored in tandem research S306",
+    "sovradimensione": "NO — undersized: avrei dovuto smoke con to=different-from-owner@example.com in S306"
+  },
+  "regola_22_critique_then_ignore_candidata_aggiornata": "S296 Brevo critique → S303 deploy ignored → S305 paid (Brevo sender fail) → S306 swap Brevo→Resend → S307 paid (Resend shared sender restriction). Pattern conferma: ogni decisione email provider necessita E2E smoke con destinatari diversi PRE production claim. NEW critique-action-gate proposed: PLAN.md flagged critique MUST have [ADDRESSED|DEFERRED:reason] PRE-deploy."
+}
