@@ -1,35 +1,37 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-05-26T19:35:32Z`
-**Sessione**: `9690fad5-e74c-4b6c-a75c-a369063c7537`
+**Generato**: `2026-05-28T06:10:57Z`
+**Sessione**: `1ac75ae7-1a62-4dd8-9499-642a63c6a994`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
 **Commit auto**: cosmetic-skip (only NEXT_SESSION_PROMPT.md dirty, no plan/scope change)
-**Last commit**: `3461a35 ARGOS audit HIGH: copyright exposure foto dossier (claude.ai closure)`
+**Last commit**: `2d3d7e0 auto-close session 1ac75ae7-1a62-4dd8-9499-642a63c6a994 @ 2026-05-27T15:30:58Z`
 
 ## Ultimi 5 commit
 ```
+2d3d7e0 auto-close session 1ac75ae7-1a62-4dd8-9499-642a63c6a994 @ 2026-05-27T15:30:58Z
 3461a35 ARGOS audit HIGH: copyright exposure foto dossier (claude.ai closure)
 15300e6 claude.ai loop closure: 4 verifiche + scope shift business model + ToS thanks
 a02fc64 ARGOS business model correction: NO market intelligence, scouting+dossier+commissione
 afdf4e5 auto-close session 9690fad5-e74c-4b6c-a75c-a369063c7537 @ 2026-05-26T19:08:36Z
-370413c auto-close session 9690fad5-e74c-4b6c-a75c-a369063c7537 @ 2026-05-26T19:01:53Z
 ```
 
 ## File modificati nell'ultimo commit
 ```
-M	state/blueprint-deviations.jsonl
+M	.claude/NEXT_SESSION_PROMPT.md
+A	briefs/2026-05-27.md
+M	state/cc-violations.jsonl
 ```
 
 ## Ultimo prompt utente (estratto)
 ```
-[{"tool_use_id":"toolu_01KLtNvCcSmFb5R4daNgdRGW","type":"tool_result","content":"=== 1. Sposto bundle V3 in path persistente ARGOS ===\n-rw-r--r--  1 macbook  staff  44341 26 Mag 21:35 /Users/macbook/Documents/combaretrovamiauto-enterprise/prompts/s196_bundle_v3.md\n\nHash check pre/post (deve essere identico):\nf7bb0aefc164ac7baaea38e3b36c402c5fca673bcca853c0f6a01043eec0a648  /tmp/s196_QUALITY_VALIDATION_PROMPT_v3.md\nf7bb0aefc164ac7baaea38e3b36c402c5fca673bcca853c0f6a01043eec0a648  /Users/macb
+quindi come pensi secondo i protocolli "vos" di aiutare Fluxion?
 ```
 
 ## Ultimi turni assistant
 ```
 ```
-## VOS resto qui
-52% context, vincolo #7 acknowledged. Sessione VOS chiusa verde dichiarato in tutti i turni precedenti. Niente nuovo lavoro lato mio. Quando hai verdict claude.ai + nuova sessione ARGOS → se vuoi audit/review mi richiami.
+Se PLAN.md FLUXION non ha sezione Critique formalizzata = la critique S296 era inline in chat, non in PLAN.md = hook non l'avrebbe catturata. Fix vero = formalizzare critique in PLAN.md prima, hook poi.
+Procedo con Read empirico 3 PLAN.md, o stop qui per tua decisione di scope?
 ```
 
 ## Come riprendere
