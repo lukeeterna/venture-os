@@ -1,0 +1,60 @@
+{
+  "session": "S311",
+  "timestamp": "2026-05-29T15:28:00Z",
+  "scope": "Task D founder-bound DEFERRED + Task E preflight (read-only)",
+  "preflight_5_5": {
+    "git_status": "clean (only pre-existing 2 files)",
+    "worker_test_health": "HTTP 200 OK",
+    "resend_domain_status": "verified",
+    "vos_gate": "OK no CRITIQUE [OPEN]",
+    "imac_fluxion_path": "accessible 126 entries"
+  },
+  "task_e_findings_structural": {
+    "F1_wrangler_toml": {
+      "status": "TOP-LEVEL = production config",
+      "evidence": {
+        "KV_LICENSE_CACHE_id": "12dbb4f8d88441429d07799764e8c3d9",
+        "D1_database_id": "e065a108-7add-4a13-8f9c-2f61b1d47c9b",
+        "vars_ENVIRONMENT": "production",
+        "env_test_only": "[env.test] override exists, [env.production] NOT NEEDED"
+      },
+      "implication": "S311 prompt E-3 syntax error: use `wrangler deploy` (no --env flag) for prod, NOT `wrangler deploy --env production`",
+      "severity": "INFO (no blocker, prompt rewrite S312)"
+    },
+    "F2_prod_secrets": {
+      "count": 12,
+      "names": ["ADMIN_API_SECRET", "CEREBRAS_API_KEY", "DISCORD_HEALTH_WEBHOOK_URL", "ED25519_PRIVATE_KEY_PKCS8", "ED25519_PUBLIC_KEY", "ED25519_PUBLIC_KEY_V1", "GROQ_API_KEY", "LEAD_MAGNET_SIGNING_SECRET", "OPENROUTER_API_KEY", "RESEND_API_KEY", "STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET"],
+      "vs_S311_expected": "S311 expected 7+ — actual 12 (5 bonus)",
+      "ed25519_kid_status": "NOT in secrets NOR in [vars] — verify usage in code S312",
+      "ed25519_private_key_rename": "S311 expected `ED25519_PRIVATE_KEY` actual `ED25519_PRIVATE_KEY_PKCS8` (rename, OK)"
+    },
+    "F3_license_recovery_secret_missing_prod": {
+      "status": "BLOCKING for prod €497 revenue",
+      "evidence_code_usage": {
+        "fluxion-proxy/src/routes/stripe-webhook.ts:452-453": "recovery URL embedded in email post-pagamento",
+        "fluxion-proxy/src/routes/checkout-success.ts:247,273": "gated render",
+        "fluxion-proxy/src/routes/license-recovery.ts:81": "endpoint lookup",
+        "fluxion-proxy/src/lib/types.ts:33-35": "Env type optional (?:)"
+      },
+      "evidence_test_env_has_it": "MEMORY S252-bis + S303 reference Track-B test env populated",
+      "failure_mode": "code gracefully `if (c.env.LICENSE_RECOVERY_SECRET)` → no crash, BUT customer email post-pagamento ricevuta SENZA recovery URL link → customer perde licenza al primo refresh browser → refund storm",
+      "severity": "CRITICAL — BLOCKING S312 Task E-3 deploy",
+      "remediation": "S312 Task E-PRE: `npx wrangler secret put LICENSE_RECOVERY_SECRET` (no --env flag for prod). Generate value: `openssl rand -hex 32`"
+    }
+  },
+  "task_d_status": "DEFERRED S312 (founder-bound, requires Luke physical iMac for Stripe payment + GUI activate)",
+  "task_f_status": "DEFERRED S312 (PLAN.md + ROADMAP_REMAINING.md doc sync)",
+  "context_budget": "57% (WARN, close threshold 60%)",
+  "session_closing_reason": "context budget vincolo #7 + Task E-3 deploy = file critico edit BLOCKED ≥50%",
+  "carry_over_S312": [
+    "Task E-PRE (NEW): wrangler secret put LICENSE_RECOVERY_SECRET (prod) — BLOCKING",
+    "Task D-1/D-2/D-3 META-VINCOLO #18 founder GUI",
+    "Task E-1 verify wrangler.toml top-level = prod (DONE S311 — re-confirm)",
+    "Task E-2 secrets list confirmed 12/13 (post Task E-PRE)",
+    "Task E-3 wrangler deploy (NO --env flag, prod is default)",
+    "Task E-4 Stripe webhook LIVE endpoint",
+    "Task E-6 vos_plan critique resolve C-LIC-001",
+    "Task E-7 landing checkout PROD Payment Link",
+    "Task F PLAN.md + ROADMAP_REMAINING.md sync"
+  ]
+}

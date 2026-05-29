@@ -1,0 +1,75 @@
+{
+  "session": "S310",
+  "timestamp_utc": "2026-05-29T15:15:11Z",
+  "scope": "Task C — close FBUG-RESEND-SHARED-SENDER-01 via custom domain fluxion-app.com",
+  "outcome": "CLOSED_VERDE",
+  "bug_resolved": "FBUG-RESEND-SHARED-SENDER-01",
+  "preflight": {
+    "git_status": "clean (only NEXT_SESSION_PROMPT.md tracked submodule)",
+    "worker_test_health": "HTTP 200 ok",
+    "resend_domain_status_pre_verify": "pending (DKIM verified, SPF MX+TXT pending)",
+    "vos_gate": "OK — no CRITIQUE [OPEN]"
+  },
+  "task_c1_resend_verify": {
+    "dns_propagation_dig_1_1_1_1": {
+      "dkim": "TXT resend._domainkey present (p=MIGfMA0G...)",
+      "spf_mx": "10 feedback-smtp.eu-west-1.amazonses.com.",
+      "spf_txt": "v=spf1 include:amazonses.com ~all"
+    },
+    "resend_verify_trigger_http": 200,
+    "resend_domain_status_final": "verified",
+    "records_status": {
+      "DKIM": "verified",
+      "SPF_MX_send": "verified",
+      "SPF_TXT_send": "verified"
+    },
+    "time_to_verified_minutes": "~10 (1 retry needed)"
+  },
+  "task_c2_code_change": {
+    "files_modified": [
+      "fluxion-proxy/src/email/sender.ts",
+      "fluxion-proxy/src/routes/stripe-webhook.ts"
+    ],
+    "before": "FLUXION <onboarding@resend.dev>",
+    "after": "FLUXION <licenze@fluxion-app.com>",
+    "reply_to_preserved": "fluxion.gestionale@gmail.com",
+    "comments_updated_with_S310_context": true
+  },
+  "task_c3_gate": {
+    "tsc_noEmit": "0 errori",
+    "vitest": "36/36 PASS (6 test files, 4.36s)",
+    "wrangler_deploy_env_test": "version 258b0cd1-2148-412f-99e6-876cd4d9b159, 848.89 KiB / 122.70 KiB gzip",
+    "health_post_deploy": "HTTP 200 ok"
+  },
+  "task_c4_smoke_fdq01": {
+    "method": "stripe trigger checkout.session.completed --override 'checkout_session:metadata[tier]=base'",
+    "webhook_response_status": 200,
+    "checkout_session_id": "cs_test_a10Fbb6YkbyD3Zo7sj9dSiGtZwOJfphSUktfJLZk9Uq4eQT1PT7cHxXHED",
+    "email_log_line": "Checkout cs_test_a10Fbb6...: Confirmation email sent via Resend to stripe@example.com (Resend ID: 72eff6e9-c160-488b-b579-ee36e23f3ef6)",
+    "resend_message_id": "72eff6e9-c160-488b-b579-ee36e23f3ef6",
+    "resend_api_verify": {
+      "from": "FLUXION <licenze@fluxion-app.com>",
+      "to": ["stripe@example.com"],
+      "reply_to": ["fluxion.gestionale@gmail.com"],
+      "subject": "FLUXION — Il tuo ordine è confermato!",
+      "last_event": "sent",
+      "validation_error_403": false
+    },
+    "comparison_S307": {
+      "before_S307": "HTTP 403 validation_error: 'You can only send testing emails to your own email address... verify a domain at resend.com/domains'",
+      "after_S310": "HTTP 200 last_event=sent — accepted for NON-owner recipient (stripe@example.com)"
+    }
+  },
+  "production_readiness_technical": true,
+  "production_readiness_business": "REQUIRES_TASK_D_FOUNDER_GUI_ACTIVATE_S187_FASE1",
+  "critique_strutturale_S310": [
+    "1. last_event='sent' (NOT 'delivered'): stripe@example.com is RFC reserved test domain, never resolves SMTP. Per founder GUI test (Task D) use real gmail address to confirm end-to-end delivery+inbox+spam folder.",
+    "2. License recovery URL embedded in email points to worker TEST env (fluxion-proxy-test.gianlucanewtech.workers.dev). For prod promote (Task E) verify code generates prod worker URL based on ENVIRONMENT var.",
+    "3. Custom domain unlocks Resend free tier 100/day 3000/mo. Trigger upgrade Resend Pro $20/mo at >25 vendite/giorno sostenute 7gg (locked S306 Claude.ai research).",
+    "4. DMARC p=none currently monitor-only. After 1-2 weeks observing rua reports (fluxion.gestionale@gmail.com), upgrade to p=quarantine for spoofing protection."
+  ],
+  "next_steps": {
+    "task_d_meta_vincolo_18_founder": "GUI app iMac wizard activate flow + S187 FASE 1 evidence (founder GO mandatory pre production_ready claim)",
+    "task_e_prod_promote": "wrangler.toml [env.production] same Resend setup + wrangler secret put RESEND_API_KEY --env production + deploy + update Stripe webhook endpoint prod URL + smoke prod + resolve VOS critique C-LIC-001"
+  }
+}

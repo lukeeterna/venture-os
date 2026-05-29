@@ -1,0 +1,54 @@
+{
+  "session": "S309",
+  "date": "2026-05-29",
+  "scope": "Task A+B+B-bonus DONE founder, Task C in-flight verify Resend pending",
+  "task_a_cf_registrar": {
+    "status": "DONE",
+    "domain": "fluxion-app.com",
+    "registrar": "Cloudflare",
+    "registered_at": "2026-05-29T11:47:50Z",
+    "expiry": "2027-05-29",
+    "zone_id": "9fa739250bcbf39d157f76752c4d18fc",
+    "account_id": "22ddff3a4ef544511523a841b3dcadf8",
+    "nameservers": ["betty.ns.cloudflare.com", "rodney.ns.cloudflare.com"],
+    "plan": "Free Website",
+    "annual_cost_usd": 10.46,
+    "auto_renew": true,
+    "registrant": "gianluca di stasi, lavello PZ 85024, IT, persona fisica (no P.IVA)"
+  },
+  "task_b_dns_records": {
+    "status": "DONE",
+    "records_added": 4,
+    "compiled_by": "founder via CF DNS panel (token Deploy-90d lacks #dns_records:edit, no API automation)",
+    "dig_verify_via_1_1_1_1": {
+      "dkim_txt_resend_domainkey": "PROPAGATED",
+      "spf_mx_send_priority_10": "PROPAGATED (10 feedback-smtp.eu-west-1.amazonses.com)",
+      "spf_txt_send": "PROPAGATED (v=spf1 include:amazonses.com ~all)",
+      "dmarc_txt": "PROPAGATED (v=DMARC1; p=none; rua=mailto:fluxion.gestionale@gmail.com)"
+    }
+  },
+  "task_c_resend_verify": {
+    "status": "PENDING (trigger sent)",
+    "verify_trigger_http": 200,
+    "domain_status_post_trigger": "pending (was not_started pre-trigger)",
+    "all_3_records_status": "pending (Resend-side async DNS check, typical 1-30min)",
+    "next_check_command": "source ~/.claude/.env && curl -sS https://api.resend.com/domains/6f986180-2eaf-41e2-8a40-53ebeefedbf0 -H \"Authorization: Bearer ${RESEND_TEST_KEY}\" | python3 -m json.tool | grep status"
+  },
+  "task_c_code_change_pending": {
+    "files": [
+      "fluxion-proxy/src/email/sender.ts",
+      "fluxion-proxy/src/routes/stripe-webhook.ts"
+    ],
+    "replace": "from: 'onboarding@resend.dev'",
+    "with": "from: 'FLUXION <licenze@fluxion-app.com>'",
+    "keep": "reply_to: ['fluxion.gestionale@gmail.com']"
+  },
+  "task_c_smoke_pending": {
+    "step": "post Resend verify status=verified",
+    "command": "stripe trigger checkout.session.completed --api-key $STRIPE_TEST_SECRET_KEY",
+    "expect": "webhook 200 + Resend 200 (no 403) + last_event delivered"
+  },
+  "task_d_meta_vincolo_18": "carry-over founder GUI activate flow",
+  "task_e_promote_prod": "carry-over post C+D verde",
+  "bug_fbug_resend_shared_sender_01": "MITIGATION_IN_PROGRESS (S307 identified, S309 DNS placed, awaiting Resend verify complete)"
+}
