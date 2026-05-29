@@ -1,0 +1,22 @@
+{
+  "session": "S313",
+  "scope": "Task E-PRE + Task E (E-1..E-7) + Task F",
+  "timestamp_close": "2026-05-29T20:55:00Z",
+  "tasks": {
+    "E-PRE": {"status": "PASS", "details": "LICENSE_RECOVERY_SECRET put prod, 12→13 secrets, openssl rand -hex 32"},
+    "E-1": {"status": "PASS", "details": "wrangler.toml: ENVIRONMENT=production, KV=12dbb4f8..., D1=e065a108..."},
+    "E-2": {"status": "PASS", "details": "13 secrets present, LICENSE_RECOVERY_SECRET listed"},
+    "E-3": {"status": "PASS", "version_id": "e18df659-bed2-4491-a8fe-9fef9e398b2e", "health": "200 OK", "upload_kb": 848.89, "gzip_kb": 122.70},
+    "E-4": {"status": "BLOCKED_FOUNDER", "reason": "Stripe LIVE webhook verify needs founder dashboard https://dashboard.stripe.com/webhooks (LIVE mode) — endpoint atteso https://fluxion-proxy.gianlucanewtech.workers.dev/api/v1/webhook/stripe + STRIPE_WEBHOOK_SECRET update se LIVE webhook nuovo"},
+    "E-5": {"status": "SKIPPED_PER_REGOLA_15", "rationale": "smoke prod = primo CLOSED_WON reale + wrangler tail"},
+    "E-6": {"status": "PASS", "vos_critique": "C-LIC-001 resolved", "gate": "OK nessuna CRITIQUE [OPEN]"},
+    "E-7": {"status": "PASS_WITH_ANOMALY", "details": "landing/checkout-consent.html URL formato PROD (no test_ prefix), HEAD 200 OK", "anomaly": "stesso path suffix tra TEST e LIVE (bJe7sM... e 00w28s...) statisticamente improbabile — doc memoria S305-S308 potrebbe contenere errore (URL etichettati TEST sono in realtà LIVE con test_ prepended manualmente o viceversa). Founder verify Stripe dashboard."}
+  },
+  "blockers_carry_over_S314": [
+    "E-4 founder Stripe LIVE webhook dashboard verify",
+    "D-1 founder Stripe Payment Link pagamento reale → email recovery URL",
+    "D-2 founder FLUXION GUI activate via wizard (tauri dev iMac SSH)",
+    "D-3 S187 FASE 1 evidence + Luke GO esplicito (META-VINCOLO REGOLA #18)"
+  ],
+  "production_ready_claim": "PROHIBITED until D-1/D-2/D-3 evidence read by Luke (REGOLA #18 META-VINCOLO)"
+}

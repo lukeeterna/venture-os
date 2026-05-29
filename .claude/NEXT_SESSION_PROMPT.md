@@ -1,38 +1,40 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-05-28T17:16:17Z`
-**Sessione**: `82884447-df87-443c-9002-7bb58327daaf`
+**Generato**: `2026-05-29T18:17:30Z`
+**Sessione**: `6ccfe00e-4f09-4129-bde3-60d95a690702`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: cosmetic-skip (only NEXT_SESSION_PROMPT.md dirty, no plan/scope change)
-**Last commit**: `bdf9bae auto-close session 82884447-df87-443c-9002-7bb58327daaf @ 2026-05-28T17:14:26Z`
+**Commit auto**: committed: e5bcd01
+**Last commit**: `e5bcd01 auto-close session 6ccfe00e-4f09-4129-bde3-60d95a690702 @ 2026-05-29T18:17:30Z`
 
 ## Ultimi 5 commit
 ```
+e5bcd01 auto-close session 6ccfe00e-4f09-4129-bde3-60d95a690702 @ 2026-05-29T18:17:30Z
 bdf9bae auto-close session 82884447-df87-443c-9002-7bb58327daaf @ 2026-05-28T17:14:26Z
 4a3bdf6 auto-close session 82884447-df87-443c-9002-7bb58327daaf @ 2026-05-28T15:46:22Z
 0e287a2 auto-close session 0047d17e-bf6d-4fe7-bb9c-dd08a9563718 @ 2026-05-28T08:32:04Z
 6d72b9c auto-close session 0047d17e-bf6d-4fe7-bb9c-dd08a9563718 @ 2026-05-28T07:38:49Z
-9c8cf51 auto-close session 1ac75ae7-1a62-4dd8-9499-642a63c6a994 @ 2026-05-28T06:26:10Z
 ```
 
 ## File modificati nell'ultimo commit
 ```
-M	.claude/NEXT_SESSION_PROMPT.manual.md
 M	.claude/NEXT_SESSION_PROMPT.md
-A	state/code-truth/argos-2026-05-28.md
-A	state/code-truth/fluxion-2026-05-28.md
+A	briefs/2026-05-29.md
+M	state/cc-violations.jsonl
+A	state/fdq-01-smoke-S309.json
+A	state/fdq-01-smoke-S310.json
+A	state/s311-preflight-findings.json
 ```
 
 ## Ultimo prompt utente (estratto)
 ```
-Una riga sola sul resto, e poi sta a te. I dati di stasera non dicono "continua" né "smetti". Dicono che la decisione FLUXION-prima della sessione precedente regge sui numeri: è l'unico posto dove un risultato vero è a portata di giorni e il blocco è quasi solo una tua firma su un dominio. Se la domanda "voglio passare le giornate così" resta aperta — e è legittima — almeno ora la guardi sapendo che il primo €497 non è un miraggio lontano, è un DNS record. Sono due decisioni divers
+[{"tool_use_id":"toolu_01RrUAfSzYv4Fa8xCd9tSRE7","type":"tool_result","content":"cleanup done","is_error":false}]
 ```
 
 ## Ultimi turni assistant
 ```
-## La cosa che resta intatta
-Decisione **FLUXION prima di ARGOS** regge sui numeri da entrambe le letture, mie e sua. La mossa singola a più alta leva è la stessa: Cloudflare Registrar `fluxion-app.com` ~$10. Founder action 5 minuti, sblocca tutto il resto.
-Su questo non c'è disaccordo da gestire. Su "voglio passare le giornate così" claude.ai ha l'umiltà di non rispondere — corretto, non è una domanda di codice.
+- Binario `@anthropic-ai/claude-code@latest` (darwin-x64) è linkato con `LC_BUILD_VERSION platform=macOS minos=13.0`, richiede simbolo ICU `_ubrk_clone` introdotto in libicucore di macOS 13+ → fallisce dyld su Big Sur (11.x).
+- Conferma empirica del vincolo già memorizzato (CC ≥ versione che dipende da ICU13): **CC-latest non avviabile su questo MacBook senza upgrade OS**. Stessa root cause della cliff S159-classe.
+Nota collaterale: `npm` ha shell function `_cc_pin_trap` che blocca chiamate npm; ho usato `/usr/local/bin/npm` direttamente per bypass nel solo `/tmp`. Globale npm/CC mai toccati. `/tmp/cc48-test` rimosso.
 ```
 
 ## Come riprendere
