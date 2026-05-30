@@ -1,36 +1,36 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-05-30T20:53:56Z`
-**Sessione**: `c61d80ba-249a-4975-afa0-3f0ba6ead1db`
+**Generato**: `2026-05-30T21:09:07Z`
+**Sessione**: `9ca5f606-253b-40af-af97-80cbb4656101`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: committed: 021a0ee
-**Last commit**: `021a0ee auto-close session c61d80ba-249a-4975-afa0-3f0ba6ead1db @ 2026-05-30T20:53:56Z`
+**Commit auto**: cosmetic-skip (only NEXT_SESSION_PROMPT.md dirty, no plan/scope change)
+**Last commit**: `5fc0e69 auto-close session c61d80ba-249a-4975-afa0-3f0ba6ead1db @ 2026-05-30T20:57:09Z`
 
 ## Ultimi 5 commit
 ```
+5fc0e69 auto-close session c61d80ba-249a-4975-afa0-3f0ba6ead1db @ 2026-05-30T20:57:09Z
 021a0ee auto-close session c61d80ba-249a-4975-afa0-3f0ba6ead1db @ 2026-05-30T20:53:56Z
 dc84d9c auto-close session c61d80ba-249a-4975-afa0-3f0ba6ead1db @ 2026-05-30T20:31:22Z
 8f616d8 auto-close session 8de12858-134f-4b87-b8e6-0ce88e6f89da @ 2026-05-30T20:15:18Z
 0df7c2b auto-close session 8de12858-134f-4b87-b8e6-0ce88e6f89da @ 2026-05-30T15:56:15Z
-8fbcd4e auto-close session 8de12858-134f-4b87-b8e6-0ce88e6f89da @ 2026-05-30T07:47:29Z
 ```
 
 ## File modificati nell'ultimo commit
 ```
 M	.claude/NEXT_SESSION_PROMPT.md
-A	state/s319-pro-smoke-evidence.json
+M	state/cc-violations.jsonl
 ```
 
 ## Ultimo prompt utente (estratto)
 ```
-[{"tool_use_id":"toolu_01LDbYcguU4UTfsxdoeQkUmc","type":"tool_result","content":"=== Agent in subdirectory ===\n      43\nTotale agent .md (sub-dir incluse):\n/Users/macbook/.claude/agents/studio-operations/infrastructure-maintainer.md\n/Users/macbook/.claude/agents/studio-operations/finance-tracker.md\n/Users/macbook/.claude/agents/studio-operations/support-responder.md\n/Users/macbook/.claude/agents/studio-operations/analytics-reporter.md\n/Users/macbook/.claude/agents/studio-operations/legal-
+[{"tool_use_id":"toolu_01PpBgTm4kAAyyjp33WAHczc","type":"tool_result","content":"=== totale entry ===\n     194\n=== ultimi 7gg (dal 2026-05-23) ===\n     101\n=== breakdown agent_suggested 7gg ===\n  67 \"agent_suggested\": \"vos-llm-router:long_context\"\n  29 \"agent_suggested\": \"MAIN_CONTEXT\"\n  25 \"agent_suggested\": \"test-results-analyzer\"\n  23 \"agent_suggested\": \"general-purpose:haiku\"\n  18 \"agent_suggested\": \"devops-automator\"\n  18 \"agent_suggested\": \"backend-architec
 ```
 
 ## Ultimi turni assistant
 ```
-- Test su prompt fittizio prima di chiudere
-Stima honest: 1 file modificato, ~30-50 righe Python in più, idempotente, rollback istantaneo. Non tocco settings.json (hook già wired).
-Confermi? O preferisci che apra prima il file e ti mostri stato attuale prima di proporre edit?
+Non implemento `block` via exit 2: è verificato che non muove la metrica obiettivo e danneggia il tuo workflow. Sarebbe vincolo #9 violato (eseguire un design difettoso per compiacere invece di dissentire con dati).
+---
+**Decisione tua (scope, non tecnica):** procedo con **A+B** (misura PostToolUse + nudge rinforzato exit 0, tutto idempotente/reversibile/.bak)? Oppure vuoi che implementi comunque l'exit-2 come scritto nonostante la prova che non alza la delega? Aspetto OK.
 ```
 
 ## Come riprendere
