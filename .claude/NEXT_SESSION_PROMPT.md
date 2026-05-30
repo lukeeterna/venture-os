@@ -1,40 +1,37 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-05-30T20:15:18Z`
-**Sessione**: `8de12858-134f-4b87-b8e6-0ce88e6f89da`
+**Generato**: `2026-05-30T20:48:53Z`
+**Sessione**: `c61d80ba-249a-4975-afa0-3f0ba6ead1db`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: committed: 8f616d8
-**Last commit**: `8f616d8 auto-close session 8de12858-134f-4b87-b8e6-0ce88e6f89da @ 2026-05-30T20:15:18Z`
+**Commit auto**: cosmetic-skip (only NEXT_SESSION_PROMPT.md dirty, no plan/scope change)
+**Last commit**: `dc84d9c auto-close session c61d80ba-249a-4975-afa0-3f0ba6ead1db @ 2026-05-30T20:31:22Z`
 
 ## Ultimi 5 commit
 ```
+dc84d9c auto-close session c61d80ba-249a-4975-afa0-3f0ba6ead1db @ 2026-05-30T20:31:22Z
 8f616d8 auto-close session 8de12858-134f-4b87-b8e6-0ce88e6f89da @ 2026-05-30T20:15:18Z
 0df7c2b auto-close session 8de12858-134f-4b87-b8e6-0ce88e6f89da @ 2026-05-30T15:56:15Z
 8fbcd4e auto-close session 8de12858-134f-4b87-b8e6-0ce88e6f89da @ 2026-05-30T07:47:29Z
 0fb5766 auto-close session 8de12858-134f-4b87-b8e6-0ce88e6f89da @ 2026-05-30T06:51:02Z
-a33051f auto-close session 6ccfe00e-4f09-4129-bde3-60d95a690702 @ 2026-05-29T21:01:28Z
 ```
 
 ## File modificati nell'ultimo commit
 ```
 M	.claude/NEXT_SESSION_PROMPT.md
-M	state/cc-violations.jsonl
-A	state/s316-c-api-evidence.json
-A	state/s317-pre-payment-ts.txt
-A	state/s317-smoke-plink.txt
-A	state/s317-smoke-price-id.txt
+A	state/s187-fase1-S317-production-validation.json
+A	state/s317-d1-evidence.json
 ```
 
 ## Ultimo prompt utente (estratto)
 ```
-[{"tool_use_id":"toolu_01HgdJPN2A3HBAJaLnUjxiAn","type":"tool_result","content":"=== diff icu_shim.c nested vs files21 ===\nexit_code=0\n\n=== diff patch_cc.sh nested vs files21 ===\nexit_code=0\n\n=== diff README nested vs originale ===\nexit_code=0\nShell cwd was reset to /Volumes/MontereyT7/venture-os","is_error":false}]
+questo puoi dare la possibilità ai progetti di "deciderlo in autonomia" in base ai tsk?
 ```
 
 ## Ultimi turni assistant
 ```
-| Bundle ICU shim v4 lavorato | ⚠️ in `/tmp/` (volatile, perso a reboot) |
-| File Deep Research prompt | ✅ pronto su Desktop per claude.ai web |
-Cosa serve da te per procedere ulteriormente: o un fix file22 reale (diverso da files21), o `mi confermi che chiudo FASE B definitivamente e archivio bundle v4 in posto persistente prima del reboot`.
+- **"Voglio scegliere fast mode automaticamente"** → hook UserPromptSubmit che inietta suggerimento `/fast` quando rileva task lungo/refactor multi-file. Il toggle resta tuo, l'hook lo suggerisce.
+- **"Voglio meno bruciare context su sintesi multi-file"** → verifica che `vos-llm-router` venga invocato davvero (audit `state/delegation-enforcement.jsonl` ultimi 7gg).
+**Dimmi quale dei tre** (o se è altro), e ti propongo **una sola** soluzione singola motivata, niente liste A/B/C. Non costruisco niente prima di sapere il problema reale.
 ```
 
 ## Come riprendere

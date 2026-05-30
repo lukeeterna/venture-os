@@ -1,0 +1,43 @@
+{
+  "session_id": "S319",
+  "phase": "Pro branch €1 smoke LIVE end-to-end (S319-1 follow-up)",
+  "timestamp_utc": "2026-05-30T22:51:00Z",
+  "result": "PASS",
+  "rationale": "Close only live-untested branch (tier=pro). Base €497 already validated S317 via identical metadata.plan=base. Real PL metadata verified via Stripe API: Base{plan:base}, Pro{plan:pro}. €497 self-purchase deemed NOT technically necessary; €1 pro smoke closes last gap.",
+  "no_bug_this_time": "detectTier read metadata.plan=pro first delivery, no FBUG-DETECT-TIER repeat (S317 fix held)",
+  "evidence_chain": {
+    "step_1_payment": {
+      "session_id": "cs_live_a1u5S0sk7uuuFNCHJo5FpBMHx31jthNwlNXKqNNqU5eDeQSVBpOxUnKpzX",
+      "payment_intent": "pi_3Tctq7IW4bHDTsaH00ra0t8s",
+      "amount_total": 100,
+      "currency": "eur",
+      "status": "complete",
+      "payment_status": "paid",
+      "customer_email": "fluxion.gestionale@gmail.com",
+      "metadata": {"plan": "pro", "fluxion_version": "v1", "smoke_test": "S319"}
+    },
+    "step_2_webhook_tail": {
+      "first_delivery": "200 OK (no redelivery needed, unlike S317 base)",
+      "log_line": "Stripe checkout completed: fluxion.gestionale@gmail.com — tier: pro — session: cs_live_a1u5S0... — license: 6a951527e374acf6ecb570526dd611b07073393e6cb69f1bc6e81a3fa04cca94 — email_sent: true"
+    },
+    "step_3_success_render": {
+      "url": "https://fluxion-proxy.gianlucanewtech.workers.dev/success/cs_live_a1u5S0sk7uuuFNCHJo5FpBMHx31jthNwlNXKqNNqU5eDeQSVBpOxUnKpzX",
+      "http": 200,
+      "tier_rendered": "Pro"
+    },
+    "step_4_resend_email": {
+      "email_id": "602df8e8-238a-439f-a921-366d66262346",
+      "from": "FLUXION <licenze@fluxion-app.com>",
+      "to": "fluxion.gestionale@gmail.com",
+      "subject": "FLUXION — Il tuo ordine è confermato!",
+      "last_event": "delivered"
+    },
+    "step_5_cleanup": {
+      "refund_id": "re_3Tctq7IW4bHDTsaH0jXYcoGy",
+      "refund_status": "succeeded",
+      "refund_amount": 100,
+      "smoke_link_deactivated": "plink_1TctnjIW4bHDTsaHPUX81pW3 (active=false)"
+    }
+  },
+  "conclusion": "Both tiers (base S317, pro S319) validated live end-to-end. C-FLUXI-002 production-ready confirmed for full product matrix. €497 self-purchase superseded by 2x €1 smoke (net cost €0 after refunds)."
+}
