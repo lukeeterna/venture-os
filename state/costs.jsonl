@@ -142,3 +142,5 @@
 {"ts": "2026-05-20T11:43:15Z", "model": "mock/code_review", "role": "code_review", "in_tok": 10, "out_tok": 12, "cost_usd": 0.0, "latency_ms": 299, "plan_id": "plan_mock_test_001", "subtask_id": "s2"}
 {"ts": "2026-05-20T11:43:16Z", "model": "mock/long_context", "role": "long_context", "in_tok": 13, "out_tok": 14, "cost_usd": 0.0, "latency_ms": 223, "plan_id": "plan_mock_test_001", "subtask_id": "s3"}
 {"ts": "2026-05-20T11:43:16Z", "model": "mock/long_context", "role": "long_context", "in_tok": 97, "out_tok": 14, "cost_usd": 0.0, "latency_ms": 101, "plan_id": "plan_mock_test_001", "subtask_id": "aggregator"}
+{"timestamp": "2026-05-30T15:53:19.339051+00:00", "model": "gemini-2.5-flash", "prompt_tokens": 14, "completion_tokens": 0, "cost_usd": 0.0, "provider": "google_ai_studio", "feature": "grounding_quick"}
+{"timestamp": "2026-05-30T15:54:27.384992+00:00", "model": "gemini-2.5-flash", "prompt_tokens": 15, "completion_tokens": 443, "cost_usd": 0.0, "provider": "google_ai_studio", "feature": "grounding_quick"}
