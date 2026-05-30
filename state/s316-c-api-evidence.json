@@ -1,0 +1,67 @@
+{
+  "session": "S316",
+  "timestamp": "2026-05-30T15:55:00Z",
+  "scope": "C-API-1..C-API-8 CTO autonomous Stripe LIVE + landing deploy",
+  "status": "PASS",
+  "regola_22_check": "Stripe API slug→product cross-check PASS pre-deploy",
+  "products_live": {
+    "base": {
+      "product_id": "prod_UBT1Dg0l0bYO4C",
+      "name": "FLUXION Base — €497",
+      "price_id": "price_1TD65hIW4bHDTsaHFs3O3iMk",
+      "amount": 49700,
+      "currency": "eur",
+      "type": "one_time",
+      "marketing_features_count": 6,
+      "description_set": true
+    },
+    "pro": {
+      "product_id": "prod_UBT51LsziQDyYd",
+      "name": "FLUXION Pro — €897",
+      "price_id": "price_1TD68vIW4bHDTsaHLqGMGSCj",
+      "amount": 89700,
+      "currency": "eur",
+      "type": "one_time",
+      "marketing_features_count": 6,
+      "description_set": true,
+      "known_issue": "feature[5] '+' diventato space per URL encoding ('Supporto telefonico dedicato   onboarding 1:1')"
+    }
+  },
+  "payment_links_live": {
+    "base": {
+      "id": "plink_1TcpAkIW4bHDTsaH8boabwRX",
+      "url": "https://buy.stripe.com/8x2aEYg4T8BUeLZcMi24003",
+      "slug": "8x2aEYg4T8BUeLZcMi24003",
+      "redirect": "https://fluxion-proxy.gianlucanewtech.workers.dev/success/{CHECKOUT_SESSION_ID}",
+      "allow_promotion_codes": true
+    },
+    "pro": {
+      "id": "plink_1TcpAkIW4bHDTsaHfn8dioIo",
+      "url": "https://buy.stripe.com/dRm4gA2e39FY47l13A24004",
+      "slug": "dRm4gA2e39FY47l13A24004",
+      "redirect": "https://fluxion-proxy.gianlucanewtech.workers.dev/success/{CHECKOUT_SESSION_ID}",
+      "allow_promotion_codes": true
+    }
+  },
+  "webhook_live": {
+    "id": "we_1TcpBLIW4bHDTsaHIap86lRB",
+    "url": "https://fluxion-proxy.gianlucanewtech.workers.dev/api/v1/webhook/stripe",
+    "enabled_events": ["checkout.session.completed", "payment_intent.succeeded", "charge.refunded"],
+    "status": "enabled",
+    "old_webhook_deleted": "we_1TD6liIW4bHDTsaHr1LIrukH"
+  },
+  "worker_prod_secrets_updated": [
+    "STRIPE_WEBHOOK_SECRET (whsec_ LIVE)",
+    "STRIPE_SECRET_KEY (sk_live_)"
+  ],
+  "landing_deploy": {
+    "cf_pages_project": "fluxion-landing",
+    "production_branch": "main",
+    "production_url": "https://fluxion-landing.pages.dev/checkout-consent.html",
+    "deploy_url": "https://260706e3.fluxion-landing.pages.dev",
+    "file_modified": "landing/checkout-consent.html lines 125+131",
+    "bug_e7_resolved": true,
+    "verification_passes": "3 consecutive prod fetch PASS slug LIVE match"
+  },
+  "next_blocker": "D-1 SMOKE E2E founder pagamento reale + D-2 GUI activate iMac (META-VINCOLO REGOLA #18)"
+}
