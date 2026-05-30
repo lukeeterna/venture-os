@@ -1,0 +1,62 @@
+{
+  "session": "S314",
+  "task": "E-7-VERIFY (Stripe Payment Link LIVE anomalia)",
+  "verdict": "BUG_CRITICAL_PRODUCTION_BLOCKER",
+  "evidence_method": "Stripe API TEST query payment_links + curl HEAD diff",
+  "stripe_api_test_payment_links": [
+    {
+      "id": "plink_1TRrGqIW4bHDTsaHeX8g37gD",
+      "label": "BASE €497",
+      "url_real": "https://buy.stripe.com/test_bJe7sM19ZdWegU727E24000",
+      "active": true
+    },
+    {
+      "id": "plink_1TRrGrIW4bHDTsaH1KwXKrUJ",
+      "label": "PRO €897",
+      "url_real": "https://buy.stripe.com/test_00w28sdWL8BU0V9fYu24001",
+      "active": true
+    }
+  ],
+  "landing_source_bugs": {
+    "file": "landing/checkout-consent.html",
+    "bug_1_slug_swap": {
+      "line_125": "base.stripeUrl = '00w28sdWL8BU0V9fYu24001' (BUG: slug e' PRO €897, non BASE €497)",
+      "line_131": "pro.stripeUrl = 'bJe7sM19ZdWegU727E24000' (BUG: slug e' BASE €497, non PRO €897)"
+    },
+    "bug_2_missing_live_url": {
+      "issue": "URLs mancano prefisso 'test_' MA gli slug LIVE sono inesistenti nel TEST account. Stripe maschera con HTTP 200 pagina generica (stesso etag 7e6cf6ca... per URL test e non-test)",
+      "impact": "primo cliente paga = pagina generica o errore. Refund storm + Stripe TOS violation"
+    }
+  },
+  "head_test_evidence": {
+    "url_no_prefix": "https://buy.stripe.com/bJe7sM19ZdWegU727E24000",
+    "url_with_test_prefix": "https://buy.stripe.com/test_bJe7sM19ZdWegU727E24000",
+    "both_http_status": 200,
+    "both_etag": "7e6cf6ca7e7a9bef5837abbebe50f675",
+    "both_content_length": 515590,
+    "conclusion": "Stripe serve pagina identica generica per entrambi = link NOT valido come checkout"
+  },
+  "s313_e7_status_correction": "S313 marked E-7 PASS_ANOMALY -> deve essere FAIL fino a verify slug LIVE reali",
+  "regola_4_critica_strutturale": {
+    "assunzione_nascosta": "HEAD 200 == URL valido. FALSO: Stripe serve generic 200 per slug inesistenti",
+    "pattern_errore_noto": "S287 stesso pattern HEAD 200 != funzionalita reale -> smoke test manuale obbligatorio",
+    "rompe_a_0gg": "primo CLOSED_WON = overcharge o pagina vuota = refund storm",
+    "sovradimensionamento": "S313 evidence gate ha accettato HEAD 200 senza Stripe API verify"
+  },
+  "carry_over_s315": {
+    "founder_blocking": [
+      "F1: founder login Stripe LIVE dashboard (toggle top-right)",
+      "F2: creare Payment Link LIVE €497 base (Products -> select fluxion-base -> Payment Link)",
+      "F3: creare Payment Link LIVE €897 pro",
+      "F4: copy 2 LIVE URLs (formato https://buy.stripe.com/<slug-live>) e share con CTO"
+    ],
+    "cto_autonomous_post_founder": [
+      "C1: edit landing/checkout-consent.html line 125 base.stripeUrl = <LIVE_BASE_URL>",
+      "C2: edit line 131 pro.stripeUrl = <LIVE_PRO_URL>",
+      "C3: wrangler pages deploy landing --project-name=fluxion-landing",
+      "C4: verify https://fluxion-landing.pages.dev/checkout-consent.html?plan=base shows correct €497 -> click consent -> redirect LIVE plink",
+      "C5: re-test plan=pro shows €897"
+    ]
+  },
+  "regola_22_critique_then_ignore": "S313 evidence gate ha skippato critica E-7 anomalia per closure verde. Pattern S296/S303/S305/S306 ricaduta. Mitigazione: evidence gate PROD MUST have Stripe API verify per ogni URL"
+}
