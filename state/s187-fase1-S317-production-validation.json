@@ -1,0 +1,45 @@
+{
+  "validation_id": "S317-production-validation",
+  "spec": "S187 FASE 1 — META-VINCOLO REGOLA #18 (validate-then-implement) pre C-FLUXI-002 closure",
+  "timestamp_utc": "2026-05-30T20:25:00Z",
+  "verdict": "PASS — D-1 + D-2 verified, awaiting Luke explicit GO for D-3 closure",
+  "D1_payment_flow_end_to_end": {
+    "result": "PASS",
+    "see": "~/venture-os/state/s317-d1-evidence.json",
+    "summary": "Stripe €1 LIVE → webhook (post-fix redelivery) → D1 INSERT → Ed25519 sign → /success render → Resend email delivered. License ID 3b6e97cb0c6c0ef57c6503a263846b54c9788c1f1ff796021036887f0486c419 from licenze@fluxion-app.com.",
+    "bug_found_and_fixed": "FBUG-DETECT-TIER-METADATA-KEY-01 — worker detectTier() ora accetta metadata.tier OR metadata.plan. Deploy 2a1b79bc-b7cd-49db-8ab8-5395b2c88c2e. Production €497/€897 NON impattato (AMOUNT_TO_TIER fallback). Smoke €1 ora funzionante."
+  },
+  "D2_gui_activation_iMac": {
+    "result": "PASS",
+    "founder_confirmation": "licenza attivata (2026-05-30 ~20:23 UTC)",
+    "verified_constraints": [
+      "REGOLA #12: Keychain GUI consent via iMac fisico (NOT SSH headless) ✅",
+      "HTTP Bridge 3001 ATTIVO durante activation (verificato hook pre-flight)"
+    ]
+  },
+  "D3_smoke_cleanup": {
+    "result": "PASS",
+    "refund_id": "re_3TcsGUIW4bHDTsaH1G4siEJl",
+    "refund_status": "succeeded",
+    "refund_amount": 100,
+    "charge_id": "ch_3TcsGUIW4bHDTsaH1ejhT2D6",
+    "smoke_payment_link_deactivated": "plink_1TcsC6IW4bHDTsaHDDYHUExu (active=false HTTP 200)",
+    "smoke_price_id": "price_1TcsBsIW4bHDTsaHeLb8zaOn (LIVE, dormant — non eliminabile da Stripe)"
+  },
+  "production_ready_claim": {
+    "ring": "C-FLUXI-002 primo CLOSED_WON",
+    "evidence_complete": true,
+    "open_actions_for_S318": [
+      "Luke esplicito GO per VOS critique resolve C-FLUXI-002",
+      "VOS gate verify VERDE post-resolve"
+    ],
+    "production_LIVE_artifacts_ready_for_real_clients": {
+      "stripe_live_payment_link_base": "https://buy.stripe.com/8x2aEYg4T8BUeLZcMi24003 (€497 one-time)",
+      "stripe_live_payment_link_pro": "https://buy.stripe.com/dRm4gA2e39FY47l13A24004 (€897 one-time)",
+      "webhook_endpoint_live": "we_1TcpBLIW4bHDTsaHIap86lRB (3 eventi)",
+      "worker_version": "2a1b79bc-b7cd-49db-8ab8-5395b2c88c2e",
+      "landing_prod": "https://fluxion-landing.pages.dev/checkout-consent.html (slug LIVE match)",
+      "email_domain_verified": "fluxion-app.com (DKIM+SPF+DMARC Resend)"
+    }
+  }
+}

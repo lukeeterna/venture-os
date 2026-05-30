@@ -1,0 +1,69 @@
+{
+  "session_id": "S317",
+  "phase": "D-1 evidence (smoke €1 LIVE end-to-end)",
+  "timestamp_utc": "2026-05-30T20:13:00Z",
+  "result": "PASS",
+  "bug_found_and_fixed": {
+    "id": "FBUG-DETECT-TIER-METADATA-KEY-01",
+    "root_cause": "src/routes/stripe-webhook.ts:42 detectTier() leggeva solo metadata.tier, NEXT_SESSION_PROMPT.manual.md S317 S1 usava metadata.plan + amount=100 (€1 smoke) non match AMOUNT_TO_TIER (49700/89700). Handler ritornava 200 con warning:unknown_tier (Stripe felice, NESSUNA scrittura D1).",
+    "production_impact": "NONE per €497/€897 LIVE (amount_total fallback funzionante). Smoke €1 fallisce silently.",
+    "fix": "1-line: metadata?.tier ?? metadata?.plan — production hardening (landing usa 'plan' ovunque)",
+    "deploy": "worker prod fluxion-proxy version 2a1b79bc-b7cd-49db-8ab8-5395b2c88c2e",
+    "tests": "tsc 0 errori + vitest 36/36 PASS"
+  },
+  "evidence_chain": {
+    "step_1_stripe_payment": {
+      "session_id": "cs_live_a152jM61CLVrYaD8YAGf620jrx0xuyJy4oggMjkUD4gYvjYTshRt5vcnis",
+      "payment_intent": "pi_3TcsGUIW4bHDTsaH1STizpnN",
+      "amount_total": 100,
+      "currency": "eur",
+      "payment_status": "paid",
+      "status": "complete",
+      "customer_email": "fluxion.gestionale@gmail.com",
+      "metadata": {"plan": "base", "fluxion_version": "v1", "smoke_test": "S317"}
+    },
+    "step_2_webhook_event": {
+      "event_id": "evt_1TcsGXIW4bHDTsaHRkJF08tr",
+      "type": "checkout.session.completed",
+      "first_delivery_at": "2026-05-30T19:09:49Z",
+      "first_delivery_result": "200 warning:unknown_tier (BUG — no D1 write)",
+      "redelivery_via_dashboard": "founder click resend ~20:11:41Z",
+      "redelivery_result": "200 received (D1 INSERT + email sent)",
+      "pending_webhooks": 0
+    },
+    "step_3_worker_log_capture": {
+      "tail_log": "/tmp/s317-tail3.log",
+      "log_line": "Stripe checkout completed: fluxion.gestionale@gmail.com — tier: base — session: cs_live_a152jM61CLVrYaD8YAGf620jrx0xuyJy4oggMjkUD4gYvjYTshRt5vcnis — license: 3b6e97cb0c6c0ef57c6503a263846b54c9788c1f1ff796021036887f0486c419 — email_sent: true"
+    },
+    "step_4_d1_row_via_success": {
+      "url": "https://fluxion-proxy.gianlucanewtech.workers.dev/success/cs_live_a152jM61CLVrYaD8YAGf620jrx0xuyJy4oggMjkUD4gYvjYTshRt5vcnis",
+      "http": 200,
+      "license_id": "3b6e97cb0c6c0ef57c6503a263846b54c9788c1f1ff796021036887f0486c419",
+      "tier": "base",
+      "email": "fluxion.gestionale@gmail.com",
+      "payload_preview": "{\"kid\":\"v1\",\"license_id\":\"3b6e97cb...\",\"customer_email\":\"fluxion.gestionale@gmail.com\",\"product\":\"base\",\"session_id\":\"cs_live_a152...\",\"issued_at\":...}",
+      "signature_preview": "9v2LLK+CmhS4RAFznhW91R3S/k7BYU4OgijZabmmO/pZGcb+pW1tJqvFtnDFVaKbo...",
+      "recovery_url": "https://fluxion-proxy.gianlucanewtech.workers.dev/api/v1/license/fluxion.gestionale%40gmail.com?token=08265cc9ab08e75b0e57c6f059a44088b8aecbdca1adf8e0e8395ebeb6cd2eeb"
+    },
+    "step_5_resend_email_delivered": {
+      "email_id": "edc52a92-4bbb-4620-a6d0-be3877a1febc",
+      "from": "FLUXION <licenze@fluxion-app.com>",
+      "to": "fluxion.gestionale@gmail.com",
+      "subject": "FLUXION — Il tuo ordine è confermato!",
+      "reply_to": "fluxion.gestionale@gmail.com",
+      "created_at": "2026-05-30T20:11:42Z",
+      "last_event": "delivered",
+      "domain_verified": "fluxion-app.com (Resend DKIM/SPF/DMARC since S308)"
+    }
+  },
+  "smoke_artifacts": {
+    "price_smoke": "price_1TcsBsIW4bHDTsaHeLb8zaOn",
+    "plink_smoke": "plink_1TcsC6IW4bHDTsaHDDYHUExu",
+    "plink_url": "https://buy.stripe.com/aFacN68Crg4mcDReUq24005"
+  },
+  "lessons_learned": [
+    "S317 metadata.plan vs metadata.tier mismatch in NEXT_SESSION_PROMPT.manual.md S1 — pre-action-check (REGOLA #16 research-first) avrebbe richiesto verifica detectTier() PRIMA di hardcode metadata key in script. Mitigazione futura: pre-action-check su ogni script che invoca API Stripe deve includere grep metadata key in handler.",
+    "Production impact zero per €497/€897 grazie a AMOUNT_TO_TIER fallback. Smoke €1 has triggered hardening utile (worker ora resiliente a metadata key drift).",
+    "Stripe non ha API REST live per webhook resend — solo dashboard click founder. Pattern carry-over per future debug webhook prod."
+  ]
+}
