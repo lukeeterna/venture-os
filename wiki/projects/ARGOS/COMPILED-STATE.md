@@ -7,6 +7,10 @@ source_files: 7
 compiler: karpathy-compiler v2 (multi-pass capable)
 ---
 
+> ⚠️ **SUPERATO — NON usare come fonte.** Source-of-truth ARGOS = `ARGOS_MASTER/` (curato a mano, post-pivot/post-audit S210-S211).
+> Questo file è una compilazione LLM derivata e **ferma al 2026-05-12 (pre-pivot)**: contiene il vecchio modello.
+> Regola: il karpathy-compiler **non** deve girare su ARGOS finché esiste ARGOS_MASTER (degraderebbe una fonte curata in sintesi lossy). Vedi nota header — annotazione manuale 2026-06-01, verrebbe sovrascritta da un eventuale `--force`.
+
 ## Stato attuale verificato
 
 ### Sanitizer Immagini
