@@ -1,20 +1,26 @@
-# NEXT SESSION — VOS (chiusura manuale 2026-06-02, VERDE)
+# NEXT SESSION — VOS (chiusura ordinata 2026-06-02 #7 @64%, VERDE)
 
-## Fatto questa sessione
-Disciplina GATE "done-condition anti-avvitamento" (v2, validata storico n=5) committata in 3 file canonici:
-- `~/.claude/CLAUDE.md` → `### 1b` (Luke ha aggiunto anche `### 1c` research-or-escalate, complementare)
-- `/Volumes/MontereyT7/FLUXION/PLAN.md` → convenzione GATE header (commit landed via auto-daemon)
-- `/Users/macbook/Documents/combaretrovamiauto-enterprise/PLAN.md` → idem
+## Fatto questa sessione — vincolo 1d (asse "sicuro/reversibile")
+Estesa la metodologia draft-V2 dall'asse "è fatto" (1b) all'asse "è sicuro/reversibile" (1d). Principio unico: **ogni claim di CC su sé stesso ancorato a un fatto esterno verificabile, mai alla narrazione interna.**
 
-**Regola:** gate ben formato sse (a) `TERMINAL_FACT` decidibile da FUORI il codice protetto (URL/exit-code/sì-no umano/esito reale), mai validazione statica; (b) se NON raggiungibile-in-sessione (dipende da Luke/terzo mondo-reale) → `BLOCKED-ON:<fatto>`, vietato re-validare staticamente. Firma audit DUALE dalle tool-call: (1) gate attivo con fatto non-esterno = viol.(a)[R-01]; (2) BLOCKED-ON con tool-call statiche = viol.(b)[sanitizer/E2E].
+**Trigger**: incidente FLUXION-S327 — CC stava per riscrivere MEMORY.md via LLM (lossy) chiamandolo "reversibile perché archivio", validando sul conteggio righe.
 
-**Come ci siamo arrivati:** v1 ("nomina fatto esterno") FALSIFICATA dal retrospettivo n=5 — controesempi C-SAN-001 (~10 sess) e C-E2E-ZERO (~28) nominavano il fatto e si avvitavano perché irraggiungibile. v2 aggiunge clausola raggiungibilità + firma duale. Draft completo: `/tmp/vos-discipline-gate-draft.md`.
+**1d in `~/.claude/CLAUDE.md`** (corretta dopo falsificazione Claude.ai + validazione empirica doc CC/infra VOS):
+- trigger per-EFFETTO non per-tool (Write/Edit + Bash `>`/`mv`/`rm`/`sed -i`/`tee`/`cp`-overwrite)
+- whitelist ESPLICITA per-file (CLAUDE.md, MEMORY.md auto-memory, DECISIONS.md, PLAN.md, *.db); `state/*.jsonl` ESCLUSI (append=lossless)
+- backup verificato per PROPRIETÀ (`stat`: stesso path, size>0, mtime pre-azione, fuori /tmp), non per stringa
+- clausola riduzione: fatto terminale = "contenuto X presente DOPO", mai soglia righe/byte
+- threat-model = sbadataggine di CC, non evasione → euristico sui vettori nominati È sufficiente
 
-## Differito a n≥2 (non riaprire senza secondo gate stesso pattern)
-Enforcement hook deterministico della firma audit. Costo onesto: LLM-judge o mappa gate→file, NON regex/15-righe.
+**Spec implementativa completa**: `~/venture-os/wiki/DEFERRED-1d-enforcement-hook-spec.md`.
 
-## Primo gate sotto la regola — già scritto, da SBLOCCARE non validare
-**FLUXION credenziali Stripe/Resend/Cloudflare** = `TERMINAL_FACT` esito-reale, irraggiungibile-in-sessione → `BLOCKED-ON:Luke`. Atto di Luke, più vicino al revenue di qualsiasi guardia. + R-01 fix tecnica residua: KV→D1 quando si tocca il refund gate FLUXION.
+**CLAUDE.md compattato 227→194 righe** (soglia aderenza verificata reale via research; il numero 200 è soft, il meccanismo di diluizione è documentato). Metodo LOSSLESS: 3 sezioni di solo-riferimento (architettura/Karpathy/indice puntatori) spostate in `~/.claude/CLAUDE-reference.md` (lazy load, non auto-load). Nessuna sintesi LLM (sarebbe stato MEMORY-S327 da capo). Backup pre-move: `~/.claude/CLAUDE.md.bak.20260602-193529`. Verifica fatto terminale: 17 header core ancora inline, sentinel preservati nel lazy-ref.
+
+## Differito (NON riaprire senza condizioni)
+- **Enforcement hook 1d**: differito a n≥2 (oggi n=1) E a riapertura VOS (paused pre-€800). Spec pronta; costruire solo quando ENTRAMBE vere. Fase 1 = log-only.
+
+## Aperto lato FLUXION (altra istanza, non VOS)
+- MEMORY.md FLUXION (782 righe) → compattazione MECCANICA (estrazione pointer, non sintesi) + backup, validando su boot reale senza BLOCK_CRITICAL. DOPO merge `fix/license-interop-r01-s327 → master`. Istruzione già passata all'istanza FLUXION.
 
 ## Cornice
-VOS pausa pre-€800. Metodologia deve accelerare. Thread chiuso: gate "qual è la regola" = DONE (fatto esterno = retrospettivo, raggiunto).
+VOS pausa pre-€800. Metodologia (1b+1c+1d) deve accelerare revenue, non auto-alimentarsi. Thread 1d = DONE (testo validato+shippato, hook differito by design).
