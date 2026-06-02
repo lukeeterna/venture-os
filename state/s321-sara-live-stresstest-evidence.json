@@ -1,0 +1,49 @@
+{
+  "session": "S321",
+  "date": "2026-06-01",
+  "goal": "Sara live multi-verticale — gate 'pronto a vendere' (REGOLA #21)",
+  "preflight": {
+    "voice_pipeline_3002": "UP",
+    "http_bridge_3001": "UP",
+    "pjsua2_loaded": true,
+    "python_runtime": "3.9.6 (system) + lib/pjsua2 _pjsua2.cpython-39-darwin.so",
+    "pjsua2_path": "voice-agent/lib/pjsua2 (sys.path insert + DYLD_LIBRARY_PATH at runtime)"
+  },
+  "fase0_canale_ehiweb": {
+    "status": "ATTIVO",
+    "sip_registered": true,
+    "reg_status": 200,
+    "username": "0972536918",
+    "server": "sip.vivavox.it",
+    "registrar_ip": "79.98.45.133:5060",
+    "stun_mapped_public_ip": "151.26.20.47",
+    "re_register_interval_s": 600,
+    "note": "Secret VOIP_SIP_PASS gia in .env iMac + ~/.claude/.env. main.py carica .env via SIPConfig.from_env(), no inline necessario."
+  },
+  "fase2_1_baseline_automatizzata": {
+    "harness": "voice-agent/scripts/test_all_verticals_e2e.py",
+    "verticali_testati": 9,
+    "totale": {"OK": 21, "WARN": 8, "FAIL": 0, "test": 29},
+    "analisi_warn": {
+      "falsi_negativi_sara_corretta": 7,
+      "falsi_negativi_dettaglio": "6x FLOW booking+name -> registering_phone (cliente nuovo Marco Rossi non in DB, Sara chiede telefono per registrazione = corretto). 1x barbiere -> disambiguating_name (disambiguazione fonetica Marco Rossi/Russo funzionante = corretto). Harness assertion troppo stretta, non bug Sara.",
+      "lacuna_reale": 1,
+      "lacuna_dettaglio": "fisioterapia FAQ 'Quanto costa una seduta?' -> L4_groq risponde availability-check invece del prezzo (50 euro). Query generica 'seduta' senza servizio specifico confonde routing FAQ. FIX in FASE 4."
+    },
+    "solidita": {
+      "booking_entry": "9/9 OK",
+      "faq_pricing": "8/9 OK (solo fisioterapia WARN)",
+      "triage_medical_urgency": "3/3 OK (odontoiatra, fisioterapia, medical)"
+    }
+  },
+  "fase2_2_chiamata_vocale_reale": {
+    "status": "PENDING — linea LIVE su salone, in attesa chiamata Luke",
+    "db_attivo": "salone (Salone Bellissima, hair, 8 servizi, 3 operatori)",
+    "numero": "0972536918",
+    "carry_over": "Stress test 9 verticali via chiamata vocale = sessione fresca S322 (context budget S321 chiuso a ~58%)"
+  },
+  "lacune_aperte": [
+    "L1: fisioterapia FAQ 'seduta' generica -> prezzo non dato (routing FAQ ambiguo)",
+    "L2: percorso audio RTP E2E mai validato a runtime con voce umana (SIP register OK, audio path da provare)"
+  ]
+}
