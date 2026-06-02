@@ -1,42 +1,26 @@
-# Prompt ripartenza — generato automaticamente
+# NEXT SESSION — VOS (chiusura ordinata 2026-06-02 #7 @64%, VERDE)
 
-**Generato**: `2026-06-02T17:20:15Z`
-**Sessione**: `23a955d4-ab13-4505-b7a6-4b0af760a19b`
-**Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: cosmetic-skip (only NEXT_SESSION_PROMPT.md dirty, no plan/scope change)
-**Last commit**: `d8eb9d8 auto-close session 23a955d4-ab13-4505-b7a6-4b0af760a19b @ 2026-06-02T16:48:06Z`
+## Fatto questa sessione — vincolo 1d (asse "sicuro/reversibile")
+Estesa la metodologia draft-V2 dall'asse "è fatto" (1b) all'asse "è sicuro/reversibile" (1d). Principio unico: **ogni claim di CC su sé stesso ancorato a un fatto esterno verificabile, mai alla narrazione interna.**
 
-## Ultimi 5 commit
-```
-d8eb9d8 auto-close session 23a955d4-ab13-4505-b7a6-4b0af760a19b @ 2026-06-02T16:48:06Z
-aec57f3 auto-close session 23a955d4-ab13-4505-b7a6-4b0af760a19b @ 2026-06-02T16:46:01Z
-dd9fcdd auto-close: disciplina GATE done-condition committata (CLAUDE.md 1b + 2 PLAN.md), n=5
-5b2ed6c auto-close session 6200b059-4b14-4584-b311-4598d5c27524 @ 2026-06-02T15:42:21Z
-5ed4c9f auto-close session 6200b059-4b14-4584-b311-4598d5c27524 @ 2026-06-02T15:39:45Z
-```
+**Trigger**: incidente FLUXION-S327 — CC stava per riscrivere MEMORY.md via LLM (lossy) chiamandolo "reversibile perché archivio", validando sul conteggio righe.
 
-## File modificati nell'ultimo commit
-```
-M	.claude/NEXT_SESSION_PROMPT.manual.md
-M	.claude/NEXT_SESSION_PROMPT.md
-```
+**1d in `~/.claude/CLAUDE.md`** (corretta dopo falsificazione Claude.ai + validazione empirica doc CC/infra VOS):
+- trigger per-EFFETTO non per-tool (Write/Edit + Bash `>`/`mv`/`rm`/`sed -i`/`tee`/`cp`-overwrite)
+- whitelist ESPLICITA per-file (CLAUDE.md, MEMORY.md auto-memory, DECISIONS.md, PLAN.md, *.db); `state/*.jsonl` ESCLUSI (append=lossless)
+- backup verificato per PROPRIETÀ (`stat`: stesso path, size>0, mtime pre-azione, fuori /tmp), non per stringa
+- clausola riduzione: fatto terminale = "contenuto X presente DOPO", mai soglia righe/byte
+- threat-model = sbadataggine di CC, non evasione → euristico sui vettori nominati È sufficiente
 
-## Ultimo prompt utente (estratto)
-```
-[{"tool_use_id":"toolu_01UuyjVjfyXDqG37hso9Y2LS","type":"tool_result","content":"(Bash completed with no output)","is_error":false}]
-```
+**Spec implementativa completa**: `~/venture-os/wiki/DEFERRED-1d-enforcement-hook-spec.md`.
 
-## Ultimi turni assistant
-```
-2. Se vuoi la rete indipendente, incolla `/tmp/vos-1d-falsification-prompt.md` su Claude.ai. Se torna un buco, raffino 1d — non blocca nulla nel frattempo.
-Una nota onesta (#9, non auto-indulgenza): 1d è a `n=1`. È una buona regola *predittiva*, ma non ha lo stesso peso empirico di 1b (n=5). Il vero test è se cattura il **prossimo** incidente di questa classe senza over-fire. Per quello esiste l'audit, non la fiducia.
-Aperto in TextEdit. Copialo da lì e incollalo su Claude.ai per la falsificazione.
-```
+**CLAUDE.md compattato 227→194 righe** (soglia aderenza verificata reale via research; il numero 200 è soft, il meccanismo di diluizione è documentato). Metodo LOSSLESS: 3 sezioni di solo-riferimento (architettura/Karpathy/indice puntatori) spostate in `~/.claude/CLAUDE-reference.md` (lazy load, non auto-load). Nessuna sintesi LLM (sarebbe stato MEMORY-S327 da capo). Backup pre-move: `~/.claude/CLAUDE.md.bak.20260602-193529`. Verifica fatto terminale: 17 header core ancora inline, sentinel preservati nel lazy-ref.
 
-## Come riprendere
+## Differito (NON riaprire senza condizioni)
+- **Enforcement hook 1d**: differito a n≥2 (oggi n=1) E a riapertura VOS (paused pre-€800). Spec pronta; costruire solo quando ENTRAMBE vere. Fase 1 = log-only.
 
-1. Apri Claude Code da `/Volumes/MontereyT7/venture-os`
-2. Leggi questo file (auto-loaded? dipende da config progetto)
-3. Continua dal punto indicato negli ultimi turni assistant sopra
+## Aperto lato FLUXION (altra istanza, non VOS)
+- MEMORY.md FLUXION (782 righe) → compattazione MECCANICA (estrazione pointer, non sintesi) + backup, validando su boot reale senza BLOCK_CRITICAL. DOPO merge `fix/license-interop-r01-s327 → master`. Istruzione già passata all'istanza FLUXION.
 
-Se `SESSION_DIRTY.md` esiste in questa stessa cartella, risolvi PRIMA i conflitti.
+## Cornice
+VOS pausa pre-€800. Metodologia (1b+1c+1d) deve accelerare revenue, non auto-alimentarsi. Thread 1d = DONE (testo validato+shippato, hook differito by design).
