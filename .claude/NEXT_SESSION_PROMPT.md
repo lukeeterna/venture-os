@@ -1,26 +1,40 @@
-# NEXT SESSION — VOS (chiusura ordinata 2026-06-02 #7 @64%, VERDE)
+# Prompt ripartenza — generato automaticamente
 
-## Fatto questa sessione — vincolo 1d (asse "sicuro/reversibile")
-Estesa la metodologia draft-V2 dall'asse "è fatto" (1b) all'asse "è sicuro/reversibile" (1d). Principio unico: **ogni claim di CC su sé stesso ancorato a un fatto esterno verificabile, mai alla narrazione interna.**
+**Generato**: `2026-06-02T18:XX:XXZ`
+**Sessione**: tool-evaluator ground-truth substrate
+**Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
 
-**Trigger**: incidente FLUXION-S327 — CC stava per riscrivere MEMORY.md via LLM (lossy) chiamandolo "reversibile perché archivio", validando sul conteggio righe.
+## Task completato in questa sessione
 
-**1d in `~/.claude/CLAUDE.md`** (corretta dopo falsificazione Claude.ai + validazione empirica doc CC/infra VOS):
-- trigger per-EFFETTO non per-tool (Write/Edit + Bash `>`/`mv`/`rm`/`sed -i`/`tee`/`cp`-overwrite)
-- whitelist ESPLICITA per-file (CLAUDE.md, MEMORY.md auto-memory, DECISIONS.md, PLAN.md, *.db); `state/*.jsonl` ESCLUSI (append=lossless)
-- backup verificato per PROPRIETÀ (`stat`: stesso path, size>0, mtime pre-azione, fuori /tmp), non per stringa
-- clausola riduzione: fatto terminale = "contenuto X presente DOPO", mai soglia righe/byte
-- threat-model = sbadataggine di CC, non evasione → euristico sui vettori nominati È sufficiente
+Valutazione substrato ground-truth persistente per Claude Code (problema: CC sostituisce fatti esterni con narrativa interna quando il check e' costoso).
 
-**Spec implementativa completa**: `~/venture-os/wiki/DEFERRED-1d-enforcement-hook-spec.md`.
+**RACCOMANDAZIONE: codebase-memory-mcp (DeusData)**
+- GitHub: https://github.com/DeusData/codebase-memory-mcp
+- 2.9k stelle, MIT, ultimo commit 2026-05-30
+- Binario statico, macOS 11 Big Sur esplicito supportato
+- MCP server nativo CC, SQLite embedded, zero dipendenze runtime
+- Benchmark: 83% answer quality, 10x fewer tokens, 2.1x fewer tool calls
 
-**CLAUDE.md compattato 227→194 righe** (soglia aderenza verificata reale via research; il numero 200 è soft, il meccanismo di diluizione è documentato). Metodo LOSSLESS: 3 sezioni di solo-riferimento (architettura/Karpathy/indice puntatori) spostate in `~/.claude/CLAUDE-reference.md` (lazy load, non auto-load). Nessuna sintesi LLM (sarebbe stato MEMORY-S327 da capo). Backup pre-move: `~/.claude/CLAUDE.md.bak.20260602-193529`. Verifica fatto terminale: 17 header core ancora inline, sentinel preservati nel lazy-ref.
+**Candidati scartati:**
+- Graphify (58.3k stelle, MIT, v0.8.28 2026-06-01) — piu' pesante (Python + server separato), orientato a visualization non a query veloci in-session
+- mcp-knowledge-graph (862 stelle, MIT, ultima release 2025-12-22) — memoria semantica manuale, non indicizza codice reale
 
-## Differito (NON riaprire senza condizioni)
-- **Enforcement hook 1d**: differito a n≥2 (oggi n=1) E a riapertura VOS (paused pre-€800). Spec pronta; costruire solo quando ENTRAMBE vere. Fase 1 = log-only.
+**2 rischi codebase-memory-mcp:**
+1. Adozione bassa (2.9k stelle) — binario funziona offline comunque
+2. Grafo stale se non re-indicizzato dopo modifiche — serve hook PostToolUse su git commit
 
-## Aperto lato FLUXION (altra istanza, non VOS)
-- MEMORY.md FLUXION (782 righe) → compattazione MECCANICA (estrazione pointer, non sintesi) + backup, validando su boot reale senza BLOCK_CRITICAL. DOPO merge `fix/license-interop-r01-s327 → master`. Istruzione già passata all'istanza FLUXION.
+## Se Luke vuole procedere con integrazione
 
-## Cornice
-VOS pausa pre-€800. Metodologia (1b+1c+1d) deve accelerare revenue, non auto-alimentarsi. Thread 1d = DONE (testo validato+shippato, hook differito by design).
+```bash
+# Install (un comando, nessun pip/npm)
+curl -fsSL https://raw.githubusercontent.com/DeusData/codebase-memory-mcp/main/install.sh | bash
+
+# Indicizza VOS
+codebase-memory index /Volumes/MontereyT7/venture-os
+
+# Registra come MCP in ~/.claude/settings.json sezione mcpServers
+```
+
+## Come riprendere
+
+Apri Claude Code da `/Volumes/MontereyT7/venture-os` e leggi questo file.
