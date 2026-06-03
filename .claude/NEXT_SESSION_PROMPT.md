@@ -1,39 +1,36 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-06-03T14:37:34Z`
+**Generato**: `2026-06-03T14:43:10Z`
 **Sessione**: `3a21870e-4e07-4564-ba98-1b2fcb418a9b`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: committed: e554b66
-**Last commit**: `e554b66 auto-close session 3a21870e-4e07-4564-ba98-1b2fcb418a9b @ 2026-06-03T14:37:34Z`
+**Commit auto**: cosmetic-skip (only NEXT_SESSION_PROMPT.md dirty, no plan/scope change)
+**Last commit**: `60a080a auto-close session 3a21870e-4e07-4564-ba98-1b2fcb418a9b @ 2026-06-03T14:42:52Z`
 
 ## Ultimi 5 commit
 ```
+60a080a auto-close session 3a21870e-4e07-4564-ba98-1b2fcb418a9b @ 2026-06-03T14:42:52Z
 e554b66 auto-close session 3a21870e-4e07-4564-ba98-1b2fcb418a9b @ 2026-06-03T14:37:34Z
 c76e0bc auto-close session 1b7ec901-8d31-49b7-86c2-2584ba05ed1f @ 2026-06-02T18:56:26Z
 b01fbb0 auto-close session 1b7ec901-8d31-49b7-86c2-2584ba05ed1f @ 2026-06-02T18:55:03Z
 50959c8 auto-close session 75d85829-46a5-4378-b212-cb6c2168d697 @ 2026-06-02T18:41:17Z
-2fc773f auto-close: handoff curato in .manual.md (durevole, prioritario su daemon .md)
 ```
 
 ## File modificati nell'ultimo commit
 ```
 M	.claude/NEXT_SESSION_PROMPT.md
-A	briefs/2026-06-03.md
 M	state/cc-violations.jsonl
-A	state/s330-g3-deploy-evidence.json
-A	state/s331-live-smoke-prod-evidence.json
 ```
 
 ## Ultimo prompt utente (estratto)
 ```
-[{"tool_use_id":"toolu_01B9QNxUhyXiM3N6rDR93MVE","type":"tool_result","content":"=== deploy.sh: crea releases/ o copie? ===\n49:scp \"$LOCAL_INTEL/time-context.js\"         \"$IMAC:$REMOTE_INTEL/\"\n50:scp \"$LOCAL_INTEL/wa-daemon.js\"            \"$IMAC:$REMOTE_INTEL/\"\n51:scp \"$LOCAL_INTEL/response-analyzer.py\"   \"$IMAC:$REMOTE_INTEL/\"\n52:scp \"$LOCAL_INTEL/scheduler.py\"           \"$IMAC:$REMOTE_INTEL/\"\n53:scp \"$LOCAL_INTEL/telegram-handler.py\"    \"$IMAC:$REMOTE_INTEL/\"\n54:scp \
+Vincolo #9 violato — pattern 'vincolo-9-hai-ragione'. Riformula con raccomandazione singola motivata con dati, o disaccordo motivato con dati. Mai opener diplomatici, mai liste A/B/C/D su decisioni tecniche.
 ```
 
 ## Ultimi turni assistant
 ```
-## Il bug dei bottoni è un problema SEPARATO — non confonderlo col cleanup
-Il commit S232 è etichettato `UNVERIFIED-RUNTIME`. Il codice giusto è committato su MacBook, ma `deploy.sh` (scp→iMac) **potrebbe non essere stato lanciato dopo `9014729`** → il daemon iMac gira l'analyzer *vecchio* senza bottoni. Questa è la causa probabile della notifica delle 16:23, ed è un **deploy-non-eseguito**, non copie locali. Il cleanup non lo risolve. Va verificato a parte: `ssh imac` → confrontare l'analyzer remoto col commit S232.
-**Non tocco nulla.** Dimmi: (a) confermi cancellazione invece di symlink? (b) il daemon di produzione gira su iMac o MacBook? Poi delego l'esecuzione (git+fs multi-step) a `devops-automator`, idealmente dal terminale ARGOS.
+## Cosa NON sto facendo
+Niente. Non cancello, non sposto, non modifico. Quando ti sentirai tranquillo, la pulizia sarà solo **buttare 3 cose morte**, tutto recuperabile da git. Decidi tu, coi tuoi tempi.
+Vuoi che approfondisca una parte — cos'è git "album fotografico", o come si controlla davvero il problema dei bottoni?
 ```
 
 ## Come riprendere
