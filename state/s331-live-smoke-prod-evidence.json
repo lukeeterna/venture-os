@@ -1,0 +1,48 @@
+{
+  "session": "S331",
+  "date": "2026-06-03",
+  "goal": "LIVE smoke €1 on PROD worker — full anti-refund chain (purchase -> license -> refund -> /validate revoked) with real money",
+  "result": "GREEN",
+  "preflight": {
+    "stripe_status": "All Systems Operational",
+    "worker_prod_health": "HTTP 200 {status:ok, service:fluxion-proxy, version:1.0.0}"
+  },
+  "finding_blocking_then_fixed": {
+    "issue": "PROD worker was STALE — R-01-ter (/validate + refund gate) merged to master in S330 but never deployed to prod (S330 only deployed --env test). PROD /validate returned 401 AUTH_MISSING.",
+    "fix": "npx wrangler deploy (prod) of merged master code",
+    "prod_version_before": "stale (pre R-01-ter)",
+    "prod_version_after": "570abae7-917b-47cf-b2c7-2744a51e5d23"
+  },
+  "chain": {
+    "1_purchase": {
+      "payment_link": "plink_1TeCftIW4bHDTsaHJfwJNndD (price_1TcsBs €1 base, now deactivated)",
+      "checkout_session": "cs_live_a1Rq0TcqYTLheVZigVwasSA8ZnahryoPhOVSPUybAC15lxzmtDz6ZG829p",
+      "payment_intent": "pi_3TeF78IW4bHDTsaH1G5MRupT",
+      "amount": "100 eur (€1)",
+      "payment_status": "paid",
+      "email": "fluxion.gestionale@gmail.com",
+      "metadata": {"plan": "base", "smoke": "s331"}
+    },
+    "2_license_issued": {
+      "kv_record_pre_refund": "tier:base amount_total:100 email_sent:true refunded:false",
+      "note": "email_sent:true = license email delivered; record present => /validate valid is REAL not fail-open"
+    },
+    "3_validate_pre_refund": "POST /api/v1/license/validate -> {status:valid, refunded_at:null} HTTP 200",
+    "4_refund": {
+      "refund_id": "re_3TeF78IW4bHDTsaH1HBVGpsc",
+      "charge": "ch_3TeF78IW4bHDTsaH1y6Gi842",
+      "status": "succeeded",
+      "amount": "100 eur (€1 refunded to Luke)"
+    },
+    "5_validate_post_refund": "POST /api/v1/license/validate -> {status:revoked, refunded_at:2026-06-03T13:50:44.006Z} HTTP 200 (revoked at poll attempt 1, ~near-instant webhook)",
+    "6_kv_final": "refunded:true refunded_at:2026-06-03T13:50:44.006Z refund_reason:refund"
+  },
+  "cleanup": {
+    "payment_link_deactivated": true,
+    "price_1eur_kept": "price_1TcsBsIW4bHDTsaHeLb8zaOn (reusable for future smoke)",
+    "net_cost": "€0 (€1 charged then refunded)"
+  },
+  "still_blocked_on_luke": {
+    "custom_domain": "fluxion-app.com has NS on CF but no A record — attach to prod worker for branded go-live (does not block sell-readiness of payment rail)"
+  }
+}

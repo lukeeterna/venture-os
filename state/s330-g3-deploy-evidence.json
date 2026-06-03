@@ -1,0 +1,45 @@
+{
+  "session": "S330",
+  "date": "2026-06-02",
+  "branch": "fix/license-interop-r01-s327",
+  "gate": "G3 — E2E refund → license revocation",
+  "verdict": "GREEN (server-side revocation gate proven live)",
+  "executed_by": "main session (background subagents had Bash/Write denied — cannot surface interactive permission)",
+  "deploy": {
+    "command": "npx wrangler deploy --env test",
+    "worker_url": "https://fluxion-proxy-test.gianlucanewtech.workers.dev",
+    "version_id": "0d4cf51e-8f92-4883-ad4a-bc7a9d4b985f",
+    "kv_binding": "LICENSE_CACHE id 13a75d1bc2f94028a78fdc45317303df",
+    "d1_binding": "DB fluxion-webhook-events-test 2fe23e8e-6e23-4add-ac9d-70377837b2a6"
+  },
+  "secrets_env_test_present": ["ED25519_PUBLIC_KEY_V1", "LICENSE_RECOVERY_SECRET", "RESEND_API_KEY", "STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET"],
+  "stripe_test_webhook": {
+    "id": "we_1TaI32IW4bHDTsaHT0wtsmJ4",
+    "url": "https://fluxion-proxy-test.gianlucanewtech.workers.dev/api/v1/webhook/stripe",
+    "status": "enabled",
+    "enabled_events": ["checkout.session.completed", "charge.refunded", "payment_intent.payment_failed", "charge.dispute.created", "charge.failed"],
+    "note": "charge.refunded + charge.dispute.created already subscribed (S282 setup) — no change needed"
+  },
+  "e2e_refund_chain": {
+    "email": "e2e-refund-s330@fluxion-test.local",
+    "payment_intent": "pi_3TdyjWIW4bHDTsaH1rJcssKF",
+    "charge": "ch_3TdyjWIW4bHDTsaH1L37gACT",
+    "pi_status": "succeeded",
+    "refund": "re_3TdyjWIW4bHDTsaH1ane3tMY",
+    "refund_status": "succeeded",
+    "validate_response": {"status": "revoked", "refunded_at": "2026-06-02T20:16:22.398Z", "server_time_sig": "c41e09d65e1c77fcde62d6c64425ccf8cfda34e42cb94bf277f41a37c8e3ab2d"},
+    "terminal_fact": "POST /api/v1/license/validate returned status=revoked with real refunded_at → full chain refund→webhook→KV→validate confirmed"
+  },
+  "fail_open_probe": {"email": "nonexistent-e2e-probe@example.com", "validate_response": {"status": "valid", "refunded_at": null}},
+  "not_covered_by_this_e2e": [
+    "client-side offline grace -8d → LOCK (use-phone-home.ts, tsc-verified only)",
+    "client-side clock-rollback guard (tsc-verified only)",
+    "app saraEnabled=false + revoked banner (requires GUI app-run on iMac, Keychain — REGOLA #12)"
+  ],
+  "blocked_on": [
+    "merge branch→master = gated behind Luke GO (security-critical, REGOLA #18)",
+    "LIVE smoke €1 on production worker + Luke GO (separate from this TEST-mode E2E)",
+    "custom domain fluxion-app.com has no A record yet — E2E used *.workers.dev (not blocking G3)"
+  ],
+  "cli_note": "wrangler kv key get failed with interactive-flag error (non-interactive context); authoritative /validate response confirms KV write"
+}
