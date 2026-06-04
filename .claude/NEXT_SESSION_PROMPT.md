@@ -1,36 +1,36 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-06-04T11:00:09Z`
+**Generato**: `2026-06-04T11:18:36Z`
 **Sessione**: `e055e0eb-8b24-488d-80f0-89666901ccec`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: committed: 728f54c
-**Last commit**: `728f54c auto-close session e055e0eb-8b24-488d-80f0-89666901ccec @ 2026-06-04T11:00:09Z`
+**Commit auto**: cosmetic-skip (only NEXT_SESSION_PROMPT.md dirty, no plan/scope change)
+**Last commit**: `f14b7d7 auto-close session e055e0eb-8b24-488d-80f0-89666901ccec @ 2026-06-04T11:13:38Z`
 
 ## Ultimi 5 commit
 ```
+f14b7d7 auto-close session e055e0eb-8b24-488d-80f0-89666901ccec @ 2026-06-04T11:13:38Z
 728f54c auto-close session e055e0eb-8b24-488d-80f0-89666901ccec @ 2026-06-04T11:00:09Z
 178fc49 auto-close session e055e0eb-8b24-488d-80f0-89666901ccec @ 2026-06-04T10:52:15Z
 f9abd77 auto-close session 3a21870e-4e07-4564-ba98-1b2fcb418a9b @ 2026-06-03T20:09:59Z
 7f05f4a auto-close session 3a21870e-4e07-4564-ba98-1b2fcb418a9b @ 2026-06-03T14:44:43Z
-60a080a auto-close session 3a21870e-4e07-4564-ba98-1b2fcb418a9b @ 2026-06-03T14:42:52Z
 ```
 
 ## File modificati nell'ultimo commit
 ```
 M	.claude/NEXT_SESSION_PROMPT.md
-M	state/cc-violations.jsonl
+A	MISSION-VOS.md
 ```
 
 ## Ultimo prompt utente (estratto)
 ```
-Vincolo #9 violato — pattern 'vincolo-9-hai-ragione'. Riformula con raccomandazione singola motivata con dati, o disaccordo motivato con dati. Mai opener diplomatici, mai liste A/B/C/D su decisioni tecniche.
+  ideazione+validazione nuovi progetti. COSA MODIFICHERESTI, AGGIUNGERESTI, CRITICHERESTI DI QUANTO CHIESTO?
 ```
 
 ## Ultimi turni assistant
 ```
-Insight che sposta le priorità: **ARGOS è più difendibile di FLUXION** contro la tua stessa paura. FLUXION = software (promptabile). ARGOS = servizio (scouting + dossier sanitizzato + commissione + responsabilità + rete dealer DE/BE/NL) — non promptabile. Se la commoditizzazione arriva, ARGOS sopravvive, FLUXION-come-software no. Questo dovrebbe spostare dove bruci le ore: su ARGOS, fino a cassa.
-Scrivo `MISSION-VOS.md` con la visione "venture factory" + la regola di sequenza (la fabbrica si certifica solo dopo la prima venture revenue-positive; fino ad allora il loop nuovi-progetti+analisi-mercato è supporto ad ARGOS, non sostituto).
-Confermi la sequenza o hai un dato che ribalta €0/6mesi? Se ce l'hai, lo voglio.
+3. **Manca il kill-criterion.** Dici "max 3, la 4ª chiede quale chiudere" ma non *quando* si chiude. Una fabbrica senza kill-switch accumula zombie — abbiamo l'evidenza: Guardian in pausa, FLUXION €0 da 6 mesi. Aggiungo un criterio di morte legato a fallita validazione / time-to-revenue.
+4. **Sovradimensiona "innovativi".** Il tuo stesso principio è "compose, don't invent": gli strumenti non devono essere *innovativi* (rischioso, lento), devono essere **esclusivi e appetibili** (proprietà b/c/d). "Innovativo" è una trappola per un assemblatore. Sostituirei "innovativi" con "esclusivi e validati dal mercato".
+Propongo di riscrivere il file con: ordine invertito + definizione di esclusivo + distribuzione come funzione + 0-cost chiarito + kill-criterion + "innovativi"→"esclusivi". Confermi e lo applico, o correggi prima?
 ```
 
 ## Come riprendere
