@@ -16,7 +16,9 @@ Ogni task va al tool **più forte e più economico** per quello scopo. Tutto 0-c
 
 ## Routing tool→task
 
-| # | Fase (anello catena) | Task | Tool reclutato | Costo | Note |
+> ⚠️ **Colonna "Tool" = CANDIDATI DEDOTTI, non validati.** Vanno confermati/sostituiti con dati esterni via `tool-evaluator` (vedi sezione sotto), uno slot alla volta quando serve. Non assumere come verità finché non hanno scored comparison.
+
+| # | Fase (anello catena) | Task | Tool candidato [da validare] | Costo | Note |
 |---|---|---|---|---|---|
 | 1 | Discovery nicchia | trovare segnali di domanda, nicchie scoperte | Gemini Deep Research; Perplexity (free tier) | €0 | volume dati, browser |
 | 2 | Prova esigenza | quantificare l'esigenza con dati esterni triangolati | agent `trend-researcher`; Gemini Deep | €0 | fonti multiple, claim con URL |
@@ -25,6 +27,16 @@ Ogni task va al tool **più forte e più economico** per quello scopo. Tutto 0-c
 | 5 | Distribuzione (il 70%) | canale proprio + outreach | n8n self-host (OSS); Apollo.io free tier [verifica quota] | €0 | il vero collo di bottiglia |
 | 6 | **Validation gate** | **"qualcuno ha pagato?"** | Stripe payment link / Lemon Squeezy | €0 | UNICO gate vero, mai proxy |
 | — | Long-context / sintesi / classificazione | offload da Opus | skill `vos-llm-router` → Gemini Flash (free) / DeepSeek ($0.32/M) | ~€0 | risparmio 47-84x vs Opus |
+
+## Come si valida il routing (non si deduce)
+
+Il routing tool→task è esso stesso una venture: va validato coi dati esterni, non asserito a tavolino.
+
+- **Chi valida**: agent `tool-evaluator` (scored comparison, mai raccomanda senza dati). Supporto: `vos-scout` (alternative OSS), WebSearch/WebFetch + Gemini Deep per raccolta live.
+- **Quando**: just-in-time, **uno slot alla volta** quando una venture raggiunge quella fase. MAI tutti e 6 in anticipo (= trappola tool-collection, autocritica #3).
+- **Dove preleviamo i dati**: doc ufficiali tool (capabilities/quote/pricing reali), benchmark practitioner, comparison live. **MAI training-data Claude (cutoff gen-2025)** — panorama tool cambia settimanalmente.
+- **Criterio di scelta**: tool più forte × più economico per lo scopo. Vincolo €0 salvo Claude.
+- **Output**: ogni slot validato porta una riga "validato il <data> da tool-evaluator, fonte <URL>". Finché manca = candidato.
 
 ## Componente 0 — Audience/Channel asset (mancante nel framework dedotto)
 
