@@ -16,9 +16,9 @@ Ogni task va al tool **più forte e più economico** per quello scopo. Tutto 0-c
 
 ## Routing tool→task
 
-> ⚠️ **Colonna "Tool" = CANDIDATI DEDOTTI, non validati.** Vanno confermati/sostituiti con dati esterni via `tool-evaluator` (vedi sezione sotto), uno slot alla volta quando serve. Non assumere come verità finché non hanno scored comparison.
+> ⚠️ **La fabbrica NON congela tool specifici. La scelta del tool dipende dal verticale.** Verificato empiricamente 2026-06-04: Apollo è default per SaaS B2B globale ma inutile per micro-dealer italiani (scarsa coverage PMI locali → vince Google Maps scraping). Quindi i "tool" sotto sono SOLO famiglie d'esempio, non factory-truth. Il tool specifico lo sceglie `tool-evaluator` per-venture, JIT, quando una venture tocca lo slot.
 
-| # | Fase (anello catena) | Task | Tool candidato [da validare] | Costo | Note |
+| # | Fase (anello catena) | Task | Famiglia candidati per *tipo* verticale (NON factory-truth) | Costo | Criterio di scelta |
 |---|---|---|---|---|---|
 | 1 | Discovery nicchia | trovare segnali di domanda, nicchie scoperte | Gemini Deep Research; Perplexity (free tier) | €0 | volume dati, browser |
 | 2 | Prova esigenza | quantificare l'esigenza con dati esterni triangolati | agent `trend-researcher`; Gemini Deep | €0 | fonti multiple, claim con URL |

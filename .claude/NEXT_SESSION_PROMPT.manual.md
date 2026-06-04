@@ -1,26 +1,25 @@
-# Prompt ripartenza — MISSION-VOS + framework fabbrica
+# Prompt ripartenza — VOS fabbrica generalista, routing validato
 
-**Chiuso**: 2026-06-04, context 60% (vincolo #7). Branch `master`.
+**Chiuso**: 2026-06-04, context ~50% (vincolo #7). Branch `master`. VOS RIATTIVATO.
 
-## Cosa abbiamo fatto questa sessione
-- Creato `~/venture-os/MISSION-VOS.md` (file prima MANCANTE benché citato da CLAUDE.md). Definizione founder di VOS = **venture factory zero-cost**: non reinventa, assembla OSS via research, migliora, valida col mercato, distribuisce via sales-agent + credibilità costruita.
-- Definito "strumento esclusivo" = proprietà (a) integrazione non-ovvia, (b) dato/flywheel, (c) distribuzione/fiducia, (d) dominio. L'esclusività è GTM+dato, NON software.
-- Second opinion Claude AI ottenuto (output salvato nel thread). Direzione Claude AI: focus ARGOS. Luke ha corretto: NON limitarsi → modello **due lane**: A=esecuzione (concentrata), B=discovery/intake (research esterna AI-leveraged, parallela, delegata).
-- Memoria salvata: `feedback_vos_data_source_external.md` — **la fonte dati reali è ESTERNA (research/mercato), non interna**. Niente transazioni nostre (0 sale, price_changes=0): non ancorare design a dati interni assenti.
+## Stato raggiunto questa sessione
+- VOS confermato **riattivato** come venture factory (memoria pause aggiornata, Layer 1 superato; monito empirico S182 preservato: lane B sempre delegata/parallela, mai assorbe main thread).
+- Framework fabbrica validato con dati esterni (trend-researcher, non più dedotto): **DA 3 A 3+1**. Manca **Componente 0 = Audience/Channel asset** (l'unico asset riusabile cross-venture per solo-founder). Market-intelligence va davanti (discovery nicchia). Sales+distribuzione = il 70%, è il vero collo di bottiglia. Validation gate = "qualcuno ha pagato?", mai proxy. Punto di morte modello = distribuzione senza canale + gate proxy (CB Insights: 42% "no market need").
+- Creato `~/venture-os/components/factory-routing.md` = linea di fabbrica come routing tool→task, **generalista**.
 
-## Framework fabbrica — 3 componenti riusabili (validati da Luke, MA dedotti a tavolino)
-1. **Market-intelligence engine** (dati esterni reali) — il cuore.
-2. **Sales-agent + credibility kit** — distribuzione.
-3. **Validation gate** — dati esterni → go/no-go.
+## INSIGHT STRUTTURALE CHIAVE (la correzione di Luke)
+**La fabbrica è GENERALISTA. Non verticalizzare su ARGOS quando si ragiona sulla factory.**
+La scelta del tool è intrinsecamente dipendente dal verticale (verificato: Apollo ottimo per SaaS B2B globale, inutile per dealer italiani → Google Maps scraping). Quindi la fabbrica immagazzina **metodo + criteri + famiglie candidati per tipo-verticale**, MAI tool specifici congelati. Il tool si sceglie per-venture JIT via `tool-evaluator`. (Memoria: feedback_vos_generalista_no_verticalizza.md)
+
+## La logica della fabbrica (cuore, non estetica)
+ESIGENZA reale provata da dati esterni → SERVIZIO che la risolve → VALIDAZIONE = qualcuno paga (gate esterno). Reclutare il tool più forte × più economico per ogni anello, €0 salvo Claude. Claude = orchestratore + coding agent, non chatbot Q/A.
 
 ## PROSSIMO STEP (dove ripartire)
-**Validare il framework stesso sui dati esterni reali, non solo dedurlo.** Domanda aperta di Luke: il framework a 3 componenti è stato ottenuto con "(dati esterni reali)"? → NO, ragionato. Quindi: usare il market-intelligence engine per validare il market-intelligence engine (dogfood). Research su come operano realmente venture-studio / solo-founder assembly-first AI-leveraged, quali componenti riusano. Delegabile (vos-llm-router / deep-research / trend-researcher).
+Restando GENERALISTA: il prossimo componente da definire è il **market-intelligence engine** (Fase 1-2 della catena) — come strumento generico per trovare nicchie + provare esigenza coi dati esterni, agnostico al verticale. Definire metodo + criteri + famiglie tool, validare con tool-evaluator JIT. NON partire da ARGOS.
+ARGOS-side (terminale separato `combaretrovamiauto-enterprise`, NON da qui): è a Fase 6, bloccato dal bug WA daemon duplicate-sends. Output tool-evaluator Fase 5 ARGOS-specifico già disponibile nel thread (Google Maps scraping + Apollo + Gmail/n8n + fix daemon, NON sostituire).
 
 ## Decisioni founder da onorare
-- VOS = attivo come venture factory (non più "pause sine die"; la vecchia memoria pause è stale — aggiornare se confermato).
-- Ruoli: Luke = mente che decide e paga; Claude = validatore + amplificatore, NON limite. Validare su dati/artefatti reali.
-- NO verticalizzare su ARGOS quando si ragiona sul framework. NO proporre asset su dati interni inesistenti.
-- Tono: realismo costruttivo, piedi-per-terra + volontà. NO negativismo, NO favole, NO verbose.
-
-## Memoria pending (chiedere conferma Luke)
-- Persistere stance "amplificatore non limite / scope decide Luke" come feedback (Luke aveva detto OK, non ancora scritto causa chiusura context).
+- VOS = generalista. Componenti factory = metodo/criteri, mai scelte verticali.
+- Luke = decide scope business; Claude = amplifica+valida su dati reali, NON limita (asse business). Scelte tecniche = Claude decide con dati (vincolo #3, asse tecnico).
+- Fonte dati per validare la fabbrica = research esterna generalista, mai dati interni ARGOS.
+- Tono: realismo costruttivo, no negativismo, no verbose, no chatbot Q/A — eseguire/delegare.
