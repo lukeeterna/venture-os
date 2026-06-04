@@ -1,26 +1,41 @@
-# Prompt ripartenza — MISSION-VOS + framework fabbrica
+# Prompt ripartenza — generato automaticamente
 
-**Chiuso**: 2026-06-04, context 60% (vincolo #7). Branch `master`.
+**Generato**: `2026-06-04T14:33:27Z`
+**Sessione**: `e055e0eb-8b24-488d-80f0-89666901ccec`
+**Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
+**Commit auto**: no-changes
+**Last commit**: `a55fe19 VOS: crea MISSION-VOS.md + framework fabbrica 3-componenti + chiusura ordinata`
 
-## Cosa abbiamo fatto questa sessione
-- Creato `~/venture-os/MISSION-VOS.md` (file prima MANCANTE benché citato da CLAUDE.md). Definizione founder di VOS = **venture factory zero-cost**: non reinventa, assembla OSS via research, migliora, valida col mercato, distribuisce via sales-agent + credibilità costruita.
-- Definito "strumento esclusivo" = proprietà (a) integrazione non-ovvia, (b) dato/flywheel, (c) distribuzione/fiducia, (d) dominio. L'esclusività è GTM+dato, NON software.
-- Second opinion Claude AI ottenuto (output salvato nel thread). Direzione Claude AI: focus ARGOS. Luke ha corretto: NON limitarsi → modello **due lane**: A=esecuzione (concentrata), B=discovery/intake (research esterna AI-leveraged, parallela, delegata).
-- Memoria salvata: `feedback_vos_data_source_external.md` — **la fonte dati reali è ESTERNA (research/mercato), non interna**. Niente transazioni nostre (0 sale, price_changes=0): non ancorare design a dati interni assenti.
+## Ultimi 5 commit
+```
+a55fe19 VOS: crea MISSION-VOS.md + framework fabbrica 3-componenti + chiusura ordinata
+1bd288d auto-close session e055e0eb-8b24-488d-80f0-89666901ccec @ 2026-06-04T11:54:08Z
+93249b0 auto-close session e055e0eb-8b24-488d-80f0-89666901ccec @ 2026-06-04T11:37:44Z
+9b17a98 auto-close session e055e0eb-8b24-488d-80f0-89666901ccec @ 2026-06-04T11:28:24Z
+f14b7d7 auto-close session e055e0eb-8b24-488d-80f0-89666901ccec @ 2026-06-04T11:13:38Z
+```
 
-## Framework fabbrica — 3 componenti riusabili (validati da Luke, MA dedotti a tavolino)
-1. **Market-intelligence engine** (dati esterni reali) — il cuore.
-2. **Sales-agent + credibility kit** — distribuzione.
-3. **Validation gate** — dati esterni → go/no-go.
+## File modificati nell'ultimo commit
+```
+M	.claude/NEXT_SESSION_PROMPT.md
+```
 
-## PROSSIMO STEP (dove ripartire)
-**Validare il framework stesso sui dati esterni reali, non solo dedurlo.** Domanda aperta di Luke: il framework a 3 componenti è stato ottenuto con "(dati esterni reali)"? → NO, ragionato. Quindi: usare il market-intelligence engine per validare il market-intelligence engine (dogfood). Research su come operano realmente venture-studio / solo-founder assembly-first AI-leveraged, quali componenti riusano. Delegabile (vos-llm-router / deep-research / trend-researcher).
+## Ultimo prompt utente (estratto)
+```
+[{"tool_use_id":"toolu_018bh5nYfQK4wW2PR6qZ2Yhe","type":"tool_result","content":"---\n9b17a98 auto-close session e055e0eb-8b24-488d-80f0-89666901ccec @ 2026-06-04T11:28:24Z\nf14b7d7 auto-close session e055e0eb-8b24-488d-80f0-89666901ccec @ 2026-06-04T11:13:38Z","is_error":false}]
+```
 
-## Decisioni founder da onorare
-- VOS = attivo come venture factory (non più "pause sine die"; la vecchia memoria pause è stale — aggiornare se confermato).
-- Ruoli: Luke = mente che decide e paga; Claude = validatore + amplificatore, NON limite. Validare su dati/artefatti reali.
-- NO verticalizzare su ARGOS quando si ragiona sul framework. NO proporre asset su dati interni inesistenti.
-- Tono: realismo costruttivo, piedi-per-terra + volontà. NO negativismo, NO favole, NO verbose.
+## Ultimi turni assistant
+```
+Validare il framework a 3 componenti **sui dati esterni reali**, non più a tavolino — la tua domanda ricorsiva di oggi. Dogfood: usare il market-intelligence engine per studiare come operano davvero le venture-factory / solo-founder assembly-first, e da lì derivare i componenti riusabili veri. Delegabile a research.
+Resta in sospeso una cosa che avevi già OK-ato ma non ho scritto in tempo: persistere come memoria lo stance *"Claude = amplificatore non limite, scope decide Luke"*. La scrivo a inizio prossima sessione.
+Context 63% — stop qui, niente nuovo lavoro. Sessione chiusa verde. `/exit` quando vuoi.
+```
 
-## Memoria pending (chiedere conferma Luke)
-- Persistere stance "amplificatore non limite / scope decide Luke" come feedback (Luke aveva detto OK, non ancora scritto causa chiusura context).
+## Come riprendere
+
+1. Apri Claude Code da `/Volumes/MontereyT7/venture-os`
+2. Leggi questo file (auto-loaded? dipende da config progetto)
+3. Continua dal punto indicato negli ultimi turni assistant sopra
+
+Se `SESSION_DIRTY.md` esiste in questa stessa cartella, risolvi PRIMA i conflitti.

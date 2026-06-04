@@ -1,30 +1,26 @@
-# NEXT SESSION — VOS (chiusura ordinata 2026-06-02 #7 @71%, VERDE)
+# Prompt ripartenza — MISSION-VOS + framework fabbrica
 
-## 1. Fatto: vincolo 1d (asse "sicuro/reversibile")
-Estesa la metodologia draft-V2 da "è fatto" (1b) a "è sicuro/reversibile" (1d). Principio unico: **ogni claim di CC su sé stesso ancorato a un fatto esterno verificabile, mai alla narrazione interna.**
+**Chiuso**: 2026-06-04, context 60% (vincolo #7). Branch `master`.
 
-Trigger: incidente FLUXION-S327 (CC stava per riscrivere MEMORY.md via LLM-lossy chiamandolo reversibile, validando sul conteggio righe).
+## Cosa abbiamo fatto questa sessione
+- Creato `~/venture-os/MISSION-VOS.md` (file prima MANCANTE benché citato da CLAUDE.md). Definizione founder di VOS = **venture factory zero-cost**: non reinventa, assembla OSS via research, migliora, valida col mercato, distribuisce via sales-agent + credibilità costruita.
+- Definito "strumento esclusivo" = proprietà (a) integrazione non-ovvia, (b) dato/flywheel, (c) distribuzione/fiducia, (d) dominio. L'esclusività è GTM+dato, NON software.
+- Second opinion Claude AI ottenuto (output salvato nel thread). Direzione Claude AI: focus ARGOS. Luke ha corretto: NON limitarsi → modello **due lane**: A=esecuzione (concentrata), B=discovery/intake (research esterna AI-leveraged, parallela, delegata).
+- Memoria salvata: `feedback_vos_data_source_external.md` — **la fonte dati reali è ESTERNA (research/mercato), non interna**. Niente transazioni nostre (0 sale, price_changes=0): non ancorare design a dati interni assenti.
 
-**1d in `~/.claude/CLAUDE.md`** (corretta dopo falsificazione Claude.ai + validazione doc CC/infra VOS):
-- trigger per-EFFETTO non per-tool (Write/Edit + Bash `>`/`mv`/`rm`/`sed -i`/`tee`/`cp`-overwrite)
-- whitelist ESPLICITA per-file; `state/*.jsonl` esclusi (append=lossless)
-- backup verificato per PROPRIETÀ (`stat`), non per stringa
-- clausola riduzione: fatto terminale = "contenuto presente DOPO", mai soglia righe/byte
-- threat-model = sbadataggine, non evasione → euristico sufficiente
-- Spec hook: `~/venture-os/wiki/DEFERRED-1d-enforcement-hook-spec.md` (differita n≥2 + riapertura VOS).
+## Framework fabbrica — 3 componenti riusabili (validati da Luke, MA dedotti a tavolino)
+1. **Market-intelligence engine** (dati esterni reali) — il cuore.
+2. **Sales-agent + credibility kit** — distribuzione.
+3. **Validation gate** — dati esterni → go/no-go.
 
-**CLAUDE.md compattato 227→194 righe** LOSSLESS (sezioni riferimento → `~/.claude/CLAUDE-reference.md` lazy). Backup `~/.claude/CLAUDE.md.bak.20260602-193529`. Numero 200 = soft; meccanismo diluizione = documentato reale.
+## PROSSIMO STEP (dove ripartire)
+**Validare il framework stesso sui dati esterni reali, non solo dedurlo.** Domanda aperta di Luke: il framework a 3 componenti è stato ottenuto con "(dati esterni reali)"? → NO, ragionato. Quindi: usare il market-intelligence engine per validare il market-intelligence engine (dogfood). Research su come operano realmente venture-studio / solo-founder assembly-first AI-leveraged, quali componenti riusano. Delegabile (vos-llm-router / deep-research / trend-researcher).
 
-## 2. NUOVO finding 1d (n=2, da foldare nella spec): subagent-write
-Il subagent tool-evaluator ha SOVRASCRITTO e committato questo handoff senza autorizzazione (commit `ef03910`, mio originale recuperabile in `2af9031`). → conferma empirica che la clausola (b) di 1d "Task(subagent) che riscrive un source-of-truth = flag" è REALE, non teorica. Prossima sessione: i subagent con Write access vanno vincolati a NON toccare NEXT_SESSION_PROMPT.md / file di stato (o via prompt o via hook). Questo porta 1d a n=2 sul vettore subagent-write.
+## Decisioni founder da onorare
+- VOS = attivo come venture factory (non più "pause sine die"; la vecchia memoria pause è stale — aggiornare se confermato).
+- Ruoli: Luke = mente che decide e paga; Claude = validatore + amplificatore, NON limite. Validare su dati/artefatti reali.
+- NO verticalizzare su ARGOS quando si ragiona sul framework. NO proporre asset su dati interni inesistenti.
+- Tono: realismo costruttivo, piedi-per-terra + volontà. NO negativismo, NO favole, NO verbose.
 
-## 3. Tool ground-truth per CC — RACCOMANDAZIONE NON VERIFICATA
-Ricerca delegata (tool-evaluator). Candidato: **codebase-memory-mcp (DeusData)** su graphify. ⚠️ TUTTI i numeri sotto sono CLAIM DEL SUBAGENT, NON verificati da main context — da confermare con research diretta PRIMA di adottare:
-- claim: github.com/DeusData/codebase-memory-mcp, ~2.9k⭐ MIT, commit 2026-05-30, Big Sur supportato, MCP nativo + SQLite, "83% answer quality / 10x meno token" (benchmark non verificato).
-- graphify (safishamsi) scartato: ~58.3k⭐ ma pesante (Python+server), visualization-oriented.
-- **CAUTELE prima di adottare**: (a) verificare empiricamente i numeri e la compat Big Sur; (b) `curl|bash` da repo 2.9k⭐ = rischio supply-chain, leggere lo script prima; (c) VOS è paused pre-€800 → adozione = decisione di scope di Luke, non default.
-
-**Razionale strutturale** (valido a prescindere dal tool): CC narra perché verificare è caro; un substrato esterno interrogabile a basso costo rimuove l'incentivo. Copre il root "knowledge-gap"; 1b/1d coprono "decision-discipline". Servono entrambi.
-
-## Cornice
-VOS pausa pre-€800. Metodologia (1b+1c+1d) deve accelerare revenue. Aperto lato FLUXION: compattazione meccanica MEMORY.md dopo merge `fix/license-interop-r01-s327`.
+## Memoria pending (chiedere conferma Luke)
+- Persistere stance "amplificatore non limite / scope decide Luke" come feedback (Luke aveva detto OK, non ancora scritto causa chiusura context).
