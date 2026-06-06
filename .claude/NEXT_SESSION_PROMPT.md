@@ -1,41 +1,36 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-06-06T14:12:33Z`
+**Generato**: `2026-06-06T14:27:59Z`
 **Sessione**: `3b6ef466-f11c-498a-b094-d3b8b24c2274`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: cosmetic-skip (only NEXT_SESSION_PROMPT.md dirty, no plan/scope change)
-**Last commit**: `6749d1e auto-close session 3b6ef466-f11c-498a-b094-d3b8b24c2274 @ 2026-06-06T14:01:26Z`
+**Commit auto**: committed: ff211ba
+**Last commit**: `ff211ba auto-close session 3b6ef466-f11c-498a-b094-d3b8b24c2274 @ 2026-06-06T14:27:59Z`
 
 ## Ultimi 5 commit
 ```
+ff211ba auto-close session 3b6ef466-f11c-498a-b094-d3b8b24c2274 @ 2026-06-06T14:27:59Z
 6749d1e auto-close session 3b6ef466-f11c-498a-b094-d3b8b24c2274 @ 2026-06-06T14:01:26Z
 902edff auto-close session b5e50f7c-ae17-4752-bbb5-5728a4fc3a51 @ 2026-06-04T15:31:00Z
 d763d91 auto-close session b5e50f7c-ae17-4752-bbb5-5728a4fc3a51 @ 2026-06-04T15:28:05Z
 2dff792 auto-close session b5e50f7c-ae17-4752-bbb5-5728a4fc3a51 @ 2026-06-04T15:20:20Z
-5796cf7 auto-close session b5e50f7c-ae17-4752-bbb5-5728a4fc3a51 @ 2026-06-04T15:17:34Z
 ```
 
 ## File modificati nell'ultimo commit
 ```
-M	.claude/NEXT_SESSION_PROMPT.manual.md
 M	.claude/NEXT_SESSION_PROMPT.md
-A	briefs/2026-06-05.md
-A	briefs/2026-06-06.md
-M	components/factory-routing.md
-A	components/market-intelligence-engine.md
-M	state/cc-violations.jsonl
+A	components/factory-line.md
 ```
 
 ## Ultimo prompt utente (estratto)
 ```
-[{"tool_use_id":"toolu_01CVVmGSnxzGhEMXW2Kjub55","type":"tool_result","content":"The file /Users/macbook/.claude/projects/-Volumes-MontereyT7-venture-os/memory/MEMORY.md has been updated successfully."}]
+[{"tool_use_id":"toolu_0123kN5m9jy7v1GvDMjmk62Y","type":"tool_result","content":[{"type":"text","text":"Async agent launched successfully.\nagentId: af9c89c284ee41db3 (internal ID - do not mention to user. Use SendMessage with to: 'af9c89c284ee41db3' to continue this agent.)\nThe agent is working in the background. You will be notified automatically when it completes.\nDo not duplicate this agent's work — avoid working with the same files or topics it is using. Work on non-overlapping tasks, o
 ```
 
 ## Ultimi turni assistant
 ```
-> La fabbrica diventa **concreta** quando la *esegui* end-to-end su una nicchia **nuova/generica** e produce un output falsificabile — una nicchia uccisa a costo zero, o un segnale che qualifica una venture nuova. Mai passando dalle 3 esistenti.
-Quindi il componente che ho scritto ieri (market-intelligence engine) resta speculazione finché non lo **faccio girare** una volta. E questa è la mossa in-scope, non teoria: prendo l'engine e lo eseguo ora — discovery delegata che fa emergere nicchie candidate dai dati esterni, poi applico i kill-criteria A–E su una di esse, fino a un verdetto reale con URL. È la fabbrica che gira su se stessa, generalista, zero ARGOS.
-Procedo così: lancio la discovery generalista (agente delegato) per far emergere 3-5 nicchie candidate con segnale di spesa esistente, poi ne passo una al gate. Confermi che parto, o hai un dominio-seme da cui vuoi che la discovery parta?
+1. Memorizzato l'obiettivo corretto: questo terminale **costruisce la fabbrica generalista in sé**; ARGOS/FLUXION indipendenti, mai più il metro revenio-venture qui.
+2. Il prossimo passo in-scope, quando riprendi: **costruire la stazione-vincolo (5 + Componente 0) per prima**, poi cablare il nastro. Non lucidare le stazioni 1-2.
+Aspetto il ritorno della validazione in background prima di chiudere — se vuoi che intanto specchi una stazione (la 3 o la 5), dimmelo.
 ```
 
 ## Come riprendere

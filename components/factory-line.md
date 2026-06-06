@@ -85,6 +85,22 @@ Senza questo artefatto condiviso, ogni stazione produce output in formati scolle
 
 ---
 
+## §8b — Validazione empirica del design (delegata trend-researcher, 2026-06-06)
+
+Il design è stato validato contro processo reale venture-studio + Stage-Gate + casi solo-founder. Esito: **modello confermato, con 3 correzioni hard.**
+
+1. **Trasferibilità solo-founder: CONFERMATA.** Pieter Levels (~$3M/anno, 0 dipendenti) gira una pipeline ripetibile ("12 startup in 12 mesi"), con asset di distribuzione condiviso su tutti i prodotti = analogo esatto del Componente 0. La struttura stage-gate trasferisce; **ciò che NON trasferisce è il team**: si perde l'esecuzione parallela (solo = sequenziale, cycle-time più lungo) e — critico — la **disciplina di kill** (i studio hanno il voto IC che forza il kill; il solo-founder driftа "ancora una feature"). → *Serve un criterio di kill ESTERNO e binario che sostituisca l'IC.* Senza, la linea non scarta mai e si avvita (collega vincolo #1c).
+
+2. **Regola dei gate (la correzione più importante).** Ogni studio reale (PSL, High Alpha, eFounders) ha **un solo gate di kill binario prima del build** (validation gate), gli altri sono gate di progresso, e **tutti i gate sono esternamente falsificabili** (voto IC, beta sign-up, seed round). Il pattern di fallimento solo: gate **validati internamente** ("mi sembra buono"). → **Le 6 stazioni vanno bene SOLO se ogni gate è evidenza esterna binaria. Una stazione definita da un deliverable interno (doc/design/piano) = over-engineering, va fusa o eliminata.** Correzione concreta: il gate della **stazione 3 (Offer scoping)** era interno ("offerta mappata su dolore provato") → sostituire con gate esterno: **≥1 segnale di prezzo reale (pre-ordine / LOI / lista con carta) sull'offerta**, altrimenti fondere la 3 dentro la 2.
+
+3. **Bottleneck confermato + precisato.** Non "distribuzione come task" ma **distribuzione come ASSET DUREVOLE che compone** (audience/canale/SEO moat). Levels: 10 anni di build-in-public → Photo AI $5.4K in settimana 1 *perché il canale preesisteva al prodotto*. Senza l'asset, la distribuzione è grind per-prodotto che non compone. → **Componente 0 non è "fai outreach", è "costruisci un canale che preesiste a ogni venture".** Priorità di build invariata e rafforzata.
+
+**Pipeline minima alternativa** (se le 6 si rivelano troppe alla prima corsa): 4 stazioni + 2 gate esterni —
+`[Problema+Segnale] —GATE: segnale di domanda esterno?— [Build MVP, timebox 1-3 sett] —GATE: primo cliente pagante?— [Distribution push su asset] —[Scale o kill]`.
+Tieni questa come fallback; non aggiungere struttura oltre quella che una corsa reale richiede (autocritica #4).
+
+---
+
 ## §9 — Autocritica strutturale (vincolo #4)
 
 1. **Assunzione nascosta**: assume che il modello venture-studio (pipeline stage-gate) sia trasferibile al solo-founder a budget €0. I studio hanno team multi-funzione per ogni stazione; qui il "team" sono agent CC. La validazione delegata 2026-06-06 deve confermare/smentire la trasferibilità, non darla per scontata.
@@ -99,4 +115,11 @@ Senza questo artefatto condiviso, ogni stazione produce output in formati scolle
 - Teoria dei Vincoli — E. Goldratt, *The Goal* (1984): throughput di linea = bottleneck.
 - Stage-Gate — R. Cooper, *Winning at New Products*: pipeline NPD a stadi + gate go/kill.
 - Build-Measure-Learn — E. Ries, *The Lean Startup*: loop di validazione, gate = apprendimento validato.
-- Modello venture-studio (High Alpha, Pioneer Square Labs, Atomic, Hexa): pipeline ripetibile end-to-end. **Validazione empirica del design delegata 2026-06-06** (trend-researcher) — aggiornare questa sezione con URL e dettaglio processo reale al ritorno.
+- Modello venture-studio — pipeline ripetibile end-to-end, validato 2026-06-06 (vedi §8b):
+  - Pioneer Square Labs (5 stadi, kill al validation gate): https://www.innovationleader.com/uncategorized/venture-studio-profile-pioneer-square-labs/
+  - High Alpha (Sprint Week 72h, gate = voto IC): https://highalpha.com/blog/sprint-week-a-forcing-function-for-innovation
+  - eFounders/Hexa (BUILD→SCALE, gate = seed traction): https://medium.com/inside-hexa/efounders-letter-3-rise-of-a-startup-studio-dc1101529f0c
+  - Caso solo-founder (Pieter Levels, pipeline ripetibile + asset canale condiviso): https://www.fast-saas.com/blog/pieter-levels-success-story/
+  - Distribuzione come asset 10-anni: https://www.softwareseni.com/building-in-public-the-10-year-distribution-strategy-behind-solo-founder-revenue/
+  - CB Insights (431 shutdown 2023, PMF 43%): https://www.cbinsights.com/research/report/startup-failure-reasons-top/
+  - Caveat: dato CB Insights è VC-backed non solo-founder; kill-rate per-stadio solo-founder non documentato (gap).

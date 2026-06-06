@@ -14,11 +14,15 @@ La scelta del tool è intrinsecamente dipendente dal verticale (verificato: Apol
 ## La logica della fabbrica (cuore, non estetica)
 ESIGENZA reale provata da dati esterni → SERVIZIO che la risolve → VALIDAZIONE = qualcuno paga (gate esterno). Reclutare il tool più forte × più economico per ogni anello, €0 salvo Claude. Claude = orchestratore + coding agent, non chatbot Q/A.
 
-## FATTO 2026-06-06 — market-intelligence engine definito
-`components/market-intelligence-engine.md` (v0.1, generalista). Metodo fondato su research esterna (trend-researcher, fonti con URL). Riframe chiave: **Fase 1-2 UCCIDE a basso costo le nicchie sbagliate, non "prova" quelle giuste — la prova è solo il pagamento (Fase 6)**. Gate decidibile A–F (F = pre-payment terminale, owned Fase 6 ma tentato a fine Fase 2). Famiglie tool per tipo-verticale (B2B-globale / servizi-locali / consumer). tool-evaluator NON eseguito generico (= trappola tool-collection): protocollo JIT definito, prima esecuzione quando una venture entra in Fase 1. Agganciato in factory-routing.md.
+## OBIETTIVO TERMINALE VOS (corretto enfatico da Luke 2026-06-06)
+Questo terminale **COSTRUISCE LA FABBRICA GENERALISTA IN SÉ** (il meta-asset). ARGOS/FLUXION vanno avanti INDIPENDENTI nei loro terminali — MAI misurare VOS col metro revenue-venture, MAI redirigere a ARGOS ops. Una fabbrica non si avvia a pezzi (Teoria dei Vincoli: stazione mancante = throughput zero): si costruisce la LINEA COMPLETA + la logica che collega le stazioni, poi gira end-to-end.
 
-## PROSSIMO STEP (dove ripartire)
-Per autocritica #4 (il valore vero è a Fase 5-6, non 1-2): il prossimo componente da definire è il **distribution engine (Fase 5, il 70%) + Componente 0 (Audience/Channel asset)** — il vero collo di bottiglia dove muoiono le venture. Stesso metodo: generalista, fondato su dati esterni, kill-criteria decidibili, famiglie tool per tipo-verticale, tool-evaluator JIT. NON partire da ARGOS. NON lucidare ancora Fase 1-2.
+## FATTO 2026-06-06
+1. `components/market-intelligence-engine.md` (v0.1) — stazioni 1-2 (Discovery + Demand validation). Gate kill-criteria A–F. Riframe: Fase 1-2 UCCIDE nicchie sbagliate a costo zero, non "prova" (la prova è il pagamento).
+2. `components/factory-line.md` (v0.1) — **LA LINEA COMPLETA**: 6 stazioni mappate su fabbrica auto + **la SCOCCA** (`venture-dossier.md`, WIP unit 7 stati S0→S6 che viaggia e si arricchisce) + **il NASTRO** (orchestrazione vos-auto-router + gate Stage-Gate go/kill/rework) + Componente 0. **Validato empiricamente** (§8b, trend-researcher, fonti §10): trasferibilità solo-founder CONFERMATA (Pieter Levels), bottleneck = **distribuzione come ASSET DUREVOLE che compone** (non task), gate DEVONO essere esterni-binari (stazione con deliverable interno = over-engineering → fondere).
+
+## PROSSIMO STEP (dove ripartire — ordine per priorità-vincolo ToC, NON 1→6)
+La stazione-VINCOLO è la **5 Distribution + Componente 0** (canale che preesiste a ogni venture). Sequenza build corretta: (a) template scocca `venture-dossier.md`; (b) **Componente 0 + stazione 5 PER PRIMA** (è il vincolo — costruire 1-4 prima = throughput zero comunque); (c) spec stazioni 3-4-6 con gate ESTERNI-binari (correggere gate interno stazione 3); (d) cablare nastro vos-auto-router sulle 6 stazioni; (e) prima corsa end-to-end di una scocca da S0 a S6 su nicchia NUOVA. Fallback se 6 stazioni troppe: pipeline minima 4 stazioni + 2 gate (§8b). NON lucidare stazioni 1-2.
 ARGOS-side (terminale separato `combaretrovamiauto-enterprise`, NON da qui): è a Fase 6, bloccato dal bug WA daemon duplicate-sends. Output tool-evaluator Fase 5 ARGOS-specifico già disponibile nel thread (Google Maps scraping + Apollo + Gmail/n8n + fix daemon, NON sostituire).
 
 ## Decisioni founder da onorare
