@@ -1,36 +1,40 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-06-06T16:42:06Z`
-**Sessione**: `3b6ef466-f11c-498a-b094-d3b8b24c2274`
+**Generato**: `2026-06-06T18:11:05Z`
+**Sessione**: `e23e72e3-af3b-4e68-a6c2-ab2470b4644f`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: committed: 7f23ba4
-**Last commit**: `7f23ba4 auto-close session 3b6ef466-f11c-498a-b094-d3b8b24c2274 @ 2026-06-06T16:42:06Z`
+**Commit auto**: cosmetic-skip (only NEXT_SESSION_PROMPT.md dirty, no plan/scope change)
+**Last commit**: `80dc21b auto-close session e23e72e3-af3b-4e68-a6c2-ab2470b4644f @ 2026-06-06T18:09:04Z`
 
 ## Ultimi 5 commit
 ```
+80dc21b auto-close session e23e72e3-af3b-4e68-a6c2-ab2470b4644f @ 2026-06-06T18:09:04Z
 7f23ba4 auto-close session 3b6ef466-f11c-498a-b094-d3b8b24c2274 @ 2026-06-06T16:42:06Z
 1b35e70 VOS factory: linea completa + validazione + firewall principle
 d7a9aa4 auto-close session 3b6ef466-f11c-498a-b094-d3b8b24c2274 @ 2026-06-06T14:31:41Z
 ff211ba auto-close session 3b6ef466-f11c-498a-b094-d3b8b24c2274 @ 2026-06-06T14:27:59Z
-6749d1e auto-close session 3b6ef466-f11c-498a-b094-d3b8b24c2274 @ 2026-06-06T14:01:26Z
 ```
 
 ## File modificati nell'ultimo commit
 ```
-M	.claude/NEXT_SESSION_PROMPT.manual.md
 M	.claude/NEXT_SESSION_PROMPT.md
+A	VOS_RUN_SPEC.md
+A	bin/vos-factory-run
+A	components/distribution-station.md
+A	seeds/SEED_ENVELOPE.template.md
+A	templates/venture-dossier.md
 ```
 
 ## Ultimo prompt utente (estratto)
 ```
-hai validato il blueprint? abbiamo abbastanza per ritenerlo validato? solo si o no , non voglio "allungare il brodo" , solo evitare di farti specular eancora su di me , next prompt?
+spiega semplice..
 ```
 
 ## Ultimi turni assistant
 ```
-(backend-architect/rapid-prototyper, REGOLA #0). Eseguire, non chatbot. Non lucidare
-le stazioni 1-2.
-```
+## In una frase
+Prima avevamo i blueprint di un'auto. Ora la catena di montaggio è accesa e aspetta che tu dica *"questi sono i vincoli, vai"* — poi parte da sola a cercare la prima nicchia nuova.
+Mi dici **quanto deve incassare** per contare come vendita (anche €1 va bene)? Da lì lancio la prima corsa vera.
 ```
 
 ## Come riprendere

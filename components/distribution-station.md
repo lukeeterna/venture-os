@@ -49,12 +49,14 @@ Worker-ROLE: `distributor` → `Task(growth-hacker)` + n8n + Componente 0 + Stri
 3. Outreach consegnato a ≥N buyer (N dal floor: revenue_floor / prezzo, tipicamente puntare ai primi 20-100 contatti caldi).
 4. Traccia risposte (outreach_log con path/URL → provenienza S5 della scocca).
 
-### S6 — validation — GATE G3 (terminale)
+### S6 — validation — GATE G3 (terminale, tasso di conversione)
 - Payment link reale (Stripe / Lemon Squeezy, €0 setup).
-- **G3 PASS sse**: ≥1 pagamento reale ricevuto ≥ `revenue_floor_eur`. Ref transazione registrato.
+- Misura: **paganti reali / `buyers_reached_target`** (N raggiunti, no paid ads). Niche-free: non un € assoluto.
+- **Esiti** (deciso da Luke sull'evidenza, non VOS):
+  - **≥ `min_paying_to_pass`** paganti su N → **SHIPPED** (nicchia efficace, vale scalare).
+  - **1** pagante su N → segnale debole: rework offerta (max 1) o kill.
+  - **0** dopo N raggiunti → **KILLED-motivato** (output valido: nicchia uccisa a costo basso).
 - **Nessun proxy ammesso**: waitlist, like, "lo comprerei", survey → NON contano (vincolo #6, gate-proxy = morte modello).
-- Decide Luke, sull'evidenza (transazione osservata), non VOS.
-- PASS → **SHIPPED**. Fail dopo N buyer raggiunti → **KILLED-motivato** (output valido: nicchia uccisa a costo basso).
 
 ---
 

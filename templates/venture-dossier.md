@@ -124,16 +124,19 @@ provenance:
 
 ## S6 — verdetto (Validation) — GATE G3 = gate F TERMINALE
 
-**Pagamento reale ricevuto?** (carta / LOI con deposito / pre-ordine — NESSUN proxy)
+**Tasso di conversione** (niche-free): paganti reali / buyer raggiunti — NESSUN proxy.
 
-- **Esito**: {{€ incassato + Stripe/Lemon ref | nessun pagamento dopo N buyer}}
+- **Buyer raggiunti (N)**: {{...}} / target `buyers_reached_target`
+- **Paganti reali**: {{...}} (soglia SHIPPED = `min_paying_to_pass`)
+- **Esito**: {{≥soglia → SHIPPED | 1 → segnale debole, rework/kill | 0 → KILLED}}
 
 **G3 VERDICT**: {{SHIPPED | KILLED-motivato}}
 
 ```yaml
 provenance:
-  payment_ref: {{Stripe/Lemon tx id | null}}
-  amount_eur: {{...}}
+  buyers_reached: {{N}}
+  paying_count: {{...}}
+  payment_refs: [{{Stripe/Lemon tx id}}]
   ts: {{TS}}
 gate: G3
 gate_decided_by: Luke      # pagamento reale osservato da Luke, terminale

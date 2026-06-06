@@ -10,7 +10,12 @@ created_ts: {{TS}}
 
 # --- Vincoli economici ---
 budget_max_eur: 0                 # capex aggiuntivo ammesso (default 0, Claude Code già pagato)
-revenue_floor_eur: {{...}}        # primo pagamento-soglia che conta come SHIPPED (gate F)
+
+# --- Soglia di efficacia (NICHE-FREE: tasso di conversione, non € assoluti) ---
+# L'efficacia NON è "quanti €" (dipende dalla nicchia che sceglie VOS) ma "quanti pagano su quanti ne raggiungo".
+buyers_reached_target: 50         # N = buyer qualificati raggiunti nella corsa (denominatore, no paid ads)
+min_paying_to_pass: 2             # X = paganti reali su N per dire "efficace, scala" (default 2/50 = 4%)
+                                  # esiti G3: >=X paga -> SHIPPED | 1 paga -> segnale debole (rework o kill, decide Luke) | 0 -> KILL motivato
 
 # --- Vincoli di capacità (skill, NON settore) ---
 skills_available:                 # cosa Luke/VOS sa fare, non in che mercato
@@ -34,7 +39,7 @@ verticale_type_hint: {{null | B2B-globale | servizi-locali | consumer}}
                                   # opzionale: orienta solo le famiglie-tool, non la nicchia
 
 # --- Done-condition esterna (vincolo #1b) ---
-terminal_fact: "≥1 pagamento reale (Stripe/Lemon/LOI con deposito) ≥ revenue_floor_eur"
+terminal_fact: "≥ min_paying_to_pass pagamenti reali (Stripe/Lemon/LOI) su buyers_reached_target raggiunti"
 ```
 
 ## Note (libere, niche-free)
