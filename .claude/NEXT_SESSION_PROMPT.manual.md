@@ -14,8 +14,11 @@ La scelta del tool è intrinsecamente dipendente dal verticale (verificato: Apol
 ## La logica della fabbrica (cuore, non estetica)
 ESIGENZA reale provata da dati esterni → SERVIZIO che la risolve → VALIDAZIONE = qualcuno paga (gate esterno). Reclutare il tool più forte × più economico per ogni anello, €0 salvo Claude. Claude = orchestratore + coding agent, non chatbot Q/A.
 
+## FATTO 2026-06-06 — market-intelligence engine definito
+`components/market-intelligence-engine.md` (v0.1, generalista). Metodo fondato su research esterna (trend-researcher, fonti con URL). Riframe chiave: **Fase 1-2 UCCIDE a basso costo le nicchie sbagliate, non "prova" quelle giuste — la prova è solo il pagamento (Fase 6)**. Gate decidibile A–F (F = pre-payment terminale, owned Fase 6 ma tentato a fine Fase 2). Famiglie tool per tipo-verticale (B2B-globale / servizi-locali / consumer). tool-evaluator NON eseguito generico (= trappola tool-collection): protocollo JIT definito, prima esecuzione quando una venture entra in Fase 1. Agganciato in factory-routing.md.
+
 ## PROSSIMO STEP (dove ripartire)
-Restando GENERALISTA: il prossimo componente da definire è il **market-intelligence engine** (Fase 1-2 della catena) — come strumento generico per trovare nicchie + provare esigenza coi dati esterni, agnostico al verticale. Definire metodo + criteri + famiglie tool, validare con tool-evaluator JIT. NON partire da ARGOS.
+Per autocritica #4 (il valore vero è a Fase 5-6, non 1-2): il prossimo componente da definire è il **distribution engine (Fase 5, il 70%) + Componente 0 (Audience/Channel asset)** — il vero collo di bottiglia dove muoiono le venture. Stesso metodo: generalista, fondato su dati esterni, kill-criteria decidibili, famiglie tool per tipo-verticale, tool-evaluator JIT. NON partire da ARGOS. NON lucidare ancora Fase 1-2.
 ARGOS-side (terminale separato `combaretrovamiauto-enterprise`, NON da qui): è a Fase 6, bloccato dal bug WA daemon duplicate-sends. Output tool-evaluator Fase 5 ARGOS-specifico già disponibile nel thread (Google Maps scraping + Apollo + Gmail/n8n + fix daemon, NON sostituire).
 
 ## Decisioni founder da onorare

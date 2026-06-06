@@ -22,6 +22,8 @@ Ogni task va al tool **più forte e più economico** per quello scopo. Tutto 0-c
 |---|---|---|---|---|---|
 | 1 | Discovery nicchia | trovare segnali di domanda, nicchie scoperte | Gemini Deep Research; Perplexity (free tier) | €0 | volume dati, browser |
 | 2 | Prova esigenza | quantificare l'esigenza con dati esterni triangolati | agent `trend-researcher`; Gemini Deep | €0 | fonti multiple, claim con URL |
+
+> **Fasi 1-2 = componente dedicato**: `components/market-intelligence-engine.md` (v0.1, 2026-06-06). Metodo + kill-criteria (gate A–F) + famiglie tool per tipo-verticale + protocollo validazione JIT. Riframe: Fase 1-2 *uccide* a basso costo le nicchie sbagliate, non "prova" quelle giuste — la prova è solo il pagamento (Fase 6).
 | 3 | Scoping servizio | esigenza → feature minima (cosa, non come) | Claude Code (Opus, orchestratore) | incluso | ragionamento/decisione |
 | 4 | Build | costruire il servizio/MVP | Claude Code agents: `backend-architect`, `frontend-developer`, `rapid-prototyper` | incluso | coding reale, no chatbot |
 | 5 | Distribuzione (il 70%) | canale proprio + outreach | n8n self-host (OSS); Apollo.io free tier [verifica quota] | €0 | il vero collo di bottiglia |
