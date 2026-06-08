@@ -12,5 +12,13 @@ Ricerca eseguita 2026-06-08. 3 nicchie candidate con segnali di spesa esistente 
 
 3. **Media monitoring SMB/freelancer PR post-Mention-exit**: Mention abbandonato piano $49 → solo piano $599/mese (luglio 2025). Brand24 $199-999/mese. Gap DOCUMENTATO per freelancer PR e micro-agenzie (<5 persone). F5Bot (gratuito) unica alternativa ma senza analytics.
 
+**Demand-side evidence update (2026-06-08 — ricerca primaria su nicchia 1):**
+- PriceMole Shopify App Store, "Scented Royalty" (1 star, 2023-10-09): verbatim "$99 limited to only 100 skus and $499/month for 5000 skus... isn't recommended for start-ups or beginners with no funding." URL: https://apps.shopify.com/pricemole/reviews?page=4
+- PriceMole Shopify App Store, "Matero" (review, 2022-04-05): verbatim "find the price a bit high for a small business." URL: https://apps.shopify.com/pricemole/reviews?page=4
+- PriceMole Shopify App Store, "The Craft Drinks Store" (4 star, 2023-07-03): verbatim "Pricing however could've been more generous, say up to 500 products at $99 would be more reasonable." URL: https://apps.shopify.com/pricemole/reviews?page=3
+- Capterra Prisync review, Jeffrey B. e Alessandro T. (2021-22): Prisync valorizzato come "affordabile" rispetto a competitor — segno indiretto che il prezzo è un asse decisivo, ma non lamentele dirette.
+- Gap CRITICO: Reddit (r/shopify, r/ecommerce, r/EtsySellers) non accessibile da WebFetch né indicizzato via search per query specifiche. 0 thread Reddit recuperati con evidenza diretta. Questa è una lacuna rilevante: la domanda latente potrebbe esistere ma è non verificabile con strumenti attuali.
+- Verdict domanda: MODERATE — 3 citazioni primarie verificabili su Shopify App Store, ma tutte su una singola app (PriceMole), nessuna da forum indipendenti o Reddit.
+
 **Why:** dati per decision support su quale nicchia avviare validazione 2 settimane.
-**How to apply:** usare come punto di partenza per stazione 2 (validazione) del VOS factory pipeline.
+**How to apply:** usare come punto di partenza per stazione 2 (validazione) del VOS factory pipeline. Per chiudere il demand-gate in modo più forte, serve accesso diretto a Reddit (sessione browser Luke) o un seed survey su Indie Hackers / Etsy forum.
