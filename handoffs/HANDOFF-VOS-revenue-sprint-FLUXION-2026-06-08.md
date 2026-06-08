@@ -4,10 +4,14 @@
 
 ---
 
-## Riframe load-bearing (correzione errore di sessione)
-La fabbrica VOS **non è un meta-asset da parcheggiare**: È il motore di revenue. Il suo lavoro = portare FLUXION/ARGOS e progetti futuri al primo euro. Questa sessione l'ha **ri-puntata su FLUXION**.
+## Riframe load-bearing (divisione del lavoro — correzione doppio errore di sessione)
+La fabbrica VOS **non è un meta-asset da parcheggiare** (errore 1) MA **VOS non fa neanche il lavoro di FLUXION** (errore 2). Confine corretto:
 
-- **Scocca prioritaria = FLUXION**, entra in linea **già a S4** (prodotto costruito, G2 di fatto passato). Lavoro residuo = **S5 distribuzione → S6 gate F (primo pagamento reale)**, deadline **20/6**.
+- **FLUXION = progetto**, lavora per conto suo nel **suo** terminale (`/Volumes/MontereyT7/FLUXION`): prodotto, fix P0, demo Sara, conversazioni coi saloni. È un **consumatore** della fabbrica.
+- **VOS = socio/imprenditore (io)**: costruisco **la fabbrica** = lo *strumento riusabile* che porta un progetto a revenue. Deliverable VOS = **Stazione-3 Distribution+Validation + Componente 0** (canale durevole + meccanismo presell/incasso), riusabile da FLUXION/ARGOS/futuri. NON vendo FLUXION; costruisco la macchina che FLUXION usa per vendere.
+- Il piano presell-saloni qui sotto = **sottoprodotto per il terminale FLUXION**, non deliverable VOS.
+
+- **FLUXION come scocca** entra in linea **già a S4** (prodotto costruito). Lavoro residuo verso S6 (primo euro entro **20/6**) = eseguito da FLUXION-terminale, **usando** lo strumento di distribuzione che VOS fornisce.
 - **ARGOS = scocca #2** in coda (WIP=1). Fallback se readiness FLUXION fallisce. Motivo FLUXION-first: ciclo-cassa più corto (€497 one-time, un "sì" = euro) vs ARGOS commission-on-delivery + blocker WA dup-sends.
 - **Corsa nicchia-nuova** `run_20260606_190002` (media-monitoring) = **G1-REWORK, deprioritizzata** dietro la revenue. NON morta. Premessa "sotto-servito" falsificata da audit Claude AI (competitor density non verificata: Mentionlytics/BrandMentions/SocialRails/Talkwalker-free esistono → non è un vuoto). Se si riprende: ri-scoring 3 nicchie con criteri competitor-density + build-feasibility-solo + distribution-fit, loggati. Fix strutturale Discovery station: aggiungere "dove-è-andata-la-domanda" come sub-check obbligatorio (discontinuità lato-offerta ≠ domanda sotto-servita).
 
