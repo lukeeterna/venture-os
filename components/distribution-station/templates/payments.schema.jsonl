@@ -1,0 +1,6 @@
+# payments.jsonl — PAGAMENTI REALI (S6, gate G3 terminale). Append-only, provider-agnostico.
+# CONTA SOLO se: kind in {stripe|lemon|card|bonifico|loi|preorder} E tx_ref non vuoto.
+# vincolo #6: waitlist/like/"interessato"/survey -> NON sono pagamenti, NON vanno qui (il tracker li scarta).
+# tx_ref = id transazione Stripe/Lemon, o CRO/causale bonifico, o id LOI firmata. Verificabile da Luke sulla dashboard/conto.
+# La riga sotto e' un ESEMPIO niche-free (placeholder) — il tracker la conta perche' ha kind+tx_ref.
+{"contact_id": "c0001", "kind": "stripe", "amount_eur": 197, "tx_ref": "<pi_xxx|cro|loi-id>", "paid_ts": "2026-06-09T12:00:00Z", "affiliated": false, "provenance": {"source": "<url-dashboard-stripe|estratto-conto>", "ts": "2026-06-09T12:01:00Z"}}

@@ -1,0 +1,5 @@
+# outreach_log.jsonl — log degli invii (S5). Append-only. Alimenta dossier S5 + tracker G3.
+# status in {queued|sent|delivered|opened|replied|bounced}. RAGGIUNTO = {sent,delivered,opened,replied} (non queued/bounced).
+# Dedup buyer su contact_id (un contatto contattato N volte = 1 raggiunto).
+# provenance OBBLIGATORIA. La riga sotto e' un ESEMPIO niche-free.
+{"contact_id": "c0001", "channel_form": "aggregator", "msg_variant": "v1", "status": "delivered", "sent_ts": "2026-06-08T10:00:00Z", "response": null, "provenance": {"source": "<url-thread|message-id|screenshot-path>", "ts": "2026-06-08T10:00:05Z"}}

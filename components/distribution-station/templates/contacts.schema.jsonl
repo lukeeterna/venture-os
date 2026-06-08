@@ -1,0 +1,6 @@
+# contacts.jsonl — POOL di buyer raggiungibili (cattura S5). NICHE-FREE: il pubblico lo specializza la venture.
+# 1 riga = 1 contatto. Append-only. provenance OBBLIGATORIA (firewall VOS_RUN_SPEC).
+# Campi: contact_id (univoco), handle (email/profilo/URL), channel_form (vedi channel-form-selector.md),
+#        reachable (bool: raggiungibile oggi senza paid ads), provenance{source,ts}.
+# La riga sotto e' un ESEMPIO niche-free (placeholder), non un dato reale.
+{"contact_id": "c0001", "handle": "<email|@profilo|url>", "channel_form": "aggregator", "reachable": true, "provenance": {"source": "<url-aggregatore-o-lista>", "ts": "2026-06-08T00:00:00Z"}}
