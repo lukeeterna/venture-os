@@ -7,10 +7,9 @@
 ```yaml
 run_id: run_20260606_190002
 created_ts: 2026-06-06T19:00:02Z
-state: CLOSED      # KILLED 2026-06-08; superseded da seed_20260608 (B-first)
-verdict: KILLED    # tesi-operativa "categoria matura fatta più economica" falsificata 3/3
+state: S2          # S0..S6 — re-scored 2026-06-08, selezione ribaltata #3→#1
+verdict: null      # null | SHIPPED | KILLED
 seed_envelope: seeds/seed_20260606.md
-superseded_by: seeds/seed_20260608.md
 ```
 
 ---
@@ -229,9 +228,3 @@ verdict: {{SHIPPED | KILLED}}
 - 2026-06-08 — G1 su #1 = **GO-CONDIZIONATO**. Distribution-fit PASS (Shopify App Store €0 + subreddit aperti). Demand MODERATE (3 citazioni primarie Shopify reviews, Reddit worker-blocked). NON advance --gate PASS (premessa thin, §5). BLOCKED-ON Luke = demand-STRONG (harvest Reddit/micro-survey ~2h) prima di S4-build.
 - G2 — non raggiunto (richiede S3 offerta + S4 build)
 - G3 — BLOCKED-ON pagamento reale (vincolo #1b), irraggiungibile in-sessione
-- 2026-06-08 — HARVEST AUTONOMO #1 (price-monitoring micro-seller, pullpush.io): demand STRONG ma premessa "fascia sub-$30 vuota" FALSIFICATA (Pricefy GRATIS fino a 50 SKU = default community). **G1 #1 = NO-GO tesi ampia.**
-- 2026-06-08 — SECOND-OPINION Claude AI (critico esterno): sub-wedge "variant-pricing penalty" = epiciclo (moat zero, WTP ancora più bassa, dolore già mitigato da Pricefy free). Conferma KILL #1.
-- 2026-06-08 — **verdict run_20260606 = KILLED** (tesi-operativa "categoria matura fatta più economica" falsificata 3/3). Root cause strutturale: competitor-scan contava solo i PAGANTI, ignorava i FREE TIER; "demand STRONG" = lamentela-prezzo (WTP bassa) scambiata per intento d'acquisto.
-- 2026-06-08 — **CAMBIO FIREWALL** (Luke, decisione consapevole): regola "niche-free" RIMOSSA (apparteneva alla tesi-blank falsificata). Firewall vero = G1 evidenza esterna primaria + provenienza. Re-scoring usò λ=0.5 (Si=μ−0.5σ), NON 0.25 di CoVe v4 — documentato.
-- 2026-06-08 — **PIVOT B-first** sotto nuovo `seeds/seed_20260608.md`. Correzione frame (Luke a/b/c): edge = stack riusabile fabbrica (NON skill-dev founder); nessun grafo caldo, distribuzione = AI sales agent cold (pattern ARGOS); VOS scopre la nicchia da solo. KILL-criteria nuovi: WTP-floor + anti-freemium (include free tier) + edge-fit (buildabile-solo ∧ raggiungibile-da-sales-agent).
-- 2026-06-08 — S1 Discovery B-first dispatchata: Task(trend-researcher) con 2 gate hard (anti-freemium, WTP-floor) in primo piano. Candidati → nuovo dossier run_20260608_* alla selezione S2.
