@@ -79,9 +79,14 @@ A = competitor-density al segmento *micro* esatto (alto = sotto-servito = buono)
 | Shopify App Store, PriceMole (Matero, 2022-04-05) | "find the price a bit high for a small business" | [pricemole/reviews?page=4](https://apps.shopify.com/pricemole/reviews?page=4) | (a) too expensive |
 | Shopify App Store, PriceMole (The Craft Drinks Store, 4★, 2023-07-03) | "Pricing... could've been more generous, say up to 500 products at $99 would be more reasonable" | [pricemole/reviews?page=3](https://apps.shopify.com/pricemole/reviews?page=3) | (c) troppo limitato |
 
-**Forza domanda = MODERATE**: 3 citazioni primarie reali, ma concentrate su un solo app e **Reddit inaccessibile al worker** (gap metodologico). NON STRONG.
+**Harvest Reddit AUTONOMO 2026-06-08** (pullpush.io, no-auth, read-only — risolto blocco WebFetch del worker):
+- **Domanda = STRONG** (non MODERATE): citazioni primarie ricorrenti 2019-2025, segmento micro esatto:
+  - "prisync was quite expensive, since we have **under 100 products**" [r/PersonalFinanceCanada](https://reddit.com/r/PersonalFinanceCanada/comments/l0dqri/_/mg48e29/)
+  - "pricing is set up based on # of SKUs... **many one-off items**... makes the pricing methods [bad]" [r/ecommerce](https://reddit.com/r/ecommerce/comments/1f83bob/_/lliuzrv/)
+  - "haven't subscribed because of the cost, my products have **a lot of variants (10-40)** that chew through the product counts" [r/ecommerce]
+- **MA premessa "fascia sub-$30 micro VUOTA" = FALSIFICATA**: **Pricefy gratis fino a 50 SKU**, default della community, raccomandato a ripetizione: "free up to 50 products and cheap in general, cheaper than making your own scraper" [r/aws](https://reddit.com/r/aws/comments/1dkqdml/_/l9paaa0/), "does everything automatically bypassing every antibot" [r/shopify]. Anche **sitetracked.com** usato da seller <100 prodotti come alt economica a Prisync.
 
-**G1 VERDICT**: **GO-CONDIZIONATO → S3**. Distribution-fit PASS (kill-criterion superato, a differenza di #3). Build-feasibility alta. Demand MODERATE (reale ma sottile). Premessa portante da chiudere a STRONG **prima del build S4** = harvest Reddit (r/shopify "cosa usate per tracciare prezzi competitor?") o micro-survey Tally/r/shopify ≥30 risposte. **NON eseguito `advance --gate PASS`**: firmerebbe una premessa thin (§5).
+**G1 VERDICT (revisionato post-harvest)**: la tesi ampia "micro-seller sub-$30 sotto-servito" è **NO-GO**: la domanda esiste (STRONG) ma è **già servita da Pricefy free-50**. Competitor-density al tier-economico FALSIFICA A=5. **NON `advance --gate PASS`** (premessa portante falsa, §5). Unico sub-wedge sopravvissuto = **per-SKU-pricing-penalty per seller high-variant / low-volume** (pain nominato, ~3 citazioni: i modelli a conteggio-SKU penalizzano chi ha 10-40 varianti per prodotto). Wedge stretto e incerto → **decisione di SCOPE per Luke** (non tecnica, vincolo #3): operare il sub-wedge variant-pricing, o KILL #1 e rigenerare dal seed.
 
 ```yaml
 provenance:
@@ -94,8 +99,8 @@ provenance:
   demand_urls: [https://apps.shopify.com/pricemole/reviews?page=4, https://apps.shopify.com/pricemole/reviews?page=3]
   ts: 2026-06-08
 gate: G1
-gate_status: GO-CONDIZIONATO  # NON advance --gate PASS: demand MODERATE, premessa portante thin
-demand_strength: MODERATE
+gate_status: NO-GO-tesi-ampia  # demand STRONG ma servita da Pricefy free-50; sub-wedge variant-pricing = scope-decision Luke
+demand_strength: STRONG  # ma premessa "sub-$30 vuoto" FALSIFICATA (Pricefy free-50)
 killed_niches:
   - "#2 prospect-research/SDR — KILL: saturo (A=2) + data-moat non costruibile solo (B=3)"
   - "#3 media-monitoring — demote: distribution-fit FAIL (canale PR gated, channel_reach=0) + Awario riempie gap"
