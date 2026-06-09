@@ -1,39 +1,36 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-06-08T16:26:20Z`
-**Sessione**: `c3f7d6ab-c373-418e-9596-355ed01f01f7`
+**Generato**: `2026-06-08T16:45:00Z`
+**Sessione**: `12ccffc0-0cd5-44d5-b7a2-27a894b2ca38`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
 **Commit auto**: cosmetic-skip (only NEXT_SESSION_PROMPT.md dirty, no plan/scope change)
-**Last commit**: `ab9fd3d auto-close session c3f7d6ab-c373-418e-9596-355ed01f01f7 @ 2026-06-08T16:20:51Z`
+**Last commit**: `8dc30bc auto-close session c3f7d6ab-c373-418e-9596-355ed01f01f7 @ 2026-06-08T16:38:56Z`
 
 ## Ultimi 5 commit
 ```
+8dc30bc auto-close session c3f7d6ab-c373-418e-9596-355ed01f01f7 @ 2026-06-08T16:38:56Z
+9cd4111 VOS B-first: pivot + seed_20260608 + discovery ciclo 1 (2 KILL, 1 WEAK PASS) — G1 pending collaudo Luke
 ab9fd3d auto-close session c3f7d6ab-c373-418e-9596-355ed01f01f7 @ 2026-06-08T16:20:51Z
 a76f949 auto-close session c3f7d6ab-c373-418e-9596-355ed01f01f7 @ 2026-06-08T10:02:23Z
 b260968 VOS run_20260606: resume BLOCKED-ON output second-opinion Claude AI (con path + prompt pronto)
-8a9f8c9 auto-close session c287ad3f-b15e-4fed-bfe3-9b72408a733b @ 2026-06-08T09:42:03Z
-f7a8034 VOS run_20260606: re-scoring 3 nicchie + G1 deciso su harvest Reddit autonomo
 ```
 
 ## File modificati nell'ultimo commit
 ```
-M	.claude/NEXT_SESSION_PROMPT.md
-A	seeds/seed_20260608.md
+A	.claude/NEXT_SESSION_PROMPT.manual.md.bak.20260608-183100
 M	state/cc-violations.jsonl
-M	ventures/run_20260606_190002/venture-dossier.md
-A	ventures/run_20260606_190002/venture-dossier.md.bak.b-first-pivot-20260608-182011
 ```
 
 ## Ultimo prompt utente (estratto)
 ```
-</task-notification>
+[{"tool_use_id":"toolu_01STanKoBe7UCNrUTN12W9nc","type":"tool_result","content":"1\t# SEED_ENVELOPE — input fabbrica VOS — B-first (NON più niche-free)\n2\t\n3\t> Continuazione di `seed_20260606.md` dopo G1 = NO-GO tesi ampia (run_20260606).\n4\t> Decisione B-first (Luke, 2026-06-08, post second-opinion Claude AI): la tesi-operativa\n5\t> \"categoria matura fatta più economica\" è falsificata 3/3. Si opera la fabbrica fino a\n6\t> una scocca a S4 verde o un KILL motivato. WIP=1.\n7\t>\n8\
 ```
 
 ## Ultimi turni assistant
 ```
-## Il tuo G1 (collaudo firewall)
-**GO-PROBE #2** (posti il probe, 48h, soglia ≥3) **/ KILL #2 + re-discovery** / tua call.
-Output di questo ciclo già a registro: **2 KILL motivati** (#1 legale, #3 freemium). Context ~55% → qualunque scelta, scrivo l'aggiornamento dossier + NEXT_SESSION_PROMPT come handoff di chiusura (vincolo #7, niente PARTIAL).
+---
+**Stato sessione**: VERDE-handoff. Decisione G1 è tua → appena posti, è presa. Terminal fact (≥3/48h) è **esterno + non raggiungibile in-sessione → BLOCKED-ON `risposte-probe-48h`** (legittimo per vincolo #1b/#6, non arancione).
+Resume tra 48h: incolla i 2 URL + io harvesto e chiudo G1 (→S3 o →KILL #2). Vuoi che logghi la decisione G1=GO-PROBE nel dossier `run_20260608` per provenienza, o aspettiamo l'esito?
 ```
 
 ## Come riprendere
