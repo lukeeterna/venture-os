@@ -1,36 +1,38 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-06-09T18:53:07Z`
-**Sessione**: `12ccffc0-0cd5-44d5-b7a2-27a894b2ca38`
+**Generato**: `2026-06-10T07:20:56Z`
+**Sessione**: `a41a7ff5-3abd-4f89-9019-613881f9407d`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: cosmetic-skip (only NEXT_SESSION_PROMPT.md dirty, no plan/scope change)
-**Last commit**: `0ca3ae8 auto-close session 12ccffc0-0cd5-44d5-b7a2-27a894b2ca38 @ 2026-06-09T15:30:08Z`
+**Commit auto**: committed: 8812877
+**Last commit**: `8812877 auto-close session a41a7ff5-3abd-4f89-9019-613881f9407d @ 2026-06-10T07:20:56Z`
 
 ## Ultimi 5 commit
 ```
+8812877 auto-close session a41a7ff5-3abd-4f89-9019-613881f9407d @ 2026-06-10T07:20:56Z
 0ca3ae8 auto-close session 12ccffc0-0cd5-44d5-b7a2-27a894b2ca38 @ 2026-06-09T15:30:08Z
 4f37f51 auto-close session 12ccffc0-0cd5-44d5-b7a2-27a894b2ca38 @ 2026-06-09T12:58:39Z
 8dc30bc auto-close session c3f7d6ab-c373-418e-9596-355ed01f01f7 @ 2026-06-08T16:38:56Z
 9cd4111 VOS B-first: pivot + seed_20260608 + discovery ciclo 1 (2 KILL, 1 WEAK PASS) — G1 pending collaudo Luke
-ab9fd3d auto-close session c3f7d6ab-c373-418e-9596-355ed01f01f7 @ 2026-06-08T16:20:51Z
 ```
 
 ## File modificati nell'ultimo commit
 ```
 M	.claude/NEXT_SESSION_PROMPT.md
+A	briefs/2026-06-10.md
 M	state/cc-violations.jsonl
+M	state/tool-scout-last-run.txt
 ```
 
 ## Ultimo prompt utente (estratto)
 ```
-nessun richio
+Vincolo #3 violato — pattern 'vincolo-3-lista-decisionale'. Riformula con raccomandazione singola motivata con dati, o disaccordo motivato con dati. Mai opener diplomatici, mai liste A/B/C/D su decisioni tecniche.
 ```
 
 ## Ultimi turni assistant
 ```
-- Pointer MEMORY.md: sbloccato dal tuo approve (zero-rischio confermato).
-Restano in coda dalla sessione, se vuoi riprenderli: il **G1 ARGOS-deprecation** (probe spesa-esistente da postare → BLOCKED-ON 48h) e la frizione Gate-E/MEMORY.md annotata (decisione a freddo, non urgente).
-Context ~52%. Chiudo qui pulito salvo tua indicazione.
+3. **Pattern d'errore noto**: calibrare una soglia di sicurezza su una stima auto-derivata può mascherare l'esaurimento reale vicino all'auto-compact CC (~92%). Tengo un floor assoluto su `used_percentage` grezzo (es. hard-stop a 88% raw) come rete indipendente dalla sottrazione.
+4. **Dove sovradimensiono**: la baseline per-sessione è più precisa del necessario. Una costante per-progetto misurata una volta basterebbe. Parto semplice (per-sessione, zero config) e non aggiungo storage finché i dati non lo chiedono.
+Tocca i gate di sicurezza di **3 progetti** (VOS globale + FLUXION + ARGOS via il global gate). Prima di mettere mano: **confermi l'approccio sottrazione-baseline e che procedo partendo da `statusline-command.sh` (sorgente unica), poi verifico la propagazione prima di toccare le soglie dei gate?** Oppure preferisci che parta da un dump del payload reale per confermare quali campi espone la tua 2.1.110 prima di scrivere il calcolo.
 ```
 
 ## Come riprendere

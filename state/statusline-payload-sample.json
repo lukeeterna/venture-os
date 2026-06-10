@@ -1,0 +1,39 @@
+{
+  "keys": [
+    "context_window",
+    "cost",
+    "cwd",
+    "exceeds_200k_tokens",
+    "model",
+    "output_style",
+    "rate_limits",
+    "session_id",
+    "transcript_path",
+    "version",
+    "workspace"
+  ],
+  "context_window": {
+    "total_input_tokens": 23425,
+    "total_output_tokens": 25256,
+    "context_window_size": 200000,
+    "current_usage": {
+      "input_tokens": 2,
+      "output_tokens": 40,
+      "cache_creation_input_tokens": 744,
+      "cache_read_input_tokens": 102829
+    },
+    "used_percentage": 52,
+    "remaining_percentage": 48
+  },
+  "cost": {
+    "total_cost_usd": 5.331946550000001,
+    "total_duration_ms": 1484426,
+    "total_api_duration_ms": 399902,
+    "total_lines_added": 6,
+    "total_lines_removed": 0
+  },
+  "model": {
+    "id": "claude-opus-4-8",
+    "display_name": "Opus 4"
+  }
+}
