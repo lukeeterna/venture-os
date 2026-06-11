@@ -1,38 +1,36 @@
 # Prompt ripartenza — generato automaticamente
 
-**Generato**: `2026-06-10T07:20:56Z`
+**Generato**: `2026-06-10T15:55:22Z`
 **Sessione**: `a41a7ff5-3abd-4f89-9019-613881f9407d`
 **Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
-**Commit auto**: committed: 8812877
-**Last commit**: `8812877 auto-close session a41a7ff5-3abd-4f89-9019-613881f9407d @ 2026-06-10T07:20:56Z`
+**Commit auto**: cosmetic-skip (only NEXT_SESSION_PROMPT.md dirty, no plan/scope change)
+**Last commit**: `db2c278 auto-close session a41a7ff5-3abd-4f89-9019-613881f9407d @ 2026-06-10T07:32:09Z`
 
 ## Ultimi 5 commit
 ```
+db2c278 auto-close session a41a7ff5-3abd-4f89-9019-613881f9407d @ 2026-06-10T07:32:09Z
 8812877 auto-close session a41a7ff5-3abd-4f89-9019-613881f9407d @ 2026-06-10T07:20:56Z
 0ca3ae8 auto-close session 12ccffc0-0cd5-44d5-b7a2-27a894b2ca38 @ 2026-06-09T15:30:08Z
 4f37f51 auto-close session 12ccffc0-0cd5-44d5-b7a2-27a894b2ca38 @ 2026-06-09T12:58:39Z
 8dc30bc auto-close session c3f7d6ab-c373-418e-9596-355ed01f01f7 @ 2026-06-08T16:38:56Z
-9cd4111 VOS B-first: pivot + seed_20260608 + discovery ciclo 1 (2 KILL, 1 WEAK PASS) — G1 pending collaudo Luke
 ```
 
 ## File modificati nell'ultimo commit
 ```
 M	.claude/NEXT_SESSION_PROMPT.md
-A	briefs/2026-06-10.md
-M	state/cc-violations.jsonl
-M	state/tool-scout-last-run.txt
+A	state/statusline-payload-sample.json
 ```
 
 ## Ultimo prompt utente (estratto)
 ```
-Vincolo #3 violato — pattern 'vincolo-3-lista-decisionale'. Riformula con raccomandazione singola motivata con dati, o disaccordo motivato con dati. Mai opener diplomatici, mai liste A/B/C/D su decisioni tecniche.
+devo dare prompt a fluxion? se si scrivilo idempotente.
 ```
 
 ## Ultimi turni assistant
 ```
-3. **Pattern d'errore noto**: calibrare una soglia di sicurezza su una stima auto-derivata può mascherare l'esaurimento reale vicino all'auto-compact CC (~92%). Tengo un floor assoluto su `used_percentage` grezzo (es. hard-stop a 88% raw) come rete indipendente dalla sottrazione.
-4. **Dove sovradimensiono**: la baseline per-sessione è più precisa del necessario. Una costante per-progetto misurata una volta basterebbe. Parto semplice (per-sessione, zero config) e non aggiungo storage finché i dati non lo chiedono.
-Tocca i gate di sicurezza di **3 progetti** (VOS globale + FLUXION + ARGOS via il global gate). Prima di mettere mano: **confermi l'approccio sottrazione-baseline e che procedo partendo da `statusline-command.sh` (sorgente unica), poi verifico la propagazione prima di toccare le soglie dei gate?** Oppure preferisci che parta da un dump del payload reale per confermare quali campi espone la tua 2.1.110 prima di scrivere il calcolo.
+```
+---
+Idempotente per costruzione: `cp -n` non sovrascrive un backup esistente, le sostituzioni scattano solo su match del pattern falso, e il punto 4 è il gate di verifica (zero = stato corretto raggiunto). Rieseguirlo su un file già pulito non fa nulla.
 ```
 
 ## Come riprendere
