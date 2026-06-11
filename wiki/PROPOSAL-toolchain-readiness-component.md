@@ -176,5 +176,8 @@ astrazione speculativa.
 1. MVP §6 ora **sì/no**?
 2. I 5 probe template li teniamo nel componente o restano solo nel workspace
    `mes-oleificio-readiness`?
-3. MES oleificio: resta esperimento isolato, oppure entra in pipeline come possibile
-   verticale (→ implica scelta su "mai 4 progetti")? — **questa la decidi tu.**
+3. ~~MES oleificio: verticale?~~ **DECISO da Luke 2026-06-11: MES oleificio resta
+   esperimento ISOLATO. NON diventa verticale FLUXION, NON apre un 4° progetto.**
+   Conseguenza per questa proposta: i probe Modbus/OPC-UA restano artefatti di
+   archivio/template generalista; il loro valore è il METODO readiness, non il
+   dominio oleificio. Da non riproporre come pipeline in sessioni future.
