@@ -1,0 +1,31 @@
+# HANDOFF [venture-os] — sessione `74c2f3b2-d6f6-44c7-b589-b28d4ab915e5`
+
+
+> Breadcrumb effimero generato a SessionEnd. NON è un mandato e NON è committato
+> (gitignorato). Lo stato REALE è `STATE.md`.
+> 2026-07-01T16:29:41Z
+
+## Stato git alla chiusura
+
+- **Branch**: `master`
+- **HEAD**: `ea42d9b auto-close session 74c2f3b2-d6f6-44c7-b589-b28d4ab915e5 @ 2026-07-01T16:27:08Z`
+
+### Working tree (`git status --porcelain`)
+```
+ M .claude/NEXT_SESSION_PROMPT.manual.md
+ M .claude/NEXT_SESSION_PROMPT.md
+?? .claude/HANDOFF_CURRENT.md
+```
+
+## Done-condition (orientamento prossima sessione)
+
+- HEAD sopra = ultimo commit reale; ripartire da lì.
+- File dirty sopra = WIP NON committato (verificare prima di nuovo lavoro).
+- Stato task/anelli: leggere `STATE.md` (source-of-truth generato), non questo file.
+
+<!-- HANDOFF-SEMANTIC: scritto a mano a fine sessione — hook NON sovrascrive sotto questa riga -->
+
+## 6. INCOLLA-AL-GIUDICE
+- Aperti / BLOCKED-ON (ognuno col fatto terminale che lo sblocca): EREDITA'-GATE UNVERIFIED (BLOCCANTE per spawn reale): non documentato se un worker/subagent spawnato erediti i PreToolUse del parent (vos_advance_gate, global_violation_gate). permissions.md dice 'independent permissions' (ambiguo). Se NON eredita -> worker = superficie fuori Cont.2, riapre a valle il gap chiuso a monte. Spawn reale VIETATO finche' non testato empiricamente. || Confine-autonomia: solo S1/S3/S4 spawnabili in autonomia (ricerca/build interno); S5=distributor=outreach ESTERNO (gated G-APPROVAL, >=10 CLOSED_WON); S2/S6=gate umani. || Nessun run attivo: unica venture CLOSED, E2E del dispatcher richiede init fresco + advance su linea S0..S6 viva.
+- DISCORDANZE giudice↔disco: STRUTTURALE (disco vince): 'dispatcher advance->Task(worker)' come auto-spawner puro-hook NON ESISTE. Task e' tool solo del modello CC in-context, non invocabile da processo shell. Un hook puo' solo DETECT+LOG+SEGNALE; lo spawn reale e' azione del SOLO main model. Ogni breadcrumb precedente che diceva 'auto-spawn' era errato sulla fisica della macchina. || Aggancio dispatcher = PostToolUse-Bash (esiste, espone exit_code); NON estendere vos-factory-run (auto-dichiarato thin, non-decide).
+- Prossima unità proposta (una, scoped): ORDINE (giudice ha invertito): (1) TEST EREDITA'-GATE, READ-ONLY isolato: spawna un worker minimo con un Bash, verifica se vos_advance_gate + global_violation_gate SCATTANO sulla sua tool-call. Fatto esterno = gate visto/non-visto. Decide la forma del passo reale. (2) POI F3b-BUILD dry-run: PostToolUse-Bash vos_dispatch_dryrun.py, su advance ok+gate PASS legge dossier, risolve worker dall'header, CLASSIFICA spawnabilita' per stadio (S1/S3/S4 would_spawn:true; S5 external-action:false; S2/S6 human-gate:false), appende a state/dispatch-dryrun.jsonl, spawned:false. NIENTE spawn. Design informato da (1). || Spawn reale = unita' DOPO, gated dietro (1).
