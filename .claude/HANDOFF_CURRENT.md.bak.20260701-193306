@@ -1,0 +1,31 @@
+# HANDOFF [venture-os] — sessione `74c2f3b2-d6f6-44c7-b589-b28d4ab915e5`
+
+
+> Breadcrumb effimero generato a SessionEnd. NON è un mandato e NON è committato
+> (gitignorato). Lo stato REALE è `STATE.md`.
+> 2026-07-01T16:29:41Z
+
+## Stato git alla chiusura
+
+- **Branch**: `master`
+- **HEAD**: `ea42d9b auto-close session 74c2f3b2-d6f6-44c7-b589-b28d4ab915e5 @ 2026-07-01T16:27:08Z`
+
+### Working tree (`git status --porcelain`)
+```
+ M .claude/NEXT_SESSION_PROMPT.manual.md
+ M .claude/NEXT_SESSION_PROMPT.md
+?? .claude/HANDOFF_CURRENT.md
+```
+
+## Done-condition (orientamento prossima sessione)
+
+- HEAD sopra = ultimo commit reale; ripartire da lì.
+- File dirty sopra = WIP NON committato (verificare prima di nuovo lavoro).
+- Stato task/anelli: leggere `STATE.md` (source-of-truth generato), non questo file.
+
+<!-- HANDOFF-SEMANTIC: scritto a mano a fine sessione — hook NON sovrascrive sotto questa riga -->
+
+## 6. INCOLLA-AL-GIUDICE
+- Aperti / BLOCKED-ON (ognuno col fatto terminale che lo sblocca): LIVE-FIRE vero di vos_advance_gate NON osservato: Claude Code snapshotta i hook all'avvio, l'edit mid-session non ri-arma. Provato solo che la stringa-comando cablata produce exit 2 su fixture; NON che CC la consuma come block in sessione viva. [residuo noto: bypass hand-edit dossier, coperto da firewall provenance interno]
+- DISCORDANZE giudice↔disco: #2 CRITICA risolta col disco: template blocca via stdout-JSON e si cabla con '|| true' (exit-code irrilevante); vos_advance_gate blocca via exit 2 -> '|| true' l'avrebbe inghiottito. Cablato con 'if test -f <abs>; then python3 <abs>; fi' (mount-safe T7 + propaga exit 2). || STATE.md puntatore morto: source-of-truth reale = breadcrumb + dossier.
+- Prossima unità proposta (una, scoped): 1o GESTO sessione fresca (NON il dispatcher): LIVE-FIRE OSSERVATO. In sessione nuova (lo snapshot ora include il hook) lancia 'vos-factory-run advance' su dossier a provenance incompleta e VERIFICA che CC blocchi davvero il tool (fatto esterno: negato dal runner-hook, non da chiamata manuale allo script). VERDE -> gate VIVO, Cont.2 coperto al layer harness. ROSSO -> fixa il wiring (formato matcher / contratto exit-2), NON costruire il dispatcher. || POI: F3b dispatcher advance->Task(worker).
