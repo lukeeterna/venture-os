@@ -1,22 +1,41 @@
-# Prompt ripartenza — F3a done, LIVE-FIRE da osservare
+# Prompt ripartenza — generato automaticamente
 
-**Chiusa**: 2026-07-01 (context 60%, chiusura ordinata vincolo #7)
+**Generato**: `2026-07-01T18:21:08Z`
+**Sessione**: `29e61d21-cf21-4259-87a6-5d90691395c0`
+**Repo**: `/Volumes/MontereyT7/venture-os` (branch `master`)
+**Commit auto**: committed: f1d2851
+**Last commit**: `f1d2851 auto-close session 29e61d21-cf21-4259-87a6-5d90691395c0 @ 2026-07-01T18:21:08Z`
 
-## Fatto questa sessione (verde)
-- **F3a**: `components/vos_advance_gate.py` — PreToolUse hook, lettura B stretta. Intercetta SOLO `vos-factory-run advance`; blocca (exit 2) se provenance della **stazione corrente** (`state:` del front-block del dossier) ha `{{`. Invariante DISTINTO dal runner (che controlla `--to` destinazione). Test `components/test_advance_gate.sh` verde (block/pass + regression-guard 3 varianti path + PY_SYNTAX_OK).
-- **Cablaggio**: aggiunto 1 blocco `hooks.PreToolUse` (matcher `Bash`) in `~/.claude/settings.json` → `if test -f <abs>; then python3 <abs>; fi` (mount-safe + propaga exit 2). PRE_COUNT 3→4, altri hook preservati, JSON valido. Backup Rule 1d: `~/.claude/settings.json.bak-1782922265`.
+## Ultimi 5 commit
+```
+f1d2851 auto-close session 29e61d21-cf21-4259-87a6-5d90691395c0 @ 2026-07-01T18:21:08Z
+fae274e auto-close session 29e61d21-cf21-4259-87a6-5d90691395c0 @ 2026-07-01T18:04:45Z
+4a542c2 auto-close session 29e61d21-cf21-4259-87a6-5d90691395c0 @ 2026-07-01T17:33:27Z
+d119fa6 auto-close session 29e61d21-cf21-4259-87a6-5d90691395c0 @ 2026-07-01T17:22:41Z
+ef383c7 auto-close session cf17dcaa-822e-45f6-be1f-4bde115426ab @ 2026-07-01T17:06:45Z
+```
 
-## PRIMO GESTO prossima sessione (NON il dispatcher)
-**LIVE-FIRE OSSERVATO**: lo snapshot hook della sessione fresca ORA include il gate. Da un dossier a provenance incompleta, lancia realmente `vos-factory-run advance ...` e **verifica che CC blocchi davvero il tool** (fatto esterno = negato dal runner-hook vivo, non da chiamata manuale allo script).
-- **VERDE** → gate VIVO, Cont.2 coperto al layer harness → poi **F3b** dispatcher `advance→Task(worker)`.
-- **ROSSO** → fixa il wiring (formato matcher / contratto exit-2), NON costruire il dispatcher.
+## File modificati nell'ultimo commit
+```
+A	components/vos_dispatch_dryrun.py
+```
 
-## Residui / discordanze
-- Bypass hand-edit del dossier: aperto, coperto solo dal firewall provenance interno al runner (scelta di scope).
-- `STATE.md` è puntatore MORTO (non esiste): source-of-truth reale = breadcrumb `HANDOFF_CURRENT.md` + dossier.
-- Rollback cablaggio: `cp ~/.claude/settings.json.bak-1782922265 ~/.claude/settings.json`.
+## Ultimo prompt utente (estratto)
+```
+[{"tool_use_id":"toolu_01Nke1Uh8Ej8YahWCVJbjnSV","type":"tool_result","content":"=== esiste + eseguibile ===\n-rwxr-xr-x  1 macbook  staff  4723  1 Lug 20:17 /Volumes/MontereyT7/venture-os/components/vos_dispatch_dryrun.py\n=== CLASS dict ===\n30:CLASS = {\n31:    \"S1\": (True,  \"autonomous-ricerca\"),\n32:    \"S3\": (True,  \"autonomous-build\"),\n33:    \"S4\": (True,  \"autonomous-build\"),\n34:    \"S5\": (False, \"external-action\"),\n35:    \"S2\": (False, \"human-gate\"),\n36:    \"S6\
+```
+
+## Ultimi turni assistant
+```
+**Stato:** STEP (2) del handoff chiuso verde. Il file esiste, è corretto, non spawna, non è cablato. Rollback = `rm -f /Volumes/MontereyT7/venture-os/components/vos_dispatch_dryrun.py`.
+**Cablatura (quando deciderai)**: aggiungere in `settings.json` `hooks.PostToolUse` un matcher `"Bash"` → `python3 .../vos_dispatch_dryrun.py`, `async:true`. Non l'ho fatto — il mandato lo vietava (isolato).
+Context al 51%. Pronto a ribaltare la sezione 6 del handoff (STEP 2 → DONE, prossima = cablatura o spawn reale gated) al tuo via, oppure a chiudere qui.
+```
 
 ## Come riprendere
-1. Apri Claude Code da `/Volumes/MontereyT7/venture-os`.
-2. Leggi `.claude/HANDOFF_CURRENT.md` (sezione INCOLLA-AL-GIUDICE) + questo file.
-3. Esegui il PRIMO GESTO (LIVE-FIRE osservato) prima di qualsiasi altra unità.
+
+1. Apri Claude Code da `/Volumes/MontereyT7/venture-os`
+2. Leggi questo file (auto-loaded? dipende da config progetto)
+3. Continua dal punto indicato negli ultimi turni assistant sopra
+
+Se `SESSION_DIRTY.md` esiste in questa stessa cartella, risolvi PRIMA i conflitti.
