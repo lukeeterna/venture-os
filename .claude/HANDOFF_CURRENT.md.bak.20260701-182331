@@ -1,0 +1,29 @@
+# HANDOFF [venture-os] — sessione `bec1debd-8fa5-4251-94a1-68c378ec8d2e`
+
+> Breadcrumb effimero generato a SessionEnd. NON è un mandato e NON è committato
+> (gitignorato). Lo stato REALE è `STATE.md`.
+> 2026-06-30T21:17:53Z
+
+## Stato git alla chiusura
+
+- **Branch**: `master`
+- **HEAD**: `7672f11 auto-close session bec1debd-8fa5-4251-94a1-68c378ec8d2e @ 2026-06-30T20:52:24Z`
+
+### Working tree (`git status --porcelain`)
+```
+ M .claude/NEXT_SESSION_PROMPT.md
+?? .claude/HANDOFF_CURRENT.md
+```
+
+## Done-condition (orientamento prossima sessione)
+
+- HEAD sopra = ultimo commit reale; ripartire da lì.
+- File dirty sopra = WIP NON committato (verificare prima di nuovo lavoro).
+- Stato task/anelli: leggere `STATE.md` (source-of-truth generato), non questo file.
+
+<!-- HANDOFF-SEMANTIC: scritto a mano a fine sessione — hook NON sovrascrive sotto questa riga -->
+
+## 6. INCOLLA-AL-GIUDICE
+- Aperti / BLOCKED-ON (ognuno col fatto terminale che lo sblocca): F3a pronto da costruire: PreToolUse stage-gate sul template production_claim_gate.py. Delta-minimo Cont.2 = 2 pezzi: (1) hook stage-gate che blocca azioni del main fuori-contratto leggendo state:S<n>+check_provenance_compiled dal dossier; (2) dispatcher advance->Task(worker). RIUSABILE gia sul disco: gate-pattern+anti-loop, dossier S0-S6+firewall provenance, factory-runs.jsonl, 3 hook PreToolUse cablati. CLI decisa (estendere bin/vos-factory-run, no web). Aperti minori: gitignore HANDOFF_*.md, cc-meta-monitor exit=2.
+- DISCORDANZE giudice↔disco: F2 verdetto: fabbrica e DA-CABLARE non da-costruire (70% esiste: 43 agent, 3 router, 4 gate deterministici, stato-file). Gap-radice = Contenimento 2 MAST (coordinamento/master 37%): delega oggi = discrezione del main, non meccanismo -> rende potenziali Cont.1 e Cont.3. Master/orchestratore ASSENTE come eseguibile (vos-factory-run e tracking-only). production_claim_gate e il pattern provato da replicare 1:1 (Stop->PreToolUse).
+- Prossima unità proposta (una, scoped): F3a (UNA unita): scrivere PreToolUse stage-gate modellato su production_claim_gate.py — legge state:S<n> dal dossier attivo + check_provenance_compiled, blocca azioni fuori-contratto. Fatto terminale = prova di blocco sul disco (exit-code reale: sequenza senza plan->block, con plan->pass). MANDATO VALUTA-POI-BUILD, backup Rule 1d, idempotente, df -h + disk-keeper in testa.
