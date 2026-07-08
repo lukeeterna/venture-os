@@ -1,0 +1,299 @@
+# config/routing.yaml — VOS routing config
+# Bootstrap S5 STEP 1 (2026-05-09). Update S5b → v2. S5c → v3. S5e → v4 (Cerebras verified).
+# S11c-prereq (2026-05-13) → v5: categoria `uncensored` (blueprint sez 15.11 heretic-handler).
+# S170 (2026-05-14) → v5.1: 3 field_change applied from routing-drift run 20260514T055152Z.
+#   1. gemini-2.5-flash context_window 1000000 → 1048576 (upstream accuracy)
+#   2. gemini-2.5-pro context_window 1000000 → 1048576 (upstream accuracy)
+#   3. meta-llama/llama-3.3-70b-instruct:free context_window 131072 → 65536 (REGRESSION -50%, see notes)
+# Aggiornamento runtime: routing-refresh notturno (CLAUDE.md "vincoli invarianti").
+# Vincolo #1: ogni entry ha last_verified + sources upstream verificati.
+# Vincolo #5: free-tier first, soglia hard €30/mese tracciata in state/costs.jsonl.
+# S175 (2026-05-15) POLICY demand-driven role addition:
+#   Nuovo `role:` aggiunto SOLO quando ≥1 componente VOS attivo dichiara dependency
+#   nel proprio source. NO ruoli speculativi (reasoning/coding/vision/cheap) senza
+#   consumer reale. Verifica consumer prima di aggiungere:
+#     grep -r "_resolve_chain(role='<NAME>')" components/
+#   Motivazione: audit S172 Gap #4 deload S175 dopo verifica 0/13 consumer per
+#   ruoli generic listati. Vedi wiki/notes/S175-gaps-3-4-deload.md.
+
+version: 5.1
+last_verified: 2026-05-14
+last_verified_method: real_http_call  # vincolo #11, no doc-only
+# S8 FASE 2.1 (2026-05-12) routing-http-verify.py: 5/5 verified post key setup
+#   google  gemini-2.5-flash               → verified (present in /v1beta/models)
+#   google  gemini-2.5-pro                 → verified catalog, paid quota Luke
+#   cerebras llama3.1-8b                   → verified (present in /v1/models)
+#   cerebras qwen-3-235b-a22b-instruct-2507 → verified catalog, quota too low free
+#   openrouter llama-3.3-70b:free          → verified post key setup S8 (scope: VOS only)
+# Drift count: 0 — nessuna deviation upstream-vs-locale. Log: state/routing-drift.jsonl
+# Fallback chain long_context aggiornata: gemini-flash → openrouter-70b → gemini-pro.
+
+# S5c reval esito: Gemini 2.5 Flash CONFERMATO long_context primario.
+# Alternative valutate (vincolo #2 ricerca attiva max 5min, deviation S5b "vendor-lock-in"):
+#  - Llama 3.3 70B self-hosted iMac → ESCLUSO: no AVX2 (machdep.cpu.features=AVX1.0),
+#    RAM 16GB < 40GB richiesti per 70B Q4. Capacity reale, non capex.
+#  - HF Colab T4 (skill free-gpu-api esistente) → ESCLUSO: 15GB VRAM = max 8B Q4,
+#    qualità degradata su 105K context consolidamento.
+#  - Cerebras Llama 3.3 70B → CANDIDATO PAID-BACKUP: 128K ctx (sufficiente per
+#    Guardian/FLUXION, marginale ARGOS 175K), 1M tok/day free, >2000 tok/s.
+#    HTTP test BLOCCATO da assenza CEREBRAS_API_KEY. Setup → S5d.
+#  - OpenRouter Llama 3.3 70B free → CANDIDATO PAID-BACKUP: 131K ctx, 20 req/min.
+#    HTTP test BLOCCATO da assenza OPENROUTER_API_KEY. Setup → S5d.
+# Decisione: Gemini flash resta vincente per 1M ctx unico + free tier 250 RPD vs
+# 1.2% quota usata (3 call/giorno). Backup chain configurata sotto, attivabile S5d.
+
+models:
+  # S175 demand-driven roles (added 2026-07-08, giudice+Luke) — consumer plan_execute.
+  # Primari IDENTICI a router.py ROLES[role][0] (verified 2026-05-16).
+  # PLACEMENT NOTE (DISCORDANZA 2026-07-08): _resolve_chain costruisce
+  #   models_by_id = {m['model_id']: m for m in models} (llm_router.py:119) → chiave
+  #   per model_id, l'ultima vince. La entry `cheap` ha model_id gemini-2.5-flash
+  #   (duplicato di long_context). Collocata PRIMA di long_context così che la entry
+  #   long_context (successiva) vinca la chiave e _resolve_chain('long_context') resti
+  #   invariato. deepseek/deepseek-chat non è referenziato da nessuna defaults chain →
+  #   sua duplicazione (code_review+reasoning) innocua. Solo aggiunte, zero modifiche.
+  - role: code_review
+    # consumer: plan_execute (S175) | tassonomia: verifier | added 2026-07-08 (giudice+Luke)
+    model_id: deepseek/deepseek-chat
+    provider: openrouter
+    api_endpoint: https://openrouter.ai/api/v1
+    context_window: 65536      # da verificare al prossimo routing-refresh
+    output_tokens_max: 8192    # da verificare al prossimo routing-refresh
+    cost_per_1m_in: 0.32       # da router.py ROLES (2026-05-16), verificare a routing-refresh
+    cost_per_1m_out: 0.89      # da router.py ROLES (2026-05-16), verificare a routing-refresh
+    free_tier: false
+    auth_env: OPENROUTER_API_KEY
+    last_verified: 2026-07-08
+    last_verified_method: config_only_no_http  # non http-verificato, da confermare routing-refresh
+    notes: |
+      Primario code_review = deepseek/deepseek-chat via openrouter (router.py ROLES).
+      Aggiunto demand-driven per consumer plan_execute (S175). Costi/limiti replicati
+      da router.py, da riverificare al prossimo routing-refresh notturno.
+
+  - role: cheap
+    # consumer: plan_execute (S175) | tassonomia: worker | added 2026-07-08 (giudice+Luke)
+    model_id: gemini-2.5-flash
+    provider: google
+    api_endpoint: https://generativelanguage.googleapis.com/v1beta
+    context_window: 1048576    # riusato da blocco long_context (stesso model_id)
+    output_tokens_max: 65536   # riusato da blocco long_context
+    cost_per_1m_in: 0.0
+    cost_per_1m_out: 0.0
+    free_tier: true
+    rate_limit_rpm: 10
+    rate_limit_rpd: 250
+    rate_limit_tpm: 250000
+    auth_env: GEMINI_API_KEY
+    last_verified: 2026-07-08
+    last_verified_method: config_only_no_http  # costi/limiti riusati da long_context (real_http_call 2026-05-14)
+    notes: |
+      Primario cheap = gemini-2.5-flash via google (router.py ROLES). Stesso model_id
+      del blocco long_context: costi/limiti riusati da quel blocco. Collocato PRIMA di
+      long_context per non alterare models_by_id (vedi PLACEMENT NOTE sopra).
+
+  - role: reasoning
+    # consumer: plan_execute (S175) | tassonomia: thinker | added 2026-07-08 (giudice+Luke)
+    model_id: deepseek/deepseek-chat
+    provider: openrouter
+    api_endpoint: https://openrouter.ai/api/v1
+    context_window: 65536      # da verificare al prossimo routing-refresh
+    output_tokens_max: 8192    # da verificare al prossimo routing-refresh
+    cost_per_1m_in: 0.32       # da router.py ROLES (2026-05-16), verificare a routing-refresh
+    cost_per_1m_out: 0.89      # da router.py ROLES (2026-05-16), verificare a routing-refresh
+    free_tier: false
+    auth_env: OPENROUTER_API_KEY
+    last_verified: 2026-07-08
+    last_verified_method: config_only_no_http  # non http-verificato, da confermare routing-refresh
+    notes: |
+      Primario reasoning = deepseek/deepseek-chat via openrouter (router.py ROLES).
+      Aggiunto demand-driven per consumer plan_execute (S175). Costi/limiti replicati
+      da router.py, da riverificare al prossimo routing-refresh notturno.
+
+  # Long-context model per pattern compilation Karpathy (handoff debt >2000 righe).
+  # Requisito: ≥500K context per leggere ~15K righe ARGOS senza chunking.
+  - role: long_context
+    model_id: gemini-2.5-flash
+    provider: google
+    api_endpoint: https://generativelanguage.googleapis.com/v1beta
+    context_window: 1048576  # S170 drift apply: was 1000000, upstream confirms 1048576
+    output_tokens_max: 65536
+    cost_per_1m_in: 0.0
+    cost_per_1m_out: 0.0
+    free_tier: true
+    rate_limit_rpm: 10
+    rate_limit_rpd: 250
+    rate_limit_tpm: 250000
+    auth_env: GEMINI_API_KEY
+    last_verified: 2026-05-14
+    last_verified_method: real_http_call  # S8 routing-http-verify: catalog match
+    sources:
+      - https://ai.google.dev/gemini-api/docs/rate-limits
+      - https://ai.google.dev/gemini-api/docs/models#gemini-2.5-flash
+    notes: |
+      VERIFICATO 2026-05-09 con HTTP call reale: gemini-2.5-flash → HTTP 200 (key Luke).
+      gemini-2.5-pro NON disponibile su free tier del progetto Google di Luke
+      (HTTP 429, "limit: 0" sul free_tier_input_token_count). Switch a flash.
+      Stesso 1M context window di pro, qualità reasoning marginalmente inferiore
+      ma sufficiente per Karpathy compilation (consolidare handoff già scritti,
+      non generation creativa). Spot-check manuale del primo COMPILED-STATE.md
+      è obbligatorio per validare output.
+      Free tier: 10 RPM, 250 RPD, 250K TPM (verified docs ufficiali).
+      Karpathy use case: ~3 chiamate/settimana max → 250 RPD copre largamente.
+
+  # Fallback paid se Luke attiva billing futuro
+  - role: long_context_paid_fallback
+    model_id: gemini-2.5-pro
+    provider: google
+    api_endpoint: https://generativelanguage.googleapis.com/v1beta
+    context_window: 1048576  # S170 drift apply: was 1000000, upstream confirms 1048576
+    output_tokens_max: 65536
+    cost_per_1m_in: 1.25  # tier ≤200K input
+    cost_per_1m_out: 10.0
+    free_tier: false
+    auth_env: GEMINI_API_KEY
+    last_verified: 2026-05-14
+    last_verified_method: real_http_call  # S8: presente in /v1beta/models, paid quota
+    sources:
+      - https://ai.google.dev/gemini-api/docs/pricing
+    notes: |
+      Solo se Luke attiva billing Google Cloud. NON usare di default.
+      Soglia hard €30/mese: ~24 chiamate/mese da 200K input + 50K output.
+
+  # S5e Cerebras setup HTTP-verified (deviation "cerebras-model-names-doc-vs-real"):
+  # - Doc S5c citava llama-3.3-70b → /v1/models REALE non lo lista.
+  # - Modelli reali tier free Luke: zai-glm-4.7, gpt-oss-120b (404 access),
+  #   llama3.1-8b (OK 2401 tok/s), qwen-3-235b-a22b-instruct-2507 (RPM quota troppo bassa).
+  # - Llama 3.1 8B inadatto a long_context (consolidamento 100K+ input richiede 70B+).
+  # - Conclusione: Cerebras NON sostituisce Gemini flash come long_context primary.
+  #   Si riposiziona come fast_short_context per task brevi a bassa latenza.
+
+  - role: fast_short_context
+    model_id: llama3.1-8b
+    provider: cerebras
+    api_endpoint: https://api.cerebras.ai/v1
+    context_window: 128000  # context architetturale; use case ≤8K input per latenza
+    output_tokens_max: 8192
+    cost_per_1m_in: 0.0
+    cost_per_1m_out: 0.0
+    free_tier: true
+    auth_env: CEREBRAS_API_KEY
+    required_headers:
+      User-Agent: venture-os/1.0  # Cloudflare 1010 senza UA custom
+    last_verified: 2026-05-12
+    last_verified_method: real_http_call  # S8 routing-http-verify: catalog match
+    sources:
+      - https://api.cerebras.ai/v1/models  # /v1/models live (vincolo #1)
+      - https://inference-docs.cerebras.ai/introduction
+    notes: |
+      Use case: brief/routing/classification con input ≤8K, latenza <300ms.
+      Speed verificato 2401 tok/s su prompt 41 tok / output 3 tok (2026-05-11).
+      NON usare per consolidamento handoff: 8B reasoning su 50K+ è inadeguato.
+      Cloudflare blocca User-Agent default Python — header UA obbligatorio.
+
+  - role: long_context_backup_unavailable_cerebras
+    model_id: qwen-3-235b-a22b-instruct-2507
+    provider: cerebras
+    api_endpoint: https://api.cerebras.ai/v1
+    context_window: 131072
+    free_tier: true
+    free_tier_quota_too_low: true  # 3 retry consecutivi 429 request_quota_exceeded
+    auth_env: CEREBRAS_API_KEY
+    last_verified: 2026-05-12
+    last_verified_method: real_http_call  # S8: catalog match, quota free insuff.
+    notes: |
+      Modello esiste in /v1/models ma free-tier RPM quota insufficiente per produzione.
+      Auth OK, errore 429 request_quota_exceeded persistente. Non in fallback chain.
+      Riconsiderare se Luke passa a paid tier Cerebras.
+
+  - role: long_context_backup_openrouter
+    model_id: meta-llama/llama-3.3-70b-instruct:free
+    provider: openrouter
+    api_endpoint: https://openrouter.ai/api/v1
+    context_window: 65536  # S170 drift: REGRESSION upstream da 131072 → 65536 (-50%)
+    output_tokens_max: 4096
+    cost_per_1m_in: 0.0
+    cost_per_1m_out: 0.0
+    free_tier: true
+    rate_limit_rpm: 20
+    auth_env: OPENROUTER_API_KEY
+    last_verified: 2026-05-14
+    last_verified_method: real_http_call  # S8: catalog match, key setupata
+    sources:
+      - https://openrouter.ai/models?q=llama-3.3
+    notes: |
+      VERIFICATO 2026-05-12 S8 routing-http-verify: presente in /v1/models OpenRouter.
+      ⚠️ S170 DRIFT REGRESSION 2026-05-14: upstream ha dimezzato context_window
+      da 131072 a 65536. Impatto Karpathy compilation: input max ridotto a ~50K righe
+      (era ~100K). Per ARGOS handoff >50K righe servono chunking 2-pass o fallback
+      a gemini-flash 1M ctx. NON cambia priority chain (gemini-flash primary 1M
+      basta solo da solo). Backup secondario ora ancora più marginale.
+      Scope chiave: VOS only (preferenza Luke, non enforced server-side).
+      Caveat persistente: output_tokens_max=4096 inferiore a Gemini (65536).
+      Trigger riconsiderare chain: se OpenRouter introduce variante :free con
+      ctx ≥131K e RPM ≥20 (es. qwen3-next-80b candidate S170 model_added).
+
+  # S11c-prereq (2026-05-13) — heretic-handler uncensored chain.
+  # Blueprint sez 15.11 + sez 232-235. Use case: brainstorming strategico ARGOS
+  # (persona fittizia, content trojan-horse, pricing aggressivo, sales psychology)
+  # senza filtri commerciali Anthropic. Gate hardcoded ALLOWED_CATEGORIES nel
+  # componente, audit hash-only in state/heretic-log.jsonl (no raw content).
+  # _resolve_chain(role='uncensored') ritorna TUTTE le entry con role match,
+  # in ordine YAML → dolphin primary, hermes fallback.
+  # Pre-flight S11c-prereq 2026-05-13: entrambi /v1/models OpenRouter OK.
+  - role: uncensored
+    provider: openrouter
+    model_id: cognitivecomputations/dolphin-mistral-24b-venice-edition:free
+    api_endpoint: https://openrouter.ai/api/v1
+    auth_env: OPENROUTER_API_KEY
+    context_window: 32768
+    input_tokens_max: 32768
+    output_tokens_max: 4096
+    cost_per_1m_in: 0.0
+    cost_per_1m_out: 0.0
+    free_tier: true
+    last_verified: 2026-05-13
+    last_verified_method: real_http_call
+    sources:
+      - https://openrouter.ai/api/v1/models
+      - https://openrouter.ai/cognitivecomputations/dolphin-mistral-24b-venice-edition:free
+    notes: |
+      Venice-edition uncensored fine-tune di Mistral 24B by cognitivecomputations.
+      Free tier OpenRouter, 32K context. Primary heretic-handler.
+      Scope etico: NON è bypass per content illegale. ALLOWED_CATEGORIES
+      hardcoded nel handler limita a brainstorming commerciale borderline
+      (persona-fittizia, content-strategy, pricing-aggressivo,
+      scope-borderline-legal, sales-psychology, competitor-positioning,
+      brainstorm-generale). Audit append-only hash-only.
+
+  - role: uncensored
+    provider: openrouter
+    model_id: nousresearch/hermes-3-llama-3.1-405b:free
+    api_endpoint: https://openrouter.ai/api/v1
+    auth_env: OPENROUTER_API_KEY
+    context_window: 131072
+    input_tokens_max: 131072
+    output_tokens_max: 4096
+    cost_per_1m_in: 0.0
+    cost_per_1m_out: 0.0
+    free_tier: true
+    last_verified: 2026-05-13
+    last_verified_method: real_http_call
+    sources:
+      - https://openrouter.ai/api/v1/models
+      - https://openrouter.ai/nousresearch/hermes-3-llama-3.1-405b:free
+    notes: |
+      Fallback. Hermes 3 405B by NousResearch — neutrally-aligned, low-refusal,
+      131K context (utile per brainstorming con context lungo da wiki ARGOS).
+      Scatta su rate_limit/error del dolphin primary via _resolve_chain
+      (entrambe entry hanno role='uncensored', ordine YAML = ordine chain).
+
+defaults:
+  long_context: gemini-2.5-flash
+  long_context_fallback_chain:  # ordine di attivazione su rate limit/errore
+    - gemini-2.5-flash                          # primario, free 250 RPD verified
+    - meta-llama/llama-3.3-70b-instruct:free    # S8 verified, openrouter 131K ctx, 20 RPM
+    - gemini-2.5-pro                            # paid fallback, solo se Luke attiva billing
+    # NB S5e: Cerebras rimosso da chain long_context (modelli ≤8B free tier inadeguati).
+    # NB S8 2026-05-12: openrouter llama-3.3-70b:free aggiunto come backup #2 free
+    # (output max 4096 — adapter VOS deve gestire chunking output se >4K tokens).
+  fast_short_context: llama3.1-8b  # cerebras, latenza ottimale per task brevi
