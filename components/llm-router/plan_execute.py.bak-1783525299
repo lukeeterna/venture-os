@@ -52,7 +52,6 @@ COSTS_LOG = STATE_DIR / "costs.jsonl"
 EVAL_PY = VOS_ROOT / "components" / "eval-tracker" / "eval.py"
 ROUTER_PY = VOS_ROOT / "components" / "llm-router" / "router.py"
 ROUTING_YAML = VOS_ROOT / "config" / "routing.yaml"
-SHARED_DIR = VOS_ROOT / "components" / "_shared"
 
 # Mappa model_target → router role
 MODEL_TARGET_TO_ROLE = {
@@ -63,16 +62,6 @@ MODEL_TARGET_TO_ROLE = {
     "code_review": "code_review",
     "long_context": "long_context",
     "reasoning": "reasoning",
-}
-
-# Tassonomia TRINITY (arXiv 2512.04695) — SOLO etichetta documentale, NON altera
-# quale modello viene risolto. thinker=reasoning, worker=cheap, verifier=code_review;
-# long_context resta long_context (fuori dalla tripletta Thinker/Worker/Verifier).
-ROLE_TAXONOMY = {
-    "reasoning": "thinker",
-    "cheap": "worker",
-    "code_review": "verifier",
-    "long_context": "long_context",
 }
 
 # Costo stimato per role (USD/1k token, approssimativo per pre-flight check)
@@ -230,46 +219,6 @@ def _log_eval_delegation(
 
 
 # ---------------------------------------------------------------------------
-# Role → model resolution shim (S181 unità B)
-# Fonte UNICA di risoluzione = config/routing.yaml via _shared/llm_router.
-# Sostituisce la ROLES hardcoded di router.py come sorgente di verità del modello.
-# Equivalenza primario provata vs router.py ROLES: 4/4 MATCH (2026-07-08).
-# ---------------------------------------------------------------------------
-
-def _resolve_model_for_role(role: str) -> Optional[str]:
-    """Risolve role → model_id concreto via routing.yaml (fonte unica).
-
-    Ritorna il model_id primario (chain[0]) da _shared/llm_router._resolve_chain,
-    oppure None se la risoluzione fallisce (deps mancanti, routing.yaml assente,
-    role non presente). Su None il chiamante ricade sul path --role di router.py;
-    l'equivalenza è garantita dai primari coincidenti (4/4 MATCH 2026-07-08).
-    Import lazy: plan_execute resta importabile/py_compile-abile anche senza
-    requests/yaml (Big Sur safety) — in tal caso ritorna None → path --role.
-    """
-    try:
-        import importlib.util
-        shared_router = SHARED_DIR / "llm_router.py"
-        if not shared_router.exists():
-            return None
-        spec = importlib.util.spec_from_file_location(
-            "_vos_shared_llm_router", shared_router
-        )
-        mod = importlib.util.module_from_spec(spec)
-        # Registra in sys.modules PRIMA di exec: il @dataclass in llm_router.py
-        # risolve cls.__module__ via sys.modules (fallisce con None altrimenti).
-        sys.modules[spec.name] = mod
-        spec.loader.exec_module(mod)
-        routing = mod._load_routing()
-        chain = mod._resolve_chain(routing, role)
-        return chain[0].get("model_id") if chain else None
-    except Exception as exc:
-        sys.stderr.write(
-            f"[plan-execute] WARN role->model resolve fallback (role={role}): {exc}\n"
-        )
-        return None
-
-
-# ---------------------------------------------------------------------------
 # Mock router (per test senza API calls)
 # ---------------------------------------------------------------------------
 
@@ -332,26 +281,8 @@ def _execute_subtask(
             if not ROUTER_PY.exists():
                 raise FileNotFoundError(f"router.py non trovato: {ROUTER_PY}")
 
-            # SHIM S181 unità B: la fonte di risoluzione role→model è routing.yaml
-            # (via _shared/llm_router._resolve_chain), NON la ROLES hardcoded di
-            # router.py. Se la risoluzione riesce passiamo --model esplicito; --role
-            # resta per l'attribuzione del label nei cost log. Su None (deps/config
-            # mancante) ricadiamo sul path --role: equivalenza primario 4/4 MATCH.
-            resolved_model = _resolve_model_for_role(role)
-            if resolved_model:
-                router_argv = [
-                    sys.executable, str(ROUTER_PY),
-                    "--model", resolved_model, "--role", role,
-                    "--prompt", description,
-                ]
-            else:
-                router_argv = [
-                    sys.executable, str(ROUTER_PY),
-                    "--role", role, "--prompt", description,
-                ]
-
             proc = subprocess.run(
-                router_argv,
+                [sys.executable, str(ROUTER_PY), "--role", role, "--prompt", description],
                 capture_output=True,
                 text=True,
                 timeout=120,
@@ -438,24 +369,13 @@ def _run_aggregator(
             if not ROUTER_PY.exists():
                 raise FileNotFoundError(f"router.py non trovato: {ROUTER_PY}")
 
-            # SHIM S181 unità B: risoluzione agg_role→model via routing.yaml.
-            resolved_agg_model = _resolve_model_for_role(agg_role)
-            if resolved_agg_model:
-                agg_argv = [
-                    sys.executable, str(ROUTER_PY),
-                    "--model", resolved_agg_model, "--role", agg_role,
-                    "--prompt", aggregator_prompt,
-                    "--max-tokens", "2000",
-                ]
-            else:
-                agg_argv = [
+            proc = subprocess.run(
+                [
                     sys.executable, str(ROUTER_PY),
                     "--role", agg_role,
                     "--prompt", aggregator_prompt,
                     "--max-tokens", "2000",
-                ]
-            proc = subprocess.run(
-                agg_argv,
+                ],
                 capture_output=True,
                 text=True,
                 timeout=120,
