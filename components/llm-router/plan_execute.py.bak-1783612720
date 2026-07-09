@@ -75,16 +75,13 @@ ROLE_TAXONOMY = {
     "long_context": "long_context",
 }
 
-# Costo stimato per role (USD/1k token, blended, per pre-flight check).
-# fallback-only, fonte primaria routing.yaml, valori congelati 2026-07-09
-# (decisione giudice+Luke). Usata SOLO se la risoluzione via routing.yaml fallisce.
-# Convenzione BLENDED per-1K = (cost_per_1m_in + cost_per_1m_out) / 1000.
-_FALLBACK_ROLE_COST = {
-    "long_context": 0.0,      # gemini-2.5-flash free (0.0+0.0)/1000
-    "cheap": 0.0,             # gemini-2.5-flash free (0.0+0.0)/1000
-    "code_review": 0.00121,   # deepseek/deepseek-chat blended (0.32+0.89)/1000
-    "reasoning": 0.00121,     # deepseek/deepseek-chat blended (0.32+0.89)/1000
-    "code_gen": 0.00040,      # mock-only (nessuna entry routing.yaml)
+# Costo stimato per role (USD/1k token, approssimativo per pre-flight check)
+ROLE_COST_PER_1K_TOKEN = {
+    "long_context": 0.0,      # Gemini Flash free
+    "cheap": 0.0,             # Gemini Flash free
+    "code_review": 0.00032,   # DeepSeek $0.32/M
+    "code_gen": 0.00040,      # Kimi K2.5
+    "reasoning": 0.00125,     # Gemini 2.5 Pro
 }
 
 MAX_CONCURRENT = 3  # Rate limit safety
@@ -124,59 +121,15 @@ def _plan_id_from_dict(plan: dict) -> str:
     return f"plan_{ts}_{h}"
 
 
-def _resolve_blended_cost_per_1k(role: str) -> Optional[float]:
-    """Risolve il costo blended per-1K token del role via routing.yaml (fonte primaria).
-
-    Convenzione BLENDED (decisione giudice+Luke 2026-07-09): data l'entry primaria
-    chain[0] risolta da _shared/llm_router._resolve_chain (STESSA fonte dello shim
-    S181 _resolve_model_for_role), blended per-1K =
-    (cost_per_1m_in + cost_per_1m_out) / 1000. Il vecchio hardcoded di reasoning
-    (0.00125, fossile di gemini-2.5-pro) è deliberatamente sostituito dal costo del
-    modello realmente risolto (deepseek). Ritorna None se la risoluzione fallisce
-    (deps mancanti, routing.yaml assente, role non presente) → il chiamante ricade
-    su _FALLBACK_ROLE_COST. Import lazy: Big Sur safety (no requests/yaml → None).
-    """
-    try:
-        import importlib.util
-        shared_router = SHARED_DIR / "llm_router.py"
-        if not shared_router.exists():
-            return None
-        spec = importlib.util.spec_from_file_location(
-            "_vos_shared_llm_router", shared_router
-        )
-        mod = importlib.util.module_from_spec(spec)
-        # Registra in sys.modules PRIMA di exec (@dataclass risolve cls.__module__).
-        sys.modules[spec.name] = mod
-        spec.loader.exec_module(mod)
-        routing = mod._load_routing()
-        chain = mod._resolve_chain(routing, role)
-        if not chain:
-            return None
-        entry = chain[0]
-        cin = float(entry.get("cost_per_1m_in", 0.0))
-        cout = float(entry.get("cost_per_1m_out", 0.0))
-        return (cin + cout) / 1000.0
-    except Exception as exc:
-        sys.stderr.write(
-            f"[plan-execute] WARN blended cost resolve fallback (role={role}): {exc}\n"
-        )
-        return None
-
-
 def _estimate_cost_usd(subtasks: list[dict]) -> float:
     """
     Stima costo totale piano in USD.
     Assume ~2000 token per subtask (input+output).
-    Fonte primaria del costo per-role = routing.yaml (decisione giudice+Luke
-    2026-07-09), convenzione BLENDED per-1K = (cost_per_1m_in + cost_per_1m_out)/1000.
-    Su risoluzione fallita ricade su _FALLBACK_ROLE_COST (valori congelati oggi).
     """
     total = 0.0
     for st in subtasks:
         role = MODEL_TARGET_TO_ROLE.get(st.get("model_target", "cheap"), "cheap")
-        cost_per_1k = _resolve_blended_cost_per_1k(role)
-        if cost_per_1k is None:
-            cost_per_1k = _FALLBACK_ROLE_COST.get(role, 0.0)
+        cost_per_1k = ROLE_COST_PER_1K_TOKEN.get(role, 0.0)
         total += cost_per_1k * 2  # 2k token stimato
     return total
 
