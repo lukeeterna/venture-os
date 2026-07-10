@@ -1,0 +1,63 @@
+{
+  "schema_version": "1",
+  "plan_id": "plan_brainstorm_20260710_v2",
+  "ts_start": "20260710T204926Z",
+  "plan": {
+    "plan_id": "plan_brainstorm_20260710_v2",
+    "task_description": "Brainstorming venture: 10 candidati micro-venture per founder non-sviluppatore Italia budget ~0, poi kill-test, poi schede top-5.",
+    "subtasks": [
+      {
+        "id": "A",
+        "description": "Genera 10 candidati di micro-venture B2B/B2C avviabili da un solo founder NON-sviluppatore in Italia, budget ~0, che sfruttino questi asset esistenti: [rete dealer auto indipendenti; relazioni con PMI locali e societa' sportive dilettantistiche Basilicata/Puglia; KB n8n 1.233 doc; app gestionale per 9 verticali PMI gia' costruita; motore scouting veicoli premium EU gia' in produzione]. Vincoli hard: niente magazzino, niente sviluppo software pesante nuovo, vendibile entro 60 giorni, prezzo incassabile via Stripe o bonifico. Per ciascuno: tesi in 2 frasi, cliente pagante, primo prezzo, perche' 60 giorni bastano. Output: elenco numerato. NON dichiarare fatti di mercato come certi: marca ogni assunzione con [DA-VERIFICARE].",
+        "model_target": "reasoning",
+        "expected_output_format": "markdown",
+        "dependencies": []
+      },
+      {
+        "id": "B",
+        "description": "Assumi la lista di 10 candidati di micro-venture per un founder non-sviluppatore in Italia (asset: rete dealer auto, relazioni PMI e societa' sportive dilettantistiche Basilicata/Puglia, KB n8n, app gestionale 9 verticali, motore scouting veicoli premium EU). Kill-testa ognuno dei 10 tipici candidati di questa classe: per ciascuno indica il singolo motivo di morte piu' probabile e il dato osservabile che lo falsificherebbe/confermerebbe in una settimana. Ordina i 10 dal piu' robusto al piu' fragile. Niente cortesia: se un candidato e' debole, dillo.",
+        "model_target": "code_review",
+        "expected_output_format": "markdown",
+        "dependencies": [
+          "A"
+        ]
+      },
+      {
+        "id": "C",
+        "description": "Formatta i top-5 per robustezza di una lista di micro-venture per founder non-sviluppatore Italia (asset: rete dealer auto, PMI e societa' sportive dilettantistiche Basilicata/Puglia, KB n8n, app gestionale 9 verticali, scouting veicoli premium EU) in schede: tesi | cliente | prezzo | segnali S1 da raccogliere | kill-criteria proposti. Markdown pulito.",
+        "model_target": "cheap",
+        "expected_output_format": "markdown",
+        "dependencies": [
+          "A",
+          "B"
+        ]
+      }
+    ],
+    "aggregator_model": "gemini-flash"
+  },
+  "env_meta": {
+    "python_version": "3.13.2 (main, Mar 18 2025, 16:42:12) [Clang 13.0.0 (clang-1300.0.29.30)]",
+    "working_dir": "/Volumes/MontereyT7/venture-os",
+    "routing_yaml_hash": "e23269a5c8a7a770",
+    "api_key_env_names": [
+      "CF_API_TOKEN",
+      "CF_API_TOKEN_READ",
+      "CLOUDFLARE_API_TOKEN",
+      "STRIPE_API_KEY",
+      "STRIPE_TEST_SECRET_KEY",
+      "STRIPE_WEBHOOK_SECRET_TEST"
+    ]
+  },
+  "execution_result": {
+    "ts_end": "2026-07-10T20:50:57Z",
+    "status": "success",
+    "total_cost_usd": 0.0,
+    "total_latency_ms": 90940,
+    "subtask_statuses": {
+      "A": "success",
+      "B": "success",
+      "C": "success"
+    },
+    "error": null
+  }
+}
