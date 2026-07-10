@@ -1,0 +1,52 @@
+{
+  "schema_version": "1",
+  "plan_id": "verify_dep",
+  "ts_start": "20260710T204137Z",
+  "plan": {
+    "plan_id": "verify_dep",
+    "task_description": "A -> B",
+    "subtasks": [
+      {
+        "id": "A",
+        "description": "Genera dati grezzi",
+        "model_target": "cheap",
+        "expected_output_format": "plain",
+        "dependencies": []
+      },
+      {
+        "id": "B",
+        "description": "Verifica i dati a monte",
+        "model_target": "deepseek",
+        "expected_output_format": "plain",
+        "dependencies": [
+          "A"
+        ]
+      }
+    ],
+    "aggregator_model": "gemini-flash"
+  },
+  "env_meta": {
+    "python_version": "3.13.2 (main, Mar 18 2025, 16:42:12) [Clang 13.0.0 (clang-1300.0.29.30)]",
+    "working_dir": "/Volumes/MontereyT7/venture-os/components/llm-router",
+    "routing_yaml_hash": "e23269a5c8a7a770",
+    "api_key_env_names": [
+      "CF_API_TOKEN",
+      "CF_API_TOKEN_READ",
+      "CLOUDFLARE_API_TOKEN",
+      "STRIPE_API_KEY",
+      "STRIPE_TEST_SECRET_KEY",
+      "STRIPE_WEBHOOK_SECRET_TEST"
+    ]
+  },
+  "execution_result": {
+    "ts_end": "2026-07-10T20:41:37Z",
+    "status": "success",
+    "total_cost_usd": 0.0,
+    "total_latency_ms": 7,
+    "subtask_statuses": {
+      "A": "success",
+      "B": "success"
+    },
+    "error": null
+  }
+}

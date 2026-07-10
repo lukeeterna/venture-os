@@ -91,6 +91,15 @@ MAX_CONCURRENT = 3  # Rate limit safety
 COST_WARN_THRESHOLD = 0.10  # USD
 COST_BLOCK_THRESHOLD = 1.00  # USD
 
+# Cap per-dipendenza dell'output iniettato nel prompt a valle (in caratteri).
+# Razionale (FASE 1): il consumer a valle più stretto in routing.yaml è
+# deepseek/deepseek-chat (role code_review/reasoning, context_window 65536 tok
+# ≈ 262k char). 8000 char ≈ 2000 tok per dep; anche con fan-in elevato (es. 10
+# dep) l'iniezione resta ~30% della finestra più piccola, lasciando spazio a
+# description + generazione. gemini-flash (1M) non è mai il vincolo. Il
+# troncamento, se scatta, è SEMPRE dichiarato inline nel prompt.
+DEP_OUTPUT_CAP_CHARS = 8000
+
 AGGREGATOR_PROMPT_TEMPLATE = """Sei un aggregatore di output. Ricevi i risultati di {n} sub-task paralleli e produci un markdown conciso (<2000 token) con:
 1. **Risultati chiave** per sub-task (bullet list)
 2. **Issues o warning** rilevati
@@ -353,11 +362,54 @@ def _mock_router_call(role: str, prompt: str, subtask_id: str) -> dict:
 
 
 # ---------------------------------------------------------------------------
+# Data-flow tra subtask: iniezione output dipendenze nel prompt a valle
+# ---------------------------------------------------------------------------
+
+def _build_subtask_prompt(subtask: dict, dep_outputs: Optional[list] = None) -> str:
+    """Costruisce il prompt effettivo del subtask.
+
+    NON-REGRESSIONE (fatto terminale #2): se il subtask non ha `dependencies`
+    (o non sono forniti output a monte), ritorna la `description` VERBATIM —
+    nessun byte aggiunto, percorso identico al comportamento pre-fix.
+
+    Se ci sono dipendenze con output disponibile, appende una sezione delimitata
+    '=== OUTPUT DIPENDENZE ===' con, per ogni dep, header '--- [id] (role) ---'
+    seguito dall'output integrale, cappato a DEP_OUTPUT_CAP_CHARS caratteri. Il
+    troncamento, se scatta, è DICHIARATO inline nel prompt.
+
+    dep_outputs: lista di tuple (dep_id, dep_role, dep_output_text) nell'ordine
+    di `subtask["dependencies"]`. L'output a monte è iniettato verbatim (fatto
+    terminale #3).
+    """
+    description = subtask["description"]
+    deps = subtask.get("dependencies", [])
+    if not deps or not dep_outputs:
+        return description
+
+    lines = [description, "", "=== OUTPUT DIPENDENZE ===", ""]
+    for dep_id, dep_role, dep_text in dep_outputs:
+        dep_text = dep_text or ""
+        lines.append(f"--- [{dep_id}] ({dep_role}) ---")
+        if len(dep_text) > DEP_OUTPUT_CAP_CHARS:
+            omitted = len(dep_text) - DEP_OUTPUT_CAP_CHARS
+            lines.append(dep_text[:DEP_OUTPUT_CAP_CHARS])
+            lines.append(
+                f"[…TRONCATO: {omitted} caratteri omessi, "
+                f"cap {DEP_OUTPUT_CAP_CHARS}]"
+            )
+        else:
+            lines.append(dep_text)
+        lines.append("")
+    return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
 # Subtask executor
 # ---------------------------------------------------------------------------
 
 def _execute_subtask(
-    subtask: dict, plan_id: str, use_mock: bool = False
+    subtask: dict, plan_id: str, use_mock: bool = False,
+    dep_outputs: Optional[list] = None,
 ) -> dict:
     """
     Esegue un singolo subtask via router.py (o mock).
@@ -365,15 +417,19 @@ def _execute_subtask(
     Thread-safe (non condivide stato mutabile).
     """
     st_id = subtask["id"]
-    description = subtask["description"]
     model_target = subtask.get("model_target", "cheap")
     role = MODEL_TARGET_TO_ROLE.get(model_target, "cheap")
+
+    # Iniezione data-flow: se il subtask ha dipendenze, il prompt include gli
+    # output a monte (sezione delimitata). Senza dipendenze prompt == description
+    # VERBATIM (fatto terminale #2, byte-identico al pre-fix).
+    prompt = _build_subtask_prompt(subtask, dep_outputs)
 
     t_start = time.time()
 
     try:
         if use_mock:
-            router_result = _mock_router_call(role, description, st_id)
+            router_result = _mock_router_call(role, prompt, st_id)
         else:
             # Chiama router.py via subprocess (NON modificare router.py — WAVE 1 frozen)
             if not ROUTER_PY.exists():
@@ -389,12 +445,12 @@ def _execute_subtask(
                 router_argv = [
                     sys.executable, str(ROUTER_PY),
                     "--model", resolved_model, "--role", role,
-                    "--prompt", description,
+                    "--prompt", prompt,
                 ]
             else:
                 router_argv = [
                     sys.executable, str(ROUTER_PY),
-                    "--role", role, "--prompt", description,
+                    "--role", role, "--prompt", prompt,
                 ]
 
             proc = subprocess.run(
@@ -708,6 +764,7 @@ def execute_plan(plan: dict, use_mock: bool = False) -> dict:
     )
 
     all_results: dict[str, dict] = {}
+    id_to_st = {st["id"]: st for st in subtasks}
     t_plan_start = time.time()
 
     # Esegui wave per wave (ogni wave in parallelo)
@@ -721,10 +778,28 @@ def execute_plan(plan: dict, use_mock: bool = False) -> dict:
         with concurrent.futures.ThreadPoolExecutor(
             max_workers=min(len(wave_subtasks), MAX_CONCURRENT)
         ) as executor:
-            futures = {
-                executor.submit(_execute_subtask, st, plan_id, use_mock): st["id"]
-                for st in wave_subtasks
-            }
+            # Data-flow: le dipendenze appartengono SEMPRE a wave precedenti già
+            # completate → all_results è popolato e letto qui sul thread main
+            # (nessun worker della wave corrente ha ancora scritto). Ordine dep
+            # preservato da subtask["dependencies"].
+            futures = {}
+            for st in wave_subtasks:
+                dep_outputs = []
+                for dep_id in st.get("dependencies", []):
+                    dep_res = all_results.get(dep_id)
+                    if dep_res is None:
+                        continue
+                    dep_role = MODEL_TARGET_TO_ROLE.get(
+                        id_to_st.get(dep_id, {}).get("model_target", "cheap"),
+                        "cheap",
+                    )
+                    dep_outputs.append(
+                        (dep_id, dep_role, dep_res.get("result", ""))
+                    )
+                fut = executor.submit(
+                    _execute_subtask, st, plan_id, use_mock, dep_outputs
+                )
+                futures[fut] = st["id"]
             for future in concurrent.futures.as_completed(futures):
                 st_id = futures[future]
                 try:
