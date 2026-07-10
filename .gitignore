@@ -5,3 +5,6 @@ state/*.log
 __pycache__/
 *.pyc
 .DS_Store
+# Rule 1d restore point transienti — mai in storia
+*.bak-*
+*.bak.*
