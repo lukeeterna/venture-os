@@ -8,3 +8,6 @@ __pycache__/
 # Rule 1d restore point transienti — mai in storia
 *.bak-*
 *.bak.*
+# handoff effimeri — rigenerati a ogni sessione dall'auto-close, mai in storia
+.claude/HANDOFF_CURRENT.md
+.claude/NEXT_SESSION_PROMPT.md
