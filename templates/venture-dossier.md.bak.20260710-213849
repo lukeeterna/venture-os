@@ -81,7 +81,7 @@ gate_decided_by: Luke      # collaudo umano sull'evidenza, non auto-validazione
 
 ```yaml
 provenance:
-  derived_from: {{derived_from}}
+  derived_from: S2
   ts: {{TS}}
 ```
 
