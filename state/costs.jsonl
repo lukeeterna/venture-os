@@ -148,3 +148,11 @@
 {"ts": "2026-07-08T15:48:38Z", "model": "mock/long_context", "role": "long_context", "in_tok": 12, "out_tok": 14, "cost_usd": 0.0, "latency_ms": 247, "plan_id": "plan_mock_test_001", "subtask_id": "s1"}
 {"ts": "2026-07-08T15:48:38Z", "model": "mock/long_context", "role": "long_context", "in_tok": 13, "out_tok": 14, "cost_usd": 0.0, "latency_ms": 281, "plan_id": "plan_mock_test_001", "subtask_id": "s3"}
 {"ts": "2026-07-08T15:48:38Z", "model": "mock/long_context", "role": "long_context", "in_tok": 97, "out_tok": 14, "cost_usd": 0.0, "latency_ms": 229, "plan_id": "plan_mock_test_001", "subtask_id": "aggregator"}
+{"ts": "2026-07-10T20:14:30.706117+00:00", "model": "deepseek/deepseek-chat", "provider": "openrouter", "role": "reasoning", "in_tok": 225, "out_tok": 1015, "cost_usd": 0.0, "latency_ms": 34818}
+{"ts": "2026-07-10T20:14:30Z", "model": "deepseek/deepseek-chat", "role": "reasoning", "in_tok": 225, "out_tok": 1015, "cost_usd": 0.0, "latency_ms": 35140, "plan_id": "plan_brainstorm_20260710", "subtask_id": "A"}
+{"ts": "2026-07-10T20:15:01.527437+00:00", "model": "deepseek/deepseek-chat", "provider": "openrouter", "role": "code_review", "in_tok": 164, "out_tok": 818, "cost_usd": 0.0, "latency_ms": 30543}
+{"ts": "2026-07-10T20:15:01Z", "model": "deepseek/deepseek-chat", "role": "code_review", "in_tok": 164, "out_tok": 818, "cost_usd": 0.0, "latency_ms": 30810, "plan_id": "plan_brainstorm_20260710", "subtask_id": "B"}
+{"ts": "2026-07-10T20:15:12.828599+00:00", "model": "gemini-2.5-flash", "provider": "google", "role": "cheap", "in_tok": 98, "out_tok": 126, "cost_usd": 0.0, "latency_ms": 10922}
+{"ts": "2026-07-10T20:15:12Z", "model": "gemini-2.5-flash", "role": "cheap", "in_tok": 98, "out_tok": 126, "cost_usd": 0.0, "latency_ms": 11374, "plan_id": "plan_brainstorm_20260710", "subtask_id": "C"}
+{"ts": "2026-07-10T20:15:22.957857+00:00", "model": "gemini-2.5-flash", "provider": "google", "role": "long_context", "in_tok": 521, "out_tok": 78, "cost_usd": 0.0, "latency_ms": 9412}
+{"ts": "2026-07-10T20:15:23Z", "model": "gemini-2.5-flash", "role": "long_context", "in_tok": 521, "out_tok": 78, "cost_usd": 0.0, "latency_ms": 10054, "plan_id": "plan_brainstorm_20260710", "subtask_id": "aggregator"}
