@@ -32,3 +32,12 @@
 | ASD Giuseppe Gallozzi | Salerno (SA) | scuolacalciogallozzi@libero.it | 338 282 0418 | https://www.facebook.com/ASDGiuseppeGallozzi/ | https://www.asdgiuseppegallozzi.it/ | Scuola calcio dal 2001, Via Carlo Gatti 2 |
 | ASD Forza Ragazzi (Scuola Calcio Rino Gattuso) | Corigliano Calabro (CS) | sc.forzaragazzi@libero.it | 329 724 1399 | https://www.facebook.com/scuolacalciorinogattuso/ | | Scuola calcio giovanile, Via Provinciale |
 | USC Corigliano Calcio | Corigliano Calabro (CS) | usccorigliano@libero.it | | https://www.facebook.com/asdcoriglianocalabro/ | | Elite Football School Calabria riconosciuta FIGC |
+| ASD Virtus Calcio Foggia | Foggia (FG) | asdvirtusfoggia@yahoo.it | 328 647 5663 | https://www.instagram.com/virtuscalciofoggia/ | https://www.virtuscalciofoggia.it/ | Scuola calcio settore giovanile U14/U15, territorio-seed Nord Puglia |
+
+## Query usate
+- scuola calcio ASD Foggia/Cerignola/San Severo/Manfredonia contatti email settore giovanile
+- scuola calcio ASD Potenza/Matera/Basilicata contatti email segreteria settore giovanile FIGC
+- (fasi S1: query dei due trend-researcher precedenti non recuperabili — transcript troncato per overflow; le righe 7-33 restano verificate coi rispettivi URL fonte)
+
+## Metodo verifica email
+Ogni email in tabella e stata letta su una pagina pubblica reale aperta via WebFetch (sito societa, pagina contatti, scheda tuttocampo/registro CONI) e la colonna "URL fonte" cita la pagina specifica. Nessuna email dedotta o costruita per analogia. Solo indirizzi istituzionali (info@, segreteria@, nome-club@provider); nessun indirizzo di persona fisica. Righe con email "[DA-VERIFICARE]" o senza URL fonte = da chiudere per telefono/form. Per gli ASD di provincia senza sito web, la fonte primaria e la pagina Facebook/Instagram pubblica (sezione Info), consultata via ricerca web senza login (ToS Meta rispettati).
