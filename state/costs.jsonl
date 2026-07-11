@@ -173,3 +173,4 @@
 {"ts": "2026-07-10T20:50:47Z", "model": "gemini-2.5-flash", "role": "cheap", "in_tok": 2271, "out_tok": 615, "cost_usd": 0.0, "latency_ms": 8715, "plan_id": "plan_brainstorm_20260710_v2", "subtask_id": "C"}
 {"ts": "2026-07-10T20:50:57.757908+00:00", "model": "gemini-2.5-flash", "provider": "google", "role": "long_context", "in_tok": 540, "out_tok": 99, "cost_usd": 0.0, "latency_ms": 10318}
 {"ts": "2026-07-10T20:50:57Z", "model": "gemini-2.5-flash", "role": "long_context", "in_tok": 540, "out_tok": 99, "cost_usd": 0.0, "latency_ms": 10542, "plan_id": "plan_brainstorm_20260710_v2", "subtask_id": "aggregator"}
+{"ts": "2026-07-11T15:48:35.135851+00:00", "model": "gemini-2.5-flash", "provider": "google", "role": "cheap", "in_tok": 19, "out_tok": 81, "cost_usd": 0.0, "latency_ms": 1008}
