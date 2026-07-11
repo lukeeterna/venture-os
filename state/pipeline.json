@@ -1,5 +1,5 @@
 {
-  "generated_ts": "2026-07-10T19:04:02Z",
+  "generated_ts": "2026-07-11T16:14:44Z",
   "schema": "vos_pipeline_snapshot/1",
   "ventures": [
     {
@@ -64,6 +64,66 @@
         }
       },
       "verdict": "KILLED"
+    },
+    {
+      "discrepancies": [],
+      "dossier": "ventures/run_20260711_161411/venture-dossier.md",
+      "factory_runs_last_state": "S0",
+      "last_gate_event": null,
+      "run_id": "run_20260711_161411",
+      "state": "S0",
+      "stations": {
+        "S0": {
+          "provenance_complete": true,
+          "station_class": {
+            "reason": "unknown-stage",
+            "would_spawn": false
+          }
+        },
+        "S1": {
+          "provenance_complete": false,
+          "station_class": {
+            "reason": "autonomous-ricerca",
+            "would_spawn": true
+          }
+        },
+        "S2": {
+          "provenance_complete": false,
+          "station_class": {
+            "reason": "human-gate",
+            "would_spawn": false
+          }
+        },
+        "S3": {
+          "provenance_complete": false,
+          "station_class": {
+            "reason": "autonomous-build",
+            "would_spawn": true
+          }
+        },
+        "S4": {
+          "provenance_complete": false,
+          "station_class": {
+            "reason": "autonomous-build",
+            "would_spawn": true
+          }
+        },
+        "S5": {
+          "provenance_complete": false,
+          "station_class": {
+            "reason": "external-action",
+            "would_spawn": false
+          }
+        },
+        "S6": {
+          "provenance_complete": false,
+          "station_class": {
+            "reason": "human-gate",
+            "would_spawn": false
+          }
+        }
+      },
+      "verdict": "null"
     }
   ]
 }
