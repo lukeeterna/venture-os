@@ -50,7 +50,7 @@ def call_google(model, prompt, max_tokens=2000):
     if not key:
         raise RuntimeError("GEMINI_API_KEY missing")
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key}"
-    body = json.dumps({"contents": [{"parts": [{"text": prompt}]}], "generationConfig": {"maxOutputTokens": max_tokens}}).encode()
+    body = json.dumps({"contents": [{"parts": [{"text": prompt}]}], "generationConfig": {"maxOutputTokens": max_tokens, "thinkingConfig": {"thinkingBudget": 0}}}).encode()
     req = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json"})
     with urllib.request.urlopen(req, timeout=60) as r:
         data = json.loads(r.read())
