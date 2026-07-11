@@ -67,6 +67,12 @@ Kill-criteria (market-intelligence-engine.md) — ognuno con evidenza esterna:
 
 **G1 VERDICT**: {{GO → S3 | KILL → archivia con motivo}}
 
+> **Decisioni founder 2026-07-11 (registrate dal giudice)** — nota informativa; NON compila la provenance S2, che si chiude coi risultati dell'outreach di Luke in un mandato successivo.
+> (a) **Target cliente** = scuole calcio + ASD/SSD, ambito Italia (lato domanda, oltre il perimetro seed; la fornitura resta produttori BAT).
+> (b) **Modello** = nessun anticipo per l'ingaggio; conferma d'ordine con caparra (stesso test WTP del seed, in forma di caparra).
+> (c) **Validazione** = email redatte da CC e inviate dal founder; nessun invio autonomo (<10 CLOSED_WON).
+> (d) **Proposta giudice in attesa di ratifica founder**: `g2_fact` riscritto in ">=2/5 realtà contattate riportano un problema concreto col fornitore attuale (ritardi consegna, errori personalizzazione)".
+
 ```yaml
 provenance:
   sources: [{{URL}}, ...]
