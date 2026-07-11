@@ -1,5 +1,5 @@
 {
-  "generated_ts": "2026-07-11T16:14:44Z",
+  "generated_ts": "2026-07-11T16:50:17Z",
   "schema": "vos_pipeline_snapshot/1",
   "ventures": [
     {
@@ -66,12 +66,15 @@
       "verdict": "KILLED"
     },
     {
-      "discrepancies": [],
+      "discrepancies": [
+        "dossier state=S1 ma factory-runs.jsonl: nessun evento per run_id",
+        "advance-gate.jsonl: 0 eventi per run_id — nessun avanzamento passato dal gate CLI"
+      ],
       "dossier": "ventures/run_20260711_161411/venture-dossier.md",
-      "factory_runs_last_state": "S0",
+      "factory_runs_last_state": null,
       "last_gate_event": null,
       "run_id": "run_20260711_161411",
-      "state": "S0",
+      "state": "S1",
       "stations": {
         "S0": {
           "provenance_complete": true,
@@ -81,7 +84,7 @@
           }
         },
         "S1": {
-          "provenance_complete": false,
+          "provenance_complete": true,
           "station_class": {
             "reason": "autonomous-ricerca",
             "would_spawn": true

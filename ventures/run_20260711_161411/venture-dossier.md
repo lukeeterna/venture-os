@@ -7,7 +7,7 @@
 ```yaml
 run_id: run_20260711_161411
 created_ts: 2026-07-11T16:14:11Z
-state: S0          # S0..S6
+state: S1
 verdict: null      # null | SHIPPED | KILLED
 seed_envelope: seeds/seed_sportswear_20260711.md
 ```
@@ -35,13 +35,18 @@ Nicchie candidate **partorite da VOS** (Luke NON le ha scelte). Per ognuna, segn
 
 | Nicchia candidata | Segnale di spesa esistente | URL/fonte | Forza (1-5) |
 |---|---|---|---|
-| {{...}} | {{competitor revenue / workaround a pagamento / job-posting}} | {{URL}} | {{...}} |
+| Personalizzazione teamwear calcio dilettanti FIGC — Basilicata + Nord Puglia (Foggia) | Dealer locale attivo con brand teamwear (Sportissimo Potenza, partnership Erreà / Potenza Calcio) + kit gara a listino pubblico €12–46 sui 3 brand + finestra ordini pre-campionato stagionale (iscrizioni Eccellenza/Promozione entro 20 lug 2026, avvio 6 set 2026) | s1_censimento.md §A/§B/§C — https://www.tuttopotenza.com/primo-piano/errea-e-sportissimo-griffano-il-potenza-17311 ; https://www.lndbasilicata.it/2026/06/29/stagione-sportiva-2026-2027-deliberate-date-e-scadenze-dei-campionati-regionali/ | 3 |
+
+> Nota S1: segnale di spesa esistente documentato (dealer + brand-sponsor su club locali + ciclo ordini stagionale), ma copertura territoriale sottile — 1 dealer certo (Potenza), Foggia senza dealer teamwear dilettanti identificato con evidenza pubblica. Volley/basket: nessun operatore emerso [DA-VERIFICARE]. Forza=3 = spesa reale ma frammentata. Kill-criteria territory_exclusive/margin_floor restano [DA-VERIFICARE] (condizioni reseller non pubbliche) — verdetto G1 a Luke.
+> Scope-fornitore (correzione Luke 2026-07-11): il target-fornitore = piccoli produttori/laboratori locali BAT (sublimazione/personalizzazione diretta), NON i brand strutturati (Macron/Erreà/Givova) né i loro rivenditori, che sono l'alternativa da cui differenziarsi. Filiera corta = margine a monte + territory_exclusive più favorevole. Dettaglio in s1_censimento.md §A0/§A-bis (10 produttori BAT da directory, specializzazione teamwear [DA-VERIFICARE per telefono]).
 
 ```yaml
 provenance:
-  tool: {{trend-researcher / deep-research / WebSearch}}
-  sources: [{{URL}}, {{URL}}]
-  ts: 2026-07-11T16:14:11Z
+  tool: trend-researcher (WebSearch/WebFetch)
+  source: ventures/run_20260711_161411/s1_censimento.md
+  derived_from: seeds/seed_sportswear_20260711.md
+  sources: [https://www.lndbasilicata.it/2026/06/29/stagione-sportiva-2026-2027-deliberate-date-e-scadenze-dei-campionati-regionali/, https://www.tuttopotenza.com/primo-piano/errea-e-sportissimo-griffano-il-potenza-17311, https://www.teamsport-id.com/forniture-macron, https://www.iacosport.com/calcio/kit-calcio/kit-calcio-manica-corta/kit-macron.html]
+  ts: 2026-07-11T16:40:00Z
 ```
 
 ---
