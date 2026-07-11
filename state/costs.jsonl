@@ -174,3 +174,11 @@
 {"ts": "2026-07-10T20:50:57.757908+00:00", "model": "gemini-2.5-flash", "provider": "google", "role": "long_context", "in_tok": 540, "out_tok": 99, "cost_usd": 0.0, "latency_ms": 10318}
 {"ts": "2026-07-10T20:50:57Z", "model": "gemini-2.5-flash", "role": "long_context", "in_tok": 540, "out_tok": 99, "cost_usd": 0.0, "latency_ms": 10542, "plan_id": "plan_brainstorm_20260710_v2", "subtask_id": "aggregator"}
 {"ts": "2026-07-11T15:48:35.135851+00:00", "model": "gemini-2.5-flash", "provider": "google", "role": "cheap", "in_tok": 19, "out_tok": 81, "cost_usd": 0.0, "latency_ms": 1008}
+{"ts": "2026-07-11T15:56:15.234661+00:00", "model": "deepseek/deepseek-chat", "provider": "openrouter", "role": "reasoning", "in_tok": 323, "out_tok": 882, "cost_usd": 0.0, "latency_ms": 24580}
+{"ts": "2026-07-11T15:56:15Z", "model": "deepseek/deepseek-chat", "role": "reasoning", "in_tok": 323, "out_tok": 882, "cost_usd": 0.0, "latency_ms": 25274, "plan_id": "plan_seed_sportswear", "subtask_id": "A"}
+{"ts": "2026-07-11T15:56:40.577308+00:00", "model": "deepseek/deepseek-chat", "provider": "openrouter", "role": "code_review", "in_tok": 1003, "out_tok": 876, "cost_usd": 0.0, "latency_ms": 24748}
+{"ts": "2026-07-11T15:56:40Z", "model": "deepseek/deepseek-chat", "role": "code_review", "in_tok": 1003, "out_tok": 876, "cost_usd": 0.0, "latency_ms": 25292, "plan_id": "plan_seed_sportswear", "subtask_id": "B"}
+{"ts": "2026-07-11T15:56:48.454514+00:00", "model": "gemini-2.5-flash", "provider": "google", "role": "cheap", "in_tok": 2328, "out_tok": 1317, "cost_usd": 0.0, "latency_ms": 7382}
+{"ts": "2026-07-11T15:56:48Z", "model": "gemini-2.5-flash", "role": "cheap", "in_tok": 2328, "out_tok": 1317, "cost_usd": 0.0, "latency_ms": 7839, "plan_id": "plan_seed_sportswear", "subtask_id": "C"}
+{"ts": "2026-07-11T15:56:53.813982+00:00", "model": "gemini-2.5-flash", "provider": "google", "role": "long_context", "in_tok": 510, "out_tok": 825, "cost_usd": 0.0, "latency_ms": 4999}
+{"ts": "2026-07-11T15:56:53Z", "model": "gemini-2.5-flash", "role": "long_context", "in_tok": 510, "out_tok": 825, "cost_usd": 0.0, "latency_ms": 5334, "plan_id": "plan_seed_sportswear", "subtask_id": "aggregator"}

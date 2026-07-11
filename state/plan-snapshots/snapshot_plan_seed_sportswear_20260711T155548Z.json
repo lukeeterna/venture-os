@@ -1,0 +1,63 @@
+{
+  "schema_version": "1",
+  "plan_id": "plan_seed_sportswear",
+  "ts_start": "20260711T155548Z",
+  "plan": {
+    "plan_id": "plan_seed_sportswear",
+    "task_description": "Genera il DRAFT di un seed venture VOS per la nicchia DECISA dal founder: rivendita legittima di teamwear personalizzato di marchi tecnici italiani (reseller Macron/Errea/Givova) a societa' sportive dilettantistiche, verticali calcio/pallavolo/basket, partendo da Basilicata e nord Puglia. Pipeline thinker (draft) -> verifier (kill-test) -> worker (formattazione nello schema seed reale).",
+    "subtasks": [
+      {
+        "id": "A",
+        "description": "Sei il thinker di una venture factory. Scrivi il DRAFT di un seed venture su questa nicchia DECISA dal founder (non metterla in discussione, sviluppala): rivendita legittima di teamwear personalizzato di marchi tecnici italiani (es. programma reseller Macron 'My Macron Kit' o equivalenti Errea/Givova) a societa' sportive dilettantistiche italiane -- verticali calcio, pallavolo, basket -- partendo da Basilicata e nord Puglia dove il founder ha relazioni dirette nel calcio locale. Modello: ordine su commessa, zero magazzino, margine reseller. Il founder e' solo, non-sviluppatore, budget ~0, incasso via Stripe o bonifico. Il draft deve contenere: tesi (3 frasi), cliente pagante preciso (chi firma e chi paga), revenue model con numeri ipotizzati [DA-VERIFICARE], 5 segnali S1 falsificabili da raccogliere in 2 settimane (condizioni reali del programma reseller: margini/minimi/esclusive; chi serve oggi le societa' della zona e a che prezzi; finestra d'acquisto stagionale; 2 a tua scelta), 3 kill-criteria numerici proposti per il gate G1. Marca OGNI assunzione di mercato con [DA-VERIFICARE]. Niente certezze inventate.",
+        "model_target": "reasoning",
+        "expected_output_format": "markdown",
+        "dependencies": []
+      },
+      {
+        "id": "B",
+        "description": "Kill-testa il draft di seed che ricevi nelle dipendenze, punto per punto: per ogni sezione indica il difetto piu' grave (assunzione debole, numero campato in aria, segnale non falsificabile, kill-criterion aggirabile) e la correzione minima. Poi la domanda singola piu' pericolosa che il founder deve farsi prima di investire 2 settimane. Niente cortesia.",
+        "model_target": "code_review",
+        "expected_output_format": "markdown",
+        "dependencies": [
+          "A"
+        ]
+      },
+      {
+        "id": "C",
+        "description": "Produci il seed FINALE incorporando le correzioni del verifier (dipendenza B) nel draft del thinker (dipendenza A). Formattalo ESATTAMENTE secondo questo schema seed reale (verbatim, stessi campi e sezioni, blocco YAML dentro un fenced code block ```yaml e sezione finale ## Note). Adatta i VALORI alla nicchia teamwear/societa' sportive ma mantieni i NOMI dei campi e la struttura identici:\n\n# SEED_ENVELOPE -- input fabbrica VOS -- <riga descrittiva nicchia>\n\n> Blockquote di note di frame: da dove nasce il seed, decisione founder, firewall G1 = evidenza esterna primaria + provenienza ricostruibile, distribuzione = AI sales agent cold-outreach.\n\n```yaml\nseed_id: seed_sportswear_YYYYMMDD\nparent_seed: null\ncreated_ts: <ISO8601>\nmode: B-first\nwip_limit: 1\n\n# --- Vincoli economici ---\nbudget_max_eur: 0\n\n# --- Soglia di efficacia ---\nbuyers_reached_target: <int>\nmin_paying_to_pass: <int>\n\n# --- Edge = capability della fabbrica (NON skill personale del founder) ---\nfactory_capabilities:\n  - <lista>\ntime_per_week_hours: <int>\n\n# --- Distribuzione ---\ndistribution_method: ai_sales_agent_cold\ndistribution_no_paid_ads: true\nwarm_graph: <valore>\n\n# --- KILL-CRITERIA ---\nkill_criteria:\n  wtp_floor:\n    rule: \"...\"\n    note: \"...\"\n  anti_freemium:\n    rule: \"...\"\n    note: \"...\"\n  edge_fit:\n    rule: \"...\"\n    note: \"...\"\n\n# --- Esclusioni ---\nexcluded_domains:\n  - automotive / dealer\n  - gestionali SMB / voice-agent\n  - elderly-care / phone-cleanup\n\n# --- Scoring residuo ---\nlambda_scoring: null\n\n# --- Done-condition esterna (vincolo #1b) ---\nterminal_fact: \"...\"\ng2_fact: \"...\"\n```\n\n## Note\n<paragrafo note operative: deliverable, discovery, segnali S1, kill-criteria G1>\n\nMantieni i marker [DA-VERIFICARE] dove le assunzioni restano da validare. NON troncare: l'ultimo campo dello schema (g2_fact) e la sezione ## Note devono essere presenti e chiusi.",
+        "model_target": "cheap",
+        "expected_output_format": "markdown",
+        "dependencies": [
+          "A",
+          "B"
+        ]
+      }
+    ],
+    "aggregator_model": "gemini-flash"
+  },
+  "env_meta": {
+    "python_version": "3.13.2 (main, Mar 18 2025, 16:42:12) [Clang 13.0.0 (clang-1300.0.29.30)]",
+    "working_dir": "/Volumes/MontereyT7/venture-os",
+    "routing_yaml_hash": "e23269a5c8a7a770",
+    "api_key_env_names": [
+      "CF_API_TOKEN",
+      "CF_API_TOKEN_READ",
+      "CLOUDFLARE_API_TOKEN",
+      "STRIPE_API_KEY",
+      "STRIPE_TEST_SECRET_KEY",
+      "STRIPE_WEBHOOK_SECRET_TEST"
+    ]
+  },
+  "execution_result": {
+    "ts_end": "2026-07-11T15:56:53Z",
+    "status": "success",
+    "total_cost_usd": 0.0,
+    "total_latency_ms": 63788,
+    "subtask_statuses": {
+      "A": "success",
+      "B": "success",
+      "C": "success"
+    },
+    "error": null
+  }
+}
