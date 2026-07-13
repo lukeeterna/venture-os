@@ -11,7 +11,7 @@
 - 3D = Via A (mesh procedurale a zone-materiale + CanvasTexture, orbit libero). DISCORDANZA su Via B ratificata dal giudice 2026-07-13.
 
 ## Microtask — stato
-- [x] **MT1** scaffold + scena 3D base — COMPLETATO 2026-07-13
+- [x] **MT1** scaffold + scena 3D base — COMPLETATO 2026-07-13, VERIFICATO da Luke nel browser
 - [ ] MT2 colori indipendenti corpo/colletto/maniche + tonalità libere
 - [ ] MT3 pattern (tinta unita/strisce/fasce/banda/metà/chevron) via CanvasTexture
 - [ ] MT4 nome + numero + multi-font (retro)
@@ -19,20 +19,26 @@
 - [ ] MT6 camerino virtuale (kit INDOSSATO su busto/manichino) + riepilogo + CTA preventivo (NO PREZZO)
 - [ ] MT7 responsive 375px + accessibilità + degradazione 3D no-WebGL
 
-## Dettaglio MT1 (completato)
-- File creati: `configurator/index.html` (NEW), `CONFIGURATOR_PROGRESS.md` (NEW)
-- Realizzato:
-  - Renderer WebGL (antialias, shadow PCFSoft, ACES tone mapping, sRGB) + guardia WebGL con fallback `.no-webgl`.
-  - Scena: backdrop radiale (CSS), 3 luci (hemisphere + key con ombra + fill), piano ShadowMaterial per contatto a terra.
-  - Maglia procedurale: `bodyMesh` (ExtrudeGeometry da Shape con scollo a giro), 2 maniche (`makeSleeve`, una specchiata), colletto (TorusGeometry semi-anello). Tre materiali di zona distinti `bodyMat`/`sleeveMat`/`collarMat`.
-  - Zone esportate su `window.__kit` per wiring MT2+.
-  - OrbitControls: rotazione libera, damping, no-pan, min/max distance, autoRotate rispetta `prefers-reduced-motion`.
-  - Preset vista fronte/retro/lato con lerp camera + `aria-pressed`.
-  - Toggle rotazione automatica, resize responsivo, focus-visible sui controlli.
-- Fatto terminale MT1: **verifica umana** — Luke apre `index.html` nel browser e conferma maglia 3D ruotabile (orbit libero) + 3 preset funzionanti.
+## MT1 — esito verifica umana (2026-07-13)
+Luke, browser locale (http.server): **orbit libero = SI**, **preset Fronte/Retro/Lato = SI** → fatto terminale MT1 RAGGIUNTO. Confermato anche via screenshot Chrome headless (render OK).
 
-## Cosa manca (prossimo)
-- MT2: color picker `input type=color` (tonalità libere) su corpo/colletto/maniche, wired a `window.__kit.materials`.
+### DIFETTI APERTI — CORREGGERE PER PRIMI nella prossima sessione (prima di MT2)
+1. **Colletto fuori posto**: il TorusGeometry (`collar`) è a `y=0.92` ma `bodyGeo.center()` sposta il corpo → il colletto finisce a metà petto (sembra manico di borsa), non allo scollo. FIX: dopo `bodyGeo.center()`, calcolare il vero Y dello scollo del corpo centrato (bounding box top ~ +1.51) e posizionare colletto lì; verificare anche Z rispetto allo spessore.
+2. **Maniche squadrate/disallineate**: `makeSleeve` usa coordinate originali mentre il corpo è centrato → non combaciano alla spalla e rendono come slab orizzontali rigidi. FIX: applicare lo stesso offset di centratura del corpo alle maniche (o centrare l'intero gruppo dopo l'assemblaggio, non il solo corpo), e ammorbidire la sagoma manica.
+3. **Toggle "Rotazione ON/OFF" non funziona** (Luke: NO): il click non produce effetto visibile. Da diagnosticare — verificare che l'handler su `#autorotate-toggle` flippi davvero `controls.autoRotate` e che `controls.update()` nel loop applichi l'auto-rotazione; possibile interazione con `camTarget`/preset che blocca la ripresa.
+
+> Nota: il fatto terminale MT1 (ruotabile + preset) è raggiunto; questi 3 sono difetti da chiudere prima di costruire MT2/MT3 perché la geometria zone è la base di colori e texture.
+
+## Dettaglio MT1 (realizzato)
+- File: `configurator/index.html` (NEW, commit d64563a), `CONFIGURATOR_PROGRESS.md` (NEW).
+- Renderer WebGL (antialias, shadow PCFSoft, ACES, sRGB) + guardia `webglAvailable()` con fallback `.no-webgl`.
+- Scena: backdrop radiale, 3 luci (hemisphere+key con ombra+fill), piano ShadowMaterial.
+- Maglia procedurale: `bodyMesh` (ExtrudeGeometry, scollo a giro), 2 maniche (`makeSleeve`), colletto (Torus). Materiali zona `bodyMat`/`sleeveMat`/`collarMat` esportati su `window.__kit.materials`.
+- OrbitControls (damping, no-pan, min/max distance, autoRotate rispetta reduced-motion). Preset `goToView()` con lerp + aria-pressed. Resize responsivo. focus-visible.
+
+## Prossima sessione — ordine operativo
+1. Fix difetti #1, #2, #3 (sopra) su `index.html` → Rule 1d backup, commit "MT1 fix geometria+toggle", ri-verifica (screenshot headless + browser Luke).
+2. Poi MT2: color picker `input type=color` (tonalità libere) su corpo/colletto/maniche, wired a `window.__kit.materials`. Solo dopo via libera giudice.
 
 ## Rollback
-File nuovi → revert del commit d'unità MT. `index.html`/`CONFIGURATOR_PROGRESS.md` dopo la creazione = file esistenti → backup Rule 1d prima di ogni Edit successivo.
+File nuovi → revert commit d'unità MT. `index.html`/`CONFIGURATOR_PROGRESS.md` = file esistenti → backup Rule 1d prima di Edit (es. `CONFIGURATOR_PROGRESS.md.bak-mt1verify`).
