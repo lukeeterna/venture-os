@@ -184,3 +184,8 @@
 {"ts": "2026-07-11T15:56:53Z", "model": "gemini-2.5-flash", "role": "long_context", "in_tok": 510, "out_tok": 825, "cost_usd": 0.0, "latency_ms": 5334, "plan_id": "plan_seed_sportswear", "subtask_id": "aggregator"}
 {"timestamp": "2026-07-14T14:51:31.406088+00:00", "model": "gemini-2.5-flash", "prompt_tokens": 497, "completion_tokens": 40, "cost_usd": 0.0, "provider": "google_ai_studio", "feature": "plan"}
 {"timestamp": "2026-07-14T14:52:04.059674+00:00", "model": "gemini-2.5-flash", "prompt_tokens": 411, "completion_tokens": 4767, "cost_usd": 0.0, "provider": "google_ai_studio", "feature": "grounding_deep_1"}
+{"timestamp": "2026-07-14T14:52:34.842405+00:00", "model": "gemini-2.5-flash", "prompt_tokens": 5679, "completion_tokens": 4899, "cost_usd": 0.0, "provider": "google_ai_studio", "feature": "synthesis"}
+{"timestamp": "2026-07-14T14:54:39.711153+00:00", "model": "gemini-2.5-flash", "prompt_tokens": 186, "completion_tokens": 2684, "cost_usd": 0.0, "provider": "google_ai_studio", "feature": "grounding_quick"}
+{"timestamp": "2026-07-14T14:55:08.384498+00:00", "model": "gemini-2.5-flash", "prompt_tokens": 117, "completion_tokens": 2140, "cost_usd": 0.0, "provider": "google_ai_studio", "feature": "grounding_quick"}
+{"timestamp": "2026-07-14T14:55:43.715116+00:00", "model": "gemini-2.5-flash", "prompt_tokens": 127, "completion_tokens": 3474, "cost_usd": 0.0, "provider": "google_ai_studio", "feature": "grounding_quick"}
+{"timestamp": "2026-07-14T14:56:46.475696+00:00", "model": "gemini-2.5-flash", "prompt_tokens": 105, "completion_tokens": 2193, "cost_usd": 0.0, "provider": "google_ai_studio", "feature": "grounding_quick"}
