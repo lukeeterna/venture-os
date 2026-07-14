@@ -3,7 +3,8 @@
 > Deliverable: configuratore web di kit calcio per scuole calcio / ASD / squadre
 > amatoriali dilettanti italiane. Statico, Cloudflare Pages. UNA unità, scomposta
 > in 7 microtask sequenziali con commit e checkpoint per microtask.
-> Creato: 2026-07-13. Stato: **ATTESA VIA LIBERA GIUDICE** (nessun MT eseguito).
+> Creato: 2026-07-13. Aggiornato: 2026-07-14 (MT1b eseguito).
+> Stato: **MT1 verificato** (founder browser) · **MT1b eseguito, in attesa sigillo browser founder** · MT2+ non autorizzati.
 
 ## Deliverable path (versionato, NON /tmp)
 
@@ -49,7 +50,8 @@ NICE-TO-HAVE (scartati v1): AR view, voting-tool team, sample order, app mobile 
 | MT | Obiettivo | File toccati | Fatto terminale | Dip. |
 |----|-----------|--------------|-----------------|------|
 | MT1 | Scaffold + scena 3D base: index.html, importmap three.js+OrbitControls, scena+luci+backdrop, mesh maglia (corpo/maniche/colletto = gruppi distinti), OrbitControls, preset fronte/retro/lato | `configurator/index.html` (NEW), `CONFIGURATOR_PROGRESS.md` (NEW) | index.html aperto nel browser renderizza una maglia 3D ruotabile con orbit + 3 preset | — |
-| MT2 | Color picker indipendenti corpo/colletto/maniche con tonalità libere (`input type=color`), wired ai materiali | `configurator/index.html` | cambiare un picker aggiorna live la zona corrispondente | MT1 |
+| MT1b | Fix geometria + estensione kit: colletto ancorato allo scollo (centro dell'intero gruppo, non solo corpo), maniche raccordate alla spalla, silhouette meno squadrata (spalle spioventi + rastremazione + orlo arrotondato), NUOVE mesh pantaloncini (`shortsMat`) e calzettoni (`sockMat`) come zone-materiale distinte su `window.__kit.materials`, toggle auto-rotazione verificato | `configurator/index.html` | render headless multi-angolo mostra colletto allo scollo + maniche raccordate + silhouette non squadrata + pantaloncini + calzettoni; 5 materiali di zona esposti; toggle ON/OFF confermato in browser founder | MT1 |
+| MT2 | Color picker indipendenti per **tutte le 5 zone** (corpo/colletto/maniche + pantaloncini + calzettoni) con tonalità libere (`input type=color`), wired ai materiali di zona | `configurator/index.html` | cambiare un picker aggiorna live la zona corrispondente (incl. pantaloncini e calzettoni) | MT1, MT1b |
 | MT3 | Pattern: tinta unita, strisce, fasce, banda, metà, chevron — su CanvasTexture del corpo | `configurator/index.html` | selezionare un pattern aggiorna la texture della maglia | MT1,MT2 |
 | MT4 | Testo NOME + NUMERO + selezione multi-font (rosa font sportivi leggibili) sul retro | `configurator/index.html` | nome/numero/font renderizzati sul retro | MT1,MT3 |
 | MT5 | Upload sponsor multi-formato client-side (PNG/JPG/SVG) via FileReader, validazione formato/peso, preview posizionata sul petto + controllo posizione, zero upload a server | `configurator/index.html` | caricare un PNG/JPG/SVG mostra il logo sulla maglia | MT1,MT3 |

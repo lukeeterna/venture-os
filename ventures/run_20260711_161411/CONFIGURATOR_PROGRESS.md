@@ -12,8 +12,8 @@
 
 ## Microtask — stato
 - [x] **MT1** scaffold + scena 3D base — COMPLETATO 2026-07-13, VERIFICATO da Luke nel browser (orbit+preset OK)
-- [ ] **MT1b** (nuovo, PRIMA di MT2) fix colletto→scollo + maniche raccordate alla spalla + silhouette meno squadrata + toggle rotazione + NUOVE mesh pantaloncini e calzettoni (zone-materiale su window.__kit.materials)
-- [ ] MT2 colori indipendenti corpo/colletto/maniche + pantaloncini/calzettoni + tonalità libere
+- [~] **MT1b** ESEGUITO 2026-07-14 — in attesa sigillo browser founder (fix colletto→scollo + maniche raccordate + silhouette meno squadrata + toggle verificato + NUOVE mesh pantaloncini/calzettoni su window.__kit.materials). Vedi "MT1b — esito" sotto.
+- [ ] MT2 colori indipendenti su tutte le 5 zone (corpo/colletto/maniche + pantaloncini + calzettoni) + tonalità libere
 - [ ] MT3 pattern (tinta unita/strisce/fasce/banda/metà/chevron) via CanvasTexture
 - [ ] MT4 nome + numero + multi-font (retro)
 - [ ] MT5 upload sponsor multi-formato client-side (PNG/JPG/SVG) + posizionamento
@@ -29,6 +29,25 @@ Luke, browser locale (http.server): **orbit libero = SI**, **preset Fronte/Retro
 3. **Toggle "Rotazione ON/OFF" non funziona** (Luke: NO): il click non produce effetto visibile. Da diagnosticare — verificare che l'handler su `#autorotate-toggle` flippi davvero `controls.autoRotate` e che `controls.update()` nel loop applichi l'auto-rotazione; possibile interazione con `camTarget`/preset che blocca la ripresa.
 
 > Nota: il fatto terminale MT1 (ruotabile + preset) è raggiunto; questi 3 sono difetti da chiudere prima di costruire MT2/MT3 perché la geometria zone è la base di colori e texture.
+
+## MT1b — esito esecuzione (2026-07-14, in attesa sigillo browser founder)
+
+Fix strutturale: eliminato `bodyGeo.center()` (che centrava il solo corpo). Ora corpo, maniche, colletto, pantaloncini e calzettoni sono nello stesso sistema di coordinate; l'INTERO gruppo `kit` è centrato con `new THREE.Box3().setFromObject(kit)`. Camera/preset riinquadrati per il kit più lungo (`z=10.5`, min/max 6/18). Ground abbassato sotto i calzettoni. Nuovi materiali `shortsMat`/`sockMat`; `window.__kit.materials` espone 5 zone: bodyMat, sleeveMat, collarMat, shortsMat, sockMat.
+
+### Verifica headless (Chrome 138 + SwiftShader, flag `--headless=new --enable-unsafe-swiftshader --use-gl=angle --use-angle=swiftshader`) — angoli catturati: front, back, side, 3/4
+Verdetto guardando gli screenshot (giudice, canale 1):
+- **Colletto allo scollo**: PRESENTE — semi-toro girocollo all'apice dello scollo (front + 3/4 chiari; dal retro correttamente non sporge).
+- **Maniche raccordate**: PRESENTE — raccordo spalla-manica senza distacco in front/3-4/back (condividono i vertici spalla col corpo).
+- **Silhouette non squadrata**: PRESENTE/MIGLIORATA — spalle spioventi, rastremazione vita, orlo arrotondato; trapezio leggibile come maglia.
+- **Pantaloncini**: PRESENTE in tutti gli angoli, spacco centrale.
+- **Calzettoni**: PRESENTE in tutti gli angoli, due gambe.
+
+### Difetti/limiti osservati (dichiarati, non taciuti)
+1. **Vista laterale**: il kit è estrusione 2.5D → di profilo i pezzi appaiono come sagome sottili con stacchi visibili tra maglia/pantaloncini/calzettoni e tra manica e corpo; il colletto-toro sporge come blob laterale. È il trade-off Via A già dichiarato nel piano (mesh stilizzata, non fotoscannerizzata). Non blocca il fatto terminale MT1b (feature leggibili frontalmente). Upgrade a mesh volumetrica/GLB = enhancement futuro condizionato a asset con licenza.
+2. Colletto = semi-arco frontale (non circonda il collo) — massimo ottenibile in 2.5D senza mesh volumetrica.
+
+### Toggle auto-rotazione — DISCORDANZA rispetto al bug report MT1
+Verifica CDP headless: il toggle FLIPPA correttamente lo stato — `#autorotate-toggle` porta `aria-pressed` ON→OFF→ON e testo "Rotazione: ON/OFF" coerente. Il codice era già corretto in MT1 (`controls.autoRotate = !controls.autoRotate` + `syncAutorotateButton()`), NON è stato modificato (nessun fix inventato). Ipotesi sul "non funziona" di MT1: interazione con i preset (`goToView` setta `autoRotate=false`) o `prefers-reduced-motion` nell'ambiente di Luke. **La conferma della rotazione VISIBILE ON/OFF resta al sigillo browser del founder** (canale 2).
 
 ## Dettaglio MT1 (realizzato)
 - File: `configurator/index.html` (NEW, commit d64563a), `CONFIGURATOR_PROGRESS.md` (NEW).
@@ -48,8 +67,8 @@ Fatto terminale MT1b:
 Verifica: screenshot Chrome headless + apertura browser di Luke.
 
 ## Prossima sessione — ordine operativo
-1. **MT1b** (sopra) su `index.html` → Rule 1d backup, commit "sportswear: MT1b geometria+kit completo", ri-verifica (screenshot headless + browser Luke). Solo dopo via libera giudice.
-2. Poi MT2: color picker `input type=color` (tonalità libere) su corpo/colletto/maniche + pantaloncini/calzettoni, wired a `window.__kit.materials`.
+1. **MT1b ESEGUITO + committato** (2026-07-14). Manca solo il sigillo browser del founder (orbit + toggle ON/OFF + estetica complessiva). STOP fino a via libera giudice.
+2. Poi MT2 (SOLO con via libera giudice): color picker `input type=color` (tonalità libere) sulle 5 zone corpo/colletto/maniche + pantaloncini + calzettoni, wired a `window.__kit.materials`.
 
 ## Rollback
 File nuovi → revert commit d'unità MT. `index.html`/`CONFIGURATOR_PROGRESS.md` = file esistenti → backup Rule 1d prima di Edit (es. `CONFIGURATOR_PROGRESS.md.bak-mt1verify`).

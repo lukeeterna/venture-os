@@ -143,7 +143,7 @@
   <main class="layout">
     <div id="scene-wrap">
       <canvas id="scene-canvas" role="img"
-              aria-label="Anteprima 3D della maglia. Trascina per ruotare."></canvas>
+              aria-label="Anteprima 3D del kit. Trascina per ruotare."></canvas>
       <div class="scene-fallback">
         <p>Il tuo dispositivo non supporta la vista 3D.<br />
         La versione a immagini fisse arriverà a breve.</p>
@@ -223,8 +223,9 @@ renderer.outputColorSpace = THREE.SRGBColorSpace;
 
 // --- Scena + camera ---
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
-camera.position.set(0, 0, 7);
+const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
+// Camera: z lontano per kit completo; y=0 perché il kit viene centrato a origine
+camera.position.set(0, 0, 10.5);
 
 // --- Luci: key + fill + hemisphere per resa morbida non-piatta ---
 const hemi = new THREE.HemisphereLight(0xdfe8ff, 0x20242c, 0.9);
@@ -240,55 +241,81 @@ const fill = new THREE.DirectionalLight(0x9db4ff, 0.6);
 fill.position.set(-5, 1, -3);
 scene.add(fill);
 
-// --- Piano ombra (contatto a terra, scena non-piatta) ---
-const ground = new THREE.Mesh(
-  new THREE.PlaneGeometry(40, 40),
-  new THREE.ShadowMaterial({ opacity: 0.28 })
-);
-ground.rotation.x = -Math.PI / 2;
-ground.position.y = -2.4;
-ground.receiveShadow = true;
-scene.add(ground);
-
 /* ===========================================================
-   MAGLIA PROCEDURALE — zone-materiale distinte (corpo/maniche/colletto).
-   I materiali di zona sono esportati per il wiring colori (MT2)
-   e la texture pattern/logo/nome (MT3-MT5).
+   KIT PROCEDURALE — maglia + pantaloncini + calzettoni.
+   SISTEMA DI COORDINATE UNIFICATO: tutto costruito nel sistema
+   shape originale, poi l'intero gruppo "kit" viene centrato
+   con Box3 → nessun disallineamento colletto/maniche/corpo.
    =========================================================== */
-const DEPTH = 0.42;          // spessore maglia
-const extrudeOpts = { depth: DEPTH, bevelEnabled: true, bevelSize: 0.05,
-                      bevelThickness: 0.05, bevelSegments: 2, steps: 1 };
+const DEPTH = 0.42;          // spessore estruso
+const BEVEL = 0.04;
+const extrudeOpts = {
+  depth: DEPTH,
+  bevelEnabled: true,
+  bevelSize: BEVEL,
+  bevelThickness: BEVEL,
+  bevelSegments: 3,
+  steps: 1
+};
 
-// Materiali di zona (indipendenti — hook per MT2)
+/* ---- Materiali di zona (5 zone esposte per MT2) ---- */
 const bodyMat   = new THREE.MeshStandardMaterial({ color: 0x1e5bd6, roughness: 0.72, metalness: 0.02 });
 const sleeveMat = new THREE.MeshStandardMaterial({ color: 0xf2f5f9, roughness: 0.72, metalness: 0.02 });
 const collarMat = new THREE.MeshStandardMaterial({ color: 0x0a2a6b, roughness: 0.6,  metalness: 0.02 });
+const shortsMat = new THREE.MeshStandardMaterial({ color: 0x1e5bd6, roughness: 0.72, metalness: 0.02 });
+const sockMat   = new THREE.MeshStandardMaterial({ color: 0xf2f5f9, roughness: 0.72, metalness: 0.02 });
 
-// Silhouette corpo (piano XY, estruso lungo Z)
+/* ---- CORPO maglia ---- */
+// Coordinate shape (sistema shape originale, NON centrato qui)
+// Vertici chiave:
+//   spalla esterna: (-1.55, 1.34)  e  (1.55, 1.34)
+//   spalla interna: (-1.28, 0.90)  e  (1.28, 0.90)  ← attacco manica
+//   scollo sx:      (-0.48, 1.42)
+//   apice scollo:   (0,     0.98)  ← punto più basso della quadratica
+//   scollo dx:      (0.48,  1.42)
+//   orlo:           (±1.10, -1.60)
+// Silhouette ammorbidita: spalla spiovente via curva, vita rastremata, angoli orlo arrotondati
 const body = new THREE.Shape();
-body.moveTo(-1.10, -1.60);
-body.lineTo(-1.28,  0.90);
-body.lineTo(-1.55,  1.34);
-body.lineTo(-0.48,  1.42);
-body.quadraticCurveTo(0, 0.98, 0.48, 1.42);  // scollo a giro
-body.lineTo( 1.55,  1.34);
-body.lineTo( 1.28,  0.90);
-body.lineTo( 1.10, -1.60);
-body.lineTo(-1.10, -1.60);
+body.moveTo(-1.05, -1.58);
+// fianchi sx → vita → spalla interna sx (lieve rastremazione in vita)
+body.bezierCurveTo(-1.12, -0.80, -1.20, 0.20, -1.28, 0.90);
+// spalla interna → spalla esterna (spiovente, curva morbida)
+body.quadraticCurveTo(-1.48, 1.18, -1.55, 1.34);
+// spalla esterna → scollo sx
+body.lineTo(-0.48, 1.42);
+// scollo a giro (quadratica: centro scende a 0.98)
+body.quadraticCurveTo(0, 0.98, 0.48, 1.42);
+// scollo dx → spalla esterna dx
+body.lineTo(1.55, 1.34);
+// spalla esterna → spalla interna dx (speculare)
+body.quadraticCurveTo(1.48, 1.18, 1.28, 0.90);
+// spalla interna dx → fianchi dx → orlo (speculare, rastremazione vita)
+body.bezierCurveTo(1.20, 0.20, 1.12, -0.80, 1.05, -1.58);
+// orlo: angoli leggermente arrotondati
+body.quadraticCurveTo(0.60, -1.62, 0, -1.62);
+body.quadraticCurveTo(-0.60, -1.62, -1.05, -1.58);
 
 const bodyGeo = new THREE.ExtrudeGeometry(body, extrudeOpts);
-bodyGeo.center();
+// NON chiamare bodyGeo.center() — tutto resta nel sistema shape originale
 const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
 bodyMesh.castShadow = true;
 bodyMesh.receiveShadow = true;
 
-// Manica (una shape, specchiata per il lato destro)
+/* ---- MANICHE ---- */
+// Coordinate nel MEDESIMO sistema shape del corpo.
+// Spalla interna condivisa col corpo: (-1.28, 0.90) e (-1.55, 1.34)
+// Manica ammorbidita: quadraticCurveTo per angoli non-squadrati
 function makeSleeve(mirror) {
   const s = new THREE.Shape();
+  // parte superiore (attacco alla spalla del corpo)
   s.moveTo(-1.55, 1.34);
-  s.lineTo(-2.42, 0.78);
-  s.lineTo(-2.18, 0.30);
-  s.lineTo(-1.28, 0.90);
+  // bordo esterno manica con lieve curva verso il basso (non slab orizzontale)
+  s.quadraticCurveTo(-2.00, 1.10, -2.38, 0.76);
+  // punta manica (angolo arrotondato)
+  s.quadraticCurveTo(-2.50, 0.54, -2.42, 0.32);
+  // bordo inferiore manica che risale verso spalla interna
+  s.quadraticCurveTo(-2.10, 0.38, -1.28, 0.90);
+  // chiude al punto di partenza lungo la spalla
   s.lineTo(-1.55, 1.34);
   const g = new THREE.ExtrudeGeometry(s, extrudeOpts);
   const m = new THREE.Mesh(g, sleeveMat);
@@ -298,44 +325,171 @@ function makeSleeve(mirror) {
   return m;
 }
 
-// Colletto girocollo (semi-anello lungo lo scollo)
-const collarGeo = new THREE.TorusGeometry(0.52, 0.075, 16, 40, Math.PI);
+/* ---- COLLETTO ---- */
+// Colletto girocollo: semi-toro posizionato allo scollo della maglia.
+// Scollo shape: apice quadratica a y=0.98, bordi a y=1.42 in x=±0.48.
+// TorusGeometry di default giace nel piano XY (asse Z = normale al piano).
+// Perfetto: posizionato a z = faccia frontale della maglia, giace sul piano XY.
+// Usiamo arc = Math.PI (semicerchio) orientato con gli estremi verso l'alto
+// e la pancia verso il basso → girocollo aperto verso l'alto (verso il collo).
+// rotation.z = 0 → pancia verso Z-negativo nel piano XY → ruotiamo di Math.PI su Z
+// per far scendere la pancia = apertura verso il basso = girocollo.
+const COLLAR_R = 0.46;   // raggio del torus (coincide con la larghezza ±0.48 dello scollo)
+const COLLAR_T = 0.07;   // spessore tubo (tube radius)
+const collarGeo = new THREE.TorusGeometry(COLLAR_R, COLLAR_T, 16, 48, Math.PI);
 const collar = new THREE.Mesh(collarGeo, collarMat);
 collar.castShadow = true;
+// Il torus con arc=PI e nessuna rotazione: gli estremi sono a x=±COLLAR_R, y=0, z=0
+// e la pancia è a x=0, y=COLLAR_R, z=0 (pancia verso l'alto).
+// Vogliamo: pancia verso il BASSO (apertura verso l'alto = girocollo) → rotation.z = PI.
+// y = apice scollo nel sistema shape = 0.98. Il torus ha raggio 0.46 → il top del semi-
+// toro dopo rotation.z=PI raggiunge y = 0.98 + COLLAR_R = 1.44 ≈ livello spalle ✓
+// z = faccia frontale + sporgenza minima: z = DEPTH + COLLAR_T
+collar.rotation.z = Math.PI;
+collar.position.set(0, 0.98, DEPTH + COLLAR_T * 0.6);
 
-// Gruppo maglia
+/* ---- Gruppo MAGLIA (jersey) ---- */
 const jersey = new THREE.Group();
 jersey.add(bodyMesh);
 const sleeveL = makeSleeve(false);
 const sleeveR = makeSleeve(true);
 jersey.add(sleeveL, sleeveR);
-// Allinea maniche/colletto al corpo centrato
-const yOffset = 0.0;
-[sleeveL, sleeveR].forEach(m => { m.position.y = yOffset - 0.02; });
-collar.position.set(0, 0.92, DEPTH / 2);
-collar.rotation.z = Math.PI; // apertura verso il basso (scollo)
 jersey.add(collar);
-scene.add(jersey);
 
-// Esporta zone per i microtask successivi (senza inquinare lo scope globale)
-window.__kit = { THREE, scene, jersey, materials: { bodyMat, sleeveMat, collarMat } };
+/* ---- PANTALONCINI ---- */
+// Shape estrusa: fascia vita + due gambe con spacco centrale.
+// Posizionate sotto la maglia nel sistema shape originale.
+// Orlo maglia a y=-1.62 → pantaloncini partono da y=-1.70 (piccolo stacco).
+// Altezza pantaloncino ≈ 1.10 unità → fondo a y=-2.80.
+const SHORTS_TOP = -1.72;
+const SHORTS_BOT = -2.82;
+const SHORTS_MID = (SHORTS_TOP + SHORTS_BOT) / 2;
+
+// Costruisco una shape unica a U (fascia vita + due gambe):
+// fascetta vita da x=-1.05 a x=1.05 in alto, poi due gambe separate
+const shorts = new THREE.Shape();
+// bordo superiore vita
+shorts.moveTo(-1.00, SHORTS_TOP);
+shorts.lineTo( 1.00, SHORTS_TOP);
+// gamba destra: scende verso il fondo
+shorts.lineTo( 1.00, SHORTS_BOT);
+// arrotonda angolo inferiore dx
+shorts.quadraticCurveTo(0.90, SHORTS_BOT - 0.04, 0.60, SHORTS_BOT);
+// spacco centrale basso
+shorts.lineTo(0.06, SHORTS_MID - 0.05);
+shorts.lineTo(-0.06, SHORTS_MID - 0.05);
+// gamba sinistra: risale
+shorts.lineTo(-0.60, SHORTS_BOT);
+shorts.quadraticCurveTo(-0.90, SHORTS_BOT - 0.04, -1.00, SHORTS_BOT);
+shorts.lineTo(-1.00, SHORTS_TOP);
+
+const shortsGeo = new THREE.ExtrudeGeometry(shorts, {
+  depth: DEPTH * 0.90,
+  bevelEnabled: true,
+  bevelSize: 0.03,
+  bevelThickness: 0.03,
+  bevelSegments: 2,
+  steps: 1
+});
+const shortsMesh = new THREE.Mesh(shortsGeo, shortsMat);
+shortsMesh.castShadow = true;
+shortsMesh.receiveShadow = true;
+// Centro il geometry di pantaloncini solo in X (già nel sistema shape verticale)
+// Shift Z per allineare faccia frontale con la maglia
+shortsMesh.position.z = (DEPTH - DEPTH * 0.90) / 2;
+
+/* ---- CALZETTONI ---- */
+// Due mesh cilindriche (ExtrudeGeometry box) sotto i pantaloncini.
+// Fondo pantaloncini a y=-2.82 → calzettoni da y=-2.90 a y=-4.20
+const SOCK_TOP = -2.90;
+const SOCK_BOT = -4.20;
+const SOCK_W = 0.32;   // mezza larghezza calzettone
+
+function makeSock(xCenter) {
+  const s = new THREE.Shape();
+  s.moveTo(xCenter - SOCK_W, SOCK_TOP);
+  s.lineTo(xCenter + SOCK_W, SOCK_TOP);
+  s.lineTo(xCenter + SOCK_W, SOCK_BOT);
+  // arrotonda angolo inferiore
+  s.quadraticCurveTo(xCenter + SOCK_W, SOCK_BOT - 0.06, xCenter + SOCK_W * 0.7, SOCK_BOT - 0.08);
+  s.lineTo(xCenter - SOCK_W * 0.7, SOCK_BOT - 0.08);
+  s.quadraticCurveTo(xCenter - SOCK_W, SOCK_BOT - 0.06, xCenter - SOCK_W, SOCK_BOT);
+  s.lineTo(xCenter - SOCK_W, SOCK_TOP);
+
+  const g = new THREE.ExtrudeGeometry(s, {
+    depth: DEPTH * 0.80,
+    bevelEnabled: true,
+    bevelSize: 0.025,
+    bevelThickness: 0.025,
+    bevelSegments: 2,
+    steps: 1
+  });
+  const m = new THREE.Mesh(g, sockMat);
+  m.castShadow = true;
+  m.receiveShadow = true;
+  m.position.z = (DEPTH - DEPTH * 0.80) / 2;
+  return m;
+}
+
+const sockL = makeSock(-0.38);
+const sockR = makeSock( 0.38);
+
+/* ---- Gruppo KIT completo ---- */
+const kit = new THREE.Group();
+kit.add(jersey);
+kit.add(shortsMesh, sockL, sockR);
+scene.add(kit);
+
+// Centra l'intero kit con Box3 (sistema shape → world centrato)
+// Questo sposta l'INTERO gruppo: maglia + colletto + maniche + shorts + calze
+// restano tutti allineati perché erano nello stesso sistema di coordinate.
+const kitBox = new THREE.Box3().setFromObject(kit);
+const kitCenter = new THREE.Vector3();
+kitBox.getCenter(kitCenter);
+kit.position.sub(kitCenter);
+
+// Piano ombra: sotto il kit centrato
+// Dopo il sub(kitCenter), il bottom del kit è a y = (kitBox.min.y - kitCenter.y)
+const kitBottomLocal = kitBox.min.y - kitCenter.y;
+const ground = new THREE.Mesh(
+  new THREE.PlaneGeometry(40, 40),
+  new THREE.ShadowMaterial({ opacity: 0.28 })
+);
+ground.rotation.x = -Math.PI / 2;
+ground.position.y = kitBottomLocal - 0.08;  // leggermente sotto i calzettoni
+ground.receiveShadow = true;
+scene.add(ground);
+
+// Esporta tutte e 5 le zone per MT2 (color picker su ogni zona)
+// camera e controls esposti per debug/test headless — non usati dalla UI
+window.__kit = {
+  THREE,
+  scene,
+  kit,
+  jersey,
+  camera,
+  materials: { bodyMat, sleeveMat, collarMat, shortsMat, sockMat }
+};
 
 // --- Controlli orbit (rotazione libera multi-angolo) ---
 const controls = new OrbitControls(camera, renderer.domElement);
+window.__kit.controls = controls; // esposto per debug/test headless
 controls.enableDamping = true;
 controls.dampingFactor = 0.08;
 controls.enablePan = false;
-controls.minDistance = 4;
-controls.maxDistance = 12;
+controls.minDistance = 6;
+controls.maxDistance = 18;
+// Target = centro kit (già in origine dopo il sub)
 controls.target.set(0, 0, 0);
 controls.autoRotate = !reduceMotion;
 controls.autoRotateSpeed = 1.4;
 
-// --- Preset vista (fronte/retro/lato) con transizione morbida ---
+// --- Preset vista — distanza per inquadrare kit completo (maglia+shorts+calze) ---
+// kit centrato a origine → camera Y=0, distanze calibrate su FOV 38° e altezza kit ~5.8u
 const VIEWS = {
-  front: new THREE.Vector3(0, 0, 7),
-  back:  new THREE.Vector3(0, 0, -7),
-  side:  new THREE.Vector3(7, 0.4, 0.6),
+  front: new THREE.Vector3(0,  0,  10.5),
+  back:  new THREE.Vector3(0,  0, -10.5),
+  side:  new THREE.Vector3(10.5, 0, 0.6),
 };
 let camTarget = null;
 function goToView(name) {
@@ -356,7 +510,7 @@ function syncAutorotateButton() {
 }
 autoBtn.addEventListener('click', () => {
   controls.autoRotate = !controls.autoRotate;
-  if (controls.autoRotate) camTarget = null;
+  if (controls.autoRotate) camTarget = null;  // riprende auto-rotate, libera lerp target
   syncAutorotateButton();
 });
 if (reduceMotion) { controls.autoRotate = false; }
