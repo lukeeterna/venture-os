@@ -3,8 +3,9 @@
 > Deliverable: configuratore web di kit calcio per scuole calcio / ASD / squadre
 > amatoriali dilettanti italiane. Statico, Cloudflare Pages. UNA unità, scomposta
 > in 7 microtask sequenziali con commit e checkpoint per microtask.
-> Creato: 2026-07-13. Aggiornato: 2026-07-14 (MT1b eseguito).
-> Stato: **MT1 verificato** (founder browser) · **MT1b eseguito, in attesa sigillo browser founder** · MT2+ non autorizzati.
+> Creato: 2026-07-13. Aggiornato: 2026-07-15 (MT1c A2 eseguito — VIA 2).
+> Stato: **MT1 verificato** (founder browser) · **MT1b eseguito, attesa sigillo** · **MT1c FASE A2 eseguito (asset GLB auto-prodotto da base CC0 in Blender, 5 zone, gate render prodotto), attesa VERDETTO founder/giudice** · FASE B + MT2+ non autorizzati.
+> SVOLTA VIA 2 (ratificata founder 2026-07-15): il 3D passa da mesh procedurale three.js a `configurator/assets/kit.glb` derivato da base anatomica CC0. VIA 1 (acquisto) = fallback solo-giudice se il gate fallisce. Script: `configurator/tools/kit_build.py`. Licenza: `configurator/ASSET_LICENSE.md`.
 
 ## Deliverable path (versionato, NON /tmp)
 

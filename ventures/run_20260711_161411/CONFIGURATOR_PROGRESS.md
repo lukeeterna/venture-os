@@ -13,6 +13,7 @@
 ## Microtask — stato
 - [x] **MT1** scaffold + scena 3D base — COMPLETATO 2026-07-13, VERIFICATO da Luke nel browser (orbit+preset OK)
 - [~] **MT1b** ESEGUITO 2026-07-14 — in attesa sigillo browser founder (fix colletto→scollo + maniche raccordate + silhouette meno squadrata + toggle verificato + NUOVE mesh pantaloncini/calzettoni su window.__kit.materials). Vedi "MT1b — esito" sotto.
+- [~] **MT1c FASE A2** ESEGUITO 2026-07-15 (VIA 2, asset auto-prodotto EUR 0) — kit.glb derivato da base mesh CC0 in Blender headless, 5 zone-materiale, render gate prodotto. In attesa VERDETTO founder/giudice sul gate estetico. Vedi "MT1c A2 — esito" sotto. FASE B (integrazione nel configuratore) SOLO dopo sigillo.
 - [ ] MT2 colori indipendenti su tutte le 5 zone (corpo/colletto/maniche + pantaloncini + calzettoni) + tonalità libere
 - [ ] MT3 pattern (tinta unita/strisce/fasce/banda/metà/chevron) via CanvasTexture
 - [ ] MT4 nome + numero + multi-font (retro)
@@ -48,6 +49,59 @@ Verdetto guardando gli screenshot (giudice, canale 1):
 
 ### Toggle auto-rotazione — DISCORDANZA rispetto al bug report MT1
 Verifica CDP headless: il toggle FLIPPA correttamente lo stato — `#autorotate-toggle` porta `aria-pressed` ON→OFF→ON e testo "Rotazione: ON/OFF" coerente. Il codice era già corretto in MT1 (`controls.autoRotate = !controls.autoRotate` + `syncAutorotateButton()`), NON è stato modificato (nessun fix inventato). Ipotesi sul "non funziona" di MT1: interazione con i preset (`goToView` setta `autoRotate=false`) o `prefers-reduced-motion` nell'ambiente di Luke. **La conferma della rotazione VISIBILE ON/OFF resta al sigillo browser del founder** (canale 2).
+
+## MT1c A2 — esito esecuzione (2026-07-15, VIA 2 — attesa verdetto gate)
+
+Svolta architetturale ratificata dal founder: il 3D del configuratore passa da
+mesh procedurale three.js (Via A) a **asset GLB auto-prodotto** derivato da una
+base anatomica CC0. VIA 1 (acquisto) resta fallback attivabile SOLO dal giudice
+se il gate del render nudo fallisce.
+
+### Toolchain (locale, senza sudo/GUI)
+- **Blender 3.6.23 LTS** (macOS x64, download ufficiale blender.org), estratto in
+  `ventures/run_20260711_161411/.tools/Blender.app` (NON versionato). Gira
+  headless su Big Sur 11.7.10 (build min macOS 10.15). Nessun sudo, nessuna GUI.
+- **Base CC0**: MakeHuman `base.obj` (hm08, 19.158 v / 18.486 f) in `.tools/`
+  (NON versionato). Licenza verbatim in `configurator/ASSET_LICENSE.md`.
+- MPFB2 scartato: richiede Blender 4.2+, incompatibile con 3.6 (verificato).
+
+### Deliverable (versionati)
+- `configurator/tools/kit_build.py` — script bpy riproducibile: importa la base,
+  classifica le facce per REGIONE anatomica (no primitive), separa, solidify +
+  subsurf, 5 slot-materiale nominati, UV cilindrica, export GLB, budget tris.
+- `configurator/assets/kit.glb` — 5 materiali (`body/sleeves/collar/shorts/socks`),
+  5 primitive, **100.080 tris** (<150k). Verificato via parse JSON del GLB.
+- `configurator/ASSET_LICENSE.md` — base CC0 + licenza verbatim + auto-produzione.
+
+### Gate estetico — dichiarazione PRESENTE/ASSENTE (render Cycles CPU, front/back/side/3-4)
+Render del GLB NUDO reimportato (round-trip reale), zone colorate per materiale.
+Screenshot: `.tools/gate_render/gate_{front,back,side,threeq}.png` (al founder).
+- **Maniche integrate senza stacchi**: PRESENTE — le maniche (blu) condividono i
+  vertici spalla col torso (rosso), raccordo continuo, nessun distacco.
+- **Calzettoni anatomici al polpaccio**: PRESENTE — gusci verdi che seguono
+  l'anatomia dei polpacci, due gambe distinte.
+- **Silhouette anatomica non cartoon**: PRESENTE — derivata da mesh umana reale
+  (spalle, vita, bacino, ombelico, muscolo del polpaccio leggibili).
+- **5 zone indipendenti**: PRESENTE — 5 materiali nominati + 5 primitive nel GLB
+  (verificato nel JSON chunk: mats=[body,sleeves,collar,shorts,socks], prims=[0..4]).
+- **UV valide**: PRESENTE — unwrap cilindrico (u=angolo, v=altezza); verificato
+  in-script: 0 loop non-finiti, tutte le UV nel range calcolato.
+
+### Difetti dichiarati (NON taciuti — il giudice/founder giudica)
+1. **Colletto**: al confine di rimozione testa (banda collo z 0.83-0.86) il guscio
+   solidify genera un anello bianco "arruffato" attorno allo scollo. Leggibile
+   come colletto ma esteticamente sporco.
+2. **Pantaloncini**: la zona (bacino, z 0.40-0.52) rende più come orlo scuro del
+   torso che come pantaloncini distinti con spacco gambe; separazione debole.
+3. **Bordi indumento**: i tagli delle maniche e del torso sono guglie aperte
+   leggermente frastagliate (rim solidify).
+Questi sono estetici. La separazione zone e la derivazione anatomica (obiettivo
+strutturale della VIA 2) sono raggiunte. **STOP: verdetto al founder.** Se
+negativo: nessun secondo giro autonomo — decide il giudice (fallback VIA 1 incl.).
+
+### Rebuild
+`Blender --background --python configurator/tools/kit_build.py -- <base.obj> <kit.glb>`
+Bande/soglie regione = costanti in testa a `kit_build.py`.
 
 ## Dettaglio MT1 (realizzato)
 - File: `configurator/index.html` (NEW, commit d64563a), `CONFIGURATOR_PROGRESS.md` (NEW).
