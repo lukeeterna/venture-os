@@ -11,3 +11,6 @@ __pycache__/
 # handoff effimeri — rigenerati a ogni sessione dall'auto-close, mai in storia
 .claude/HANDOFF_CURRENT.md
 .claude/NEXT_SESSION_PROMPT.md
+
+# toolchain locale build (Blender, base mesh CC0, render gate) — mai in git
+.tools/
