@@ -6,8 +6,10 @@ __pycache__/
 *.pyc
 .DS_Store
 # Rule 1d restore point transienti — mai in storia
-*.bak-*
-*.bak.*
+*.bak*
+# credenziali — mai in git
+*.pem
+*.key
 # handoff effimeri — rigenerati a ogni sessione dall'auto-close, mai in storia
 .claude/HANDOFF_CURRENT.md
 .claude/NEXT_SESSION_PROMPT.md
