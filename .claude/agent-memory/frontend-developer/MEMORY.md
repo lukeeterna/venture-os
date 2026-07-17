@@ -1,0 +1,1 @@
+- [Sportswear preventivatore tool](project_sportswear_preventivatore.md) — Single-file HTML quote builder, ventures/run_20260711_161411/tools/preventivatore/index.html, Safari 14 compatible
