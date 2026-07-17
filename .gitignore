@@ -16,3 +16,7 @@ __pycache__/
 
 # toolchain locale build (Blender, base mesh CC0, render gate) — mai in git
 .tools/
+
+# preventivatore sportswear — dati founder solo in localStorage, mai in git
+**/preventivatore-dati*.json
+**/*.preventivo.json

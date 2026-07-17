@@ -1,0 +1,1753 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Preventivatore Kit Calcio</title>
+<style>
+/* ── Design Tokens ── */
+:root {
+  --color-bg: #f4f5f7;
+  --color-surface: #ffffff;
+  --color-surface-alt: #f8f9fa;
+  --color-border: #d1d5db;
+  --color-border-focus: #3b82f6;
+  --color-primary: #1d4ed8;
+  --color-primary-hover: #1e40af;
+  --color-danger: #dc2626;
+  --color-danger-hover: #b91c1c;
+  --color-success: #16a34a;
+  --color-warning-bg: #fef3c7;
+  --color-warning-border: #f59e0b;
+  --color-warning-text: #92400e;
+  --color-internal-bg: #eff6ff;
+  --color-internal-border: #bfdbfe;
+  --color-text: #111827;
+  --color-text-muted: #6b7280;
+  --color-tab-active: #1d4ed8;
+  --color-tab-inactive: #6b7280;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --font-size-sm: 13px;
+  --font-size-base: 14px;
+  --font-size-md: 15px;
+  --font-size-lg: 18px;
+  --font-size-xl: 22px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* ── Reset & Base ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  font-size: var(--font-size-base);
+  color: var(--color-text);
+  background: var(--color-bg);
+  line-height: 1.5;
+}
+button { cursor: pointer; font-family: inherit; }
+input, textarea, select { font-family: inherit; font-size: var(--font-size-base); }
+table { border-collapse: collapse; width: 100%; }
+th, td { text-align: left; padding: var(--space-sm) var(--space-md); }
+th { font-weight: 600; font-size: var(--font-size-sm); color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+
+/* ── Focus Styles ── */
+:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+/* ── Layout ── */
+.app-header {
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  padding: var(--space-md) var(--space-xl);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+}
+.app-title { font-size: var(--font-size-lg); font-weight: 700; color: var(--color-primary); }
+.backup-status {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+.backup-dirty {
+  background: var(--color-warning-bg);
+  border: 1px solid var(--color-warning-border);
+  color: var(--color-warning-text);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+}
+.backup-clean {
+  color: var(--color-success);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+}
+
+.tabs-nav {
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  padding: 0 var(--space-xl);
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+}
+.tab-btn {
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  padding: var(--space-md) var(--space-lg);
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  color: var(--color-tab-inactive);
+  white-space: nowrap;
+  transition: color 0.15s, border-color 0.15s;
+}
+.tab-btn:hover { color: var(--color-text); }
+.tab-btn.active {
+  color: var(--color-tab-active);
+  border-bottom-color: var(--color-tab-active);
+}
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+.main-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-xl);
+}
+
+/* ── Cards & Sections ── */
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--space-lg);
+}
+.card-header {
+  padding: var(--space-md) var(--space-lg);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+.card-title { font-size: var(--font-size-md); font-weight: 600; }
+.card-body { padding: var(--space-lg); }
+
+/* ── Form Controls ── */
+.form-group { margin-bottom: var(--space-md); }
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-md);
+}
+label {
+  display: block;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text);
+  margin-bottom: var(--space-xs);
+}
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="tel"],
+textarea,
+select {
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  transition: border-color 0.15s;
+}
+input:focus, textarea:focus, select:focus {
+  border-color: var(--color-border-focus);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+}
+textarea { resize: vertical; min-height: 80px; }
+input[type="number"] { -moz-appearance: textfield; }
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+.input-small { max-width: 120px; }
+
+/* ── Buttons ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  transition: background 0.15s, color 0.15s;
+}
+.btn-primary { background: var(--color-primary); color: #fff; }
+.btn-primary:hover { background: var(--color-primary-hover); }
+.btn-secondary {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+.btn-secondary:hover { background: var(--color-surface-alt); }
+.btn-danger { background: var(--color-danger); color: #fff; }
+.btn-danger:hover { background: var(--color-danger-hover); }
+.btn-sm { padding: var(--space-xs) var(--space-sm); font-size: var(--font-size-sm); }
+.btn-icon { padding: var(--space-xs); border-radius: var(--radius-sm); }
+
+/* ── Tables ── */
+.table-wrapper { overflow-x: auto; }
+.data-table { min-width: 600px; }
+.data-table thead { background: var(--color-surface-alt); }
+.data-table tbody tr { border-top: 1px solid var(--color-border); }
+.data-table tbody tr:hover { background: var(--color-surface-alt); }
+.data-table td { vertical-align: middle; }
+.data-table input { border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 4px 8px; width: 100%; min-width: 80px; }
+
+/* ── Internal indicator ── */
+.internal-badge {
+  background: var(--color-internal-bg);
+  border: 1px solid var(--color-internal-border);
+  color: #1e40af;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  letter-spacing: 0.03em;
+}
+
+/* ── Preventivo composition ── */
+.riga-preventivo {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr auto;
+  gap: var(--space-sm);
+  align-items: center;
+  margin-bottom: var(--space-sm);
+  padding: var(--space-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-alt);
+}
+.riga-preventivo label { margin-bottom: 0; font-size: var(--font-size-sm); }
+.riga-total-internal {
+  font-size: var(--font-size-sm);
+  color: #1e40af;
+  background: var(--color-internal-bg);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+
+/* ── Totali ── */
+.totali-box {
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-sm) var(--space-xl);
+}
+.totali-row { display: flex; justify-content: space-between; gap: var(--space-md); }
+.totali-label { color: var(--color-text-muted); }
+.totali-value { font-weight: 600; }
+.totali-grand { font-size: var(--font-size-lg); color: var(--color-primary); }
+.totali-internal {
+  border-left: 3px solid var(--color-internal-border);
+  padding-left: var(--space-md);
+}
+
+/* ── Storico ── */
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.badge-bozza { background: #f3f4f6; color: #4b5563; }
+.badge-inviato { background: #dbeafe; color: #1d4ed8; }
+.badge-accettato { background: #dcfce7; color: #15803d; }
+.badge-caparra { background: #d1fae5; color: #065f46; }
+.badge-rifiutato { background: #fee2e2; color: #991b1b; }
+
+/* ── Logo upload area ── */
+.logo-upload-area {
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  text-align: center;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.logo-upload-area:hover { border-color: var(--color-border-focus); }
+.logo-preview { max-height: 80px; max-width: 240px; display: block; margin: 0 auto var(--space-sm); }
+
+/* ── Vista cliente (output) ── */
+.client-output {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+}
+.client-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--space-xl);
+  padding-bottom: var(--space-lg);
+  border-bottom: 2px solid var(--color-border);
+}
+.client-biz-info { font-size: var(--font-size-sm); color: var(--color-text-muted); line-height: 1.8; }
+.client-doc-title { font-size: var(--font-size-xl); font-weight: 700; color: var(--color-primary); }
+.client-doc-meta { font-size: var(--font-size-sm); color: var(--color-text-muted); margin-top: var(--space-xs); }
+.client-dest {
+  background: var(--color-surface-alt);
+  border-left: 3px solid var(--color-primary);
+  padding: var(--space-md);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  margin-bottom: var(--space-lg);
+  font-size: var(--font-size-sm);
+}
+.client-items-table { margin-bottom: var(--space-lg); }
+.client-items-table th { background: var(--color-primary); color: #fff; }
+.client-items-table td { border-bottom: 1px solid var(--color-border); }
+.client-items-table tr:last-child td { border-bottom: none; }
+.client-totali {
+  text-align: right;
+  margin-bottom: var(--space-lg);
+}
+.client-totali-row { display: flex; justify-content: flex-end; gap: var(--space-xl); padding: 4px 0; }
+.client-totali-row.grand {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--color-primary);
+  border-top: 2px solid var(--color-border);
+  padding-top: var(--space-sm);
+  margin-top: var(--space-xs);
+}
+.client-note {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-md);
+  margin-top: var(--space-md);
+  white-space: pre-wrap;
+}
+.client-conditions {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  margin-top: var(--space-md);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-sm);
+}
+.client-conditions span { display: block; }
+.client-conditions strong { color: var(--color-text); }
+
+/* ── Storico table ── */
+.storico-table tbody tr { cursor: pointer; }
+.storico-table tbody tr:hover td { background: var(--color-surface-alt); }
+
+/* ── Listino tiers ── */
+.tier-row {
+  display: grid;
+  grid-template-columns: 80px 120px 120px auto;
+  gap: var(--space-sm);
+  align-items: center;
+  margin-bottom: var(--space-xs);
+}
+.tier-row label { margin-bottom: 0; font-size: var(--font-size-sm); }
+
+/* ── Utility ── */
+.flex { display: flex; }
+.items-center { align-items: center; }
+.gap-sm { gap: var(--space-sm); }
+.gap-md { gap: var(--space-md); }
+.mt-sm { margin-top: var(--space-sm); }
+.mt-md { margin-top: var(--space-md); }
+.mt-lg { margin-top: var(--space-lg); }
+.text-sm { font-size: var(--font-size-sm); }
+.text-muted { color: var(--color-text-muted); }
+.text-right { text-align: right; }
+.text-center { text-align: center; }
+.font-bold { font-weight: 700; }
+.hidden { display: none !important; }
+.w-full { width: 100%; }
+.separator { border: none; border-top: 1px solid var(--color-border); margin: var(--space-lg) 0; }
+.notice {
+  background: var(--color-internal-bg);
+  border: 1px solid var(--color-internal-border);
+  color: #1e40af;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--space-md);
+}
+.empty-state {
+  text-align: center;
+  padding: var(--space-xl);
+  color: var(--color-text-muted);
+}
+
+/* ── Print ── */
+@media print {
+  body { background: #fff; font-size: 12pt; }
+  .app-header, .tabs-nav, .no-print, .backup-status { display: none !important; }
+  .client-output { border: none; padding: 0; box-shadow: none; }
+  .client-items-table th { background: #1d4ed8 !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .card { box-shadow: none; }
+  .notice { display: none !important; }
+  /* Ensure margin data never bleeds into print */
+  .internal-badge, .riga-total-internal, .totali-internal, [data-internal="true"] { display: none !important; }
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .main-content { padding: var(--space-md); }
+  .app-header { padding: var(--space-md); }
+  .tabs-nav { padding: 0 var(--space-md); }
+  .riga-preventivo { grid-template-columns: 1fr 1fr; }
+  .client-conditions { grid-template-columns: 1fr; }
+  .client-header { flex-direction: column; gap: var(--space-md); }
+  .totali-box { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════ APP HEADER ═══════════════════════════ -->
+<header class="app-header" role="banner">
+  <div class="app-title">&#9917; Preventivatore Kit Calcio</div>
+  <div class="backup-status" role="status" aria-live="polite" aria-label="Stato backup">
+    <span id="backup-info" class="text-muted text-sm">—</span>
+    <span id="backup-dirty-indicator"></span>
+  </div>
+  <div class="flex gap-sm no-print">
+    <button class="btn btn-secondary btn-sm" id="btn-esporta" type="button">&#8595; Esporta JSON</button>
+    <button class="btn btn-secondary btn-sm" id="btn-importa" type="button">&#8593; Importa JSON</button>
+    <input type="file" id="input-importa" accept=".json" class="hidden" aria-label="File JSON da importare">
+  </div>
+</header>
+
+<!-- ═══════════════════════════ TABS ═══════════════════════════ -->
+<nav class="tabs-nav" role="tablist" aria-label="Sezioni applicazione">
+  <button class="tab-btn active" role="tab" aria-selected="true"  aria-controls="tab-preventivo" id="tbtn-preventivo" type="button">Preventivo</button>
+  <button class="tab-btn"        role="tab" aria-selected="false" aria-controls="tab-listino"    id="tbtn-listino"    type="button">Listino</button>
+  <button class="tab-btn"        role="tab" aria-selected="false" aria-controls="tab-parametri"  id="tbtn-parametri"  type="button">Parametri</button>
+  <button class="tab-btn"        role="tab" aria-selected="false" aria-controls="tab-output"     id="tbtn-output"     type="button">Vista Cliente</button>
+  <button class="tab-btn"        role="tab" aria-selected="false" aria-controls="tab-storico"    id="tbtn-storico"    type="button">Storico</button>
+</nav>
+
+<!-- ═══════════════════════════ MAIN CONTENT ═══════════════════════════ -->
+<main class="main-content" role="main">
+
+<!-- ──────────── TAB: PREVENTIVO ──────────── -->
+<div id="tab-preventivo" class="tab-content active" role="tabpanel" aria-labelledby="tbtn-preventivo">
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Nuovo Preventivo</span>
+      <div class="flex gap-sm">
+        <span class="text-sm text-muted" id="prev-numero-display">N° —</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <!-- Cliente -->
+      <fieldset style="border:none;padding:0;margin:0 0 var(--space-lg)">
+        <legend class="card-title" style="margin-bottom:var(--space-md)">Dati cliente</legend>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="prev-societa">Società / ASD</label>
+            <input type="text" id="prev-societa" placeholder="Nome società o ASD">
+          </div>
+          <div class="form-group">
+            <label for="prev-referente">Referente</label>
+            <input type="text" id="prev-referente" placeholder="Nome e cognome">
+          </div>
+          <div class="form-group">
+            <label for="prev-email">Email</label>
+            <input type="email" id="prev-email" placeholder="email@esempio.it">
+          </div>
+          <div class="form-group">
+            <label for="prev-tel">Telefono</label>
+            <input type="tel" id="prev-tel" placeholder="+39 000 0000000">
+          </div>
+        </div>
+      </fieldset>
+
+      <hr class="separator">
+
+      <!-- Righe preventivo -->
+      <div class="flex items-center gap-md" style="margin-bottom:var(--space-md)">
+        <h3 class="card-title">Voci preventivo</h3>
+        <span class="internal-badge">Vista interna</span>
+        <button class="btn btn-primary btn-sm no-print" id="btn-aggiungi-riga" type="button">+ Aggiungi voce</button>
+      </div>
+
+      <div class="notice" role="note">
+        I campi Costo, Margine € e Totale margine sono <strong>solo per uso interno</strong> e non appaiono mai nell'output cliente.
+      </div>
+
+      <!-- Header righe -->
+      <div style="display:grid;grid-template-columns:2fr 90px 110px 110px 100px 90px 90px auto;gap:var(--space-sm);padding:var(--space-xs) var(--space-sm);font-size:var(--font-size-sm);font-weight:600;color:var(--color-text-muted);" class="no-print" aria-hidden="true">
+        <span>Voce</span>
+        <span>Qtà</span>
+        <span>Pr. Unit. (€)</span>
+        <span>Totale (€)</span>
+        <span style="color:#1e40af">Costo unit.</span>
+        <span style="color:#1e40af">Margine €</span>
+        <span style="color:#1e40af">Tot. marg.</span>
+        <span></span>
+      </div>
+      <div id="righe-preventivo" role="list" aria-label="Righe del preventivo"></div>
+
+      <hr class="separator">
+
+      <!-- Totali -->
+      <div class="totali-box">
+        <div>
+          <div class="totali-row"><span class="totali-label">Subtotale</span><span class="totali-value" id="tot-subtotale">0,00 €</span></div>
+          <div class="totali-row"><span class="totali-label">Caparra (<span id="tot-caparra-pct">0</span>%)</span><span class="totali-value" id="tot-caparra">0,00 €</span></div>
+          <div class="totali-row" style="margin-top:var(--space-sm)"><span class="totali-label font-bold">TOTALE</span><span class="totali-value totali-grand" id="tot-totale">0,00 €</span></div>
+        </div>
+        <div class="totali-internal" data-internal="true" aria-label="Dati interni costo e margine">
+          <div class="text-sm font-bold" style="color:#1e40af;margin-bottom:var(--space-sm)">INTERNI</div>
+          <div class="totali-row"><span class="totali-label">Tot. costo</span><span class="totali-value text-sm" id="tot-costo">0,00 €</span></div>
+          <div class="totali-row"><span class="totali-label">Tot. margine</span><span class="totali-value text-sm" id="tot-margine">0,00 €</span></div>
+          <div class="totali-row"><span class="totali-label">Margine %</span><span class="totali-value text-sm" id="tot-margine-pct">—</span></div>
+        </div>
+      </div>
+
+      <hr class="separator">
+
+      <!-- Data e note -->
+      <div class="form-row">
+        <div class="form-group">
+          <label for="prev-data">Data preventivo</label>
+          <input type="text" id="prev-data" placeholder="gg/mm/aaaa">
+        </div>
+        <div class="form-group">
+          <label for="prev-stato">Stato</label>
+          <select id="prev-stato">
+            <option value="bozza">Bozza</option>
+            <option value="inviato">Inviato</option>
+            <option value="accettato">Accettato</option>
+            <option value="caparra">Caparra incassata</option>
+            <option value="rifiutato">Rifiutato</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="prev-note">Note interne (non compaiono nell'output cliente)</label>
+        <textarea id="prev-note" placeholder="Note solo per uso interno…"></textarea>
+      </div>
+
+      <div class="flex gap-sm mt-md no-print">
+        <button class="btn btn-primary" id="btn-salva-prev" type="button">&#10003; Salva preventivo</button>
+        <button class="btn btn-secondary" id="btn-nuovo-prev" type="button">&#10011; Nuovo (vuoto)</button>
+        <button class="btn btn-secondary" id="btn-vai-output" type="button">&#128196; Vista Cliente</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ──────────── TAB: LISTINO ──────────── -->
+<div id="tab-listino" class="tab-content" role="tabpanel" aria-labelledby="tbtn-listino">
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Listino voci</span>
+      <button class="btn btn-primary btn-sm no-print" id="btn-nuova-voce" type="button">+ Nuova voce</button>
+    </div>
+    <div class="card-body">
+      <div class="notice" role="note">
+        Inserisci i costi fornitore per fascia quantità. Il prezzo di vendita viene calcolato applicando il margine definito nei Parametri. Valori esempio = 0,00 / 99,99.
+      </div>
+      <div id="listino-voci" role="list" aria-label="Voci listino"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ──────────── TAB: PARAMETRI ──────────── -->
+<div id="tab-parametri" class="tab-content" role="tabpanel" aria-labelledby="tbtn-parametri">
+  <div class="card">
+    <div class="card-header"><span class="card-title">Parametri globali</span></div>
+    <div class="card-body">
+      <div class="form-row">
+        <fieldset style="border:1px solid var(--color-border);padding:var(--space-md);border-radius:var(--radius-md)">
+          <legend style="font-weight:600;padding:0 var(--space-xs)">Margine default</legend>
+          <div class="form-group mt-sm">
+            <label for="param-margine-tipo">Tipo margine</label>
+            <select id="param-margine-tipo">
+              <option value="pct">Percentuale (%)</option>
+              <option value="eur">Fisso (€)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="param-margine-val">Valore margine</label>
+            <input type="number" id="param-margine-val" min="0" step="0.01" placeholder="0">
+          </div>
+        </fieldset>
+
+        <fieldset style="border:1px solid var(--color-border);padding:var(--space-md);border-radius:var(--radius-md)">
+          <legend style="font-weight:600;padding:0 var(--space-xs)">Prezzo finale</legend>
+          <div class="form-group mt-sm">
+            <label for="param-arrotondamento">Arrotondamento</label>
+            <select id="param-arrotondamento">
+              <option value="0">Nessuno (2 decimali)</option>
+              <option value="0.5">0,50 €</option>
+              <option value="1">1,00 €</option>
+              <option value="5">5,00 €</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="param-caparra">Caparra (%)</label>
+            <input type="number" id="param-caparra" min="0" max="100" step="1" placeholder="0">
+          </div>
+        </fieldset>
+
+        <fieldset style="border:1px solid var(--color-border);padding:var(--space-md);border-radius:var(--radius-md)">
+          <legend style="font-weight:600;padding:0 var(--space-xs)">Offerta</legend>
+          <div class="form-group mt-sm">
+            <label for="param-validita">Validità offerta (giorni)</label>
+            <input type="number" id="param-validita" min="1" step="1" placeholder="30">
+          </div>
+          <div class="form-group">
+            <label for="param-consegna">Tempi di consegna</label>
+            <input type="text" id="param-consegna" placeholder="Es: 3–4 settimane lavorative">
+          </div>
+        </fieldset>
+      </div>
+
+      <div class="form-group mt-md">
+        <label for="param-note-libere">Note libere (appaiono nell'output cliente — includi qui eventuale testo condizioni, modalità pagamento, ecc.)</label>
+        <textarea id="param-note-libere" style="min-height:120px" placeholder="Inserisci qui il testo che desideri mostrare al cliente, es. condizioni di pagamento, garanzie, ecc."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span class="card-title">Logo attività (opzionale)</span></div>
+    <div class="card-body">
+      <p class="text-sm text-muted" style="margin-bottom:var(--space-md)">Il logo viene salvato localmente nel browser (base64). Appare nell'output cliente.</p>
+      <div class="logo-upload-area" id="logo-drop-area" role="button" tabindex="0" aria-label="Carica logo — clicca o trascina un'immagine">
+        <img id="logo-preview" class="logo-preview hidden" alt="Logo caricato">
+        <p id="logo-placeholder">Clicca per caricare un logo (PNG, JPG, SVG)</p>
+        <input type="file" id="logo-input" accept="image/*" class="hidden" aria-label="Seleziona file logo">
+      </div>
+      <button class="btn btn-danger btn-sm mt-sm hidden no-print" id="btn-rimuovi-logo" type="button">Rimuovi logo</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span class="card-title">Dati attività (intestazione output cliente)</span></div>
+    <div class="card-body">
+      <div class="notice" role="note">Questi dati appaiono nell'intestazione dell'output cliente al posto dei segnaposto [ATTIVITA] ecc. Non sono hardcoded nel codice — vengono salvati nel tuo browser.</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="param-nome-attivita">Nome attività</label>
+          <input type="text" id="param-nome-attivita" placeholder="[ATTIVITA]">
+        </div>
+        <div class="form-group">
+          <label for="param-email-attivita">Email attività</label>
+          <input type="email" id="param-email-attivita" placeholder="[EMAIL_ATTIVITA]">
+        </div>
+        <div class="form-group">
+          <label for="param-tel-attivita">Telefono attività</label>
+          <input type="tel" id="param-tel-attivita" placeholder="[TEL]">
+        </div>
+      </div>
+      <div class="flex gap-sm mt-md no-print">
+        <button class="btn btn-primary" id="btn-salva-parametri" type="button">&#10003; Salva parametri</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ──────────── TAB: VISTA CLIENTE ──────────── -->
+<div id="tab-output" class="tab-content" role="tabpanel" aria-labelledby="tbtn-output">
+  <div class="flex gap-sm no-print" style="margin-bottom:var(--space-md)">
+    <button class="btn btn-primary" id="btn-stampa" type="button">&#128438; Stampa / Salva PDF</button>
+    <button class="btn btn-secondary" id="btn-copia-email" type="button">&#128203; Copia testo email</button>
+  </div>
+  <div class="notice no-print" role="note">
+    Questa vista non contiene mai costi o margini — solo dati cliente, voci, prezzi di vendita e note visibili al cliente.
+  </div>
+  <div id="client-output-container" class="client-output" aria-label="Anteprima output cliente">
+    <p class="empty-state">Compila un preventivo nella scheda <strong>Preventivo</strong> per vedere l'anteprima.</p>
+  </div>
+</div>
+
+<!-- ──────────── TAB: STORICO ──────────── -->
+<div id="tab-storico" class="tab-content" role="tabpanel" aria-labelledby="tbtn-storico">
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Storico preventivi</span>
+    </div>
+    <div class="card-body">
+      <div class="table-wrapper">
+        <table class="data-table storico-table" aria-label="Storico preventivi">
+          <thead>
+            <tr>
+              <th scope="col">N°</th>
+              <th scope="col">Data</th>
+              <th scope="col">Cliente</th>
+              <th scope="col">Totale</th>
+              <th scope="col">Stato</th>
+              <th scope="col" class="no-print">Azioni</th>
+            </tr>
+          </thead>
+          <tbody id="storico-tbody">
+            <tr><td colspan="6" class="empty-state">Nessun preventivo salvato.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<script>
+/* ================================================================
+   PREVENTIVATORE KIT CALCIO — Vanilla JS / localStorage
+   Tutte le stringhe UI in italiano. Zero dipendenze esterne.
+   ================================================================ */
+
+/* ── VOCI PREDEFINITE (solo label, zero prezzi) ── */
+var VOCI_DEFAULT = [
+  { id: 'voce-1', label: 'Maglia',                  tiers: [{qMin:1,costoUnit:0},{qMin:10,costoUnit:0},{qMin:25,costoUnit:0}] },
+  { id: 'voce-2', label: 'Pantaloncino',             tiers: [{qMin:1,costoUnit:0},{qMin:10,costoUnit:0},{qMin:25,costoUnit:0}] },
+  { id: 'voce-3', label: 'Calzettoni',               tiers: [{qMin:1,costoUnit:0},{qMin:10,costoUnit:0},{qMin:25,costoUnit:0}] },
+  { id: 'voce-4', label: 'Kit completo',             tiers: [{qMin:1,costoUnit:0},{qMin:10,costoUnit:0},{qMin:25,costoUnit:0}] },
+  { id: 'voce-5', label: 'Personalizzazione nome/numero', tiers: [{qMin:1,costoUnit:0},{qMin:10,costoUnit:0},{qMin:25,costoUnit:0}] },
+  { id: 'voce-6', label: 'Stampa sponsor',           tiers: [{qMin:1,costoUnit:0},{qMin:10,costoUnit:0},{qMin:25,costoUnit:0}] },
+  { id: 'voce-7', label: 'Riga libera',              tiers: [{qMin:1,costoUnit:0},{qMin:10,costoUnit:0},{qMin:25,costoUnit:0}] }
+];
+
+var PARAMETRI_DEFAULT = {
+  margineTipo: 'pct',
+  margineVal: 0,
+  arrotondamento: 0,
+  caparra: 0,
+  validita: 30,
+  consegna: '',
+  noteLibere: '',
+  nomeAttivita: '',
+  emailAttivita: '',
+  telAttivita: ''
+};
+
+/* ── STATO GLOBALE ── */
+var state = {
+  listino: [],
+  parametri: {},
+  preventivi: [],
+  contatore: 0,
+  logo: null,
+  lastExportTs: null,
+  dirtyAfterExport: false,
+  /* preventivo corrente (non salvato nello storico) */
+  currentPrev: null
+};
+
+/* ── UTILITY ── */
+function fmtEur(n) {
+  return parseFloat(n || 0).toFixed(2).replace('.', ',') + ' \u20ac';
+}
+
+function parseNum(s) {
+  if (s === null || s === undefined) return 0;
+  return parseFloat(String(s).replace(',', '.')) || 0;
+}
+
+function today() {
+  var d = new Date();
+  return d.getDate().toString().padStart(2,'0') + '/' +
+         (d.getMonth()+1).toString().padStart(2,'0') + '/' +
+         d.getFullYear();
+}
+
+function escHtml(s) {
+  var div = document.createElement('div');
+  div.appendChild(document.createTextNode(String(s || '')));
+  return div.innerHTML;
+}
+
+function generateId() {
+  return 'id-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,7);
+}
+
+function deepCopy(obj) {
+  return JSON.parse(JSON.stringify(obj));
+}
+
+/* ── ARROTONDAMENTO ── */
+function arrotonda(val, step) {
+  step = parseFloat(step) || 0;
+  if (step === 0) return Math.round(val * 100) / 100;
+  return Math.ceil(val / step) * step;
+}
+
+/* ── CALCOLO PREZZO DA LISTINO ── */
+function prezzoUnitario(voceId, qta) {
+  var voce = state.listino.find(function(v){ return v.id === voceId; });
+  if (!voce) return 0;
+  var p = state.parametri;
+  /* trova tier */
+  var costoUnit = 0;
+  var tiers = voce.tiers.slice().sort(function(a,b){ return a.qMin - b.qMin; });
+  for (var i = 0; i < tiers.length; i++) {
+    if (qta >= tiers[i].qMin) costoUnit = parseNum(tiers[i].costoUnit);
+  }
+  /* applica margine */
+  var margineVal = parseNum(p.margineVal);
+  var prezzoCalc;
+  if (p.margineTipo === 'pct') {
+    prezzoCalc = costoUnit * (1 + margineVal / 100);
+  } else {
+    prezzoCalc = costoUnit + margineVal;
+  }
+  return arrotonda(prezzoCalc, parseFloat(p.arrotondamento) || 0);
+}
+
+function costoUnitarioDaListino(voceId, qta) {
+  var voce = state.listino.find(function(v){ return v.id === voceId; });
+  if (!voce) return 0;
+  var tiers = voce.tiers.slice().sort(function(a,b){ return a.qMin - b.qMin; });
+  var costoUnit = 0;
+  for (var i = 0; i < tiers.length; i++) {
+    if (qta >= tiers[i].qMin) costoUnit = parseNum(tiers[i].costoUnit);
+  }
+  return costoUnit;
+}
+
+/* ── PERSISTENZA ── */
+var LS_KEY = 'preventivatore_v1';
+
+function saveState() {
+  state.dirtyAfterExport = true;
+  try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch(e) { alert('Errore salvataggio localStorage: ' + e.message); }
+  renderBackupStatus();
+}
+
+function loadState() {
+  try {
+    var raw = localStorage.getItem(LS_KEY);
+    if (!raw) return false;
+    var saved = JSON.parse(raw);
+    /* merge to avoid missing keys on schema evolution */
+    state.listino = saved.listino || deepCopy(VOCI_DEFAULT);
+    state.parametri = Object.assign({}, PARAMETRI_DEFAULT, saved.parametri || {});
+    state.preventivi = saved.preventivi || [];
+    state.contatore = saved.contatore || 0;
+    state.logo = saved.logo || null;
+    state.lastExportTs = saved.lastExportTs || null;
+    state.dirtyAfterExport = saved.dirtyAfterExport !== undefined ? saved.dirtyAfterExport : false;
+    state.currentPrev = saved.currentPrev || null;
+    return true;
+  } catch(e) {
+    return false;
+  }
+}
+
+/* ── BACKUP STATUS ── */
+function renderBackupStatus() {
+  var info = document.getElementById('backup-info');
+  var dirty = document.getElementById('backup-dirty-indicator');
+  if (state.lastExportTs) {
+    var d = new Date(state.lastExportTs);
+    var s = d.getDate().toString().padStart(2,'0') + '/' +
+            (d.getMonth()+1).toString().padStart(2,'0') + '/' +
+            d.getFullYear() + ' ' +
+            d.getHours().toString().padStart(2,'0') + ':' +
+            d.getMinutes().toString().padStart(2,'0');
+    info.textContent = 'Ultimo export: ' + s;
+  } else {
+    info.textContent = 'Nessun export effettuato';
+  }
+  if (state.dirtyAfterExport) {
+    dirty.innerHTML = '<span class="backup-dirty" role="alert">&#9888; Modifiche non esportate</span>';
+  } else if (state.lastExportTs) {
+    dirty.innerHTML = '<span class="backup-clean">&#10003; Sincronizzato</span>';
+  } else {
+    dirty.innerHTML = '';
+  }
+}
+
+/* ── TABS ── */
+function activateTab(id) {
+  var btns = document.querySelectorAll('.tab-btn');
+  var tabs = document.querySelectorAll('.tab-content');
+  for (var i = 0; i < btns.length; i++) {
+    var isActive = btns[i].getAttribute('aria-controls') === id;
+    btns[i].classList.toggle('active', isActive);
+    btns[i].setAttribute('aria-selected', isActive ? 'true' : 'false');
+  }
+  for (var j = 0; j < tabs.length; j++) {
+    tabs[j].classList.toggle('active', tabs[j].id === id);
+  }
+  if (id === 'tab-output') renderClientOutput();
+  if (id === 'tab-storico') renderStorico();
+}
+
+/* ── LISTINO ── */
+function renderListino() {
+  var container = document.getElementById('listino-voci');
+  if (!container) return;
+  container.innerHTML = '';
+  if (state.listino.length === 0) {
+    container.innerHTML = '<p class="empty-state">Nessuna voce nel listino. Clicca "+ Nuova voce".</p>';
+    return;
+  }
+  state.listino.forEach(function(voce, vi) {
+    var el = document.createElement('div');
+    el.setAttribute('role', 'listitem');
+    el.className = 'card';
+    el.style.marginBottom = 'var(--space-md)';
+
+    var tiersHtml = voce.tiers.map(function(tier, ti) {
+      return '<div class="tier-row">' +
+        '<div><label for="tier-qmin-' + vi + '-' + ti + '" class="text-sm">Qtà min.</label>' +
+        '<input type="number" id="tier-qmin-' + vi + '-' + ti + '" value="' + escHtml(tier.qMin) + '" min="1" step="1" ' +
+               'data-vi="' + vi + '" data-ti="' + ti + '" data-field="qMin" class="tier-input-qmin" ' +
+               'aria-label="Quantità minima fascia ' + (ti+1) + '"></div>' +
+        '<div><label for="tier-costo-' + vi + '-' + ti + '" class="text-sm">Costo unit. (€)</label>' +
+        '<input type="number" id="tier-costo-' + vi + '-' + ti + '" value="' + escHtml(tier.costoUnit) + '" min="0" step="0.01" ' +
+               'data-vi="' + vi + '" data-ti="' + ti + '" data-field="costoUnit" class="tier-input-costo" ' +
+               'aria-label="Costo unitario fascia ' + (ti+1) + '"></div>' +
+        '<div style="padding-top:20px"><button class="btn btn-danger btn-sm btn-icon no-print" ' +
+               'data-vi="' + vi + '" data-ti="' + ti + '" data-action="del-tier" ' +
+               'aria-label="Elimina fascia ' + (ti+1) + '" type="button">&#10005;</button></div>' +
+      '</div>';
+    }).join('');
+
+    el.innerHTML =
+      '<div class="card-header">' +
+        '<div class="flex items-center gap-md">' +
+          '<label for="voce-label-' + vi + '" class="card-title" style="margin:0">Voce ' + (vi+1) + '</label>' +
+          '<input type="text" id="voce-label-' + vi + '" value="' + escHtml(voce.label) + '" ' +
+                 'data-vi="' + vi + '" class="voce-label-input" style="max-width:280px" ' +
+                 'aria-label="Nome voce ' + (vi+1) + '">' +
+        '</div>' +
+        '<button class="btn btn-danger btn-sm no-print" data-vi="' + vi + '" data-action="del-voce" ' +
+                'aria-label="Elimina voce ' + voce.label + '" type="button">Elimina voce</button>' +
+      '</div>' +
+      '<div class="card-body">' +
+        '<p class="text-sm text-muted" style="margin-bottom:var(--space-sm)">Fasce quantità e costi fornitore (INTERNI — non mostrati al cliente)</p>' +
+        '<div class="listino-tiers-' + vi + '">' + tiersHtml + '</div>' +
+        '<button class="btn btn-secondary btn-sm mt-sm no-print" data-vi="' + vi + '" data-action="add-tier" type="button">+ Fascia</button>' +
+      '</div>';
+
+    container.appendChild(el);
+  });
+
+  /* event delegation */
+  container.onclick = handleListinoClick;
+  container.oninput = handleListinoInput;
+}
+
+function handleListinoClick(e) {
+  var btn = e.target.closest('[data-action]');
+  if (!btn) return;
+  var action = btn.getAttribute('data-action');
+  var vi = parseInt(btn.getAttribute('data-vi'), 10);
+  if (action === 'del-voce') {
+    if (confirm('Eliminare la voce "' + state.listino[vi].label + '"?')) {
+      state.listino.splice(vi, 1);
+      saveState();
+      renderListino();
+    }
+  } else if (action === 'add-tier') {
+    state.listino[vi].tiers.push({ qMin: 1, costoUnit: 0 });
+    saveState();
+    renderListino();
+  } else if (action === 'del-tier') {
+    var ti = parseInt(btn.getAttribute('data-ti'), 10);
+    if (state.listino[vi].tiers.length <= 1) { alert('Deve rimanere almeno una fascia.'); return; }
+    state.listino[vi].tiers.splice(ti, 1);
+    saveState();
+    renderListino();
+  }
+}
+
+function handleListinoInput(e) {
+  var el = e.target;
+  var vi = parseInt(el.getAttribute('data-vi'), 10);
+  if (isNaN(vi)) return;
+  if (el.classList.contains('voce-label-input')) {
+    state.listino[vi].label = el.value;
+    saveState();
+  } else if (el.classList.contains('tier-input-qmin') || el.classList.contains('tier-input-costo')) {
+    var ti = parseInt(el.getAttribute('data-ti'), 10);
+    var field = el.getAttribute('data-field');
+    state.listino[vi].tiers[ti][field] = parseNum(el.value);
+    saveState();
+  }
+}
+
+/* ── PARAMETRI ── */
+function renderParametri() {
+  var p = state.parametri;
+  setValue('param-margine-tipo', p.margineTipo);
+  setValue('param-margine-val', p.margineVal);
+  setValue('param-arrotondamento', p.arrotondamento);
+  setValue('param-caparra', p.caparra);
+  setValue('param-validita', p.validita);
+  setValue('param-consegna', p.consegna);
+  setValue('param-note-libere', p.noteLibere);
+  setValue('param-nome-attivita', p.nomeAttivita);
+  setValue('param-email-attivita', p.emailAttivita);
+  setValue('param-tel-attivita', p.telAttivita);
+}
+
+function raccogliParametri() {
+  state.parametri = {
+    margineTipo: getVal('param-margine-tipo'),
+    margineVal: parseNum(getVal('param-margine-val')),
+    arrotondamento: parseFloat(getVal('param-arrotondamento')) || 0,
+    caparra: parseNum(getVal('param-caparra')),
+    validita: parseInt(getVal('param-validita'), 10) || 30,
+    consegna: getVal('param-consegna'),
+    noteLibere: getVal('param-note-libere'),
+    nomeAttivita: getVal('param-nome-attivita'),
+    emailAttivita: getVal('param-email-attivita'),
+    telAttivita: getVal('param-tel-attivita')
+  };
+}
+
+function getVal(id) {
+  var el = document.getElementById(id);
+  return el ? el.value : '';
+}
+function setValue(id, val) {
+  var el = document.getElementById(id);
+  if (el) el.value = val !== null && val !== undefined ? val : '';
+}
+
+/* ── PREVENTIVO CORRENTE ── */
+function makePrevVuoto() {
+  return {
+    id: generateId(),
+    numero: null,
+    data: today(),
+    societa: '',
+    referente: '',
+    email: '',
+    tel: '',
+    stato: 'bozza',
+    note: '',
+    righe: []
+  };
+}
+
+function makeRiga() {
+  return { id: generateId(), voceId: '', voceLabel: '', qta: 1, prezzoUnitOverride: null };
+}
+
+var currentPrev = null;
+
+function initPreventivo(prev) {
+  currentPrev = prev || makePrevVuoto();
+  renderPreventivoForm();
+}
+
+function renderPreventivoForm() {
+  setValue('prev-societa', currentPrev.societa);
+  setValue('prev-referente', currentPrev.referente);
+  setValue('prev-email', currentPrev.email);
+  setValue('prev-tel', currentPrev.tel);
+  setValue('prev-data', currentPrev.data);
+  setValue('prev-stato', currentPrev.stato);
+  setValue('prev-note', currentPrev.note);
+
+  var numDisplay = document.getElementById('prev-numero-display');
+  if (currentPrev.numero) {
+    numDisplay.textContent = 'N\u00b0 ' + currentPrev.numero;
+  } else {
+    numDisplay.textContent = 'N\u00b0 — (assegnato al salvataggio)';
+  }
+
+  renderRighe();
+}
+
+function raccogliPreventivo() {
+  currentPrev.societa = getVal('prev-societa');
+  currentPrev.referente = getVal('prev-referente');
+  currentPrev.email = getVal('prev-email');
+  currentPrev.tel = getVal('prev-tel');
+  currentPrev.data = getVal('prev-data');
+  currentPrev.stato = getVal('prev-stato');
+  currentPrev.note = getVal('prev-note');
+  /* righe già aggiornate via evento */
+}
+
+/* ── RIGHE PREVENTIVO ── */
+function renderRighe() {
+  var container = document.getElementById('righe-preventivo');
+  container.innerHTML = '';
+
+  if (currentPrev.righe.length === 0) {
+    container.innerHTML = '<p class="empty-state">Nessuna voce aggiunta. Clicca "+ Aggiungi voce".</p>';
+    ricalcolaTotali();
+    return;
+  }
+
+  currentPrev.righe.forEach(function(riga, ri) {
+    var el = document.createElement('div');
+    el.setAttribute('role', 'listitem');
+    el.style.cssText = 'display:grid;grid-template-columns:2fr 90px 110px 110px 100px 90px 90px auto;gap:var(--space-sm);align-items:center;margin-bottom:var(--space-sm);padding:var(--space-sm);border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface-alt)';
+
+    /* calcola valori interni */
+    var qta = parseNum(riga.qta) || 1;
+    var voceId = riga.voceId;
+    var costoUnit = voceId ? costoUnitarioDaListino(voceId, qta) : 0;
+    var prezzoCalc = voceId ? prezzoUnitario(voceId, qta) : 0;
+    var prezzoEff = riga.prezzoUnitOverride !== null && riga.prezzoUnitOverride !== undefined
+                    ? parseNum(riga.prezzoUnitOverride) : prezzoCalc;
+    var totRiga = qta * prezzoEff;
+    var totCosto = qta * costoUnit;
+    var margineRiga = totRiga - totCosto;
+
+    /* select voci */
+    var opzioni = '<option value="">— scegli voce —</option>' +
+      state.listino.map(function(v) {
+        return '<option value="' + escHtml(v.id) + '"' + (v.id === voceId ? ' selected' : '') + '>' + escHtml(v.label) + '</option>';
+      }).join('');
+
+    el.innerHTML =
+      '<div><label for="riga-voce-' + ri + '" class="text-sm">Voce</label>' +
+        '<select id="riga-voce-' + ri + '" data-ri="' + ri + '" class="riga-voce-sel" ' +
+                'aria-label="Voce riga ' + (ri+1) + '">' + opzioni + '</select></div>' +
+      '<div><label for="riga-qta-' + ri + '" class="text-sm">Qtà</label>' +
+        '<input type="number" id="riga-qta-' + ri + '" value="' + qta + '" min="1" step="1" ' +
+               'data-ri="' + ri + '" class="riga-qta-inp" aria-label="Quantità riga ' + (ri+1) + '"></div>' +
+      '<div><label for="riga-pu-' + ri + '" class="text-sm">Pr. unit. (€) <span title="Lascia vuoto per usare listino+margine" style="cursor:help">&#9432;</span></label>' +
+        '<input type="number" id="riga-pu-' + ri + '" value="' +
+               (riga.prezzoUnitOverride !== null && riga.prezzoUnitOverride !== undefined ? parseNum(riga.prezzoUnitOverride) : '') +
+               '" min="0" step="0.01" placeholder="' + prezzoCalc.toFixed(2) + '" ' +
+               'data-ri="' + ri + '" class="riga-pu-inp" aria-label="Prezzo unitario override riga ' + (ri+1) + '"></div>' +
+      '<div><label class="text-sm">Tot. riga</label>' +
+        '<div style="padding:6px 8px;font-weight:600;">' + fmtEur(totRiga) + '</div></div>' +
+      /* INTERNI */
+      '<div data-internal="true"><label class="text-sm" style="color:#1e40af">Costo unit.</label>' +
+        '<div style="padding:4px 6px;font-size:var(--font-size-sm);color:#1e40af;">' + fmtEur(costoUnit) + '</div></div>' +
+      '<div data-internal="true"><label class="text-sm" style="color:#1e40af">Margine €</label>' +
+        '<div style="padding:4px 6px;font-size:var(--font-size-sm);color:#1e40af;">' + fmtEur(margineRiga / qta) + '</div></div>' +
+      '<div data-internal="true"><label class="text-sm" style="color:#1e40af">Tot. marg.</label>' +
+        '<div style="padding:4px 6px;font-size:var(--font-size-sm);color:#1e40af;">' + fmtEur(margineRiga) + '</div></div>' +
+      '<div><label class="text-sm" aria-hidden="true">&nbsp;</label>' +
+        '<button class="btn btn-danger btn-sm btn-icon no-print" data-ri="' + ri + '" data-action="del-riga" ' +
+                'aria-label="Elimina riga ' + (ri+1) + '" type="button" style="margin-top:4px">&#10005;</button></div>';
+
+    container.appendChild(el);
+  });
+
+  container.onclick = handleRigheClick;
+  container.oninput = handleRigheInput;
+  container.onchange = handleRigheChange;
+
+  ricalcolaTotali();
+}
+
+function handleRigheClick(e) {
+  var btn = e.target.closest('[data-action="del-riga"]');
+  if (!btn) return;
+  var ri = parseInt(btn.getAttribute('data-ri'), 10);
+  currentPrev.righe.splice(ri, 1);
+  renderRighe();
+}
+
+function handleRigheInput(e) {
+  var el = e.target;
+  var ri = parseInt(el.getAttribute('data-ri'), 10);
+  if (isNaN(ri)) return;
+  if (el.classList.contains('riga-qta-inp')) {
+    currentPrev.righe[ri].qta = parseInt(el.value, 10) || 1;
+    renderRighe();
+  } else if (el.classList.contains('riga-pu-inp')) {
+    var v = el.value.trim();
+    currentPrev.righe[ri].prezzoUnitOverride = v === '' ? null : parseNum(v);
+    ricalcolaTotali();
+  }
+}
+
+function handleRigheChange(e) {
+  var el = e.target;
+  var ri = parseInt(el.getAttribute('data-ri'), 10);
+  if (isNaN(ri)) return;
+  if (el.classList.contains('riga-voce-sel')) {
+    currentPrev.righe[ri].voceId = el.value;
+    var voce = state.listino.find(function(v){ return v.id === el.value; });
+    currentPrev.righe[ri].voceLabel = voce ? voce.label : '';
+    currentPrev.righe[ri].prezzoUnitOverride = null;
+    renderRighe();
+  }
+}
+
+function ricalcolaTotali() {
+  var subtotale = 0;
+  var totCosto = 0;
+  currentPrev.righe.forEach(function(riga) {
+    var qta = parseNum(riga.qta) || 1;
+    var voceId = riga.voceId;
+    var costoUnit = voceId ? costoUnitarioDaListino(voceId, qta) : 0;
+    var prezzoCalc = voceId ? prezzoUnitario(voceId, qta) : 0;
+    var prezzoEff = riga.prezzoUnitOverride !== null && riga.prezzoUnitOverride !== undefined
+                    ? parseNum(riga.prezzoUnitOverride) : prezzoCalc;
+    subtotale += qta * prezzoEff;
+    totCosto += qta * costoUnit;
+  });
+
+  var caparra = subtotale * (parseNum(state.parametri.caparra) / 100);
+  var margine = subtotale - totCosto;
+  var marginePct = subtotale > 0 ? ((margine / subtotale) * 100).toFixed(1) + ' %' : '—';
+
+  var el = function(id){ return document.getElementById(id); };
+  setText('tot-subtotale', fmtEur(subtotale));
+  setText('tot-caparra', fmtEur(caparra));
+  setText('tot-totale', fmtEur(subtotale));
+  setText('tot-caparra-pct', parseNum(state.parametri.caparra));
+  setText('tot-costo', fmtEur(totCosto));
+  setText('tot-margine', fmtEur(margine));
+  setText('tot-margine-pct', marginePct);
+
+  function setText(id, v) {
+    var e = document.getElementById(id);
+    if (e) e.textContent = v;
+  }
+}
+
+/* ════════════════════════════════════════════════════
+   BUILD CLIENT OUTPUT — funzione dedicata, NESSUN
+   accesso a costo/margine. Legge ESCLUSIVAMENTE:
+   voceLabel, qta, prezzoUnitario effettivo, totale
+   riga, totale, caparra, dati cliente, note libere,
+   validità, consegna, numero, data.
+   ════════════════════════════════════════════════════ */
+function buildClientOutputData(prev, params, logoDataUrl, nomeAttivita, emailAttivita, telAttivita) {
+  /* Costruisce struttura dati client-safe. Zero accesso a tiers/costoUnit/margine. */
+  var righeClient = (prev.righe || []).map(function(riga) {
+    var qta = parseNum(riga.qta) || 1;
+    var voceId = riga.voceId;
+    /* prezzoUnitario() legge solo costo+margine per calcolare il prezzo di vendita finale —
+       il dato di output è SOLO il prezzo di vendita, mai il costo. */
+    var prezzoCalc = voceId ? prezzoUnitario(voceId, qta) : 0;
+    var prezzoEff = (riga.prezzoUnitOverride !== null && riga.prezzoUnitOverride !== undefined)
+                    ? parseNum(riga.prezzoUnitOverride) : prezzoCalc;
+    var label = riga.voceLabel || (state.listino.find(function(v){ return v.id === voceId; }) || {}).label || '';
+    return {
+      label: label,
+      qta: qta,
+      prezzoUnit: prezzoEff,
+      totale: qta * prezzoEff
+    };
+  }).filter(function(r){ return r.label || r.totale; });
+
+  var subtotale = righeClient.reduce(function(s, r){ return s + r.totale; }, 0);
+  var caparraPct = parseNum(params.caparra);
+  var caparraEur = subtotale * (caparraPct / 100);
+
+  return {
+    numero: prev.numero || '—',
+    data: prev.data || '',
+    societa: prev.societa || '',
+    referente: prev.referente || '',
+    email: prev.email || '',
+    tel: prev.tel || '',
+    righe: righeClient,
+    subtotale: subtotale,
+    caparraPct: caparraPct,
+    caparraEur: caparraEur,
+    noteLibere: params.noteLibere || '',
+    validita: params.validita || '',
+    consegna: params.consegna || '',
+    logo: logoDataUrl || null,
+    nomeAttivita: nomeAttivita || '[ATTIVITA]',
+    emailAttivita: emailAttivita || '[EMAIL_ATTIVITA]',
+    telAttivita: telAttivita || '[TEL]'
+  };
+}
+
+function renderClientOutput() {
+  raccogliPreventivo();
+  var p = state.parametri;
+  var data = buildClientOutputData(
+    currentPrev,
+    p,
+    state.logo,
+    p.nomeAttivita,
+    p.emailAttivita,
+    p.telAttivita
+  );
+
+  var container = document.getElementById('client-output-container');
+  if (!container) return;
+
+  if (!data.righe.length && !data.societa) {
+    container.innerHTML = '<p class="empty-state">Compila un preventivo nella scheda <strong>Preventivo</strong> per vedere l\'anteprima.</p>';
+    return;
+  }
+
+  var logoHtml = data.logo
+    ? '<img src="' + data.logo + '" alt="Logo attività" style="max-height:70px;max-width:180px;display:block;">'
+    : '';
+
+  var righeHtml = data.righe.map(function(r) {
+    return '<tr>' +
+      '<td>' + escHtml(r.label) + '</td>' +
+      '<td class="text-right">' + escHtml(r.qta) + '</td>' +
+      '<td class="text-right">' + fmtEur(r.prezzoUnit) + '</td>' +
+      '<td class="text-right font-bold">' + fmtEur(r.totale) + '</td>' +
+    '</tr>';
+  }).join('');
+
+  var caparraRow = data.caparraPct > 0
+    ? '<div class="client-totali-row"><span>Caparra richiesta (' + data.caparraPct + '%)</span><strong>' + fmtEur(data.caparraEur) + '</strong></div>'
+    : '';
+
+  var noteHtml = data.noteLibere
+    ? '<div class="client-note"><strong>Note e condizioni:</strong><br>' + escHtml(data.noteLibere) + '</div>'
+    : '';
+
+  var condizioni = '';
+  if (data.validita || data.consegna) {
+    condizioni = '<div class="client-conditions">';
+    if (data.validita) condizioni += '<span><strong>Validit\u00e0 offerta:</strong> ' + escHtml(data.validita) + ' giorni</span>';
+    if (data.consegna) condizioni += '<span><strong>Tempi di consegna:</strong> ' + escHtml(data.consegna) + '</span>';
+    condizioni += '</div>';
+  }
+
+  container.innerHTML =
+    '<div class="client-header">' +
+      '<div>' +
+        (logoHtml ? logoHtml + '<br>' : '') +
+        '<div class="client-biz-info">' +
+          '<strong>' + escHtml(data.nomeAttivita) + '</strong><br>' +
+          escHtml(data.emailAttivita) + '<br>' +
+          escHtml(data.telAttivita) +
+        '</div>' +
+      '</div>' +
+      '<div style="text-align:right">' +
+        '<div class="client-doc-title">PREVENTIVO</div>' +
+        '<div class="client-doc-meta">N\u00b0 ' + escHtml(data.numero) + ' &nbsp;|&nbsp; ' + escHtml(data.data) + '</div>' +
+      '</div>' +
+    '</div>' +
+
+    '<div class="client-dest">' +
+      '<strong>Spett.le</strong><br>' +
+      escHtml(data.societa) + (data.societa && data.referente ? ' — ' : '') + escHtml(data.referente) +
+      (data.email ? '<br>' + escHtml(data.email) : '') +
+      (data.tel ? '<br>' + escHtml(data.tel) : '') +
+    '</div>' +
+
+    '<table class="client-items-table">' +
+      '<thead><tr>' +
+        '<th scope="col">Voce</th>' +
+        '<th scope="col" class="text-right">Qtà</th>' +
+        '<th scope="col" class="text-right">Pr. unit.</th>' +
+        '<th scope="col" class="text-right">Totale</th>' +
+      '</tr></thead>' +
+      '<tbody>' + righeHtml + '</tbody>' +
+    '</table>' +
+
+    '<div class="client-totali">' +
+      caparraRow +
+      '<div class="client-totali-row grand"><span>TOTALE</span><strong>' + fmtEur(data.subtotale) + '</strong></div>' +
+    '</div>' +
+
+    condizioni +
+    noteHtml;
+}
+
+/* ── TESTO EMAIL (client-only) ── */
+function generaTestoEmail() {
+  raccogliPreventivo();
+  var p = state.parametri;
+  var data = buildClientOutputData(
+    currentPrev, p, null,
+    p.nomeAttivita, p.emailAttivita, p.telAttivita
+  );
+
+  var lines = [];
+  lines.push('PREVENTIVO N\u00b0 ' + data.numero + ' — ' + data.data);
+  lines.push('');
+  if (data.societa || data.referente) lines.push('Spett.le ' + [data.societa, data.referente].filter(Boolean).join(' — '));
+  lines.push('');
+  lines.push('Gentile ' + (data.referente || 'Cliente') + ',');
+  lines.push('di seguito il preventivo per la fornitura del kit sportivo richiesto.');
+  lines.push('');
+  lines.push('DETTAGLIO VOCI');
+  lines.push('');
+  data.righe.forEach(function(r) {
+    var line = r.label + ' — Qtà: ' + r.qta + ' — Pr. unit.: ' + fmtEur(r.prezzoUnit) + ' — Tot.: ' + fmtEur(r.totale);
+    lines.push(line);
+  });
+  lines.push('');
+  lines.push('TOTALE: ' + fmtEur(data.subtotale));
+  if (data.caparraPct > 0) {
+    lines.push('Caparra richiesta (' + data.caparraPct + '%): ' + fmtEur(data.caparraEur));
+  }
+  if (data.validita) lines.push('Validit\u00e0 offerta: ' + data.validita + ' giorni');
+  if (data.consegna) lines.push('Tempi di consegna: ' + data.consegna);
+  if (data.noteLibere) { lines.push(''); lines.push('NOTE E CONDIZIONI:'); lines.push(data.noteLibere); }
+  lines.push('');
+  lines.push('Cordiali saluti,');
+  lines.push(data.nomeAttivita);
+  if (data.emailAttivita && data.emailAttivita !== '[EMAIL_ATTIVITA]') lines.push(data.emailAttivita);
+  if (data.telAttivita && data.telAttivita !== '[TEL]') lines.push(data.telAttivita);
+
+  return lines.join('\n');
+}
+
+/* ── SALVA PREVENTIVO ── */
+function salvaPreventivo() {
+  raccogliPreventivo();
+  raccogliParametri();
+
+  if (!currentPrev.numero) {
+    state.contatore += 1;
+    currentPrev.numero = state.contatore;
+  }
+
+  /* snapshot righe con valori calcolati al momento del salvataggio */
+  var snapshot = deepCopy(currentPrev);
+  snapshot.righe = currentPrev.righe.map(function(riga) {
+    var qta = parseNum(riga.qta) || 1;
+    var prezzoCalc = riga.voceId ? prezzoUnitario(riga.voceId, qta) : 0;
+    var prezzoEff = (riga.prezzoUnitOverride !== null && riga.prezzoUnitOverride !== undefined)
+                    ? parseNum(riga.prezzoUnitOverride) : prezzoCalc;
+    return Object.assign({}, riga, { _prezzoEffettivo: prezzoEff });
+  });
+  snapshot.totale = snapshot.righe.reduce(function(s, r){ return s + (parseNum(r.qta)||1) * r._prezzoEffettivo; }, 0);
+
+  /* cerca se già esiste nello storico */
+  var idx = state.preventivi.findIndex(function(p){ return p.id === currentPrev.id; });
+  if (idx >= 0) {
+    state.preventivi[idx] = snapshot;
+  } else {
+    state.preventivi.push(snapshot);
+  }
+
+  saveState();
+  renderPreventivoForm();
+  alert('Preventivo N\u00b0 ' + currentPrev.numero + ' salvato.');
+}
+
+/* ── STORICO ── */
+function renderStorico() {
+  var tbody = document.getElementById('storico-tbody');
+  if (!tbody) return;
+
+  if (!state.preventivi.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Nessun preventivo salvato.</td></tr>';
+    return;
+  }
+
+  var sorted = state.preventivi.slice().sort(function(a,b){ return (b.numero||0) - (a.numero||0); });
+  tbody.innerHTML = sorted.map(function(p) {
+    var badge = badgeStato(p.stato);
+    return '<tr data-prev-id="' + escHtml(p.id) + '">' +
+      '<td>' + escHtml(p.numero || '—') + '</td>' +
+      '<td>' + escHtml(p.data || '') + '</td>' +
+      '<td>' + escHtml([p.societa, p.referente].filter(Boolean).join(' — ') || '—') + '</td>' +
+      '<td class="font-bold">' + fmtEur(p.totale || 0) + '</td>' +
+      '<td>' + badge + '</td>' +
+      '<td class="no-print">' +
+        '<div class="flex gap-sm">' +
+          '<button class="btn btn-secondary btn-sm" data-action="carica" data-prev-id="' + escHtml(p.id) + '" type="button">Carica</button>' +
+          '<button class="btn btn-danger btn-sm" data-action="elimina" data-prev-id="' + escHtml(p.id) + '" type="button">Elimina</button>' +
+        '</div>' +
+      '</td>' +
+    '</tr>';
+  }).join('');
+
+  tbody.onclick = function(e) {
+    var btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    var pid = btn.getAttribute('data-prev-id');
+    var action = btn.getAttribute('data-action');
+    var found = state.preventivi.find(function(p){ return p.id === pid; });
+    if (action === 'carica' && found) {
+      initPreventivo(deepCopy(found));
+      activateTab('tab-preventivo');
+    } else if (action === 'elimina' && found) {
+      if (confirm('Eliminare il preventivo N\u00b0 ' + found.numero + '?')) {
+        state.preventivi = state.preventivi.filter(function(p){ return p.id !== pid; });
+        saveState();
+        renderStorico();
+      }
+    }
+  };
+}
+
+function badgeStato(stato) {
+  var map = { bozza:'badge-bozza', inviato:'badge-inviato', accettato:'badge-accettato', caparra:'badge-caparra', rifiutato:'badge-rifiutato' };
+  var labels = { bozza:'Bozza', inviato:'Inviato', accettato:'Accettato', caparra:'Caparra \u2713', rifiutato:'Rifiutato' };
+  var cls = map[stato] || 'badge-bozza';
+  var label = labels[stato] || stato;
+  return '<span class="badge ' + cls + '">' + escHtml(label) + '</span>';
+}
+
+/* ── ESPORTA / IMPORTA ── */
+function esportaJSON() {
+  raccogliPreventivo();
+  raccogliParametri();
+
+  var now = Date.now();
+  state.lastExportTs = now;
+  state.dirtyAfterExport = false;
+  saveState();
+
+  var blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  var d = new Date(now);
+  var fname = 'preventivatore-backup-' +
+    d.getFullYear() + (d.getMonth()+1).toString().padStart(2,'0') + d.getDate().toString().padStart(2,'0') +
+    '-' + d.getHours().toString().padStart(2,'0') + d.getMinutes().toString().padStart(2,'0') + '.json';
+  a.download = fname;
+  a.click();
+  URL.revokeObjectURL(url);
+  renderBackupStatus();
+}
+
+function importaJSON(file) {
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var data = JSON.parse(e.target.result);
+      if (!confirm('Importare il backup? I dati attuali saranno SOSTITUITI.')) return;
+      /* ripristina state completo incluso contatore */
+      state.listino = data.listino || deepCopy(VOCI_DEFAULT);
+      state.parametri = Object.assign({}, PARAMETRI_DEFAULT, data.parametri || {});
+      state.preventivi = data.preventivi || [];
+      state.contatore = data.contatore || 0;
+      state.logo = data.logo || null;
+      state.lastExportTs = data.lastExportTs || null;
+      state.dirtyAfterExport = false;
+      state.currentPrev = data.currentPrev || null;
+      localStorage.setItem(LS_KEY, JSON.stringify(state));
+      renderAll();
+      alert('Importazione completata. Contatore preventivi: ' + state.contatore);
+    } catch(err) {
+      alert('File non valido: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
+/* ── LOGO ── */
+function setupLogo() {
+  var dropArea = document.getElementById('logo-drop-area');
+  var input = document.getElementById('logo-input');
+  var preview = document.getElementById('logo-preview');
+  var placeholder = document.getElementById('logo-placeholder');
+  var btnRimuovi = document.getElementById('btn-rimuovi-logo');
+
+  function mostraLogo(dataUrl) {
+    preview.src = dataUrl;
+    preview.classList.remove('hidden');
+    placeholder.classList.add('hidden');
+    btnRimuovi.classList.remove('hidden');
+  }
+  function nascdiLogo() {
+    preview.src = '';
+    preview.classList.add('hidden');
+    placeholder.classList.remove('hidden');
+    btnRimuovi.classList.add('hidden');
+  }
+
+  if (state.logo) mostraLogo(state.logo);
+
+  dropArea.addEventListener('click', function(e) {
+    if (e.target !== btnRimuovi) input.click();
+  });
+  dropArea.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.click(); }
+  });
+  dropArea.addEventListener('dragover', function(e) { e.preventDefault(); dropArea.style.borderColor = 'var(--color-border-focus)'; });
+  dropArea.addEventListener('dragleave', function() { dropArea.style.borderColor = ''; });
+  dropArea.addEventListener('drop', function(e) {
+    e.preventDefault();
+    dropArea.style.borderColor = '';
+    var file = e.dataTransfer.files[0];
+    if (file && file.type.indexOf('image/') === 0) loadLogoFile(file);
+  });
+
+  input.addEventListener('change', function() {
+    if (input.files[0]) loadLogoFile(input.files[0]);
+  });
+
+  btnRimuovi.addEventListener('click', function(e) {
+    e.stopPropagation();
+    state.logo = null;
+    saveState();
+    nascdiLogo();
+  });
+
+  function loadLogoFile(file) {
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      state.logo = ev.target.result;
+      saveState();
+      mostraLogo(ev.target.result);
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+/* ── RENDER ALL ── */
+function renderAll() {
+  renderListino();
+  renderParametri();
+  renderBackupStatus();
+  initPreventivo(state.currentPrev ? deepCopy(state.currentPrev) : null);
+  renderStorico();
+  setupLogo();
+}
+
+/* ── INIZIALIZZAZIONE ── */
+(function init() {
+  var loaded = loadState();
+  if (!loaded) {
+    state.listino = deepCopy(VOCI_DEFAULT);
+    state.parametri = Object.assign({}, PARAMETRI_DEFAULT);
+  }
+
+  /* init preventivo vuoto */
+  currentPrev = state.currentPrev ? deepCopy(state.currentPrev) : makePrevVuoto();
+
+  renderAll();
+
+  /* ── TAB NAVIGATION ── */
+  document.querySelectorAll('.tab-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      activateTab(btn.getAttribute('aria-controls'));
+    });
+    btn.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); btn.click(); }
+    });
+  });
+
+  /* ── PREVENTIVO ACTIONS ── */
+  document.getElementById('btn-aggiungi-riga').addEventListener('click', function() {
+    raccogliPreventivo();
+    currentPrev.righe.push(makeRiga());
+    renderRighe();
+  });
+
+  document.getElementById('btn-salva-prev').addEventListener('click', function() {
+    salvaPreventivo();
+  });
+
+  document.getElementById('btn-nuovo-prev').addEventListener('click', function() {
+    if (!confirm('Aprire un nuovo preventivo vuoto? Il corrente non salvato andrà perso.')) return;
+    initPreventivo(null);
+  });
+
+  document.getElementById('btn-vai-output').addEventListener('click', function() {
+    activateTab('tab-output');
+  });
+
+  /* autosave bozza su navigazione */
+  document.querySelectorAll('.tab-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      /* salva stato corrente in-memory per non perderlo */
+      raccogliPreventivo();
+      state.currentPrev = deepCopy(currentPrev);
+      saveState();
+    });
+  });
+
+  /* ── LISTINO ACTIONS ── */
+  document.getElementById('btn-nuova-voce').addEventListener('click', function() {
+    state.listino.push({ id: generateId(), label: 'Nuova voce', tiers: [{qMin:1,costoUnit:0},{qMin:10,costoUnit:0},{qMin:25,costoUnit:0}] });
+    saveState();
+    renderListino();
+  });
+
+  /* ── PARAMETRI ACTIONS ── */
+  document.getElementById('btn-salva-parametri').addEventListener('click', function() {
+    raccogliParametri();
+    saveState();
+    alert('Parametri salvati.');
+    renderRighe(); /* ricalcola prezzi */
+  });
+
+  /* ── OUTPUT ACTIONS ── */
+  document.getElementById('btn-stampa').addEventListener('click', function() {
+    window.print();
+  });
+
+  document.getElementById('btn-copia-email').addEventListener('click', function() {
+    var testo = generaTestoEmail();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(testo).then(function() {
+        alert('Testo copiato negli appunti!');
+      }).catch(function() {
+        fallbackCopy(testo);
+      });
+    } else {
+      fallbackCopy(testo);
+    }
+  });
+
+  function fallbackCopy(text) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.top = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); alert('Testo copiato negli appunti!'); }
+    catch(e) { alert('Copia automatica non supportata. Seleziona il testo manualmente:\n\n' + text); }
+    document.body.removeChild(ta);
+  }
+
+  /* ── ESPORTA / IMPORTA ── */
+  document.getElementById('btn-esporta').addEventListener('click', function() {
+    raccogliPreventivo();
+    raccogliParametri();
+    esportaJSON();
+  });
+
+  document.getElementById('btn-importa').addEventListener('click', function() {
+    document.getElementById('input-importa').click();
+  });
+
+  document.getElementById('input-importa').addEventListener('change', function(e) {
+    importaJSON(e.target.files[0]);
+    e.target.value = '';
+  });
+
+})();
+</script>
+</body>
+</html>
