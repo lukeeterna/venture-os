@@ -1,0 +1,83 @@
+MT-2D.1 — REPORT VERIFICA VISIVO
+Data: 2026-07-17
+File: ventures/run_20260711_161411/configurator-2d/index.html
+===========================================================
+
+── ZONE ID (grep id=) ──────────────────────────────────────
+Trovate le 5 zone richieste + zone speculari retro:
+  id="body"         → corpo maglia (fronte)
+  id="sleeves"      → maniche (fronte)
+  id="collar"       → colletto girocollo (fronte)
+  id="shorts"       → pantaloncini
+  id="socks"        → calzettoni (gruppo coppia)
+  id="body-back"    → corpo maglia retro
+  id="collar-back"  → colletto retro
+  id="sleeves-back" → maniche retro
+  id="sock-left"    → calza sinistra (figlio di #socks)
+  id="sock-right"   → calza destra (figlio di #socks)
+
+Totale zone canoniche richieste trovate: 5/5 ✓
+(Le zone *-back sono addizionali, non richieste ma utili per MT successivi)
+
+── CDN / RISORSE ESTERNE ───────────────────────────────────
+Grep: https?:// | cdn. | unpkg. | jsdelivr. | googleapis.
+Risultato: 4 match → TUTTI sono xmlns="http://www.w3.org/2000/svg"
+           (namespace XML obbligatorio, non risorsa di rete)
+Risorse esterne reali: 0
+
+CRITERIO "ZERO CDN": PASS
+
+── SINGLE-FILE ─────────────────────────────────────────────
+Struttura: 1 file index.html, tutto CSS+JS+SVG inline.
+File <link rel="stylesheet">: 0
+File <script src="...">: 0
+File <img src="...">: 0
+
+CRITERIO SINGLE-FILE: PASS
+
+── STACK ES2019-SAFE ────────────────────────────────────────
+Optional chaining (?.) trovati: 0
+Nullish coalescing (??) trovati: 0
+Top-level await trovati: 0
+(File non contiene JavaScript — solo CSS e SVG inline)
+
+CRITERIO ES2019-SAFE: PASS
+
+── VALORI ECONOMICI ─────────────────────────────────────────
+Grep: €|euro|prezzo|costo|margine|sconto|listino
+Risultato: 0 occorrenze
+
+CRITERIO ZERO VALORI ECONOMICI: PASS
+
+── SCREENSHOT HEADLESS ──────────────────────────────────────
+Chrome: /Applications/Google Chrome.app/Contents/MacOS/Google Chrome
+fronte.png: 277987 byte  → PASS (>0)
+retro.png:  277987 byte  → PASS (>0)
+(Layout affiancato: fronte e retro entrambi presenti in una sola vista.
+ I due screenshot sono identici — entrambi mostrano fronte+retro completi.)
+[Rigenerato 2026-07-17 dopo refactor silhouette maglia set-in sleeve]
+
+CRITERIO SCREENSHOT: PASS
+
+── LAYOUT ────────────────────────────────────────────────────
+Scelta: AFFIANCATO
+Razionale: fronte e retro sempre visibili senza interazione,
+           più semplice per gate visivo founder, zero JS richiesto.
+
+── FILE INTOCCATI ────────────────────────────────────────────
+configurator/ (3D): NON toccato
+tools/preventivatore/index.html: NON toccato
+
+CRITERIO FILE INTOCCATI: PASS
+
+── RIEPILOGO ─────────────────────────────────────────────────
+  Zone 5/5 presenti:        PASS
+  Zero CDN:                 PASS
+  Single-file:              PASS
+  ES2019-safe:              PASS
+  Zero valori economici:    PASS
+  Screenshot non vuoti:     PASS
+  File protetti intoccati:  PASS
+
+ESITO GLOBALE: PASS
+===========================================================
