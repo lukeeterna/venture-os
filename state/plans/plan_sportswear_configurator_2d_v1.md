@@ -1,65 +1,110 @@
-# Piano — CATENA VIA 3: Configuratore 2D vettoriale (v1)
+# Piano — Configuratore 2D sportswear (v1) — BINARIO MOCKUP
 
 > Fonte di verità durevole per riprendere fuori dal contesto di sessione.
-> Mandato: giudice, 2026-07-17. Deliverable NEW: `ventures/run_20260711_161411/configurator-2d/`.
-> Il configuratore 3D esistente (`configurator/`) NON si tocca.
+> Deliverable: `ventures/run_20260711_161411/configurator-2d/`.
+> Il configuratore 3D esistente (`configurator/`) NON si tocca. Il preventivatore
+> (`tools/preventivatore/index.html`, commit `8be510e`) non si tocca fino a MT-2D.9.
 
-## FASE 0 — esito (2026-07-17)
-- `git log -1` = `12811fa auto-close session @2026-07-17T19:37:57Z` (auto-close → non discordanza).
-- `git status --short` = pulito.
-- Tra `8be510e` e HEAD: solo `12811fa` auto-close → **nessuna DISCORDANZA**.
-- Target `configurator-2d/` = ASSENTE (nessun clobber).
-- Headless Chrome verificato: `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome` presente (per evidenza screenshot).
-- Riferimento stile: shell UI scura di `configurator/index.html` (3D) — il subagent la legge per coerenza cromatica/header, NON la modifica.
+## BINARIO SCELTO = MOCKUP (gate founder 08fa976, 2026-07-18)
+Il template SVG flat (MT-2D.1, commit `78e3588`) è stato **BOCCIATO** dal founder
+("fa schifo", gate NEGATIVO). Il verbale gate `08fa976` ha ratificato la via
+**MOCKUP fotorealistico**: canvas che compone una base fotografica + ricolorazione
+per-capo via `multiply(colore) × clip(maschera)`. Fattibilità già provata in
+MT-2D.1d (prototipo `lab/index.html`, screenshot recolor in `verify/mt1d/`).
 
-## Baseline discordanza per la catena
-**FASE 0 HEAD atteso = `580c704`** (report integrazione al giudice — commit legittimo a registro, ratificato ADDENDUM v2 §D). Commit `auto-close session ...` successivi = tollerati, MAI discordanza. Qualunque ALTRO commit non a registro = DISCORDANZA e STOP.
+## FASE 0 — baseline discordanza per la catena
+**HEAD atteso = `08fa976`** (verbale gate MOCKUP). Commit `auto-close session …`
+successivi = **tollerati**, MAI discordanza. Qualunque ALTRO commit = DISCORDANZA e STOP.
 
-## Ratifica integrazione (giudice, ADDENDUM v2 — 2026-07-17)
-Report `580c704` = **APPROVATO**. Configuratore pubblico → preventivatore backoffice, zero-backend, zero-cost. SOLO dati non economici attraversano il confine; i prezzi nascono esclusivamente nel backoffice, dopo. Conseguenze recepite: MT-2D.6 ridefinito (payload JSON client-safe), MT-2D.9 nuovo (import nel preventivatore). NEXT_SESSION_PROMPT del run (fermo 15/07, FASE B GLTF) = **SUPERATO**; verdetto gate A2 3D = NEGATIVO; via ratificata = VIA 3 (2D).
+## Decisione founder 18/07 — ATTRIBUZIONE LANDING = NO
+Il founder ha deciso (18/07/2026) **nessuna riga di attribuzione in pagina**.
+Questo **REVOCA** il vincolo del verbale MT-2D.1d che raccomandava il credit
+"Alexandru Istratuca / istra2k" visibile. `ASSET_LICENSE.md` resta **l'unico
+tracciamento** della provenienza/licenza dell'asset (licenza: "Free for personal
+and commercial use", attribuzione non-mandatoria). MT-2D.8 NON aggiunge attribuzione.
 
-## Stack fissato (identico al preventivatore)
-Single-file `configurator-2d/index.html`, vanilla JS, **ZERO CDN**, SVG inline, `file://`+`http.server`, Safari 14/Big Sur + mobile. ES2019-safe. localStorage per stato client.
+## ARCHITETTURA ASSET (vale per tutta la catena)
+- **Derivati del PSD** (base composita, 3 maschere alpha, mappa shading, +web-opt)
+  → `configurator-2d/assets-mockup/derived/` — **GITIGNORATO** (coperto da `assets-mockup/`).
+- **Script di derivazione** → `configurator-2d/tools/` — **VERSIONATO** (solo script, MAI output).
+  Provengono da `lab/` (`inspect_layers.py`, `extract_masks.py`, `generate_shading.py`)
+  + nuovo step web-opt.
+- **Versioni web-ottimizzate**: lato lungo ≤1600px, peso totale target <2.5MB
+  (full-res sorgente 3715×5573). Sotto `assets-mockup/derived/web/`.
+- **index.html** referenzia i web-opt con **path relativi**; il **repo NON contiene
+  asset**; il deploy li riceverà per upload diretto (founder).
+- Verify (script + report + screenshot) = **committati** in `configurator-2d/verify/mtN/`.
 
-## Regime v2 (ratificato giudice)
-- Unico gate founder intermedio = **MT-2D.1** (screenshot template nudo → SÌ/NO).
-- Dopo il SÌ: CC avanza MT→MT **in autonomia** SOLO se TUTTE: verify verde committato+pushato · contesto <50% · nessuna DISCORDANZA. Qualunque rosso/dubbio/soglia → STOP verso giudice.
-- Correzioni = unità nuove TRA gli MT.
-- Fine catena (MT-2D.8): sigillo finale founder su URL deployato (browser+mobile).
+## MICROTASK — catena MOCKUP (regime v2 autonomo)
+- [ ] **MT-2D.2** CONFIGURATORE BASE + COLORI. Sostituisci `index.html` (template SVG
+  bocciato; **Rule 1d** backup) con la base mockup: canvas compone base + per-capo
+  `clip(maschera) × multiply(colore × shading)`. Picker colore per capo: **maglia,
+  pantaloncini, calze** (3 zone reali). Sub-zone colletto/maniche SOLO se estraibili
+  come maschere pulite senza nuovo lavoro sul PSD; altrimenti 3 zone e si dichiara nel
+  report (enhancement futuro, non STOP). Verify `verify/mt2/`: script headless, 2
+  combinazioni, screenshot committati.
+- [ ] **MT-2D.3** GALLERIA DESIGN. 10-12 archetipi nomi neutri (tinta unita, strisce
+  verticali, fascia orizzontale, banda diagonale, metà campo, chevron, maniche a
+  contrasto…), resi come overlay pattern su canvas clippati sulla maschera del capo e
+  **SOTTO la mappa shading** (pieghe visibili). Ogni archetipo ricolorabile (primario +
+  secondario). Ricerca fonti in `verify/mt3/design_research.md`; **VIETATO** replicare
+  kit di club/brand riconoscibili (look, don't copy). Verify: 3 archetipi applicati,
+  screenshot ciascuno.
+- [ ] **MT-2D.4** NOME+NUMERO. Verifica se il PSD offre **vista retro**. Se sì: retro
+  con nome+numero. Se no: numero petto su fronte + anteprima testuale nome/numero retro
+  nel riepilogo — dichiarato nel report, non STOP (resa retro = enhancement). 4-6 font
+  sportivi license-safe (system stack o font liberi embeddati; licenze in
+  `ASSET_LICENSE.md`). Verify: testo+font applicati, screenshot.
+- [ ] **MT-2D.5** SPONSOR. Upload immagine client-side (`FileReader`), posiziona sul
+  petto sopra shading. Immagine resta in RAM/localStorage: **MAI su disco del repo, MAI
+  committata, MAI nel payload**. Verify: sponsor di prova generato dallo script (non
+  asset terzi), screenshot.
+- [ ] **MT-2D.6** OUTPUT CLIENTE. Riepilogo config **NO-PREZZO**
+  (`grep -i "prezzo|costo|eur|€"` = zero match sull'output cliente); payload `v:1`
+  **SENZA campi economici**, schema congelato in `configurator-2d/PAYLOAD_SPEC.md`;
+  doppio canale: `mailto:` precompilato + bottone "Copia codice preventivo".
+  Placeholder `[ATTIVITA]`/`[EMAIL_ATTIVITA]`/`[TEL]`. Verify: payload conforme allo
+  spec, grep zero, screenshot.
+- [ ] **MT-2D.7** UX/POLISH. Mobile-first, guardie (no-JS, asset mancanti), stati di
+  caricamento. Verify: screenshot viewport mobile+desktop.
+- [ ] **MT-2D.8** PACCHETTO DEPLOY. Prepara `configurator-2d/deploy/` (**GITIGNORATA**)
+  con index.html + asset ottimizzati pronti per Cloudflare Pages via upload diretto;
+  `ISTRUZIONI-DEPLOY.md` (committato) coi passi manuali per il founder — l'upload lo
+  esegue SOLO il founder col suo account. **NESSUNA riga di attribuzione in pagina**
+  (decisione founder 18/07). Verify: serve locale della cartella deploy + screenshot.
+- [ ] **MT-2D.9** IMPORTA NEL PREVENTIVATORE. Nel preventivatore (`8be510e`, **Rule 1d**
+  backup) aggiungi "Importa da configuratore": incolla codice → parse payload `v:1` →
+  precompila preventivo con **prezzi vuoti**. Nessun campo economico transita dal
+  payload. Verify: import di un payload di prova, screenshot.
 
-## Regola di evidenza (vincolante)
-Ogni verify = script ESEGUIBILE con esito leggibile dal giudice sul mirror:
-`configurator-2d/verify/mtN/` con report testuale + screenshot **committati**. Niente `console.assert` invisibili. Headless Chrome OK.
-Comando screenshot di riferimento (adattare):
-`"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --disable-gpu --screenshot=out.png --window-size=1200,1000 --hide-scrollbars <url o file>`
-
-## Delega (REGOLA #0, autorizzata dal giudice)
-- Build MT → subagent `frontend-developer`.
-- Deploy prep MT-2D.8 → subagent `devops-automator`.
-- Verifiche, Rule 1d, FASE CHIUSURA restano in main context: il main verifica l'output subagent PRIMA di committare.
-
-## Confidenzialità (repo PUBLIC — invariante dal preventivatore)
-Nessun valore economico reale in codice/default/commenti/commit. Placeholder attività `[ATTIVITA]/[EMAIL_ATTIVITA]/[TEL]`. **VINCOLO NO-PREZZO** sull'output cliente (MT-2D.6): grep case-insensitive `prezzo|costo|eur|€` = zero match nell'output cliente.
-
-## Microtask — stato
-- [ ] **MT-2D.1** TEMPLATE NUDO (gate founder). — **STATO: BUILT 2026-07-17 (commit `78e3588`, mirror), ma GATE FOUNDER = NEGATIVO 2026-07-18 ("fa schifo"). STOP come da regime v2 (al NO decide il giudice / arriva nuova direzione da Luke). Artefatto conservato come base storica. NON avanzare a MT-2D.2. La via 2D-flat NON è confermata: la prossima sessione riparte da NUOVO PROMPT di Luke che ridefinisce direzione/qualità.** SVG flat-apparel professionale: MAGLIA fronte+retro (girocollo, maniche corte raccordate, spalle realistiche, proporzioni teamwear stile VX3/Macron — non clipart/squadrato) + PANTALONCINI + CALZETTONI. Vista fronte/retro affiancata o toggle. Zone = path/gruppi SVG con id `body, sleeves, collar, shorts, socks` (≥5), colori neutri default. Shell UI scura. NESSUN controllo, solo template grande + header. Evidenza: screenshot headless fronte/retro in `verify/mt1/`. STOP: screenshot al founder → SÌ/NO. Al NO: STOP, decide il giudice.
-- [ ] **MT-2D.2** COLORI: picker per ogni zona (5+), `input type=color`, fill live. Verify: script cambia 2 zone, legge computed fill, screenshot.
-- [ ] **MT-2D.3** PATTERN sul body: tinta unita, strisce V/H, fascia, banda diagonale, metà, chevron (SVG defs). Verify: 3 pattern applicati, screenshot ciascuno.
-- [ ] **MT-2D.4** NOME+NUMERO sul retro, 4-6 font sportivi license-safe (system stack o font liberi embeddati; licenza in `configurator-2d/ASSET_LICENSE.md`). Verify: testo+font applicati, screenshot.
-- [ ] **MT-2D.5** UPLOAD SPONSOR client-side (PNG/JPG/SVG via FileReader, validazione formato/peso, posizionamento sul petto, ZERO upload server). Verify: PNG di prova generato in locale, caricato, screenshot.
-- [ ] **MT-2D.6** RIEPILOGO + CTA "Richiedi preventivo gratuito" (RIDEFINITO, ADDENDUM v2 §B). La CTA produce un **payload JSON compatto client-safe**: `v:1` · `cliente {societa, referente, recapito}` · `righe [{voce-label, quantita}]` · `design {zone/colori, pattern, nome, numero, font, sponsor:si/no}`. **SENZA alcun campo economico, nemmeno vuoto o placeholder.** Schema **congelato** in `configurator-2d/PAYLOAD_SPEC.md`, committato NELLO STESSO MT. Due canali di consegna al founder: blocco `--- CONFIG ---` nel corpo del `mailto:[EMAIL_ATTIVITA]` + bottone "Copia codice preventivo" (clipboard con fallback `execCommand`). **NO-PREZZO assoluto esteso al payload machine-readable**. Verify: grep case-insensitive `prezzo|costo|margine|eur|€` = 0 match sull'output cliente E sul payload + screenshot.
-- [ ] **MT-2D.7** RESPONSIVE 375px + accessibilità (focus visibile, label/aria, prefers-reduced-motion) + se banale: export PNG "scarica il tuo kit". Verify: screenshot mobile + tab-nav dichiarata.
-- [ ] **MT-2D.8** DEPLOY PREP: struttura statica per Cloudflare Pages + `README-DEPLOY.md` (connessione repo da dashboard, root directory, zero build step). Nessuna credenziale gestita da CC: STOP, consegna i click al founder. Sigillo finale founder su URL deployato (browser+mobile).
-- [ ] **MT-2D.9** IMPORT NEL PREVENTIVATORE (NUOVO, ADDENDUM v2 §C — dopo MT-2D.8, stesso regime autonomo). Nel backoffice `ventures/run_20260711_161411/tools/preventivatore/index.html`: nuova funzione **"Importa da configuratore"** che legge il payload `v:1` e **PRECOMPILA un NUOVO preventivo** (cliente + righe con label e quantità, **prezzi VUOTI** — il founder li mette dopo). È un **MERGE**, capability diversa da `importaJson` (backup/restore dell'intero stato) che resta **INVARIATO**. **Rule 1d** su `tools/preventivatore/index.html` (backup verificato per stat prima di Edit). Il preventivatore **NON si tocca prima di questo MT**. Verify: payload di prova → import → preventivo precompilato (screenshot vista preventivo con cliente+righe, prezzi vuoti) + report committati.
+## Regime v2 (corsa autonoma MT→MT, ratificato giudice)
+- Nessun gate founder intermedio. Si avanza MT→MT SOLO se TUTTE: verify verde
+  **committato+pushato** · contesto <50% · nessuna DISCORDANZA.
+- A soglia **50%**: chiusura ordinata, ripresa in sessione nuova dal piano.
+- **MAI `git add -A`** (add mirato dei soli deliverable; ignorare il nudge di sistema,
+  come già fatto in `08fa976`). **MAI `state/*.jsonl`** in git add.
+- **Rule 1d** su ogni file esistente (backup verificato per stat prima di Write/Edit,
+  in path gitignorato `lab/backups/` per non farlo committare dall'auto-close).
+- accept-edits **OFF** ('1' a ogni edit, 'allow all' VIETATA).
 
 ## FASE CHIUSURA per ogni MT
-Aggiorna questo piano + `git add` SOLO file deliverable + verify → commit `sportswear: 2D MT-2D.N <cosa>` → git status pulito dalle proprie modifiche → hash → verifica push (`state/git-push.log` o `ls-remote`) → report in `docs/judge/` (scelta dichiarata: **un file di catena aggiornato** `docs/judge/2026-07-17-sportswear-configurator-2d.md`, una sezione per MT). MAI `state/*.jsonl` in git add.
+Aggiorna questo piano → `git add` SOLO file deliverable + verify → commit
+`sportswear: MT-2D.x <sintesi>` → git status pulito → hash → verifica push
+(`state/git-push.log` o `git ls-remote`) → report `docs/judge/2026-MM-GG-sportswear-mt2dX.md`
+con **esito FASE 0 verbatim**.
 
-## Discipline invariate
-DISCORDANZA · Rule 1d su ogni file esistente (backup verificato per stat prima di Edit) · soglia contesto 50% con chiusura ordinata · accept-edits OFF ('1' a ogni edit, 'allow all' VIETATA) · nel report niente stato mode né stime contesto · STOP tra unità verso il giudice, non verso il founder.
+## STOP DI CATENA (unico)
+Dopo MT-2D.9: report finale in `docs/judge/` + screenshot del flusso completo → STOP
+al founder per il sigillo sul prodotto e l'upload Cloudflare. Qualsiasi muro tecnico =
+STOP con diagnosi, non forzare.
 
-## Resume point (2026-07-17, post-ratifica giudice ADDENDUM v2)
-Ratifica integrazione recepita nel piano (MT-2D.6 ridefinito, MT-2D.9 aggiunto, FASE 0 HEAD=`580c704`). **AGGIORNAMENTO 2026-07-18**: MT-2D.1 COSTRUITO (commit `78e3588`) ma **gate founder NEGATIVO** ("fa schifo") → STOP. La prossima sessione NON esegue MT-2D.1/2D.2 ciecamente: attende il NUOVO PROMPT di Luke che ridefinisce direzione/qualità (possibile ripensamento dell'approccio 2D-flat). Il testo che segue è storico pre-gate, superato su questo punto. Prossima sessione: FASE 0 (HEAD atteso `580c704`, auto-close successivi tollerati) → eseguire **MT-2D.1** (build via frontend-developer → screenshot headless fronte/retro in `verify/mt1/` → verify verde → FASE CHIUSURA commit+push → STOP: screenshot al founder per SÌ/NO). Riferimenti visivi MT-2D.1 (look, don't copy — VIETATO scaricare/ricalcare/riprodurre asset/loghi/brand di terzi): realizesport.com, vx-3.com, spized — SOLO proporzioni, silhouette, ordine passi UX. Il configuratore 3D e il preventivatore `8be510e` non si toccano (preventivatore fino a MT-2D.9).
+## Stato asset (da MT-2D.1d, in lab/ gitignored)
+Derivazione già eseguita: `lab/composite_base.png` (3715×5573), `lab/shading_base.png`,
+`lab/mask_maglia.png`/`mask_pantaloncini.png`/`mask_calze.png` (RGBA), prototipo
+`lab/index.html` funzionante (multiply×clip). Script: `lab/inspect_layers.py`,
+`lab/extract_masks.py`, `lab/generate_shading.py`. venv con PIL/numpy/psd_tools in
+`lab/venv`. MT-2D.2 formalizza questi asset in `tools/` + `assets-mockup/derived/`.
 
-## Rollback
-File/cartelle nuove → `git revert` del commit d'unità MT.
+## Resume point
+2026-07-18: binario MOCKUP ratificato (gate `08fa976`). Piano riscritto per la catena
+MT-2D.2→MT-2D.9. Prossimo: **MT-2D.2** (configuratore base + colori 3 zone).
