@@ -29,4 +29,4 @@
 - SÌ → CC avanza a MT-2D.2 (colori) in autonomia (regime v2), finché verify verde + nessuna DISCORDANZA.
 - NO → STOP, decide il giudice.
 
-**Stato**: BUILT + verify VERDE, committato e pushato. **In attesa del gate founder.** MT-2D.2 non parte prima del SÌ.
+**Esito gate (2026-07-18)**: **NEGATIVO** — verdetto founder "fa schifo" (rifiuto globale, non dettaglio puntuale). STOP come da regime v2. Il founder ha chiesto di conservare l'artefatto e riprendere in nuova sessione con un nuovo prompt che ridefinisce direzione/qualità — la via 2D-flat vettoriale NON è data per confermata. Nessun avanzamento a MT-2D.2. Artefatto conservato: commit `78e3588`.
