@@ -3,636 +3,166 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Configuratore Kit 2D — [ATTIVITA]</title>
+<title>Configuratore Kit — [ATTIVITA]</title>
 <style>
   :root {
-    --space-1: 8px;
-    --space-2: 16px;
-    --space-3: 24px;
-    --space-4: 32px;
+    --bg: #0e1116;
+    --surface: #171b22;
+    --surface-2: #212630;
+    --border: #2c333f;
+    --text: #f2f5f9;
+    --muted: #9aa4b2;
+    --accent: #1e5bd6;
     --radius: 12px;
-    --font-ui: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-
-    /* Palette identica al configuratore 3D */
-    --color-bg: #0e1116;
-    --color-surface: #171b22;
-    --color-surface-2: #212630;
-    --color-border: #2c333f;
-    --color-text: #f2f5f9;
-    --color-text-muted: #9aa4b2;
-    --color-action: #1e5bd6;
-    --color-action-hover: #2f6ff0;
-    --color-focus: #7bb0ff;
-
-    /* Colori default zone kit — grigi neutri */
-    --zone-body:    #c8cdd6;
-    --zone-sleeves: #b4bac5;
-    --zone-collar:  #9aa0ab;
-    --zone-shorts:  #c0c5ce;
-    --zone-socks:   #b8bdc8;
-
-    /* Stroke dettagli */
-    --stroke-main:   #6b7280;
-    --stroke-detail: #9aa0ab;
-    --stroke-width:  1.2px;
+    --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  html, body {
-    height: 100%;
-    background: var(--color-bg);
-    color: var(--color-text);
-    font-family: var(--font-ui);
-    -webkit-font-smoothing: antialiased;
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font); }
+  header {
+    padding: 16px 24px; border-bottom: 1px solid var(--border);
+    background: var(--surface); display: flex; align-items: baseline; gap: 12px;
   }
-
-  #app {
-    display: grid;
-    grid-template-rows: auto 1fr;
-    min-height: 100%;
+  header h1 { font-size: 18px; margin: 0; font-weight: 700; }
+  header .sub { font-size: 13px; color: var(--muted); }
+  main { display: flex; gap: 24px; padding: 24px; align-items: flex-start; flex-wrap: wrap; }
+  #stage {
+    flex: 1 1 420px; min-width: 300px; background: var(--surface);
+    border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 16px; display: flex; justify-content: center;
   }
-
-  /* ── Header ────────────────────────────────────────────── */
-  header.app-header {
-    display: flex;
-    align-items: baseline;
-    gap: var(--space-2);
-    padding: var(--space-2) var(--space-3);
-    border-bottom: 1px solid var(--color-border);
-    background: var(--color-surface);
-    flex-wrap: wrap;
+  canvas { max-width: 100%; height: auto; border-radius: 8px; }
+  .panel {
+    flex: 0 0 300px; background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px;
   }
-  header.app-header h1 {
-    font-size: 1.15rem;
-    font-weight: 600;
-    letter-spacing: -0.01em;
+  .panel h2 { font-size: 14px; margin: 0 0 16px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+  .zone { margin-bottom: 18px; }
+  .zone label { display: block; font-size: 14px; margin-bottom: 6px; }
+  .zone-row { display: flex; align-items: center; gap: 12px; }
+  input[type=color] {
+    width: 56px; height: 40px; border: 1px solid var(--border);
+    border-radius: 8px; background: none; padding: 2px; cursor: pointer;
   }
-  header.app-header p {
-    color: var(--color-text-muted);
-    font-size: 0.85rem;
+  .swatch-val { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  #err {
+    display: none; margin: 0 24px 24px; padding: 12px 16px; border-radius: 8px;
+    background: #3a1d1d; border: 1px solid #6b2b2b; color: #ffd7d7; font-size: 14px;
   }
-  .header-badge {
-    margin-left: auto;
-    font-size: 0.72rem;
-    color: var(--color-text-muted);
-    background: var(--color-surface-2);
-    border: 1px solid var(--color-border);
-    border-radius: 999px;
-    padding: 2px 10px;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-  }
-
-  /* ── Stage area ─────────────────────────────────────────── */
-  main.stage {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: var(--space-3) var(--space-2);
-    gap: var(--space-3);
-    background: radial-gradient(120% 120% at 50% 10%, #1e2533 0%, #0e1116 70%);
-    min-height: 0;
-  }
-
-  .stage-label {
-    font-size: 0.72rem;
-    color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    text-align: center;
-  }
-
-  /* Wrapper SVG kit — tre capi affiancati, responsive */
-  .kit-stage {
-    width: 100%;
-    max-width: 900px;
-  }
-  .kit-stage svg {
-    width: 100%;
-    height: auto;
-    display: block;
-  }
-
-  /* Sezione fronte/retro maglia con etichette */
-  .jersey-row {
-    display: flex;
-    gap: var(--space-4);
-    justify-content: center;
-    align-items: flex-end;
-    flex-wrap: wrap;
-  }
-  .garment-block {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--space-1);
-  }
-  .garment-label {
-    font-size: 0.68rem;
-    color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-  }
-  .garment-block svg {
-    display: block;
-    width: 100%;
-    height: auto;
-  }
-
-  /* Griglia inferiore: shorts + calzettoni */
-  .extras-row {
-    display: flex;
-    gap: var(--space-4);
-    justify-content: center;
-    align-items: flex-end;
-    flex-wrap: wrap;
-  }
-
-  /* Zone ID info strip — solo per debug visivo in questa MT */
-  .zone-strip {
-    display: flex;
-    gap: var(--space-1);
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-  .zone-chip {
-    font-size: 0.65rem;
-    font-family: "SF Mono", "Fira Mono", "Courier New", monospace;
-    background: var(--color-surface-2);
-    border: 1px solid var(--color-border);
-    border-radius: 4px;
-    padding: 2px 7px;
-    color: var(--color-focus);
-  }
-
-  /* Responsive — no overflow su viewport stretto */
-  @media (max-width: 480px) {
-    .jersey-row, .extras-row { gap: var(--space-2); }
-    header.app-header { padding: var(--space-1) var(--space-2); }
-    main.stage { padding: var(--space-2) var(--space-1); gap: var(--space-2); }
-  }
+  #loading { color: var(--muted); font-size: 14px; padding: 40px; }
 </style>
 </head>
 <body>
-<div id="app">
+<header>
+  <h1>Configuratore Kit</h1>
+  <span class="sub">[ATTIVITA] — personalizza i colori del tuo completo</span>
+</header>
 
-  <!-- ═══════════════════════════════════════════
-       HEADER
-  ════════════════════════════════════════════ -->
-  <header class="app-header">
-    <h1>Configuratore Kit 2D</h1>
-    <p>[ATTIVITA] — template visivo</p>
-    <span class="header-badge">MT-2D.1 · visual gate</span>
-  </header>
+<div id="err"></div>
 
-  <!-- ═══════════════════════════════════════════
-       STAGE
-  ════════════════════════════════════════════ -->
-  <main class="stage">
+<main>
+  <div id="stage">
+    <div id="loading">Caricamento anteprima…</div>
+    <canvas id="c" width="1067" height="1600" hidden></canvas>
+  </div>
 
-    <p class="stage-label">Kit completo — fronte &amp; retro · proporzioni reali</p>
-
-    <!-- ─── MAGLIA: fronte + retro affiancati ─── -->
-    <div class="jersey-row">
-
-      <!-- MAGLIA FRONTE -->
-      <div class="garment-block">
-        <span class="garment-label">Maglia — fronte</span>
-        <!--
-          ViewBox 0 0 200 260 — flat technical drawing stile teamwear.
-          Landmark fondamentali (simmetria su x=100):
-            Colletto crew neck: arco U da x=75 a x=125, scende a y=58.
-            Punto-spalla sx: (58,48)  dx: (142,48)
-            Bordo superiore manica sx: (30,66)  dx: (170,66)
-            Orlo manica sx: (40,92)   dx: (160,92)
-            Ascella sx: (62,86)       dx: (138,86)
-            Vita: (60,150)/(140,150)
-            Fondo: (58,248)/(142,248)
-        -->
-        <svg viewBox="0 0 200 260" xmlns="http://www.w3.org/2000/svg"
-             role="img" aria-label="Maglia fronte"
-             style="width:180px">
-
-          <!--
-            CORPO — zona body.
-            Include spalle e yoke: dall'arco colletto scende sui fianchi.
-            Path: parte dal bordo-collo sx, va su alla spalla, scende al fianco,
-            orlo inferiore, risale a dx simmetrico.
-          -->
-          <g id="body">
-            <path
-              d="
-                M 75,36
-                C 82,34 92,33 100,33
-                C 108,33 118,34 125,36
-                L 142,48
-                C 138,86 138,86 138,86
-                C 140,110 140,130 140,150
-                C 141,170 142,200 142,248
-                L 58,248
-                C 58,200 59,170 60,150
-                C 60,130 60,110 62,86
-                C 62,86 62,86 58,48
-                Z
-              "
-              fill="var(--zone-body)"
-              stroke="var(--stroke-main)"
-              stroke-width="var(--stroke-width)"
-            />
-          </g>
-
-          <!--
-            MANICHE — zona sleeves.
-            Manica sinistra: parte dal punto-spalla (58,48),
-            bordo sup va a (30,66), orlo a (40,92),
-            armhole concavo risale a ascella (62,86).
-            Manica destra: speculare su x=100.
-          -->
-          <g id="sleeves">
-            <!-- Manica sinistra -->
-            <path
-              d="
-                M 58,48
-                L 30,66
-                C 28,70 27,76 30,82
-                L 40,92
-                C 48,90 55,88 62,86
-                C 62,86 62,72 62,68
-                C 62,60 60,54 58,48
-                Z
-              "
-              fill="var(--zone-sleeves)"
-              stroke="var(--stroke-main)"
-              stroke-width="var(--stroke-width)"
-            />
-            <!-- Manica destra -->
-            <path
-              d="
-                M 142,48
-                L 170,66
-                C 172,70 173,76 170,82
-                L 160,92
-                C 152,90 145,88 138,86
-                C 138,86 138,72 138,68
-                C 138,60 140,54 142,48
-                Z
-              "
-              fill="var(--zone-sleeves)"
-              stroke="var(--stroke-main)"
-              stroke-width="var(--stroke-width)"
-            />
-          </g>
-
-          <!-- COLLETTO girocollo crew neck — arco U poco profondo -->
-          <g id="collar">
-            <!--
-              Fascia colletto: path esterno (linea spalla) + arco U interno.
-              Bordo esterno: da (75,36) arco giù a (100,58) e su a (125,36).
-              Bordo interno: da (125,36) arco giù a (100,54) e su a (75,36).
-            -->
-            <path
-              d="
-                M 75,36
-                C 80,36 88,58 100,58
-                C 112,58 120,36 125,36
-                C 120,36 112,54 100,54
-                C 88,54 80,36 75,36
-                Z
-              "
-              fill="var(--zone-collar)"
-              stroke="var(--stroke-main)"
-              stroke-width="var(--stroke-width)"
-            />
-            <!-- Apertura collo (foro scuro) -->
-            <path
-              d="
-                M 78,36
-                C 83,36 90,53 100,53
-                C 110,53 117,36 122,36
-                C 117,37 110,52 100,52
-                C 90,52 83,37 78,36
-                Z
-              "
-              fill="#0e1116"
-              stroke="none"
-            />
-          </g>
-
-          <!-- Cucitura centrale verticale — solo fronte -->
-          <line x1="100" y1="58" x2="100" y2="246"
-            stroke="var(--stroke-detail)" stroke-width="0.6"
-            stroke-dasharray="4 3" opacity="0.45"
-          />
-          <!-- Cucitura pettorina orizzontale -->
-          <line x1="68" y1="96" x2="132" y2="96"
-            stroke="var(--stroke-detail)" stroke-width="0.6"
-            opacity="0.35"
-          />
-        </svg>
+  <aside class="panel">
+    <h2>Colori capi</h2>
+    <div class="zone">
+      <label for="maglia">Maglia</label>
+      <div class="zone-row">
+        <input type="color" id="maglia" value="#1e5bd6" />
+        <span class="swatch-val" id="maglia-val"></span>
       </div>
-
-      <!-- MAGLIA RETRO -->
-      <div class="garment-block">
-        <span class="garment-label">Maglia — retro</span>
-        <!--
-          Stessa silhouette del fronte, ViewBox identico 0 0 200 260.
-          Retro nudo: nessun dettaglio interno, nessun placeholder.
-          Nome/numero arriveranno in MT successivi.
-        -->
-        <svg viewBox="0 0 200 260" xmlns="http://www.w3.org/2000/svg"
-             role="img" aria-label="Maglia retro"
-             style="width:180px">
-
-          <!-- CORPO retro — silhouette identica al fronte -->
-          <g id="body-back">
-            <path
-              d="
-                M 75,36
-                C 82,34 92,33 100,33
-                C 108,33 118,34 125,36
-                L 142,48
-                C 138,86 138,86 138,86
-                C 140,110 140,130 140,150
-                C 141,170 142,200 142,248
-                L 58,248
-                C 58,200 59,170 60,150
-                C 60,130 60,110 62,86
-                C 62,86 62,86 58,48
-                Z
-              "
-              fill="var(--zone-body)"
-              stroke="var(--stroke-main)"
-              stroke-width="var(--stroke-width)"
-            />
-          </g>
-
-          <!-- MANICHE retro — silhouette identica al fronte -->
-          <g id="sleeves-back">
-            <!-- Manica sinistra -->
-            <path
-              d="
-                M 58,48
-                L 30,66
-                C 28,70 27,76 30,82
-                L 40,92
-                C 48,90 55,88 62,86
-                C 62,86 62,72 62,68
-                C 62,60 60,54 58,48
-                Z
-              "
-              fill="var(--zone-sleeves)"
-              stroke="var(--stroke-main)"
-              stroke-width="var(--stroke-width)"
-            />
-            <!-- Manica destra -->
-            <path
-              d="
-                M 142,48
-                L 170,66
-                C 172,70 173,76 170,82
-                L 160,92
-                C 152,90 145,88 138,86
-                C 138,86 138,72 138,68
-                C 138,60 140,54 142,48
-                Z
-              "
-              fill="var(--zone-sleeves)"
-              stroke="var(--stroke-main)"
-              stroke-width="var(--stroke-width)"
-            />
-          </g>
-
-          <!-- COLLETTO retro — uguale fronte, leggermente più chiuso -->
-          <g id="collar-back">
-            <path
-              d="
-                M 75,36
-                C 80,36 88,58 100,58
-                C 112,58 120,36 125,36
-                C 120,36 112,54 100,54
-                C 88,54 80,36 75,36
-                Z
-              "
-              fill="var(--zone-collar)"
-              stroke="var(--stroke-main)"
-              stroke-width="var(--stroke-width)"
-            />
-            <path
-              d="
-                M 78,36
-                C 83,36 90,53 100,53
-                C 110,53 117,36 122,36
-                C 117,37 110,52 100,52
-                C 90,52 83,37 78,36
-                Z
-              "
-              fill="#0e1116"
-              stroke="none"
-            />
-          </g>
-
-        </svg>
-      </div>
-
-    </div><!-- /jersey-row -->
-
-    <!-- ─── SHORTS + CALZETTONI affiancati ─── -->
-    <div class="extras-row">
-
-      <!-- PANTALONCINI -->
-      <div class="garment-block">
-        <span class="garment-label">Pantaloncini</span>
-        <!--
-          Viewbox 160×140.
-          Shorts da calcio: waistband, corpo, due gambe con taglio atletico
-          (inner seam più lunga dell'outer, leggera apertura laterale).
-        -->
-        <svg viewBox="0 0 160 140" xmlns="http://www.w3.org/2000/svg"
-             role="img" aria-label="Pantaloncini"
-             style="width:150px">
-
-          <g id="shorts">
-            <!-- Waistband -->
-            <rect x="20" y="10" width="120" height="14" rx="4"
-              fill="var(--zone-collar)"
-              stroke="var(--stroke-main)"
-              stroke-width="var(--stroke-width)"
-            />
-            <!-- Gambale sinistro -->
-            <path
-              d="
-                M 20,22
-                C 20,22 18,50 16,75
-                C 15,90 16,105 20,118
-                C 24,128 30,132 36,130
-                C 42,128 48,120 50,108
-                C 54,94 56,78 58,62
-                L 80,62
-                L 80,22
-                Z
-              "
-              fill="var(--zone-shorts)"
-              stroke="var(--stroke-main)"
-              stroke-width="var(--stroke-width)"
-            />
-            <!-- Gambale destro -->
-            <path
-              d="
-                M 140,22
-                C 140,22 142,50 144,75
-                C 145,90 144,105 140,118
-                C 136,128 130,132 124,130
-                C 118,128 112,120 110,108
-                C 106,94 104,78 102,62
-                L 80,62
-                L 80,22
-                Z
-              "
-              fill="var(--zone-shorts)"
-              stroke="var(--stroke-main)"
-              stroke-width="var(--stroke-width)"
-            />
-            <!-- Cucitura centrale (cavallo) -->
-            <line x1="80" y1="22" x2="80" y2="62"
-              stroke="var(--stroke-detail)" stroke-width="0.7"
-              opacity="0.5"
-            />
-            <!-- Cucitura lat sinistra -->
-            <line x1="20" y1="22" x2="24" y2="100"
-              stroke="var(--stroke-detail)" stroke-width="0.6"
-              stroke-dasharray="3 3" opacity="0.35"
-            />
-            <!-- Cucitura lat destra -->
-            <line x1="140" y1="22" x2="136" y2="100"
-              stroke="var(--stroke-detail)" stroke-width="0.6"
-              stroke-dasharray="3 3" opacity="0.35"
-            />
-          </g>
-        </svg>
-      </div>
-
-      <!-- CALZETTONI -->
-      <div class="garment-block">
-        <span class="garment-label">Calzettoni</span>
-        <!--
-          Viewbox 180×220.
-          Coppia di calze lunghe da calcio: due calzini affiancati,
-          con gambale lungo, collo alto, tallone suggerito.
-        -->
-        <svg viewBox="0 0 180 220" xmlns="http://www.w3.org/2000/svg"
-             role="img" aria-label="Calzettoni"
-             style="width:140px">
-
-          <g id="socks">
-            <!-- Calza sinistra -->
-            <g id="sock-left">
-              <!-- Gambale -->
-              <path
-                d="
-                  M 28,10
-                  C 26,10 20,12 18,16
-                  L 14,140
-                  C 13,155 14,165 18,175
-                  C 20,180 24,185 28,188
-                  L 28,200
-                  C 28,205 32,208 42,210
-                  C 52,212 62,210 66,205
-                  L 72,185
-                  C 76,180 78,172 76,162
-                  L 72,140
-                  L 68,16
-                  C 66,12 60,10 58,10
-                  Z
-                "
-                fill="var(--zone-socks)"
-                stroke="var(--stroke-main)"
-                stroke-width="var(--stroke-width)"
-              />
-              <!-- Bordo superiore (elastico) -->
-              <rect x="18" y="10" width="40" height="10" rx="3"
-                fill="var(--zone-collar)"
-                stroke="var(--stroke-main)"
-                stroke-width="var(--stroke-width)"
-              />
-              <!-- Tallone suggerito -->
-              <path
-                d="M 14,162 C 14,162 10,170 12,180 C 14,188 20,190 28,188"
-                fill="none"
-                stroke="var(--stroke-detail)"
-                stroke-width="1"
-                opacity="0.5"
-              />
-              <!-- Punta -->
-              <ellipse cx="50" cy="207" rx="22" ry="5"
-                fill="var(--zone-collar)"
-                stroke="var(--stroke-main)"
-                stroke-width="0.8"
-              />
-            </g>
-
-            <!-- Calza destra -->
-            <g id="sock-right">
-              <!-- Gambale -->
-              <path
-                d="
-                  M 122,10
-                  C 120,10 114,12 112,16
-                  L 108,140
-                  C 104,155 106,165 110,175
-                  C 112,180 116,185 120,188
-                  L 118,200
-                  C 118,205 122,208 132,210
-                  C 142,212 152,210 156,205
-                  L 166,185
-                  C 168,180 168,172 164,162
-                  L 162,140
-                  L 158,16
-                  C 156,12 150,10 148,10
-                  Z
-                "
-                fill="var(--zone-socks)"
-                stroke="var(--stroke-main)"
-                stroke-width="var(--stroke-width)"
-              />
-              <!-- Bordo superiore (elastico) -->
-              <rect x="112" y="10" width="40" height="10" rx="3"
-                fill="var(--zone-collar)"
-                stroke="var(--stroke-main)"
-                stroke-width="var(--stroke-width)"
-              />
-              <!-- Tallone suggerito -->
-              <path
-                d="M 108,162 C 106,170 108,180 112,188"
-                fill="none"
-                stroke="var(--stroke-detail)"
-                stroke-width="1"
-                opacity="0.5"
-              />
-              <!-- Punta -->
-              <ellipse cx="137" cy="207" rx="22" ry="5"
-                fill="var(--zone-collar)"
-                stroke="var(--stroke-main)"
-                stroke-width="0.8"
-              />
-            </g>
-          </g>
-        </svg>
-      </div>
-
-    </div><!-- /extras-row -->
-
-    <!-- Zone-id strip (rimosso in MT successivi, utile per review) -->
-    <div class="zone-strip" role="note" aria-label="Zone ID disponibili">
-      <span class="zone-chip">id=body</span>
-      <span class="zone-chip">id=sleeves</span>
-      <span class="zone-chip">id=collar</span>
-      <span class="zone-chip">id=shorts</span>
-      <span class="zone-chip">id=socks</span>
     </div>
+    <div class="zone">
+      <label for="pantaloncini">Pantaloncini</label>
+      <div class="zone-row">
+        <input type="color" id="pantaloncini" value="#ffffff" />
+        <span class="swatch-val" id="pantaloncini-val"></span>
+      </div>
+    </div>
+    <div class="zone">
+      <label for="calze">Calze</label>
+      <div class="zone-row">
+        <input type="color" id="calze" value="#1e5bd6" />
+        <span class="swatch-val" id="calze-val"></span>
+      </div>
+    </div>
+  </aside>
+</main>
 
-  </main>
-</div>
+<script>
+"use strict";
+// Zone reali del mockup. Sub-zone colletto/maniche = enhancement futuro (MT-2D.2 report).
+var GARMENTS = ["maglia", "pantaloncini", "calze"];
+var ASSET_DIR = "assets-mockup/derived/web/";
+var canvas = document.getElementById("c");
+var ctx = canvas.getContext("2d");
+var W = canvas.width, H = canvas.height;
+var imgs = {};
+
+function showError(msg) {
+  var e = document.getElementById("err");
+  e.textContent = "Impossibile caricare l'anteprima: " + msg;
+  e.style.display = "block";
+  var l = document.getElementById("loading");
+  if (l) l.textContent = "Anteprima non disponibile.";
+  window.__error = msg;
+}
+
+function load(src) {
+  return new Promise(function (resolve, reject) {
+    var i = new Image();
+    i.onload = function () { resolve(i); };
+    i.onerror = function () { reject(new Error(src)); };
+    i.src = src;
+  });
+}
+
+// Colori da URL (?maglia=RRGGBB) per verifica headless, altrimenti dai picker.
+var params = new URLSearchParams(location.search);
+GARMENTS.forEach(function (g) {
+  var v = params.get(g);
+  if (v) document.getElementById(g).value = "#" + v.replace("#", "");
+});
+
+function render() {
+  ctx.clearRect(0, 0, W, H);
+  ctx.drawImage(imgs.base, 0, 0, W, H); // base ombreggiata: sfondo + scarpe + capi
+  var tmp = document.createElement("canvas");
+  tmp.width = W; tmp.height = H;
+  var t = tmp.getContext("2d");
+  GARMENTS.forEach(function (g) {
+    var color = document.getElementById(g).value;
+    document.getElementById(g + "-val").textContent = color.toUpperCase();
+    t.globalCompositeOperation = "source-over";
+    t.clearRect(0, 0, W, H);
+    t.drawImage(imgs.base, 0, 0, W, H);        // base ombreggiata
+    t.globalCompositeOperation = "multiply";   // colore * ombreggiatura = fotorealistico
+    t.fillStyle = color;
+    t.fillRect(0, 0, W, H);
+    t.globalCompositeOperation = "destination-in"; // ritaglia sulla maschera del capo
+    t.drawImage(imgs["mask_" + g], 0, 0, W, H);
+    ctx.drawImage(tmp, 0, 0);                   // sovrapponi capo ricolorato
+  });
+  window.__rendered = true;
+}
+
+Promise.all([
+  load(ASSET_DIR + "shading_base.jpg").then(function (i) { imgs.base = i; })
+].concat(GARMENTS.map(function (g) {
+  return load(ASSET_DIR + "mask_" + g + ".png").then(function (i) { imgs["mask_" + g] = i; });
+}))).then(function () {
+  var l = document.getElementById("loading");
+  if (l) l.remove();
+  canvas.hidden = false;
+  render();
+  GARMENTS.forEach(function (g) {
+    document.getElementById(g).addEventListener("input", render);
+  });
+}).catch(function (e) {
+  showError(e.message);
+});
+</script>
 </body>
 </html>

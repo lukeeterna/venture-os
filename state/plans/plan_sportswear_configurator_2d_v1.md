@@ -36,7 +36,10 @@ and commercial use", attribuzione non-mandatoria). MT-2D.8 NON aggiunge attribuz
 - Verify (script + report + screenshot) = **committati** in `configurator-2d/verify/mtN/`.
 
 ## MICROTASK — catena MOCKUP (regime v2 autonomo)
-- [ ] **MT-2D.2** CONFIGURATORE BASE + COLORI. Sostituisci `index.html` (template SVG
+- [x] **MT-2D.2** DONE 2026-07-18 (commit vedi report). Configuratore base + colori 3
+  zone (maglia/pantaloncini/calze) funzionante, render fotorealistico multiply×clip,
+  web-opt 0.16MB. Sub-zone colletto/maniche = enhancement futuro (dichiarato).
+  Sostituisci `index.html` (template SVG
   bocciato; **Rule 1d** backup) con la base mockup: canvas compone base + per-capo
   `clip(maschera) × multiply(colore × shading)`. Picker colore per capo: **maglia,
   pantaloncini, calze** (3 zone reali). Sub-zone colletto/maniche SOLO se estraibili
@@ -106,5 +109,9 @@ Derivazione già eseguita: `lab/composite_base.png` (3715×5573), `lab/shading_b
 `lab/venv`. MT-2D.2 formalizza questi asset in `tools/` + `assets-mockup/derived/`.
 
 ## Resume point
-2026-07-18: binario MOCKUP ratificato (gate `08fa976`). Piano riscritto per la catena
-MT-2D.2→MT-2D.9. Prossimo: **MT-2D.2** (configuratore base + colori 3 zone).
+2026-07-18: binario MOCKUP ratificato (gate `08fa976`). Piano riscritto (commit
+`07bd54b`). **MT-2D.2 DONE** (report `docs/judge/2026-07-18-sportswear-mt2d2.md`):
+index.html configuratore base+colori 3 zone, tools/ derivazione versionati,
+assets-mockup/derived/web/ (0.16MB, gitignored). Chiusura ordinata a soglia context 50%.
+**Prossima sessione = MT-2D.3** (galleria design, 10-12 archetipi overlay sotto shading).
+FASE 0 attesa: HEAD = ultimo commit MT-2D.2 (+ auto-close tollerati).
