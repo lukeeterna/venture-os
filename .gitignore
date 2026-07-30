@@ -20,3 +20,6 @@ __pycache__/
 # preventivatore sportswear — dati founder solo in localStorage, mai in git
 **/preventivatore-dati*.json
 **/*.preventivo.json
+
+# ponte Sol→CC: sorgenti di terzi non ancora integrati, mai in git
+incoming/

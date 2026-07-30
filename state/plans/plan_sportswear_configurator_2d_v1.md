@@ -46,7 +46,7 @@ and commercial use", attribuzione non-mandatoria). MT-2D.8 NON aggiunge attribuz
   come maschere pulite senza nuovo lavoro sul PSD; altrimenti 3 zone e si dichiara nel
   report (enhancement futuro, non STOP). Verify `verify/mt2/`: script headless, 2
   combinazioni, screenshot committati.
-- [ ] **MT-2D.3** GALLERIA DESIGN. 10-12 archetipi nomi neutri (tinta unita, strisce
+- [x] **MT-2D.3** GALLERIA DESIGN. 10-12 archetipi nomi neutri (tinta unita, strisce
   verticali, fascia orizzontale, banda diagonale, metà campo, chevron, maniche a
   contrasto…), resi come overlay pattern su canvas clippati sulla maschera del capo e
   **SOTTO la mappa shading** (pieghe visibili). Ogni archetipo ricolorabile (primario +

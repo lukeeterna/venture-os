@@ -16,45 +16,278 @@
     --radius: 12px;
     --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   }
-  * { box-sizing: border-box; }
-  html, body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font); }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+  }
+
+  button,
+  input {
+    font: inherit;
+  }
+
   header {
-    padding: 16px 24px; border-bottom: 1px solid var(--border);
-    background: var(--surface); display: flex; align-items: baseline; gap: 12px;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
   }
-  header h1 { font-size: 18px; margin: 0; font-weight: 700; }
-  header .sub { font-size: 13px; color: var(--muted); }
-  main { display: flex; gap: 24px; padding: 24px; align-items: flex-start; flex-wrap: wrap; }
+
+  header h1 {
+    font-size: 18px;
+    margin: 0;
+    font-weight: 700;
+  }
+
+  header .sub {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  main {
+    display: flex;
+    gap: 24px;
+    padding: 24px;
+    align-items: flex-start;
+  }
+
   #stage {
-    flex: 1 1 420px; min-width: 300px; background: var(--surface);
-    border: 1px solid var(--border); border-radius: var(--radius);
-    padding: 16px; display: flex; justify-content: center;
+    flex: 1 1 520px;
+    min-width: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    display: flex;
+    justify-content: center;
   }
-  canvas { max-width: 100%; height: auto; border-radius: 8px; }
+
+  #c {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+  }
+
   .panel {
-    flex: 0 0 300px; background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 20px;
+    flex: 0 0 380px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
   }
-  .panel h2 { font-size: 14px; margin: 0 0 16px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
-  .zone { margin-bottom: 18px; }
-  .zone label { display: block; font-size: 14px; margin-bottom: 6px; }
-  .zone-row { display: flex; align-items: center; gap: 12px; }
-  input[type=color] {
-    width: 56px; height: 40px; border: 1px solid var(--border);
-    border-radius: 8px; background: none; padding: 2px; cursor: pointer;
+
+  .panel-section + .panel-section {
+    margin-top: 24px;
+    padding-top: 22px;
+    border-top: 1px solid var(--border);
   }
-  .swatch-val { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+  .panel h2 {
+    font-size: 14px;
+    margin: 0 0 6px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .section-help {
+    margin: 0 0 14px;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  .design-gallery {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .design-card {
+    min-width: 0;
+    padding: 8px;
+    color: var(--text);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    text-align: left;
+    transition:
+      border-color 0.15s ease,
+      transform 0.15s ease,
+      background 0.15s ease;
+  }
+
+  .design-card:hover {
+    transform: translateY(-1px);
+    border-color: #526073;
+  }
+
+  .design-card:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .design-card[aria-pressed="true"] {
+    border-color: var(--accent);
+    background: #1b2942;
+  }
+
+  .design-preview {
+    display: block;
+    width: 100%;
+    height: 58px;
+    margin-bottom: 7px;
+    border-radius: 6px;
+    background: #f4f5f7;
+  }
+
+  .design-name {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12px;
+  }
+
+  .zone {
+    margin-top: 16px;
+  }
+
+  .zone:first-of-type {
+    margin-top: 0;
+  }
+
+  .zone-title {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 650;
+  }
+
+  .color-pair {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .color-control {
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    align-items: center;
+    column-gap: 8px;
+    padding: 8px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: var(--surface-2);
+  }
+
+  .color-control > span:first-child {
+    grid-column: 2;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  input[type="color"] {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    width: 44px;
+    height: 42px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: none;
+    padding: 2px;
+    cursor: pointer;
+  }
+
+  .swatch-val {
+    grid-column: 2;
+    font-size: 11px;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
   #err {
-    display: none; margin: 0 24px 24px; padding: 12px 16px; border-radius: 8px;
-    background: #3a1d1d; border: 1px solid #6b2b2b; color: #ffd7d7; font-size: 14px;
+    display: none;
+    margin: 0 24px 24px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    background: #3a1d1d;
+    border: 1px solid #6b2b2b;
+    color: #ffd7d7;
+    font-size: 14px;
   }
-  #loading { color: var(--muted); font-size: 14px; padding: 40px; }
+
+  #loading {
+    color: var(--muted);
+    font-size: 14px;
+    padding: 40px;
+  }
+
+  @media (max-width: 940px) {
+    main {
+      flex-direction: column;
+    }
+
+    #stage,
+    .panel {
+      width: 100%;
+      flex-basis: auto;
+    }
+
+    .panel {
+      max-width: none;
+    }
+
+    .design-gallery {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 620px) {
+    header {
+      padding: 14px 16px;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    main {
+      padding: 16px;
+      gap: 16px;
+    }
+
+    .panel {
+      padding: 16px;
+    }
+
+    .design-gallery {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .color-pair {
+      grid-template-columns: 1fr;
+    }
+  }
 </style>
 </head>
 <body>
 <header>
   <h1>Configuratore Kit</h1>
-  <span class="sub">[ATTIVITA] — personalizza i colori del tuo completo</span>
+  <span class="sub">[ATTIVITA] — scegli un design e personalizza i colori</span>
 </header>
 
 <div id="err"></div>
@@ -66,102 +299,880 @@
   </div>
 
   <aside class="panel">
-    <h2>Colori capi</h2>
-    <div class="zone">
-      <label for="maglia">Maglia</label>
-      <div class="zone-row">
-        <input type="color" id="maglia" value="#1e5bd6" />
-        <span class="swatch-val" id="maglia-val"></span>
+    <section class="panel-section" aria-labelledby="design-heading">
+      <h2 id="design-heading">Design</h2>
+      <p class="section-help">
+        Dodici archetipi neutri. Il motivo selezionato viene applicato alle tre
+        zone del completo.
+      </p>
+      <div class="design-gallery" id="design-gallery"></div>
+    </section>
+
+    <section class="panel-section" aria-labelledby="colors-heading">
+      <h2 id="colors-heading">Colori per capo</h2>
+      <p class="section-help">
+        Ogni capo resta una singola zona; primario e secondario alimentano il
+        motivo scelto.
+      </p>
+
+      <div class="zone">
+        <span class="zone-title">Maglia</span>
+        <div class="color-pair">
+          <label class="color-control" for="maglia-primary">
+            <span>Primario</span>
+            <input
+              type="color"
+              id="maglia-primary"
+              value="#1e5bd6"
+            />
+            <span
+              class="swatch-val"
+              id="maglia-primary-val"
+            ></span>
+          </label>
+
+          <label class="color-control" for="maglia-secondary">
+            <span>Secondario</span>
+            <input
+              type="color"
+              id="maglia-secondary"
+              value="#ffffff"
+            />
+            <span
+              class="swatch-val"
+              id="maglia-secondary-val"
+            ></span>
+          </label>
+        </div>
       </div>
-    </div>
-    <div class="zone">
-      <label for="pantaloncini">Pantaloncini</label>
-      <div class="zone-row">
-        <input type="color" id="pantaloncini" value="#ffffff" />
-        <span class="swatch-val" id="pantaloncini-val"></span>
+
+      <div class="zone">
+        <span class="zone-title">Pantaloncini</span>
+        <div class="color-pair">
+          <label class="color-control" for="pantaloncini-primary">
+            <span>Primario</span>
+            <input
+              type="color"
+              id="pantaloncini-primary"
+              value="#ffffff"
+            />
+            <span
+              class="swatch-val"
+              id="pantaloncini-primary-val"
+            ></span>
+          </label>
+
+          <label class="color-control" for="pantaloncini-secondary">
+            <span>Secondario</span>
+            <input
+              type="color"
+              id="pantaloncini-secondary"
+              value="#1e5bd6"
+            />
+            <span
+              class="swatch-val"
+              id="pantaloncini-secondary-val"
+            ></span>
+          </label>
+        </div>
       </div>
-    </div>
-    <div class="zone">
-      <label for="calze">Calze</label>
-      <div class="zone-row">
-        <input type="color" id="calze" value="#1e5bd6" />
-        <span class="swatch-val" id="calze-val"></span>
+
+      <div class="zone">
+        <span class="zone-title">Calze</span>
+        <div class="color-pair">
+          <label class="color-control" for="calze-primary">
+            <span>Primario</span>
+            <input
+              type="color"
+              id="calze-primary"
+              value="#1e5bd6"
+            />
+            <span
+              class="swatch-val"
+              id="calze-primary-val"
+            ></span>
+          </label>
+
+          <label class="color-control" for="calze-secondary">
+            <span>Secondario</span>
+            <input
+              type="color"
+              id="calze-secondary"
+              value="#ffffff"
+            />
+            <span
+              class="swatch-val"
+              id="calze-secondary-val"
+            ></span>
+          </label>
+        </div>
       </div>
-    </div>
+    </section>
   </aside>
 </main>
 
 <script>
 "use strict";
-// Zone reali del mockup. Sub-zone colletto/maniche = enhancement futuro (MT-2D.2 report).
+
+// Tre sole zone reali del mockup. I due colori sono ingredienti del pattern,
+// non sub-zone: ogni risultato resta clippato alla maschera unica del capo.
 var GARMENTS = ["maglia", "pantaloncini", "calze"];
 var ASSET_DIR = "assets-mockup/derived/web/";
+
+var DESIGNS = [
+  {
+    id: "solid",
+    name: "Tinta unita"
+  },
+  {
+    id: "vertical-stripes",
+    name: "Righe verticali"
+  },
+  {
+    id: "horizontal-stripes",
+    name: "Righe orizzontali"
+  },
+  {
+    id: "horizontal-band",
+    name: "Fascia orizzontale"
+  },
+  {
+    id: "diagonal-band",
+    name: "Banda diagonale"
+  },
+  {
+    id: "half-split",
+    name: "Metà campo"
+  },
+  {
+    id: "chevron",
+    name: "Chevron"
+  },
+  {
+    id: "side-panels",
+    name: "Pannelli laterali"
+  },
+  {
+    id: "contrast-shoulders",
+    name: "Spalle a contrasto"
+  },
+  {
+    id: "center-band",
+    name: "Banda centrale"
+  },
+  {
+    id: "quarters",
+    name: "Quarti alternati"
+  },
+  {
+    id: "pinstripes",
+    name: "Gessato fine"
+  }
+];
+
 var canvas = document.getElementById("c");
 var ctx = canvas.getContext("2d");
-var W = canvas.width, H = canvas.height;
+var W = canvas.width;
+var H = canvas.height;
+
 var imgs = {};
+var bounds = {};
+var selectedDesign = "solid";
+
+var patternCanvas = document.createElement("canvas");
+var shadedCanvas = document.createElement("canvas");
+
+patternCanvas.width = W;
+patternCanvas.height = H;
+shadedCanvas.width = W;
+shadedCanvas.height = H;
+
+var patternCtx = patternCanvas.getContext("2d");
+var shadedCtx = shadedCanvas.getContext("2d");
 
 function showError(msg) {
-  var e = document.getElementById("err");
-  e.textContent = "Impossibile caricare l'anteprima: " + msg;
-  e.style.display = "block";
-  var l = document.getElementById("loading");
-  if (l) l.textContent = "Anteprima non disponibile.";
+  var errorElement = document.getElementById("err");
+
+  errorElement.textContent =
+    "Impossibile caricare l'anteprima: " + msg;
+  errorElement.style.display = "block";
+
+  var loadingElement = document.getElementById("loading");
+
+  if (loadingElement) {
+    loadingElement.textContent = "Anteprima non disponibile.";
+  }
+
   window.__error = msg;
 }
 
 function load(src) {
   return new Promise(function (resolve, reject) {
-    var i = new Image();
-    i.onload = function () { resolve(i); };
-    i.onerror = function () { reject(new Error(src)); };
-    i.src = src;
+    var image = new Image();
+
+    image.onload = function () {
+      resolve(image);
+    };
+
+    image.onerror = function () {
+      reject(new Error(src));
+    };
+
+    image.src = src;
   });
 }
 
-// Colori da URL (?maglia=RRGGBB) per verifica headless, altrimenti dai picker.
-var params = new URLSearchParams(location.search);
-GARMENTS.forEach(function (g) {
-  var v = params.get(g);
-  if (v) document.getElementById(g).value = "#" + v.replace("#", "");
-});
+function safeHex(value) {
+  var cleaned = String(value || "").replace("#", "");
+
+  if (/^[0-9a-f]{6}$/i.test(cleaned)) {
+    return "#" + cleaned;
+  }
+
+  return null;
+}
+
+function getColor(garment, role) {
+  return document.getElementById(
+    garment + "-" + role
+  ).value;
+}
+
+function updateColorLabels() {
+  GARMENTS.forEach(function (garment) {
+    ["primary", "secondary"].forEach(function (role) {
+      var value = getColor(garment, role).toUpperCase();
+
+      document.getElementById(
+        garment + "-" + role + "-val"
+      ).textContent = value;
+    });
+  });
+}
+
+function findMaskBounds(image) {
+  var probe = document.createElement("canvas");
+
+  probe.width = W;
+  probe.height = H;
+
+  var probeCtx = probe.getContext("2d");
+
+  probeCtx.drawImage(image, 0, 0, W, H);
+
+  try {
+    var data = probeCtx.getImageData(
+      0,
+      0,
+      W,
+      H
+    ).data;
+
+    var minX = W;
+    var minY = H;
+    var maxX = -1;
+    var maxY = -1;
+
+    var x;
+    var y;
+    var alpha;
+
+    for (y = 0; y < H; y += 1) {
+      for (x = 0; x < W; x += 1) {
+        alpha = data[(y * W + x) * 4 + 3];
+
+        if (alpha > 8) {
+          if (x < minX) {
+            minX = x;
+          }
+
+          if (x > maxX) {
+            maxX = x;
+          }
+
+          if (y < minY) {
+            minY = y;
+          }
+
+          if (y > maxY) {
+            maxY = y;
+          }
+        }
+      }
+    }
+
+    if (maxX >= minX && maxY >= minY) {
+      return {
+        x: minX,
+        y: minY,
+        w: maxX - minX + 1,
+        h: maxY - minY + 1
+      };
+    }
+  } catch (e) {
+    // [DELTA GIUDICE] SecurityError sotto file:// — bounds fallback sull'intera immagine.
+    // Il clip della maschera delimita comunque il capo, ma i pattern escono a scala piena.
+    window.__boundsFallback = true;
+    var errEl = document.getElementById("err");
+    if (errEl) {
+      errEl.textContent = "Anteprima approssimata: apri la pagina via server locale per la resa corretta.";
+      errEl.style.display = "block";
+    }
+  }
+
+  return {
+    x: 0,
+    y: 0,
+    w: W,
+    h: H
+  };
+}
+
+function fillBox(target, box, color) {
+  target.fillStyle = color;
+  target.fillRect(
+    box.x,
+    box.y,
+    box.w,
+    box.h
+  );
+}
+
+function drawDesign(
+  target,
+  designId,
+  box,
+  primary,
+  secondary
+) {
+  var x = box.x;
+  var y = box.y;
+  var w = box.w;
+  var h = box.h;
+
+  var i;
+  var count;
+  var step;
+
+  target.save();
+
+  fillBox(target, box, primary);
+
+  target.fillStyle = secondary;
+  target.strokeStyle = secondary;
+  target.lineCap = "butt";
+  target.lineJoin = "miter";
+
+  if (designId === "vertical-stripes") {
+    count = 8;
+    step = w / count;
+
+    for (i = 0; i < count; i += 2) {
+      target.fillRect(
+        x + i * step,
+        y,
+        step,
+        h
+      );
+    }
+  } else if (designId === "horizontal-stripes") {
+    count = 8;
+    step = h / count;
+
+    for (i = 0; i < count; i += 2) {
+      target.fillRect(
+        x,
+        y + i * step,
+        w,
+        step
+      );
+    }
+  } else if (designId === "horizontal-band") {
+    target.fillRect(
+      x,
+      y + h * 0.4,
+      w,
+      h * 0.2
+    );
+  } else if (designId === "diagonal-band") {
+    target.lineWidth = Math.max(
+      8,
+      Math.min(w, h) * 0.2
+    );
+
+    target.beginPath();
+    target.moveTo(
+      x - w * 0.12,
+      y + h * 0.88
+    );
+    target.lineTo(
+      x + w * 1.12,
+      y + h * 0.12
+    );
+    target.stroke();
+  } else if (designId === "half-split") {
+    target.fillRect(
+      x + w * 0.5,
+      y,
+      w * 0.5,
+      h
+    );
+  } else if (designId === "chevron") {
+    target.lineWidth = Math.max(
+      8,
+      Math.min(w, h) * 0.15
+    );
+
+    target.lineCap = "square";
+    target.lineJoin = "miter";
+
+    target.beginPath();
+    target.moveTo(
+      x - w * 0.05,
+      y + h * 0.34
+    );
+    target.lineTo(
+      x + w * 0.5,
+      y + h * 0.6
+    );
+    target.lineTo(
+      x + w * 1.05,
+      y + h * 0.34
+    );
+    target.stroke();
+  } else if (designId === "side-panels") {
+    target.fillRect(
+      x,
+      y,
+      w * 0.18,
+      h
+    );
+
+    target.fillRect(
+      x + w * 0.82,
+      y,
+      w * 0.18,
+      h
+    );
+  } else if (designId === "contrast-shoulders") {
+    target.beginPath();
+    target.moveTo(x, y);
+    target.lineTo(
+      x + w * 0.34,
+      y
+    );
+    target.lineTo(
+      x + w * 0.26,
+      y + h * 0.33
+    );
+    target.lineTo(
+      x,
+      y + h * 0.43
+    );
+    target.closePath();
+    target.fill();
+
+    target.beginPath();
+    target.moveTo(
+      x + w,
+      y
+    );
+    target.lineTo(
+      x + w * 0.66,
+      y
+    );
+    target.lineTo(
+      x + w * 0.74,
+      y + h * 0.33
+    );
+    target.lineTo(
+      x + w,
+      y + h * 0.43
+    );
+    target.closePath();
+    target.fill();
+  } else if (designId === "center-band") {
+    target.fillRect(
+      x + w * 0.37,
+      y,
+      w * 0.26,
+      h
+    );
+  } else if (designId === "quarters") {
+    target.fillRect(
+      x + w * 0.5,
+      y,
+      w * 0.5,
+      h * 0.5
+    );
+
+    target.fillRect(
+      x,
+      y + h * 0.5,
+      w * 0.5,
+      h * 0.5
+    );
+  } else if (designId === "pinstripes") {
+    step = Math.max(
+      8,
+      w * 0.1
+    );
+
+    target.lineWidth = Math.max(
+      2,
+      w * 0.018
+    );
+
+    for (
+      i = x + step * 0.5;
+      i < x + w;
+      i += step
+    ) {
+      target.beginPath();
+      target.moveTo(i, y);
+      target.lineTo(
+        i,
+        y + h
+      );
+      target.stroke();
+    }
+  }
+
+  target.restore();
+}
+
+function renderGarment(garment) {
+  var primary = getColor(
+    garment,
+    "primary"
+  );
+
+  var secondary = getColor(
+    garment,
+    "secondary"
+  );
+
+  patternCtx.globalCompositeOperation = "source-over";
+  patternCtx.clearRect(
+    0,
+    0,
+    W,
+    H
+  );
+
+  drawDesign(
+    patternCtx,
+    selectedDesign,
+    bounds[garment],
+    primary,
+    secondary
+  );
+
+  patternCtx.globalCompositeOperation = "destination-in";
+  patternCtx.drawImage(
+    imgs["mask_" + garment],
+    0,
+    0,
+    W,
+    H
+  );
+
+  // Il pattern viene costruito per primo.
+  // La base ombreggiata viene moltiplicata sopra il pattern:
+  // pieghe, riflessi e volumi restano visibili.
+  shadedCtx.globalCompositeOperation = "source-over";
+  shadedCtx.clearRect(
+    0,
+    0,
+    W,
+    H
+  );
+
+  shadedCtx.drawImage(
+    patternCanvas,
+    0,
+    0
+  );
+
+  shadedCtx.globalCompositeOperation = "multiply";
+  shadedCtx.drawImage(
+    imgs.base,
+    0,
+    0,
+    W,
+    H
+  );
+
+  shadedCtx.globalCompositeOperation = "destination-in";
+  shadedCtx.drawImage(
+    imgs["mask_" + garment],
+    0,
+    0,
+    W,
+    H
+  );
+
+  ctx.drawImage(
+    shadedCanvas,
+    0,
+    0
+  );
+}
 
 function render() {
-  ctx.clearRect(0, 0, W, H);
-  ctx.drawImage(imgs.base, 0, 0, W, H); // base ombreggiata: sfondo + scarpe + capi
-  var tmp = document.createElement("canvas");
-  tmp.width = W; tmp.height = H;
-  var t = tmp.getContext("2d");
-  GARMENTS.forEach(function (g) {
-    var color = document.getElementById(g).value;
-    document.getElementById(g + "-val").textContent = color.toUpperCase();
-    t.globalCompositeOperation = "source-over";
-    t.clearRect(0, 0, W, H);
-    t.drawImage(imgs.base, 0, 0, W, H);        // base ombreggiata
-    t.globalCompositeOperation = "multiply";   // colore * ombreggiatura = fotorealistico
-    t.fillStyle = color;
-    t.fillRect(0, 0, W, H);
-    t.globalCompositeOperation = "destination-in"; // ritaglia sulla maschera del capo
-    t.drawImage(imgs["mask_" + g], 0, 0, W, H);
-    ctx.drawImage(tmp, 0, 0);                   // sovrapponi capo ricolorato
-  });
+  window.__rendered = false;
+
+  ctx.clearRect(
+    0,
+    0,
+    W,
+    H
+  );
+
+  ctx.drawImage(
+    imgs.base,
+    0,
+    0,
+    W,
+    H
+  );
+
+  GARMENTS.forEach(renderGarment);
+
+  updateColorLabels();
+
+  window.__design = selectedDesign;
   window.__rendered = true;
 }
 
-Promise.all([
-  load(ASSET_DIR + "shading_base.jpg").then(function (i) { imgs.base = i; })
-].concat(GARMENTS.map(function (g) {
-  return load(ASSET_DIR + "mask_" + g + ".png").then(function (i) { imgs["mask_" + g] = i; });
-}))).then(function () {
-  var l = document.getElementById("loading");
-  if (l) l.remove();
-  canvas.hidden = false;
-  render();
-  GARMENTS.forEach(function (g) {
-    document.getElementById(g).addEventListener("input", render);
+function drawThumbnail(canvasElement, designId) {
+  var thumbCtx = canvasElement.getContext("2d");
+  var scale = window.devicePixelRatio || 1;
+  var cssWidth = 150;
+  var cssHeight = 58;
+
+  canvasElement.width = cssWidth * scale;
+  canvasElement.height = cssHeight * scale;
+
+  thumbCtx.setTransform(
+    scale,
+    0,
+    0,
+    scale,
+    0,
+    0
+  );
+
+  thumbCtx.clearRect(
+    0,
+    0,
+    cssWidth,
+    cssHeight
+  );
+
+  drawDesign(
+    thumbCtx,
+    designId,
+    {
+      x: 0,
+      y: 0,
+      w: cssWidth,
+      h: cssHeight
+    },
+    getColor("maglia", "primary"),
+    getColor("maglia", "secondary")
+  );
+}
+
+function updateThumbnails() {
+  var cards = document.querySelectorAll(
+    ".design-card"
+  );
+
+  Array.prototype.forEach.call(
+    cards,
+    function (card) {
+      var designId = card.getAttribute(
+        "data-design"
+      );
+
+      drawThumbnail(
+        card.querySelector("canvas"),
+        designId
+      );
+
+      card.setAttribute(
+        "aria-pressed",
+        designId === selectedDesign
+          ? "true"
+          : "false"
+      );
+    }
+  );
+}
+
+function selectDesign(designId) {
+  var exists = DESIGNS.some(function (design) {
+    return design.id === designId;
   });
-}).catch(function (e) {
-  showError(e.message);
+
+  if (!exists) {
+    return;
+  }
+
+  selectedDesign = designId;
+
+  updateThumbnails();
+
+  if (imgs.base) {
+    render();
+  }
+}
+
+function buildGallery() {
+  var gallery = document.getElementById(
+    "design-gallery"
+  );
+
+  DESIGNS.forEach(function (design) {
+    var button = document.createElement("button");
+    var preview = document.createElement("canvas");
+    var name = document.createElement("span");
+
+    button.type = "button";
+    button.className = "design-card";
+
+    button.setAttribute(
+      "data-design",
+      design.id
+    );
+
+    button.setAttribute(
+      "aria-pressed",
+      "false"
+    );
+
+    button.setAttribute(
+      "aria-label",
+      "Seleziona design " + design.name
+    );
+
+    preview.className = "design-preview";
+    preview.setAttribute(
+      "aria-hidden",
+      "true"
+    );
+
+    name.className = "design-name";
+    name.textContent = design.name;
+
+    button.appendChild(preview);
+    button.appendChild(name);
+
+    button.addEventListener(
+      "click",
+      function () {
+        selectDesign(design.id);
+      }
+    );
+
+    gallery.appendChild(button);
+  });
+}
+
+var params = new URLSearchParams(
+  location.search
+);
+
+var requestedDesign = params.get("design");
+
+if (
+  requestedDesign &&
+  DESIGNS.some(function (design) {
+    return design.id === requestedDesign;
+  })
+) {
+  selectedDesign = requestedDesign;
+}
+
+GARMENTS.forEach(function (garment) {
+  var legacyPrimary = safeHex(
+    params.get(garment)
+  );
+
+  var explicitPrimary = safeHex(
+    params.get(garment + "1")
+  );
+
+  var secondary = safeHex(
+    params.get(garment + "2")
+  );
+
+  if (explicitPrimary || legacyPrimary) {
+    document.getElementById(
+      garment + "-primary"
+    ).value = explicitPrimary || legacyPrimary;
+  }
+
+  if (secondary) {
+    document.getElementById(
+      garment + "-secondary"
+    ).value = secondary;
+  }
+});
+
+buildGallery();
+updateColorLabels();
+updateThumbnails();
+
+Promise.all([
+  load(
+    ASSET_DIR + "shading_base.jpg"
+  ).then(function (image) {
+    imgs.base = image;
+  })
+].concat(
+  GARMENTS.map(function (garment) {
+    return load(
+      ASSET_DIR + "mask_" + garment + ".png"
+    ).then(function (image) {
+      imgs["mask_" + garment] = image;
+    });
+  })
+)).then(function () {
+  GARMENTS.forEach(function (garment) {
+    bounds[garment] = findMaskBounds(
+      imgs["mask_" + garment]
+    );
+  });
+
+  var loadingElement = document.getElementById(
+    "loading"
+  );
+
+  if (loadingElement) {
+    loadingElement.remove();
+  }
+
+  canvas.hidden = false;
+
+  render();
+
+  GARMENTS.forEach(function (garment) {
+    ["primary", "secondary"].forEach(function (role) {
+      document.getElementById(
+        garment + "-" + role
+      ).addEventListener(
+        "input",
+        function () {
+          updateThumbnails();
+          render();
+        }
+      );
+    });
+  });
+}).catch(function (error) {
+  showError(error.message);
 });
 </script>
 </body>
