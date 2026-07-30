@@ -19,6 +19,21 @@
 > "This cool mockup is from Alexandru Istratuca — More similar products & support this author here: https://www.behance.net/istra2k e http://istra2kdesign.weebly.com/ — More cool deals: http://dealjumbo.com — Exclusive freebies with extended license: http://deeezy.com/"
 - Autore effettivo del mockup: **Alexandru Istratuca** (behance.net/istra2k). PSFiles è ri-distributore; credit di pagina PSFiles: `be.net/salimseddiki`.
 
+## Font — MT-2D.4
+
+I 5 font sportivi sono **stack di sistema**: nessun file font embeddato, nessun CDN,
+nessun download esterno. Nessuna licenza da tracciare.
+
+| chiave       | family dichiarata                                                | weight |
+|--------------|------------------------------------------------------------------|--------|
+| block        | Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif        | 900    |
+| condensed    | 'Arial Narrow', 'Helvetica Neue Condensed', Arial, sans-serif    | 800    |
+| geometric    | Futura, 'Century Gothic', Avenir, Arial, sans-serif              | 800    |
+| technical    | 'Trebuchet MS', Verdana, Arial, sans-serif                       | 900    |
+| college      | Rockwell, 'Rockwell Extra Bold', 'Courier New', serif            | 900    |
+
+Fallback finale sempre sans-serif/serif di sistema. Nessun asset su disco, nessuna licenza.
+
 ## Obbligo di attribuzione
 - **Non esplicitamente obbligatorio**: la pagina dichiara "Free for personal and commercial use" e riporta una riga "Credit:" ma NON afferma che l'attribuzione sia mandatoria.
 - **Raccomandato / prudente**: creditare l'autore originale (Alexandru Istratuca / istra2k) è la scelta sicura. Da chiarire prima di uso commerciale in MT-2D.8 se il gate sceglie MOCKUP.

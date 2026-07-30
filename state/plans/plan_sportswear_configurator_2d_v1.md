@@ -53,11 +53,12 @@ and commercial use", attribuzione non-mandatoria). MT-2D.8 NON aggiunge attribuz
   secondario). Ricerca fonti in `verify/mt3/design_research.md`; **VIETATO** replicare
   kit di club/brand riconoscibili (look, don't copy). Verify: 3 archetipi applicati,
   screenshot ciascuno.
-- [ ] **MT-2D.4** NOME+NUMERO. Verifica se il PSD offre **vista retro**. Se sì: retro
-  con nome+numero. Se no: numero petto su fronte + anteprima testuale nome/numero retro
-  nel riepilogo — dichiarato nel report, non STOP (resa retro = enhancement). 4-6 font
-  sportivi license-safe (system stack o font liberi embeddati; licenze in
-  `ASSET_LICENSE.md`). Verify: testo+font applicati, screenshot.
+- [x] **MT-2D.4** DONE 2026-07-30 (commit vedi report). Numero petto su fronte + anteprima
+  testuale nome/numero retro nel riepilogo (PSD SENZA vista retro — verificato per ispezione
+  diretta dei 4 JPG preview). 5 font sportivi system stack (block/condensed/geometric/
+  technical/college). Difetto rinviato MT-2D.7: numero petto disegnato sopra lo shading
+  (adesivo vs stampa); font stack: 3/5 visibilmente distinti (geometric+college vs blocco
+  tri-stack simile). Verify `verify/mt4/`: 5 screenshot font committati.
 - [ ] **MT-2D.5** SPONSOR. Upload immagine client-side (`FileReader`), posiziona sul
   petto sopra shading. Immagine resta in RAM/localStorage: **MAI su disco del repo, MAI
   committata, MAI nel payload**. Verify: sponsor di prova generato dallo script (non
@@ -109,9 +110,8 @@ Derivazione già eseguita: `lab/composite_base.png` (3715×5573), `lab/shading_b
 `lab/venv`. MT-2D.2 formalizza questi asset in `tools/` + `assets-mockup/derived/`.
 
 ## Resume point
-2026-07-18: binario MOCKUP ratificato (gate `08fa976`). Piano riscritto (commit
-`07bd54b`). **MT-2D.2 DONE** (report `docs/judge/2026-07-18-sportswear-mt2d2.md`):
-index.html configuratore base+colori 3 zone, tools/ derivazione versionati,
-assets-mockup/derived/web/ (0.16MB, gitignored). Chiusura ordinata a soglia context 50%.
-**Prossima sessione = MT-2D.3** (galleria design, 10-12 archetipi overlay sotto shading).
-FASE 0 attesa: HEAD = ultimo commit MT-2D.2 (+ auto-close tollerati).
+2026-07-30: **MT-2D.4 DONE** (report `docs/judge/2026-07-30-sportswear-mt2d4.md`):
+numero petto canvas + anteprima retro testuale + 5 font system stack. PSD confermato
+SENZA retro. Difetti rinviati a MT-2D.7 (vedi STATE.md e report).
+**Prossima sessione = MT-2D.5** (sponsor upload client-side).
+FASE 0 attesa: HEAD = ultimo commit MT-2D.4 (+ auto-close tollerati).
