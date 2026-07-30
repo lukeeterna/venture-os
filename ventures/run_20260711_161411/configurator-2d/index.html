@@ -156,6 +156,14 @@
     background: #f4f5f7;
   }
 
+  .design-name {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12px;
+  }
+
   .zone {
     margin-top: 16px;
   }
@@ -300,6 +308,94 @@
     font-size: 11px;
   }
 
+  .sponsor-file {
+    width: 100%;
+    min-height: 42px;
+    padding: 8px;
+    color: var(--text);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+
+  .sponsor-file::file-selector-button {
+    margin-right: 10px;
+    padding: 7px 10px;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+  }
+
+  .sponsor-preview {
+    min-height: 112px;
+    margin-top: 12px;
+    padding: 12px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .sponsor-thumbnail {
+    display: block;
+    max-width: 100%;
+    max-height: 88px;
+    object-fit: contain;
+  }
+
+  .sponsor-placeholder {
+    color: var(--muted);
+    font-size: 12px;
+    text-align: center;
+  }
+
+  .sponsor-actions {
+    margin-top: 10px;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .secondary-button {
+    min-height: 38px;
+    padding: 8px 12px;
+    color: var(--text);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+  }
+
+  .secondary-button:hover:not(:disabled) {
+    border-color: #526073;
+  }
+
+  .secondary-button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  .secondary-button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .sponsor-message {
+    min-height: 17px;
+    margin: 9px 0 0;
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 1.45;
+  }
+
+  .sponsor-message.error {
+    color: #ffd7d7;
+  }
+
   #err {
     display: none;
     margin: 0 24px 24px;
@@ -375,7 +471,7 @@
 <body>
 <header>
   <h1>Configuratore Kit</h1>
-  <span class="sub">[ATTIVITA] — design, colori, nome e numero</span>
+  <span class="sub">[ATTIVITA] — design, colori, nome, numero e sponsor</span>
 </header>
 
 <div id="err" role="status"></div>
@@ -517,6 +613,43 @@
         </p>
       </div>
     </section>
+
+    <section class="panel-section" aria-labelledby="sponsor-heading">
+      <h2 id="sponsor-heading">Sponsor</h2>
+      <p class="section-help">
+        Carica un logo da applicare sul petto. L'immagine resta solo nella memoria della pagina e viene rimossa alla chiusura.
+      </p>
+
+      <div class="field">
+        <label for="sponsor-file">Immagine sponsor</label>
+        <input
+          class="sponsor-file"
+          id="sponsor-file"
+          type="file"
+          accept="image/*"
+        />
+      </div>
+
+      <div class="sponsor-preview" id="sponsor-preview">
+        <img
+          class="sponsor-thumbnail"
+          id="sponsor-thumbnail"
+          alt="Anteprima del logo sponsor caricato"
+          hidden
+        />
+        <span class="sponsor-placeholder" id="sponsor-placeholder">Nessun logo caricato</span>
+      </div>
+
+      <div class="sponsor-actions">
+        <button class="secondary-button" id="remove-sponsor" type="button" disabled>
+          Rimuovi sponsor
+        </button>
+      </div>
+
+      <p class="sponsor-message" id="sponsor-message" role="status" aria-live="polite">
+        Seleziona un file immagine fino a 5 MB.
+      </p>
+    </section>
   </aside>
 </main>
 
@@ -583,6 +716,7 @@ var selectedDesign = "solid";
 var patternCanvas = document.createElement("canvas");
 var shadedCanvas = document.createElement("canvas");
 var personalizationCanvas = document.createElement("canvas");
+var sponsorCanvas = document.createElement("canvas");
 
 patternCanvas.width = W;
 patternCanvas.height = H;
@@ -590,10 +724,18 @@ shadedCanvas.width = W;
 shadedCanvas.height = H;
 personalizationCanvas.width = W;
 personalizationCanvas.height = H;
+sponsorCanvas.width = W;
+sponsorCanvas.height = H;
 
 var patternCtx = patternCanvas.getContext("2d");
 var shadedCtx = shadedCanvas.getContext("2d");
 var personalizationCtx = personalizationCanvas.getContext("2d");
+var sponsorCtx = sponsorCanvas.getContext("2d");
+var sponsorDataUrl = "";
+var sponsorImage = null;
+var MAX_SPONSOR_BYTES = 5 * 1024 * 1024;
+
+window.__sponsorApplied = false;
 
 function showError(msg) {
   var errorElement = document.getElementById("err");
@@ -678,12 +820,15 @@ function findMaskBounds(image) {
           if (x < minX) {
             minX = x;
           }
+
           if (x > maxX) {
             maxX = x;
           }
+
           if (y < minY) {
             minY = y;
           }
+
           if (y > maxY) {
             maxY = y;
           }
@@ -918,6 +1063,162 @@ function drawFrontNumber(personalization) {
   ctx.drawImage(personalizationCanvas, 0, 0);
 }
 
+function setSponsorMessage(message, isError) {
+  var messageElement = document.getElementById("sponsor-message");
+
+  messageElement.textContent = message;
+  messageElement.classList.toggle("error", Boolean(isError));
+}
+
+function updateSponsorControls() {
+  var thumbnail = document.getElementById("sponsor-thumbnail");
+  var placeholder = document.getElementById("sponsor-placeholder");
+  var removeButton = document.getElementById("remove-sponsor");
+  var hasSponsor = Boolean(sponsorImage && sponsorDataUrl);
+
+  if (hasSponsor) {
+    thumbnail.src = sponsorDataUrl;
+    thumbnail.hidden = false;
+    placeholder.hidden = true;
+  } else {
+    thumbnail.removeAttribute("src");
+    thumbnail.hidden = true;
+    placeholder.hidden = false;
+  }
+
+  removeButton.disabled = !hasSponsor;
+  window.__sponsorApplied = hasSponsor;
+}
+
+function removeSponsor() {
+  sponsorDataUrl = "";
+  sponsorImage = null;
+  document.getElementById("sponsor-file").value = "";
+  updateSponsorControls();
+  setSponsorMessage("Sponsor rimosso. Nessuna immagine è conservata.", false);
+
+  if (imgs.base) {
+    render();
+  }
+}
+
+function applySponsorImage(dataUrl, decodedImage) {
+  sponsorDataUrl = dataUrl;
+  sponsorImage = decodedImage;
+  updateSponsorControls();
+  setSponsorMessage("Sponsor applicato sul petto.", false);
+
+  if (imgs.base) {
+    render();
+  }
+}
+
+function handleSponsorFile(event) {
+  var input = event.currentTarget;
+  var file = input.files && input.files[0];
+  var reader;
+
+  if (!file) {
+    return;
+  }
+
+  if (!file.type || !/^image\//i.test(file.type)) {
+    input.value = "";
+    setSponsorMessage("File rifiutato: seleziona un'immagine valida.", true);
+    return;
+  }
+
+  if (file.size > MAX_SPONSOR_BYTES) {
+    input.value = "";
+    setSponsorMessage("File rifiutato: l'immagine supera il limite di 5 MB.", true);
+    return;
+  }
+
+  reader = new FileReader();
+
+  reader.onerror = function () {
+    input.value = "";
+    setSponsorMessage("Impossibile leggere il file selezionato.", true);
+  };
+
+  reader.onload = function () {
+    var dataUrl = typeof reader.result === "string" ? reader.result : "";
+    var decodedImage;
+
+    if (!/^data:image\//i.test(dataUrl)) {
+      input.value = "";
+      setSponsorMessage("File rifiutato: il contenuto non è un'immagine valida.", true);
+      return;
+    }
+
+    decodedImage = new Image();
+
+    decodedImage.onload = function () {
+      applySponsorImage(dataUrl, decodedImage);
+    };
+
+    decodedImage.onerror = function () {
+      input.value = "";
+      setSponsorMessage("File rifiutato: l'immagine non può essere visualizzata.", true);
+    };
+
+    decodedImage.src = dataUrl;
+  };
+
+  reader.readAsDataURL(file);
+}
+
+function drawSponsor() {
+  var box = bounds.maglia;
+  var sourceWidth;
+  var sourceHeight;
+  var areaWidth;
+  var areaHeight;
+  var areaX;
+  var areaY;
+  var scale;
+  var drawWidth;
+  var drawHeight;
+  var drawX;
+  var drawY;
+
+  sponsorCtx.globalCompositeOperation = "source-over";
+  sponsorCtx.clearRect(0, 0, W, H);
+
+  if (!sponsorImage || !box) {
+    window.__sponsorApplied = false;
+    return;
+  }
+
+  sourceWidth = sponsorImage.naturalWidth || sponsorImage.width;
+  sourceHeight = sponsorImage.naturalHeight || sponsorImage.height;
+
+  if (!sourceWidth || !sourceHeight) {
+    window.__sponsorApplied = false;
+    return;
+  }
+
+  // Area sponsor orizzontalmente centrata nella parte alta del petto.
+  // Il logo usa un contain fit: proporzioni preservate, nessuna deformazione.
+  areaWidth = box.w * 0.48;
+  areaHeight = box.h * 0.12;
+  areaX = box.x + (box.w - areaWidth) * 0.5;
+  areaY = box.y + box.h * 0.2;
+  scale = Math.min(areaWidth / sourceWidth, areaHeight / sourceHeight);
+  drawWidth = sourceWidth * scale;
+  drawHeight = sourceHeight * scale;
+  drawX = areaX + (areaWidth - drawWidth) * 0.5;
+  drawY = areaY + (areaHeight - drawHeight) * 0.5;
+
+  sponsorCtx.drawImage(sponsorImage, drawX, drawY, drawWidth, drawHeight);
+  sponsorCtx.globalCompositeOperation = "destination-in";
+  sponsorCtx.drawImage(imgs.mask_maglia, 0, 0, W, H);
+
+  // Overlay finale sopra lo shading, come richiesto per lo sponsor.
+  ctx.drawImage(sponsorCanvas, 0, 0);
+  window.__sponsorApplied = true;
+}
+
 function updateRearSummary(personalization) {
   var preview = document.getElementById("rear-preview");
   var rearName = document.getElementById("rear-name");
@@ -950,6 +1251,7 @@ function render() {
   ctx.clearRect(0, 0, W, H);
   ctx.drawImage(imgs.base, 0, 0, W, H);
   GARMENTS.forEach(renderGarment);
+  drawSponsor();
   drawFrontNumber(personalization);
   updateColorLabels();
   updateRearSummary(personalization);
@@ -985,12 +1287,7 @@ function drawThumbnail(canvasElement, designId) {
   drawDesign(
     thumbCtx,
     designId,
-    {
-      x: 0,
-      y: 0,
-      w: cssWidth,
-      h: cssHeight
-    },
+    { x: 0, y: 0, w: cssWidth, h: cssHeight },
     getColor("maglia", "primary"),
     getColor("maglia", "secondary")
   );
@@ -1003,10 +1300,7 @@ function updateThumbnails() {
     var designId = card.getAttribute("data-design");
 
     drawThumbnail(card.querySelector("canvas"), designId);
-    card.setAttribute(
-      "aria-pressed",
-      designId === selectedDesign ? "true" : "false"
-    );
+    card.setAttribute("aria-pressed", designId === selectedDesign ? "true" : "false");
   });
 }
 
@@ -1043,17 +1337,14 @@ function buildGallery() {
 
     preview.className = "design-preview";
     preview.setAttribute("aria-hidden", "true");
-
     name.className = "design-name";
     name.textContent = design.name;
 
     button.appendChild(preview);
     button.appendChild(name);
-
     button.addEventListener("click", function () {
       selectDesign(design.id);
     });
-
     gallery.appendChild(button);
   });
 }
@@ -1110,19 +1401,16 @@ function applyQueryParameters() {
 function bindControls() {
   GARMENTS.forEach(function (garment) {
     ["primary", "secondary"].forEach(function (role) {
-      document.getElementById(garment + "-" + role).addEventListener(
-        "input",
-        function () {
-          updateThumbnails();
+      document.getElementById(garment + "-" + role).addEventListener("input", function () {
+        updateThumbnails();
 
-          if (imgs.base) {
-            render();
-          } else {
-            updateColorLabels();
-            updateRearSummary(getPersonalization());
-          }
+        if (imgs.base) {
+          render();
+        } else {
+          updateColorLabels();
+          updateRearSummary(getPersonalization());
         }
-      );
+      });
     });
   });
 
@@ -1134,53 +1422,44 @@ function bindControls() {
     }
   });
 
-  document.getElementById("player-name").addEventListener(
-    "blur",
-    function (event) {
-      event.target.value = normalizeName(event.target.value);
+  document.getElementById("player-name").addEventListener("blur", function (event) {
+    event.target.value = normalizeName(event.target.value);
 
-      if (imgs.base) {
-        render();
-      }
+    if (imgs.base) {
+      render();
     }
-  );
+  });
 
-  document.getElementById("player-number").addEventListener(
-    "input",
-    function (event) {
-      event.target.value = normalizeNumber(event.target.value);
+  document.getElementById("player-number").addEventListener("input", function (event) {
+    event.target.value = normalizeNumber(event.target.value);
 
-      if (imgs.base) {
-        render();
-      } else {
-        updateRearSummary(getPersonalization());
-      }
+    if (imgs.base) {
+      render();
+    } else {
+      updateRearSummary(getPersonalization());
     }
-  );
+  });
 
-  document.getElementById("player-font").addEventListener(
-    "change",
-    function () {
-      if (imgs.base) {
-        render();
-      } else {
-        updateRearSummary(getPersonalization());
-      }
+  document.getElementById("player-font").addEventListener("change", function () {
+    if (imgs.base) {
+      render();
+    } else {
+      updateRearSummary(getPersonalization());
     }
-  );
+  });
 
-  document.getElementById("print-color").addEventListener(
-    "input",
-    function () {
-      updateColorLabels();
+  document.getElementById("print-color").addEventListener("input", function () {
+    updateColorLabels();
 
-      if (imgs.base) {
-        render();
-      } else {
-        updateRearSummary(getPersonalization());
-      }
+    if (imgs.base) {
+      render();
+    } else {
+      updateRearSummary(getPersonalization());
     }
-  );
+  });
+
+  document.getElementById("sponsor-file").addEventListener("change", handleSponsorFile);
+  document.getElementById("remove-sponsor").addEventListener("click", removeSponsor);
 }
 
 applyQueryParameters();
@@ -1189,26 +1468,21 @@ bindControls();
 updateColorLabels();
 updateThumbnails();
 updateRearSummary(getPersonalization());
+updateSponsorControls();
 
 Promise.all([
-  load(
-    ASSET_DIR + "shading_base.jpg"
-  ).then(function (image) {
+  load(ASSET_DIR + "shading_base.jpg").then(function (image) {
     imgs.base = image;
   })
 ].concat(
   GARMENTS.map(function (garment) {
-    return load(
-      ASSET_DIR + "mask_" + garment + ".png"
-    ).then(function (image) {
+    return load(ASSET_DIR + "mask_" + garment + ".png").then(function (image) {
       imgs["mask_" + garment] = image;
     });
   })
 )).then(function () {
   GARMENTS.forEach(function (garment) {
-    bounds[garment] = findMaskBounds(
-      imgs["mask_" + garment]
-    );
+    bounds[garment] = findMaskBounds(imgs["mask_" + garment]);
   });
 
   var loadingElement = document.getElementById("loading");

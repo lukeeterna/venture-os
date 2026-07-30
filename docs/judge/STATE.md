@@ -32,3 +32,8 @@ DIFETTI RINVIATI (da chiudere entro MT-2D.7):
   non una stampa che segue le pieghe (MT-2D.4)
 - font stack sistema: 3/5 visibilmente distinti (geometric+college; block/condensed/technical
   quasi indistinguibili alla dimensione canvas). Stack ripega sul default per condensed/technical (MT-2D.4)
+- sponsor disegnato in overlay finale sopra lo shading, non moltiplicato (drawSponsor: destination-in
+  maschera maglia + ctx.drawImage, nessun multiply): come il numero, sembra un adesivo piatto, non
+  una stampa che segue le pieghe del tessuto (MT-2D.5)
+- sponsor a posizione/scala fisse (area petto box.w*0.48 × box.h*0.12, y=0.2h): nessun controllo
+  utente su collocazione o dimensione del logo (MT-2D.5)
