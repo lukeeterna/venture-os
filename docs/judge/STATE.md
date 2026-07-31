@@ -39,5 +39,5 @@ DIFETTI RINVIATI (da chiudere entro MT-2D.7):
   utente su collocazione o dimensione del logo (MT-2D.5)
 
 ## TRACCIA 3D (parallela, non sostituisce il 2D)
-- MT-3D.1 configuratore ruotabile da asset fotografico — integrato, server 8081 attivo, render headless non affidabile (WebGL senza GPU): giudizio estetico al founder su http://localhost:8081/
-- gate estetico founder: NON ancora dato
+- MT-3D.1 configuratore ruotabile da asset fotografico — BLOCKED-ON:patch B3D-01 (PHOTO_DIR path traversal bloccato da server; fix: cambiare in "assets-photo/" + copiare 4 file. Brief completo in docs/judge/2026-07-31-sportswear-mt3d1.md §BUG BLOCCANTE)
+- gate estetico founder: NON ancora dato (in attesa del fix)

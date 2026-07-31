@@ -98,3 +98,126 @@ su http://localhost:8081/
 2. **Retro non fotografico**: la limitazione ±70° è una scelta progettuale esplicita (non un bug). Nome/numero proiettati frontalmente = utile per verifica tecnica, non per preview finale.
 3. **Render headless non verificabile** in questo ambiente (vedi sopra).
 4. **Gate estetico founder**: NON ancora dato.
+
+---
+
+## BUG BLOCCANTE — B3D-01 (trovato da CC post-commit)
+
+**Sintomo** (riportato dal founder):
+```
+Configuratore non disponibile
+Impossibile caricare ../configurator-2d/assets-mockup/derived/web/shading_base.jpg
+```
+
+**Root cause** — path traversal bloccato dal server HTTP:
+
+Il codice imposta:
+```javascript
+const PHOTO_DIR = "../configurator-2d/assets-mockup/derived/web/";
+```
+
+Quando il server serve da `configurator/` (porta 8081), il browser risolve:
+```
+http://localhost:8081/../configurator-2d/assets-mockup/derived/web/shading_base.jpg
+→ http://localhost:8081/configurator-2d/assets-mockup/derived/web/shading_base.jpg
+```
+che è **fuori dalla document root** (`configurator/`). Python `http.server` e qualsiasi web server corretto bloccano il path traversal sopra la root → HTTP 403 / risorsa non trovata.
+
+Gli asset **esistono su disco** (verificato FASE 2: tutti e 4 presenti). Il problema è esclusivamente la struttura di serving, non l'assenza di file.
+
+**Struttura disco**:
+```
+run_20260711_161411/
+├── configurator/          ← server root attuale (porta 8081)
+│   ├── index.html         ← carica ../configurator-2d/...  ← FUORI ROOT
+│   └── assets/
+│       └── kit.glb        ← FUNZIONA (dentro root)
+└── configurator-2d/
+    └── assets-mockup/
+        └── derived/
+            └── web/
+                ├── shading_base.jpg   ← ESISTE ma irraggiungibile
+                ├── mask_maglia.png
+                ├── mask_pantaloncini.png
+                └── mask_calze.png
+```
+
+**Fix disponibili** (ordinati per invasività, Sol sceglie):
+
+### Fix A — Server root spostata (zero modifiche al codice)
+Servire da `run_20260711_161411/` invece di `configurator/`:
+```bash
+python3 -m http.server 8081 --directory ventures/run_20260711_161411/
+# accesso: http://localhost:8081/configurator/
+```
+Il browser risolve `../configurator-2d/` → `http://localhost:8081/configurator-2d/` → dentro la root. Zero modifiche all'HTML.
+
+**Contro**: l'URL del configuratore diventa `/configurator/`, non `/`. Se si fa deploy statico su Cloudflare Pages la struttura dell'URL cambia.
+
+### Fix B — Asset copiati/symlinked dentro configurator/ (self-contained, raccomandato per deploy)
+Aggiungere in `configurator/` una sottodirectory con i 4 file foto, cambiare la costante nel codice:
+```javascript
+// da:
+const PHOTO_DIR = "../configurator-2d/assets-mockup/derived/web/";
+// a:
+const PHOTO_DIR = "assets-photo/";
+```
+File da aggiungere in `configurator/assets-photo/`:
+- `shading_base.jpg`
+- `mask_maglia.png`
+- `mask_pantaloncini.png`
+- `mask_calze.png`
+
+Source: copie da `../configurator-2d/assets-mockup/derived/web/` (i file sono già generati e corretti, solo il path cambia).
+
+**Pro**: il configuratore è self-contained, funziona da qualsiasi document root, deploy su CF Pages senza complicazioni.
+**Contro**: duplicazione fisica di 4 file già presenti in `configurator-2d/derived/web/`. Accettabile se i file sono derivati (rigenerabili da script).
+
+### Fix C — PHOTO_DIR via URL param (massima flessibilità, overkill per ora)
+```javascript
+const PHOTO_DIR = new URLSearchParams(location.search).get("photoDir") 
+  || "assets-photo/";
+```
+Utile solo se si prevede di riusare il configuratore con asset diversi da URL diversi.
+
+**Raccomandazione CC → Sol**: **Fix B**. La self-containment è prioritaria per il deploy CF Pages. Gli asset derivati sono rigenerabili; la copia è lossless. Fix A funziona solo in sviluppo locale con server servito dalla directory parent.
+
+---
+
+## Brief per Sol — Patch MT-3D.1-B3D-01
+
+**Unità**: MT-3D.1-patch  
+**Tipo**: bugfix bloccante  
+**File da modificare**: `ventures/run_20260711_161411/configurator/index.html`  
+**Azione richiesta**:
+
+1. Cambia la costante `PHOTO_DIR` (riga ~257 del file corrente, dopo `const MESH_URL`):
+   ```javascript
+   // PRIMA
+   const PHOTO_DIR = "../configurator-2d/assets-mockup/derived/web/";
+   // DOPO
+   const PHOTO_DIR = "assets-photo/";
+   ```
+
+2. Aggiungi i 4 asset foto nella directory `ventures/run_20260711_161411/configurator/assets-photo/`:
+   - `shading_base.jpg` (copia da `configurator-2d/assets-mockup/derived/web/shading_base.jpg`)
+   - `mask_maglia.png`
+   - `mask_pantaloncini.png`
+   - `mask_calze.png`
+
+   Sol può includere queste istruzioni di copia nel codice del patch o nel brief CC; CC eseguirà la copia fisica.
+
+3. Aggiorna `window.__kit3d.sourceAsset` (riga ~270 circa) di conseguenza:
+   ```javascript
+   sourceAsset: {
+     shading: PHOTO_DIR + "shading_base.jpg",
+     masks: GARMENTS.map((zone) => PHOTO_DIR + "mask_" + zone + ".png")
+   },
+   ```
+   (questa sezione usa già `PHOTO_DIR`, quindi si aggiorna automaticamente se si cambia solo la costante)
+
+**Gate di verifica** (CC eseguirà dopo il patch):
+- `curl -s -o /dev/null -w "%{http_code}" http://localhost:8081/assets-photo/shading_base.jpg` → deve restituire `200`
+- Pagina aperta dal founder su `http://localhost:8081/` → spinner sparisce, kit 3D appare ruotabile
+
+**Nessuna altra modifica richiesta.** Il resto del codice (shader, OrbitControls, overlay, GLTFLoader) è corretto e non va toccato.
