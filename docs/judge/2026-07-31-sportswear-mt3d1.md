@@ -221,3 +221,66 @@ Utile solo se si prevede di riusare il configuratore con asset diversi da URL di
 - Pagina aperta dal founder su `http://localhost:8081/` → spinner sparisce, kit 3D appare ruotabile
 
 **Nessuna altra modifica richiesta.** Il resto del codice (shader, OrbitControls, overlay, GLTFLoader) è corretto e non va toccato.
+
+---
+
+## DIFETTI VISIVI — segnalati dal founder dopo fix B3D-01 (kit visibile)
+
+### D3D-01 — Retro mancante (priorità: ALTA)
+
+**Sintomo**: ruotando il kit verso il retro la rotazione si arresta a ±70°. Il retro non è mai visibile.
+
+**Root cause (by design di Sol)**: `minAzimuthAngle = -70°`, `maxAzimuthAngle = +70°` — scelta esplicita documentata in nota-box "Copertura della vista". All'epoca Sol non disponeva di una fotografia del retro e ha scelto di non inventarla.
+
+**Cosa serve a Sol per il fix**:
+
+Opzione A — **Sblocco angolo + retro sintetico neutro** (zero asset aggiuntivi):  
+Rimuovere il limite azimutale (o portarlo a ±180°) e per gli angoli oltre ±70° applicare una texture neutra sul retro (colore piatto = colore primario della zona, senza shading fotografico). L'utente vede il retro colorato ma non fotografico — accettabile come anteprima tecnica.
+
+Opzione B — **Retro fotografico** (richiede asset):  
+Luke deve fornire una fotografia del retro del mockup con la stessa inquadratura/illuminazione del fronte. Sol aggiunge un secondo set di maschere (`mask_*_back.png`) e uno shader condizionale che switcha tra fronte e retro in base all'angolo di camera.
+
+**CC a Sol**: scegli Opzione A per ora. Opzione B si valuta dopo che il founder approva il fronte.
+
+---
+
+### D3D-02 — Sbavature di colore (priorità: ALTA)
+
+**Sintomo**: aree di colore che "sbavano" al di fuori dei bordi del capo — colori della maglia/pantaloncini/calze visibili in zone che dovrebbero essere sfondo.
+
+**Possibili root cause** (Sol deve verificare quale):
+
+1. **Mask alpha blending troppo morbido** — lo shader usa `smoothstep(0.025, 0.19, maskAlpha)` per interpolare tra il colore neutro e il colore fotografico. Se la maschera ha bordi semitrasparenti (~1-2px, difetto già noto dalla linea 2D: "alone alpha ~1-2px"), il colore del capo "sfiora" lo sfondo.
+
+2. **Proiezione UV oltre i bordi della mesh** — il vertex shader proietta in coordinate object-space. Se la mesh ha geometria che sporge leggermente oltre i bounds calcolati da `expandBoundsFromGroup`, le UV escono dall'intervallo [0,1] e campionano aree di mascheratura errate. La `clamp(q, 0.0, 1.0)` nel fragment shader non è sufficiente se `uMaskRect` non copre correttamente il bordo.
+
+3. **Separazione zone imprecisa** — `materialZone()` assegna i triangoli a maglia/pantaloncini/calze per nome o per `materialIndex`. Se il GLB non ha nomi standard (`body`, `jersey`, `short`, `sock`) il fallback a `materialIndex` può assegnare triangoli sbagliati alla zona sbagliata, causando colori errati in aree adiacenti.
+
+**Dati utili per Sol**:
+- Maschere PNG esistenti: `mask_maglia.png` (48 KB), `mask_pantaloncini.png` (17 KB), `mask_calze.png` (20 KB)
+- Mesh: `assets/kit.glb` (2.74 MB)
+- Shader attuale: `smoothstep(0.025, 0.19, maskAlpha)` — il range 0.025–0.19 è molto largo, favorisce bleeding
+
+**Fix suggeriti da CC**:
+- Per causa 1: stringere `smoothstep` a `(0.08, 0.12, maskAlpha)` — bordo netto, meno bleeding
+- Per causa 2: aggiungere `discard` nel fragment shader se `maskAlpha < 0.04` (pixel completamente fuori maschera = trasparente, non colorato)
+- Per causa 3: ispezionare `kit.glb` con `window.__kit3d.projectionBounds` in console per vedere se i bounds per zona sembrano corretti
+
+**Sol deve**:
+1. Esaminare `kit.glb` per capire la struttura dei materiali (nome mesh, materialIndex)
+2. Scegliere la causa più probabile e fornire il patch corretto al fragment shader
+3. Indicare a CC se servono nuovi asset (maschere più pulite) o solo codice
+
+---
+
+## Stato unità MT-3D.1 dopo fix B3D-01
+
+| Componente | Stato |
+|---|---|
+| Server + path asset | ✅ RISOLTO (fix B3D-01) |
+| Caricamento kit 3D | ✅ Funzionante |
+| Rotazione fronte ±70° | ✅ Funzionante |
+| Colori zone + design 12 archetipi | ⚠️ Parziale (sbavature D3D-02) |
+| Nome / numero / sponsor overlay | ✅ Funzionante (non verificato visivamente) |
+| Retro | ❌ Non disponibile (D3D-01) |
+| Gate estetico founder | ❌ NON ancora dato |

@@ -39,5 +39,8 @@ DIFETTI RINVIATI (da chiudere entro MT-2D.7):
   utente su collocazione o dimensione del logo (MT-2D.5)
 
 ## TRACCIA 3D (parallela, non sostituisce il 2D)
-- MT-3D.1 configuratore ruotabile da asset fotografico — BLOCKED-ON:patch B3D-01 (PHOTO_DIR path traversal bloccato da server; fix: cambiare in "assets-photo/" + copiare 4 file. Brief completo in docs/judge/2026-07-31-sportswear-mt3d1.md §BUG BLOCCANTE)
-- gate estetico founder: NON ancora dato (in attesa del fix)
+- MT-3D.1 configuratore ruotabile da asset fotografico — kit visibile, 2 difetti aperti per Sol:
+  - D3D-01 retro mancante (angolo bloccato ±70°, serve retro sintetico neutro — Opzione A)
+  - D3D-02 sbavature colore (smoothstep troppo largo o zone mesh mal assegnate)
+  - Brief completo: docs/judge/2026-07-31-sportswear-mt3d1.md §DIFETTI VISIVI
+- gate estetico founder: NON ancora dato
