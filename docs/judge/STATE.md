@@ -1,6 +1,6 @@
 venture: sportswear
 repo: github.com/lukeeterna/venture-os
-head_atteso: 31ceb59
+head_atteso: 3815e9a
 unita_corrente: MT-2D.6
 modello_previsto: Sol
 blocco_attivo: nessuno
