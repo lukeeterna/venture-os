@@ -37,3 +37,7 @@ DIFETTI RINVIATI (da chiudere entro MT-2D.7):
   una stampa che segue le pieghe del tessuto (MT-2D.5)
 - sponsor a posizione/scala fisse (area petto box.w*0.48 × box.h*0.12, y=0.2h): nessun controllo
   utente su collocazione o dimensione del logo (MT-2D.5)
+
+## TRACCIA 3D (parallela, non sostituisce il 2D)
+- MT-3D.1 configuratore ruotabile da asset fotografico — integrato, server 8081 attivo, render headless non affidabile (WebGL senza GPU): giudizio estetico al founder su http://localhost:8081/
+- gate estetico founder: NON ancora dato

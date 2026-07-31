@@ -2,185 +2,872 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Configuratore Kit — Crea la maglia della tua squadra</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Configuratore Kit 3D — [ATTIVITA]</title>
 <style>
   :root {
-    /* Design tokens — grid 8px, semantic color pairs */
-    --space-1: 8px;
-    --space-2: 16px;
-    --space-3: 24px;
-    --radius: 12px;
-    --font-ui: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-
-    --color-bg: #0e1116;
-    --color-surface: #171b22;
-    --color-surface-2: #212630;
-    --color-border: #2c333f;
-    --color-text: #f2f5f9;
-    --color-text-muted: #9aa4b2;
-    --color-action: #1e5bd6;
-    --color-action-hover: #2f6ff0;
-    --color-focus: #7bb0ff;
+    color-scheme: dark;
+    --bg: #0c1016;
+    --surface: #151a22;
+    --surface-2: #1d2430;
+    --surface-3: #252e3b;
+    --border: #303a48;
+    --text: #f4f7fb;
+    --muted: #9da8b8;
+    --accent: #4d86ff;
+    --accent-strong: #2f6ff0;
+    --danger: #ffb8b8;
+    --ok: #a9efc1;
+    --radius: 14px;
+    --shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+    --font: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   }
 
-  * { box-sizing: border-box; }
+  * {
+    box-sizing: border-box;
+  }
 
-  html, body {
+  html {
+    background: var(--bg);
+  }
+
+  body {
     margin: 0;
-    height: 100%;
-    background: var(--color-bg);
-    color: var(--color-text);
-    font-family: var(--font-ui);
+    min-width: 0;
+    background:
+      radial-gradient(circle at 18% 0%, rgba(77, 134, 255, 0.12), transparent 34rem),
+      var(--bg);
+    color: var(--text);
+    font-family: var(--font);
     -webkit-font-smoothing: antialiased;
   }
 
-  #app {
-    display: grid;
-    grid-template-rows: auto 1fr;
-    height: 100%;
+  button,
+  input,
+  select {
+    font: inherit;
   }
 
-  header.app-header {
+  button,
+  input[type="range"],
+  input[type="color"],
+  input[type="file"],
+  select {
+    touch-action: manipulation;
+  }
+
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible {
+    outline: 3px solid rgba(77, 134, 255, 0.65);
+    outline-offset: 2px;
+  }
+
+  .app-header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
     display: flex;
-    align-items: baseline;
-    gap: var(--space-2);
-    padding: var(--space-2) var(--space-3);
-    border-bottom: 1px solid var(--color-border);
-    background: var(--color-surface);
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: 64px;
+    padding: 12px 22px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    background: rgba(12, 16, 22, 0.9);
+    backdrop-filter: blur(14px);
   }
-  header.app-header h1 { font-size: 1.15rem; margin: 0; }
-  header.app-header p { margin: 0; color: var(--color-text-muted); font-size: 0.85rem; }
 
-  main.layout {
+  .brand h1 {
+    margin: 0;
+    font-size: 18px;
+    line-height: 1.2;
+  }
+
+  .brand p {
+    margin: 3px 0 0;
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .front-only-badge {
+    flex: 0 0 auto;
+    padding: 7px 10px;
+    border: 1px solid rgba(77, 134, 255, 0.36);
+    border-radius: 999px;
+    background: rgba(77, 134, 255, 0.12);
+    color: #d9e5ff;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .app-main {
     display: grid;
-    grid-template-columns: 1fr 340px;
-    min-height: 0;
+    grid-template-columns: minmax(0, 1fr) minmax(340px, 420px);
+    gap: 20px;
+    width: min(1480px, 100%);
+    margin: 0 auto;
+    padding: 20px;
+    align-items: start;
   }
 
-  /* Scena 3D */
-  #scene-wrap {
+  .viewer-card,
+  .controls-panel {
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: var(--shadow);
+  }
+
+  .viewer-card {
+    position: sticky;
+    top: 84px;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .viewer-shell {
     position: relative;
-    min-height: 0;
-    background: radial-gradient(120% 120% at 50% 15%, #232a36 0%, #0e1116 70%);
+    width: 100%;
+    min-height: min(76vh, 860px);
+    background:
+      radial-gradient(circle at 50% 35%, rgba(255, 255, 255, 0.08), transparent 33%),
+      linear-gradient(180deg, #1a2029 0%, #0e1218 100%);
   }
-  #scene-canvas { display: block; width: 100%; height: 100%; touch-action: none; }
 
-  .scene-fallback {
+  #scene-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: min(76vh, 860px);
+    cursor: grab;
+    touch-action: none;
+  }
+
+  #scene-canvas:active {
+    cursor: grabbing;
+  }
+
+  .viewer-overlay {
     position: absolute;
     inset: 0;
-    display: none;
+    display: grid;
     place-items: center;
-    padding: var(--space-3);
+    padding: 24px;
+    background: rgba(10, 13, 18, 0.72);
     text-align: center;
-    color: var(--color-text-muted);
-  }
-  #scene-wrap.no-webgl .scene-fallback { display: grid; }
-  #scene-wrap.no-webgl #scene-canvas { display: none; }
-
-  /* Pannello controlli */
-  aside.panel {
-    background: var(--color-surface);
-    border-left: 1px solid var(--color-border);
-    padding: var(--space-3);
-    overflow-y: auto;
-  }
-  .panel-section { margin-bottom: var(--space-3); }
-  .panel-section h2 {
-    font-size: 0.78rem;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--color-text-muted);
-    margin: 0 0 var(--space-2);
+    transition: opacity 0.2s ease;
   }
 
-  .view-buttons { display: flex; gap: var(--space-1); }
-  .btn {
-    flex: 1;
-    min-height: 44px;
-    padding: 0 var(--space-2);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius);
-    background: var(--color-surface-2);
-    color: var(--color-text);
-    font: inherit;
-    font-size: 0.9rem;
+  .viewer-overlay[hidden] {
+    display: none;
+  }
+
+  .loader {
+    width: min(360px, 100%);
+  }
+
+  .loader-ring {
+    width: 42px;
+    height: 42px;
+    margin: 0 auto 14px;
+    border: 4px solid rgba(255, 255, 255, 0.15);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .loader strong {
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  .loader p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .viewer-toolbar {
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    pointer-events: none;
+  }
+
+  .viewer-toolbar button {
+    min-height: 42px;
+    padding: 8px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 10px;
+    background: rgba(12, 16, 22, 0.82);
+    color: var(--text);
     cursor: pointer;
-    transition: background 150ms ease, border-color 150ms ease;
-  }
-  .btn:hover { background: #2b323e; }
-  .btn[aria-pressed="true"] { border-color: var(--color-action); color: #cfe0ff; }
-  .btn:focus-visible,
-  .toggle:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }
-
-  .hint { color: var(--color-text-muted); font-size: 0.8rem; line-height: 1.4; }
-
-  .toggle-row { display: flex; align-items: center; gap: var(--space-1); }
-  .toggle { min-height: 44px; }
-
-  .placeholder {
-    border: 1px dashed var(--color-border);
-    border-radius: var(--radius);
-    padding: var(--space-2);
-    color: var(--color-text-muted);
-    font-size: 0.82rem;
+    pointer-events: auto;
+    backdrop-filter: blur(10px);
   }
 
-  /* Mobile: pannello sotto la scena */
-  @media (max-width: 820px) {
-    main.layout { grid-template-columns: 1fr; grid-template-rows: 55vh auto; }
-    aside.panel { border-left: none; border-top: 1px solid var(--color-border); }
+  .viewer-toolbar button:hover {
+    background: rgba(35, 44, 58, 0.94);
+  }
+
+  .viewer-hint {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 11px 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .status-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    margin-right: 7px;
+    border-radius: 50%;
+    background: #8e99aa;
+    vertical-align: 1px;
+  }
+
+  .status-dot.ready {
+    background: #54d887;
+    box-shadow: 0 0 0 4px rgba(84, 216, 135, 0.12);
+  }
+
+  .status-dot.error {
+    background: #ff7474;
+    box-shadow: 0 0 0 4px rgba(255, 116, 116, 0.12);
+  }
+
+  .controls-panel {
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .panel-section {
+    padding: 18px;
+  }
+
+  .panel-section + .panel-section {
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+  }
+
+  .section-title {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+
+  .section-title h2 {
+    margin: 0;
+    font-size: 14px;
+    letter-spacing: 0.035em;
+    text-transform: uppercase;
+  }
+
+  .section-title span {
+    color: var(--muted);
+    font-size: 11px;
+  }
+
+  .section-help {
+    margin: 0 0 14px;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .design-gallery {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .design-card {
+    min-width: 0;
+    padding: 7px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface-2);
+    color: var(--text);
+    cursor: pointer;
+    text-align: left;
+  }
+
+  .design-card:hover {
+    border-color: #536276;
+  }
+
+  .design-card[aria-pressed="true"] {
+    border-color: var(--accent);
+    background: rgba(77, 134, 255, 0.13);
+    box-shadow: inset 0 0 0 1px rgba(77, 134, 255, 0.22);
+  }
+
+  .design-preview {
+    display: block;
+    width: 100%;
+    height: 42px;
+    margin-bottom: 6px;
+    border-radius: 6px;
+    background: #f1f3f6;
+  }
+
+  .design-name {
+    display: block;
+    overflow: hidden;
+    font-size: 10px;
+    line-height: 1.25;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .zone-card,
+  .print-card,
+  .graphic-card {
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    background: var(--surface-2);
+  }
+
+  .zone-card + .zone-card,
+  .print-card + .print-card,
+  .graphic-card + .graphic-card {
+    margin-top: 10px;
+  }
+
+  .zone-card h3,
+  .print-card h3,
+  .graphic-card h3 {
+    margin: 0 0 10px;
+    font-size: 13px;
+  }
+
+  .color-grid,
+  .field-grid,
+  .range-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+  }
+
+  .field,
+  .range-field {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .field.full,
+  .range-field.full {
+    grid-column: 1 / -1;
+  }
+
+  .field label,
+  .range-label,
+  .field-label {
+    color: var(--muted);
+    font-size: 11px;
+  }
+
+  .text-input,
+  .select-input,
+  .file-input {
+    width: 100%;
+    min-height: 44px;
+    padding: 9px 10px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: var(--surface-3);
+    color: var(--text);
+  }
+
+  .file-input {
+    padding: 7px;
+    font-size: 11px;
+  }
+
+  .file-input::file-selector-button {
+    min-height: 32px;
+    margin-right: 8px;
+    padding: 6px 9px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+  }
+
+  .color-control {
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    align-items: center;
+    column-gap: 8px;
+    min-height: 58px;
+    padding: 7px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: var(--surface-3);
+  }
+
+  .color-control > span:first-child {
+    grid-column: 2;
+    color: var(--muted);
+    font-size: 10px;
+  }
+
+  .color-control input[type="color"] {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    width: 42px;
+    height: 42px;
+    padding: 2px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .color-value {
+    grid-column: 2;
+    overflow: hidden;
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    text-overflow: ellipsis;
+  }
+
+  .range-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .range-output {
+    color: var(--text);
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  input[type="range"] {
+    width: 100%;
+    min-height: 28px;
+    margin: 0;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+
+  .graphic-head {
+    display: grid;
+    grid-template-columns: 56px minmax(0, 1fr) auto;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .graphic-thumb {
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background:
+      linear-gradient(45deg, #171d26 25%, transparent 25%),
+      linear-gradient(-45deg, #171d26 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #171d26 75%),
+      linear-gradient(-45deg, transparent 75%, #171d26 75%),
+      #232c39;
+    background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+    background-size: 16px 16px;
+    color: var(--muted);
+    font-size: 9px;
+    text-align: center;
+  }
+
+  .graphic-thumb img {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
+
+  .graphic-meta strong {
+    display: block;
+    margin-bottom: 3px;
+    font-size: 13px;
+  }
+
+  .graphic-meta span {
+    display: block;
+    overflow: hidden;
+    color: var(--muted);
+    font-size: 10px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .small-button,
+  .action-button {
+    min-height: 40px;
+    padding: 8px 11px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: var(--surface-3);
+    color: var(--text);
+    cursor: pointer;
+  }
+
+  .small-button:hover:not(:disabled),
+  .action-button:hover:not(:disabled) {
+    border-color: #5b6a7d;
+  }
+
+  .small-button:disabled {
+    opacity: 0.42;
+    cursor: not-allowed;
+  }
+
+  .graphic-message {
+    min-height: 16px;
+    margin: 9px 0 0;
+    color: var(--muted);
+    font-size: 10px;
+    line-height: 1.4;
+  }
+
+  .graphic-message.error,
+  .global-message.error {
+    color: var(--danger);
+  }
+
+  .graphic-message.ok,
+  .global-message.ok {
+    color: var(--ok);
+  }
+
+  .note-box {
+    padding: 12px;
+    border: 1px solid rgba(77, 134, 255, 0.25);
+    border-radius: 10px;
+    background: rgba(77, 134, 255, 0.08);
+    color: #d8e4ff;
+    font-size: 11px;
+    line-height: 1.5;
+  }
+
+  .global-message {
+    margin: 0;
+    padding: 0;
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 1.45;
+  }
+
+  .hidden-canvas {
+    display: none;
+  }
+
+  @media (max-width: 980px) {
+    .app-main {
+      grid-template-columns: 1fr;
+      padding: 14px;
+    }
+
+    .viewer-card {
+      position: static;
+    }
+
+    .viewer-shell,
+    #scene-canvas {
+      min-height: min(68vh, 720px);
+    }
+
+    .controls-panel {
+      width: 100%;
+    }
+  }
+
+  @media (max-width: 620px) {
+    .app-header {
+      position: static;
+      align-items: flex-start;
+      padding: 12px 14px;
+    }
+
+    .brand p {
+      max-width: 230px;
+    }
+
+    .app-main {
+      gap: 14px;
+      padding: 10px;
+    }
+
+    .viewer-shell,
+    #scene-canvas {
+      min-height: 58vh;
+    }
+
+    .viewer-toolbar {
+      left: 8px;
+      right: 8px;
+      bottom: 8px;
+      gap: 6px;
+    }
+
+    .viewer-toolbar button {
+      min-width: 0;
+      min-height: 44px;
+      padding: 8px 10px;
+      font-size: 12px;
+    }
+
+    .viewer-hint {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .panel-section {
+      padding: 15px;
+    }
+
+    .design-gallery {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .color-grid,
+    .field-grid,
+    .range-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .field.full,
+    .range-field.full {
+      grid-column: auto;
+    }
+
+    .graphic-head {
+      grid-template-columns: 52px minmax(0, 1fr);
+    }
+
+    .graphic-head .small-button {
+      grid-column: 1 / -1;
+      width: 100%;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      scroll-behavior: auto !important;
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+    }
   }
 </style>
 </head>
 <body>
-<div id="app">
-  <header class="app-header">
-    <h1>Configuratore Kit</h1>
-    <p>Crea la maglia della tua squadra — semplice, senza burocrazia.</p>
-  </header>
+<header class="app-header">
+  <div class="brand">
+    <h1>Configuratore Kit 3D</h1>
+    <p>[ATTIVITA] — fotografia proiettata su superficie ruotabile</p>
+  </div>
+  <span class="front-only-badge">Arco frontale</span>
+</header>
 
-  <main class="layout">
-    <div id="scene-wrap">
-      <canvas id="scene-canvas" role="img"
-              aria-label="Anteprima 3D del kit. Trascina per ruotare."></canvas>
-      <div class="scene-fallback">
-        <p>Il tuo dispositivo non supporta la vista 3D.<br />
-        La versione a immagini fisse arriverà a breve.</p>
+<main class="app-main">
+  <section class="viewer-card" aria-label="Anteprima tridimensionale">
+    <div class="viewer-shell" id="viewer-shell">
+      <canvas id="scene-canvas" aria-label="Kit 3D ruotabile con mouse o dito"></canvas>
+
+      <div class="viewer-overlay" id="loading-overlay">
+        <div class="loader">
+          <div class="loader-ring" aria-hidden="true"></div>
+          <strong id="loading-title">Caricamento del kit</strong>
+          <p id="loading-copy">Preparazione mesh, fotografia e maschere.</p>
+        </div>
+      </div>
+
+      <div class="viewer-toolbar" aria-label="Viste rapide">
+        <button type="button" data-view="left">Sinistra</button>
+        <button type="button" data-view="front">Fronte</button>
+        <button type="button" data-view="right">Destra</button>
       </div>
     </div>
 
-    <aside class="panel" aria-label="Pannello di configurazione">
-      <div class="panel-section">
-        <h2>Vista</h2>
-        <div class="view-buttons" role="group" aria-label="Angolo di visuale">
-          <button class="btn" type="button" data-view="front" aria-pressed="true">Fronte</button>
-          <button class="btn" type="button" data-view="back" aria-pressed="false">Retro</button>
-          <button class="btn" type="button" data-view="side" aria-pressed="false">Lato</button>
+    <div class="viewer-hint">
+      <span>
+        <span class="status-dot" id="status-dot"></span>
+        <span id="viewer-status">Inizializzazione</span>
+      </span>
+      <span>Trascina per ruotare · pizzica o usa la rotella per zoomare</span>
+    </div>
+  </section>
+
+  <aside class="controls-panel" aria-label="Controlli del configuratore">
+    <section class="panel-section" aria-labelledby="design-title">
+      <div class="section-title">
+        <h2 id="design-title">Design</h2>
+        <span>12 archetipi</span>
+      </div>
+      <p class="section-help">
+        Il motivo è generato nello shader e viene moltiplicato per le pieghe fotografiche.
+      </p>
+      <div class="design-gallery" id="design-gallery"></div>
+    </section>
+
+    <section class="panel-section" aria-labelledby="colors-title">
+      <div class="section-title">
+        <h2 id="colors-title">Colori</h2>
+        <span>3 zone</span>
+      </div>
+      <p class="section-help">
+        Maglia, pantaloncini e calze restano indipendenti; primario e secondario
+        alimentano lo stesso archetipo.
+      </p>
+      <div id="zone-controls"></div>
+    </section>
+
+    <section class="panel-section" aria-labelledby="print-title">
+      <div class="section-title">
+        <h2 id="print-title">Nome e numero</h2>
+        <span>Su superficie</span>
+      </div>
+      <p class="section-help">
+        Poiché non esiste una fotografia del retro, nome e numero sono proiettati
+        sulla superficie frontale per la verifica tecnica.
+      </p>
+
+      <div class="field-grid">
+        <div class="field">
+          <label for="player-name">Nome</label>
+          <input
+            class="text-input"
+            id="player-name"
+            type="text"
+            value="ROSSI"
+            maxlength="16"
+            autocomplete="off"
+            spellcheck="false"
+          />
         </div>
-        <p class="hint" style="margin-top:8px">
-          Trascina sulla maglia per ruotarla liberamente. Pizzica per zoomare.
-        </p>
+
+        <div class="field">
+          <label for="player-number">Numero</label>
+          <input
+            class="text-input"
+            id="player-number"
+            type="text"
+            value="10"
+            maxlength="2"
+            inputmode="numeric"
+            autocomplete="off"
+          />
+        </div>
+
+        <div class="field">
+          <label for="player-font">Font</label>
+          <select class="select-input" id="player-font">
+            <option value="impact">Blocco</option>
+            <option value="futura">Geometrico</option>
+            <option value="copperplate">Inciso</option>
+            <option value="menlo">Tecnico</option>
+            <option value="georgia">Classico</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <span class="field-label">Colore stampa</span>
+          <label class="color-control" for="print-color">
+            <span>Testo</span>
+            <input type="color" id="print-color" value="#ffffff" />
+            <span class="color-value" id="print-color-value">#FFFFFF</span>
+          </label>
+        </div>
       </div>
 
-      <div class="panel-section">
-        <h2>Rotazione automatica</h2>
-        <div class="toggle-row">
-          <button class="btn toggle" type="button" id="autorotate-toggle"
-                  aria-pressed="true">Rotazione: ON</button>
-        </div>
+      <div class="print-card" style="margin-top: 10px">
+        <h3>Posizione nome</h3>
+        <div class="range-grid" id="name-ranges"></div>
       </div>
 
-      <div class="panel-section">
-        <h2>Prossimi passi</h2>
-        <p class="placeholder">
-          Colori, motivi, nome e numero, logo sponsor e richiesta preventivo
-          saranno disponibili qui man mano che il configuratore viene completato.
-        </p>
+      <div class="print-card">
+        <h3>Posizione numero</h3>
+        <div class="range-grid" id="number-ranges"></div>
       </div>
-    </aside>
-  </main>
-</div>
+    </section>
+
+    <section class="panel-section" aria-labelledby="graphics-title">
+      <div class="section-title">
+        <h2 id="graphics-title">Sponsor e patch</h2>
+        <span>Solo memoria</span>
+      </div>
+      <p class="section-help">
+        Ogni immagine resta nella RAM della pagina, mantiene le proporzioni e
+        viene integrata prima dell'ombreggiatura fotografica.
+      </p>
+      <div id="graphic-controls"></div>
+      <p class="global-message" id="graphics-global-message">
+        Formati immagine comuni, massimo 5 MB per elemento.
+      </p>
+    </section>
+
+    <section class="panel-section" aria-labelledby="limits-title">
+      <div class="section-title">
+        <h2 id="limits-title">Copertura della vista</h2>
+      </div>
+      <div class="note-box">
+        La rotazione è limitata all'arco frontale. Non viene mostrato un retro
+        specchiato o inventato: oltre il limite servirebbe una fotografia
+        posteriore coerente con lo stesso mockup.
+      </div>
+    </section>
+  </aside>
+</main>
+
+<canvas
+  class="hidden-canvas"
+  id="overlay-maglia"
+  width="1067"
+  height="1600"
+></canvas>
+<canvas
+  class="hidden-canvas"
+  id="overlay-pantaloncini"
+  width="1067"
+  height="1600"
+></canvas>
+<canvas
+  class="hidden-canvas"
+  id="overlay-calze"
+  width="1067"
+  height="1600"
+></canvas>
 
 <script type="importmap">
 {
@@ -192,351 +879,3616 @@
 </script>
 
 <script type="module">
-import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
-const wrap = document.getElementById('scene-wrap');
-const canvas = document.getElementById('scene-canvas');
+"use strict";
 
-// --- Guardia WebGL: degradazione se non disponibile ---
-function webglAvailable() {
-  try {
-    const c = document.createElement('canvas');
-    return !!(window.WebGLRenderingContext &&
-      (c.getContext('webgl') || c.getContext('experimental-webgl')));
-  } catch (e) { return false; }
-}
-if (!webglAvailable()) {
-  wrap.classList.add('no-webgl');
-  throw new Error('WebGL non disponibile — attiva fallback statico');
-}
+const THREE_VERSION = "0.160.0";
+const PHOTO_WIDTH = 1067;
+const PHOTO_HEIGHT = 1600;
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+const PHOTO_DIR = "../configurator-2d/assets-mockup/derived/web/";
+const MESH_URL = "assets/kit.glb";
+const GARMENTS = ["maglia", "pantaloncini", "calze"];
 
-const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const DESIGNS = [
+  { id: "solid", name: "Tinta unita", code: 0 },
+  { id: "vertical-stripes", name: "Righe verticali", code: 1 },
+  { id: "horizontal-stripes", name: "Righe orizzontali", code: 2 },
+  { id: "horizontal-band", name: "Fascia orizzontale", code: 3 },
+  { id: "diagonal-band", name: "Banda diagonale", code: 4 },
+  { id: "half-split", name: "Metà campo", code: 5 },
+  { id: "chevron", name: "Chevron", code: 6 },
+  { id: "side-panels", name: "Pannelli laterali", code: 7 },
+  { id: "contrast-shoulders", name: "Spalle a contrasto", code: 8 },
+  { id: "center-band", name: "Banda centrale", code: 9 },
+  { id: "quarters", name: "Quarti alternati", code: 10 },
+  { id: "pinstripes", name: "Gessato", code: 11 }
+];
 
-// --- Renderer ---
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.outputColorSpace = THREE.SRGBColorSpace;
-
-// --- Scena + camera ---
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
-// Camera: z lontano per kit completo; y=0 perché il kit viene centrato a origine
-camera.position.set(0, 0, 10.5);
-
-// --- Luci: key + fill + hemisphere per resa morbida non-piatta ---
-const hemi = new THREE.HemisphereLight(0xdfe8ff, 0x20242c, 0.9);
-scene.add(hemi);
-const key = new THREE.DirectionalLight(0xffffff, 2.2);
-key.position.set(3, 5, 6);
-key.castShadow = true;
-key.shadow.mapSize.set(1024, 1024);
-key.shadow.camera.near = 1;
-key.shadow.camera.far = 20;
-scene.add(key);
-const fill = new THREE.DirectionalLight(0x9db4ff, 0.6);
-fill.position.set(-5, 1, -3);
-scene.add(fill);
-
-/* ===========================================================
-   KIT PROCEDURALE — maglia + pantaloncini + calzettoni.
-   SISTEMA DI COORDINATE UNIFICATO: tutto costruito nel sistema
-   shape originale, poi l'intero gruppo "kit" viene centrato
-   con Box3 → nessun disallineamento colletto/maniche/corpo.
-   =========================================================== */
-const DEPTH = 0.42;          // spessore estruso
-const BEVEL = 0.04;
-const extrudeOpts = {
-  depth: DEPTH,
-  bevelEnabled: true,
-  bevelSize: BEVEL,
-  bevelThickness: BEVEL,
-  bevelSegments: 3,
-  steps: 1
+const FONT_STACKS = {
+  impact: {
+    label: "Blocco",
+    family: "Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif",
+    weight: "900"
+  },
+  futura: {
+    label: "Geometrico",
+    family: "Futura, Avenir, 'Century Gothic', Arial, sans-serif",
+    weight: "800"
+  },
+  copperplate: {
+    label: "Inciso",
+    family: "Copperplate, 'Copperplate Gothic Light', Georgia, serif",
+    weight: "700"
+  },
+  menlo: {
+    label: "Tecnico",
+    family: "Menlo, Monaco, 'Courier New', monospace",
+    weight: "800"
+  },
+  georgia: {
+    label: "Classico",
+    family: "Georgia, 'Times New Roman', serif",
+    weight: "800"
+  }
 };
 
-/* ---- Materiali di zona (5 zone esposte per MT2) ---- */
-const bodyMat   = new THREE.MeshStandardMaterial({ color: 0x1e5bd6, roughness: 0.72, metalness: 0.02 });
-const sleeveMat = new THREE.MeshStandardMaterial({ color: 0xf2f5f9, roughness: 0.72, metalness: 0.02 });
-const collarMat = new THREE.MeshStandardMaterial({ color: 0x0a2a6b, roughness: 0.6,  metalness: 0.02 });
-const shortsMat = new THREE.MeshStandardMaterial({ color: 0x1e5bd6, roughness: 0.72, metalness: 0.02 });
-const sockMat   = new THREE.MeshStandardMaterial({ color: 0xf2f5f9, roughness: 0.72, metalness: 0.02 });
+const state = {
+  design: "solid",
 
-/* ---- CORPO maglia ---- */
-// Coordinate shape (sistema shape originale, NON centrato qui)
-// Vertici chiave:
-//   spalla esterna: (-1.55, 1.34)  e  (1.55, 1.34)
-//   spalla interna: (-1.28, 0.90)  e  (1.28, 0.90)  ← attacco manica
-//   scollo sx:      (-0.48, 1.42)
-//   apice scollo:   (0,     0.98)  ← punto più basso della quadratica
-//   scollo dx:      (0.48,  1.42)
-//   orlo:           (±1.10, -1.60)
-// Silhouette ammorbidita: spalla spiovente via curva, vita rastremata, angoli orlo arrotondati
-const body = new THREE.Shape();
-body.moveTo(-1.05, -1.58);
-// fianchi sx → vita → spalla interna sx (lieve rastremazione in vita)
-body.bezierCurveTo(-1.12, -0.80, -1.20, 0.20, -1.28, 0.90);
-// spalla interna → spalla esterna (spiovente, curva morbida)
-body.quadraticCurveTo(-1.48, 1.18, -1.55, 1.34);
-// spalla esterna → scollo sx
-body.lineTo(-0.48, 1.42);
-// scollo a giro (quadratica: centro scende a 0.98)
-body.quadraticCurveTo(0, 0.98, 0.48, 1.42);
-// scollo dx → spalla esterna dx
-body.lineTo(1.55, 1.34);
-// spalla esterna → spalla interna dx (speculare)
-body.quadraticCurveTo(1.48, 1.18, 1.28, 0.90);
-// spalla interna dx → fianchi dx → orlo (speculare, rastremazione vita)
-body.bezierCurveTo(1.20, 0.20, 1.12, -0.80, 1.05, -1.58);
-// orlo: angoli leggermente arrotondati
-body.quadraticCurveTo(0.60, -1.62, 0, -1.62);
-body.quadraticCurveTo(-0.60, -1.62, -1.05, -1.58);
+  colors: {
+    maglia: {
+      primary: "#1e5bd6",
+      secondary: "#ffffff"
+    },
+    pantaloncini: {
+      primary: "#ffffff",
+      secondary: "#1e5bd6"
+    },
+    calze: {
+      primary: "#1e5bd6",
+      secondary: "#ffffff"
+    }
+  },
 
-const bodyGeo = new THREE.ExtrudeGeometry(body, extrudeOpts);
-// NON chiamare bodyGeo.center() — tutto resta nel sistema shape originale
-const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
-bodyMesh.castShadow = true;
-bodyMesh.receiveShadow = true;
+  personalization: {
+    name: "ROSSI",
+    number: "10",
+    font: "impact",
+    color: "#ffffff",
+    namePlacement: {
+      x: 50,
+      y: 28,
+      scale: 100
+    },
+    numberPlacement: {
+      x: 50,
+      y: 47,
+      scale: 100
+    }
+  },
 
-/* ---- MANICHE ---- */
-// Coordinate nel MEDESIMO sistema shape del corpo.
-// Spalla interna condivisa col corpo: (-1.28, 0.90) e (-1.55, 1.34)
-// Manica ammorbidita: quadraticCurveTo per angoli non-squadrati
-function makeSleeve(mirror) {
-  const s = new THREE.Shape();
-  // parte superiore (attacco alla spalla del corpo)
-  s.moveTo(-1.55, 1.34);
-  // bordo esterno manica con lieve curva verso il basso (non slab orizzontale)
-  s.quadraticCurveTo(-2.00, 1.10, -2.38, 0.76);
-  // punta manica (angolo arrotondato)
-  s.quadraticCurveTo(-2.50, 0.54, -2.42, 0.32);
-  // bordo inferiore manica che risale verso spalla interna
-  s.quadraticCurveTo(-2.10, 0.38, -1.28, 0.90);
-  // chiude al punto di partenza lungo la spalla
-  s.lineTo(-1.55, 1.34);
-  const g = new THREE.ExtrudeGeometry(s, extrudeOpts);
-  const m = new THREE.Mesh(g, sleeveMat);
-  m.castShadow = true;
-  m.receiveShadow = true;
-  if (mirror) m.scale.x = -1;
-  return m;
+  graphics: {
+    main: {
+      label: "Sponsor principale",
+      image: null,
+      dataUrl: "",
+      fileName: "",
+      zone: "maglia",
+      x: 50,
+      y: 67,
+      scale: 44,
+      rotation: 0
+    },
+
+    secondary: {
+      label: "Sponsor secondario",
+      image: null,
+      dataUrl: "",
+      fileName: "",
+      zone: "maglia",
+      x: 50,
+      y: 82,
+      scale: 34,
+      rotation: 0
+    },
+
+    patch: {
+      label: "Patch / scudetto",
+      image: null,
+      dataUrl: "",
+      fileName: "",
+      zone: "maglia",
+      x: 77,
+      y: 24,
+      scale: 16,
+      rotation: 0
+    }
+  }
+};
+
+const dom = {
+  canvas: document.getElementById("scene-canvas"),
+  viewerShell: document.getElementById("viewer-shell"),
+  loadingOverlay: document.getElementById("loading-overlay"),
+  loadingTitle: document.getElementById("loading-title"),
+  loadingCopy: document.getElementById("loading-copy"),
+  statusDot: document.getElementById("status-dot"),
+  viewerStatus: document.getElementById("viewer-status"),
+  designGallery: document.getElementById("design-gallery"),
+  zoneControls: document.getElementById("zone-controls"),
+  graphicControls: document.getElementById("graphic-controls"),
+  graphicsGlobalMessage: document.getElementById(
+    "graphics-global-message"
+  ),
+  playerName: document.getElementById("player-name"),
+  playerNumber: document.getElementById("player-number"),
+  playerFont: document.getElementById("player-font"),
+  printColor: document.getElementById("print-color"),
+  printColorValue: document.getElementById("print-color-value"),
+  nameRanges: document.getElementById("name-ranges"),
+  numberRanges: document.getElementById("number-ranges")
+};
+
+const assetImages = {};
+const maskBounds = {};
+const photoTextures = {};
+const overlayCanvases = {};
+const overlayContexts = {};
+const overlayTextures = {};
+
+const zoneMaterials = {
+  maglia: [],
+  pantaloncini: [],
+  calze: []
+};
+
+let renderer;
+let scene;
+let camera;
+let controls;
+let kitRoot;
+let assetsReady = false;
+let overlayRenderQueued = false;
+let viewTween = null;
+
+window.__kit3d = {
+  version: 1,
+  threeVersion: THREE_VERSION,
+  ready: false,
+  frontArcDegrees: 70,
+  photoProjection: true,
+
+  sourceAsset: {
+    shading: PHOTO_DIR + "shading_base.jpg",
+    masks: GARMENTS.map(
+      (zone) => PHOTO_DIR + "mask_" + zone + ".png"
+    )
+  },
+
+  mesh: MESH_URL,
+  design: state.design,
+
+  graphics: {
+    count: 0,
+    present: false
+  }
+};
+
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
 }
 
-/* ---- COLLETTO ---- */
-// Colletto girocollo: semi-toro posizionato allo scollo della maglia.
-// Scollo shape: apice quadratica a y=0.98, bordi a y=1.42 in x=±0.48.
-// TorusGeometry di default giace nel piano XY (asse Z = normale al piano).
-// Perfetto: posizionato a z = faccia frontale della maglia, giace sul piano XY.
-// Usiamo arc = Math.PI (semicerchio) orientato con gli estremi verso l'alto
-// e la pancia verso il basso → girocollo aperto verso l'alto (verso il collo).
-// rotation.z = 0 → pancia verso Z-negativo nel piano XY → ruotiamo di Math.PI su Z
-// per far scendere la pancia = apertura verso il basso = girocollo.
-const COLLAR_R = 0.46;   // raggio del torus (coincide con la larghezza ±0.48 dello scollo)
-const COLLAR_T = 0.07;   // spessore tubo (tube radius)
-const collarGeo = new THREE.TorusGeometry(COLLAR_R, COLLAR_T, 16, 48, Math.PI);
-const collar = new THREE.Mesh(collarGeo, collarMat);
-collar.castShadow = true;
-// Il torus con arc=PI e nessuna rotazione: gli estremi sono a x=±COLLAR_R, y=0, z=0
-// e la pancia è a x=0, y=COLLAR_R, z=0 (pancia verso l'alto).
-// Vogliamo: pancia verso il BASSO (apertura verso l'alto = girocollo) → rotation.z = PI.
-// y = apice scollo nel sistema shape = 0.98. Il torus ha raggio 0.46 → il top del semi-
-// toro dopo rotation.z=PI raggiunge y = 0.98 + COLLAR_R = 1.44 ≈ livello spalle ✓
-// z = faccia frontale + sporgenza minima: z = DEPTH + COLLAR_T
-collar.rotation.z = Math.PI;
-collar.position.set(0, 0.98, DEPTH + COLLAR_T * 0.6);
+function normalizeName(value) {
+  return String(value || "")
+    .toLocaleUpperCase("it-IT")
+    .replace(/[^A-ZÀ-ÖØ-Ý0-9' -]/g, "")
+    .replace(/\s+/g, " ")
+    .slice(0, 16);
+}
 
-/* ---- Gruppo MAGLIA (jersey) ---- */
-const jersey = new THREE.Group();
-jersey.add(bodyMesh);
-const sleeveL = makeSleeve(false);
-const sleeveR = makeSleeve(true);
-jersey.add(sleeveL, sleeveR);
-jersey.add(collar);
+function normalizeNumber(value) {
+  return String(value || "")
+    .replace(/\D/g, "")
+    .slice(0, 2);
+}
 
-/* ---- PANTALONCINI ---- */
-// Shape estrusa: fascia vita + due gambe con spacco centrale.
-// Posizionate sotto la maglia nel sistema shape originale.
-// Orlo maglia a y=-1.62 → pantaloncini partono da y=-1.70 (piccolo stacco).
-// Altezza pantaloncino ≈ 1.10 unità → fondo a y=-2.80.
-const SHORTS_TOP = -1.72;
-const SHORTS_BOT = -2.82;
-const SHORTS_MID = (SHORTS_TOP + SHORTS_BOT) / 2;
+function safeHex(value) {
+  const cleaned = String(value || "").replace("#", "");
 
-// Costruisco una shape unica a U (fascia vita + due gambe):
-// fascetta vita da x=-1.05 a x=1.05 in alto, poi due gambe separate
-const shorts = new THREE.Shape();
-// bordo superiore vita
-shorts.moveTo(-1.00, SHORTS_TOP);
-shorts.lineTo( 1.00, SHORTS_TOP);
-// gamba destra: scende verso il fondo
-shorts.lineTo( 1.00, SHORTS_BOT);
-// arrotonda angolo inferiore dx
-shorts.quadraticCurveTo(0.90, SHORTS_BOT - 0.04, 0.60, SHORTS_BOT);
-// spacco centrale basso
-shorts.lineTo(0.06, SHORTS_MID - 0.05);
-shorts.lineTo(-0.06, SHORTS_MID - 0.05);
-// gamba sinistra: risale
-shorts.lineTo(-0.60, SHORTS_BOT);
-shorts.quadraticCurveTo(-0.90, SHORTS_BOT - 0.04, -1.00, SHORTS_BOT);
-shorts.lineTo(-1.00, SHORTS_TOP);
+  return /^[0-9a-f]{6}$/i.test(cleaned)
+    ? "#" + cleaned.toLowerCase()
+    : null;
+}
 
-const shortsGeo = new THREE.ExtrudeGeometry(shorts, {
-  depth: DEPTH * 0.90,
-  bevelEnabled: true,
-  bevelSize: 0.03,
-  bevelThickness: 0.03,
-  bevelSegments: 2,
-  steps: 1
-});
-const shortsMesh = new THREE.Mesh(shortsGeo, shortsMat);
-shortsMesh.castShadow = true;
-shortsMesh.receiveShadow = true;
-// Centro il geometry di pantaloncini solo in X (già nel sistema shape verticale)
-// Shift Z per allineare faccia frontale con la maglia
-shortsMesh.position.z = (DEPTH - DEPTH * 0.90) / 2;
+function contrastColor(hex) {
+  const value = safeHex(hex) || "#ffffff";
+  const r = parseInt(value.slice(1, 3), 16);
+  const g = parseInt(value.slice(3, 5), 16);
+  const b = parseInt(value.slice(5, 7), 16);
+  const luminance =
+    (0.299 * r + 0.587 * g + 0.114 * b) / 255;
 
-/* ---- CALZETTONI ---- */
-// Due mesh cilindriche (ExtrudeGeometry box) sotto i pantaloncini.
-// Fondo pantaloncini a y=-2.82 → calzettoni da y=-2.90 a y=-4.20
-const SOCK_TOP = -2.90;
-const SOCK_BOT = -4.20;
-const SOCK_W = 0.32;   // mezza larghezza calzettone
+  return luminance > 0.58
+    ? "#101317"
+    : "#ffffff";
+}
 
-function makeSock(xCenter) {
-  const s = new THREE.Shape();
-  s.moveTo(xCenter - SOCK_W, SOCK_TOP);
-  s.lineTo(xCenter + SOCK_W, SOCK_TOP);
-  s.lineTo(xCenter + SOCK_W, SOCK_BOT);
-  // arrotonda angolo inferiore
-  s.quadraticCurveTo(xCenter + SOCK_W, SOCK_BOT - 0.06, xCenter + SOCK_W * 0.7, SOCK_BOT - 0.08);
-  s.lineTo(xCenter - SOCK_W * 0.7, SOCK_BOT - 0.08);
-  s.quadraticCurveTo(xCenter - SOCK_W, SOCK_BOT - 0.06, xCenter - SOCK_W, SOCK_BOT);
-  s.lineTo(xCenter - SOCK_W, SOCK_TOP);
+function setViewerStatus(message, kind) {
+  dom.viewerStatus.textContent = message;
+  dom.statusDot.classList.remove("ready", "error");
 
-  const g = new THREE.ExtrudeGeometry(s, {
-    depth: DEPTH * 0.80,
-    bevelEnabled: true,
-    bevelSize: 0.025,
-    bevelThickness: 0.025,
-    bevelSegments: 2,
-    steps: 1
+  if (kind) {
+    dom.statusDot.classList.add(kind);
+  }
+}
+
+function showFatal(title, copy) {
+  dom.loadingTitle.textContent = title;
+  dom.loadingCopy.textContent = copy;
+  dom.loadingOverlay.hidden = false;
+
+  setViewerStatus(title, "error");
+
+  window.__kit3d.error = copy;
+}
+
+function hideLoading() {
+  dom.loadingOverlay.hidden = true;
+  setViewerStatus("Kit fotografico pronto", "ready");
+}
+
+function loadImage(url) {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+
+    image.decoding = "async";
+
+    image.onload = () => {
+      resolve(image);
+    };
+
+    image.onerror = () => {
+      reject(
+        new Error("Impossibile caricare " + url)
+      );
+    };
+
+    image.src = url;
   });
-  const m = new THREE.Mesh(g, sockMat);
-  m.castShadow = true;
-  m.receiveShadow = true;
-  m.position.z = (DEPTH - DEPTH * 0.80) / 2;
-  return m;
 }
 
-const sockL = makeSock(-0.38);
-const sockR = makeSock( 0.38);
+function computeMaskBounds(image, zone) {
+  const probe = document.createElement("canvas");
 
-/* ---- Gruppo KIT completo ---- */
-const kit = new THREE.Group();
-kit.add(jersey);
-kit.add(shortsMesh, sockL, sockR);
-scene.add(kit);
+  probe.width = PHOTO_WIDTH;
+  probe.height = PHOTO_HEIGHT;
 
-// Centra l'intero kit con Box3 (sistema shape → world centrato)
-// Questo sposta l'INTERO gruppo: maglia + colletto + maniche + shorts + calze
-// restano tutti allineati perché erano nello stesso sistema di coordinate.
-const kitBox = new THREE.Box3().setFromObject(kit);
-const kitCenter = new THREE.Vector3();
-kitBox.getCenter(kitCenter);
-kit.position.sub(kitCenter);
+  const probeCtx = probe.getContext(
+    "2d",
+    {
+      willReadFrequently: true
+    }
+  );
 
-// Piano ombra: sotto il kit centrato
-// Dopo il sub(kitCenter), il bottom del kit è a y = (kitBox.min.y - kitCenter.y)
-const kitBottomLocal = kitBox.min.y - kitCenter.y;
-const ground = new THREE.Mesh(
-  new THREE.PlaneGeometry(40, 40),
-  new THREE.ShadowMaterial({ opacity: 0.28 })
-);
-ground.rotation.x = -Math.PI / 2;
-ground.position.y = kitBottomLocal - 0.08;  // leggermente sotto i calzettoni
-ground.receiveShadow = true;
-scene.add(ground);
+  probeCtx.drawImage(
+    image,
+    0,
+    0,
+    PHOTO_WIDTH,
+    PHOTO_HEIGHT
+  );
 
-// Esporta tutte e 5 le zone per MT2 (color picker su ogni zona)
-// camera e controls esposti per debug/test headless — non usati dalla UI
-window.__kit = {
-  THREE,
-  scene,
-  kit,
-  jersey,
-  camera,
-  materials: { bodyMat, sleeveMat, collarMat, shortsMat, sockMat }
-};
+  try {
+    const pixels = probeCtx.getImageData(
+      0,
+      0,
+      PHOTO_WIDTH,
+      PHOTO_HEIGHT
+    ).data;
 
-// --- Controlli orbit (rotazione libera multi-angolo) ---
-const controls = new OrbitControls(camera, renderer.domElement);
-window.__kit.controls = controls; // esposto per debug/test headless
-controls.enableDamping = true;
-controls.dampingFactor = 0.08;
-controls.enablePan = false;
-controls.minDistance = 6;
-controls.maxDistance = 18;
-// Target = centro kit (già in origine dopo il sub)
-controls.target.set(0, 0, 0);
-controls.autoRotate = !reduceMotion;
-controls.autoRotateSpeed = 1.4;
+    let minX = PHOTO_WIDTH;
+    let minY = PHOTO_HEIGHT;
+    let maxX = -1;
+    let maxY = -1;
 
-// --- Preset vista — distanza per inquadrare kit completo (maglia+shorts+calze) ---
-// kit centrato a origine → camera Y=0, distanze calibrate su FOV 38° e altezza kit ~5.8u
-const VIEWS = {
-  front: new THREE.Vector3(0,  0,  10.5),
-  back:  new THREE.Vector3(0,  0, -10.5),
-  side:  new THREE.Vector3(10.5, 0, 0.6),
-};
-let camTarget = null;
-function goToView(name) {
-  camTarget = VIEWS[name].clone();
-  controls.autoRotate = false;
-  syncAutorotateButton();
-  document.querySelectorAll('[data-view]').forEach(b =>
-    b.setAttribute('aria-pressed', String(b.dataset.view === name)));
+    for (
+      let y = 0;
+      y < PHOTO_HEIGHT;
+      y += 1
+    ) {
+      for (
+        let x = 0;
+        x < PHOTO_WIDTH;
+        x += 1
+      ) {
+        const alpha =
+          pixels[
+            (y * PHOTO_WIDTH + x) * 4 + 3
+          ];
+
+        if (alpha > 8) {
+          if (x < minX) {
+            minX = x;
+          }
+
+          if (x > maxX) {
+            maxX = x;
+          }
+
+          if (y < minY) {
+            minY = y;
+          }
+
+          if (y > maxY) {
+            maxY = y;
+          }
+        }
+      }
+    }
+
+    if (
+      maxX >= minX &&
+      maxY >= minY
+    ) {
+      return {
+        x: minX,
+        y: minY,
+        w: maxX - minX + 1,
+        h: maxY - minY + 1
+      };
+    }
+  } catch (error) {
+    console.warn(
+      "Bounds maschera non leggibili",
+      zone,
+      error
+    );
+  }
+
+  dom.graphicsGlobalMessage.textContent =
+    "Avviso: bounds della maschera non leggibili; viene usata una mappatura estesa.";
+
+  dom.graphicsGlobalMessage.className =
+    "global-message error";
+
+  return {
+    x: 0,
+    y: 0,
+    w: PHOTO_WIDTH,
+    h: PHOTO_HEIGHT
+  };
 }
-document.querySelectorAll('[data-view]').forEach(btn =>
-  btn.addEventListener('click', () => goToView(btn.dataset.view)));
 
-// --- Toggle rotazione automatica (rispetta reduced-motion) ---
-const autoBtn = document.getElementById('autorotate-toggle');
-function syncAutorotateButton() {
-  autoBtn.setAttribute('aria-pressed', String(controls.autoRotate));
-  autoBtn.textContent = 'Rotazione: ' + (controls.autoRotate ? 'ON' : 'OFF');
+function makeTexture(image, colorSpace) {
+  const texture = new THREE.Texture(image);
+
+  texture.colorSpace = colorSpace;
+  texture.wrapS = THREE.ClampToEdgeWrapping;
+  texture.wrapT = THREE.ClampToEdgeWrapping;
+  texture.minFilter =
+    THREE.LinearMipmapLinearFilter;
+  texture.magFilter = THREE.LinearFilter;
+  texture.generateMipmaps = true;
+  texture.needsUpdate = true;
+
+  return texture;
 }
-autoBtn.addEventListener('click', () => {
-  controls.autoRotate = !controls.autoRotate;
-  if (controls.autoRotate) camTarget = null;  // riprende auto-rotate, libera lerp target
-  syncAutorotateButton();
-});
-if (reduceMotion) { controls.autoRotate = false; }
-syncAutorotateButton();
 
-// --- Resize responsivo ---
-function resize() {
-  const w = wrap.clientWidth, h = wrap.clientHeight;
-  renderer.setSize(w, h, false);
-  camera.aspect = w / Math.max(h, 1);
+function boundsToUvRect(bounds) {
+  return new THREE.Vector4(
+    bounds.x / PHOTO_WIDTH,
+    1 -
+      (bounds.y + bounds.h) /
+        PHOTO_HEIGHT,
+    bounds.w / PHOTO_WIDTH,
+    bounds.h / PHOTO_HEIGHT
+  );
+}
+
+function createOverlayTextures() {
+  GARMENTS.forEach((zone) => {
+    const canvas = document.getElementById(
+      "overlay-" + zone
+    );
+
+    const context = canvas.getContext("2d");
+
+    context.imageSmoothingEnabled = true;
+    context.imageSmoothingQuality = "high";
+
+    overlayCanvases[zone] = canvas;
+    overlayContexts[zone] = context;
+
+    const texture =
+      new THREE.CanvasTexture(canvas);
+
+    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.wrapS = THREE.ClampToEdgeWrapping;
+    texture.wrapT = THREE.ClampToEdgeWrapping;
+    texture.minFilter = THREE.LinearFilter;
+    texture.magFilter = THREE.LinearFilter;
+    texture.generateMipmaps = false;
+
+    overlayTextures[zone] = texture;
+  });
+}
+
+function drawTextOnZone(
+  ctx,
+  text,
+  placement,
+  font,
+  color,
+  bounds,
+  isNumber
+) {
+  if (!text) {
+    return;
+  }
+
+  const x =
+    bounds.x +
+    bounds.w * (placement.x / 100);
+
+  const y =
+    bounds.y +
+    bounds.h * (placement.y / 100);
+
+  const baseRatio = isNumber
+    ? 0.22
+    : 0.085;
+
+  const fontSize = Math.max(
+    14,
+    bounds.w *
+      baseRatio *
+      (placement.scale / 100)
+  );
+
+  const maxWidth =
+    bounds.w *
+    (isNumber ? 0.34 : 0.62);
+
+  const outline = contrastColor(color);
+
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.lineJoin = "round";
+
+  ctx.font =
+    font.weight +
+    " " +
+    fontSize +
+    "px " +
+    font.family;
+
+  ctx.fillStyle = color;
+  ctx.strokeStyle = outline;
+  ctx.lineWidth = Math.max(
+    2,
+    fontSize * 0.045
+  );
+
+  ctx.strokeText(
+    text,
+    0,
+    0,
+    maxWidth
+  );
+
+  ctx.fillText(
+    text,
+    0,
+    0,
+    maxWidth
+  );
+
+  ctx.restore();
+}
+
+function drawGraphicOnZone(
+  ctx,
+  graphic,
+  bounds
+) {
+  if (!graphic.image) {
+    return;
+  }
+
+  const sourceWidth =
+    graphic.image.naturalWidth ||
+    graphic.image.width;
+
+  const sourceHeight =
+    graphic.image.naturalHeight ||
+    graphic.image.height;
+
+  if (
+    !sourceWidth ||
+    !sourceHeight
+  ) {
+    return;
+  }
+
+  const targetWidth =
+    bounds.w *
+    (graphic.scale / 100);
+
+  const targetHeight =
+    targetWidth *
+    (sourceHeight / sourceWidth);
+
+  const x =
+    bounds.x +
+    bounds.w * (graphic.x / 100);
+
+  const y =
+    bounds.y +
+    bounds.h * (graphic.y / 100);
+
+  ctx.save();
+  ctx.translate(x, y);
+
+  ctx.rotate(
+    graphic.rotation *
+      Math.PI /
+      180
+  );
+
+  ctx.drawImage(
+    graphic.image,
+    -targetWidth / 2,
+    -targetHeight / 2,
+    targetWidth,
+    targetHeight
+  );
+
+  ctx.restore();
+}
+
+function renderOverlayCanvases() {
+  overlayRenderQueued = false;
+
+  if (!assetsReady) {
+    return;
+  }
+
+  GARMENTS.forEach((zone) => {
+    const ctx = overlayContexts[zone];
+    const bounds = maskBounds[zone];
+
+    ctx.globalCompositeOperation =
+      "source-over";
+
+    ctx.clearRect(
+      0,
+      0,
+      PHOTO_WIDTH,
+      PHOTO_HEIGHT
+    );
+
+    if (zone === "maglia") {
+      const selectedFont =
+        FONT_STACKS[
+          state.personalization.font
+        ] ||
+        FONT_STACKS.impact;
+
+      drawTextOnZone(
+        ctx,
+        state.personalization.name,
+        state.personalization
+          .namePlacement,
+        selectedFont,
+        state.personalization.color,
+        bounds,
+        false
+      );
+
+      drawTextOnZone(
+        ctx,
+        state.personalization.number,
+        state.personalization
+          .numberPlacement,
+        selectedFont,
+        state.personalization.color,
+        bounds,
+        true
+      );
+    }
+
+    Object.values(
+      state.graphics
+    ).forEach((graphic) => {
+      if (graphic.zone === zone) {
+        drawGraphicOnZone(
+          ctx,
+          graphic,
+          bounds
+        );
+      }
+    });
+
+    ctx.globalCompositeOperation =
+      "destination-in";
+
+    ctx.drawImage(
+      assetImages[
+        "mask_" + zone
+      ],
+      0,
+      0,
+      PHOTO_WIDTH,
+      PHOTO_HEIGHT
+    );
+
+    ctx.globalCompositeOperation =
+      "source-over";
+
+    overlayTextures[
+      zone
+    ].needsUpdate = true;
+  });
+
+  const graphicsCount =
+    Object.values(
+      state.graphics
+    ).filter(
+      (graphic) =>
+        Boolean(graphic.image)
+    ).length;
+
+  window.__kit3d.graphics = {
+    count: graphicsCount,
+    present: graphicsCount > 0,
+
+    zones: Object.fromEntries(
+      Object.entries(
+        state.graphics
+      ).map(
+        ([id, graphic]) => [
+          id,
+          graphic.image
+            ? graphic.zone
+            : null
+        ]
+      )
+    )
+  };
+
+  window.__kit3d.personalization =
+    JSON.parse(
+      JSON.stringify(
+        state.personalization
+      )
+    );
+}
+
+function scheduleOverlayRender() {
+  if (overlayRenderQueued) {
+    return;
+  }
+
+  overlayRenderQueued = true;
+
+  requestAnimationFrame(
+    renderOverlayCanvases
+  );
+}
+
+function designCode() {
+  const design = DESIGNS.find(
+    (item) =>
+      item.id === state.design
+  );
+
+  return design
+    ? design.code
+    : 0;
+}
+
+const vertexShader = `
+  uniform mat4 uObjectToProjection;
+
+  varying vec3 vProjectionPosition;
+  varying vec3 vWorldPosition;
+  varying vec3 vWorldNormal;
+
+  void main() {
+    vProjectionPosition = (
+      uObjectToProjection *
+      vec4(position, 1.0)
+    ).xyz;
+
+    vec4 worldPosition =
+      modelMatrix *
+      vec4(position, 1.0);
+
+    vWorldPosition =
+      worldPosition.xyz;
+
+    vWorldNormal =
+      normalize(
+        mat3(modelMatrix) *
+        normal
+      );
+
+    gl_Position =
+      projectionMatrix *
+      viewMatrix *
+      worldPosition;
+  }
+`;
+
+const fragmentShader = `
+  uniform sampler2D uShading;
+  uniform sampler2D uMask;
+  uniform sampler2D uOverlay;
+
+  uniform vec3 uPrimary;
+  uniform vec3 uSecondary;
+
+  uniform vec2 uZoneMin;
+  uniform vec2 uZoneSize;
+  uniform vec4 uMaskRect;
+
+  uniform float uDesign;
+  uniform vec3 uLightDirection;
+
+  varying vec3 vProjectionPosition;
+  varying vec3 vWorldPosition;
+  varying vec3 vWorldNormal;
+
+  float chooseDesign(vec2 q) {
+    float result = 0.0;
+
+    if (uDesign < 0.5) {
+      result = 0.0;
+    } else if (uDesign < 1.5) {
+      result = step(
+        0.5,
+        fract(q.x * 8.0)
+      );
+    } else if (uDesign < 2.5) {
+      result = step(
+        0.5,
+        fract(q.y * 8.0)
+      );
+    } else if (uDesign < 3.5) {
+      result =
+        1.0 -
+        step(
+          0.105,
+          abs(q.y - 0.52)
+        );
+    } else if (uDesign < 4.5) {
+      float diagonal =
+        q.y -
+        (0.88 - q.x * 0.76);
+
+      result =
+        1.0 -
+        step(
+          0.115,
+          abs(diagonal)
+        );
+    } else if (uDesign < 5.5) {
+      result = step(
+        0.5,
+        q.x
+      );
+    } else if (uDesign < 6.5) {
+      float chevronLine =
+        0.43 +
+        abs(q.x - 0.5) *
+          0.66;
+
+      result =
+        1.0 -
+        step(
+          0.095,
+          abs(
+            q.y -
+            chevronLine
+          )
+        );
+    } else if (uDesign < 7.5) {
+      result = max(
+        1.0 -
+          step(0.18, q.x),
+        step(0.82, q.x)
+      );
+    } else if (uDesign < 8.5) {
+      float outer =
+        step(
+          0.23,
+          abs(q.x - 0.5)
+        );
+
+      float upper =
+        step(
+          0.67,
+          q.y
+        );
+
+      result =
+        outer * upper;
+    } else if (uDesign < 9.5) {
+      result =
+        1.0 -
+        step(
+          0.13,
+          abs(q.x - 0.5)
+        );
+    } else if (uDesign < 10.5) {
+      float cellX =
+        floor(q.x * 2.0);
+
+      float cellY =
+        floor(q.y * 2.0);
+
+      result = mod(
+        cellX + cellY,
+        2.0
+      );
+    } else {
+      result =
+        1.0 -
+        step(
+          0.09,
+          fract(q.x * 12.0)
+        );
+    }
+
+    return clamp(
+      result,
+      0.0,
+      1.0
+    );
+  }
+
+  void main() {
+    vec2 zoneSize = max(
+      uZoneSize,
+      vec2(0.0001)
+    );
+
+    vec2 q = clamp(
+      (
+        vProjectionPosition.xy -
+        uZoneMin
+      ) /
+      zoneSize,
+      0.0,
+      1.0
+    );
+
+    vec2 photoUv =
+      uMaskRect.xy +
+      q *
+      uMaskRect.zw;
+
+    float designMix =
+      chooseDesign(q);
+
+    vec3 pattern = mix(
+      uPrimary,
+      uSecondary,
+      designMix
+    );
+
+    vec4 overlay =
+      texture2D(
+        uOverlay,
+        photoUv
+      );
+
+    vec3 decorated = mix(
+      pattern,
+      overlay.rgb,
+      overlay.a
+    );
+
+    vec3 photographic =
+      texture2D(
+        uShading,
+        photoUv
+      ).rgb;
+
+    float maskAlpha =
+      texture2D(
+        uMask,
+        photoUv
+      ).a;
+
+    float maskWeight =
+      smoothstep(
+        0.025,
+        0.19,
+        maskAlpha
+      );
+
+    float luminance = dot(
+      photographic,
+      vec3(
+        0.299,
+        0.587,
+        0.114
+      )
+    );
+
+    float fold = clamp(
+      luminance * 1.34,
+      0.24,
+      1.18
+    );
+
+    vec3 photoFold =
+      decorated * fold;
+
+    float weave =
+      1.0 +
+      0.016 *
+      sin(
+        vProjectionPosition.x *
+        118.0
+      ) *
+      sin(
+        vProjectionPosition.y *
+        146.0
+      );
+
+    vec3 neutralFold =
+      decorated *
+      (
+        0.84 +
+        0.16 * weave
+      );
+
+    vec3 baseColor = mix(
+      neutralFold,
+      photoFold,
+      maskWeight
+    );
+
+    vec3 normal =
+      normalize(
+        vWorldNormal
+      );
+
+    vec3 lightDirection =
+      normalize(
+        uLightDirection
+      );
+
+    float diffuse =
+      0.76 +
+      0.24 *
+      max(
+        dot(
+          normal,
+          lightDirection
+        ),
+        0.0
+      );
+
+    vec3 viewDirection =
+      normalize(
+        cameraPosition -
+        vWorldPosition
+      );
+
+    float rim = pow(
+      1.0 -
+      max(
+        dot(
+          normal,
+          viewDirection
+        ),
+        0.0
+      ),
+      3.0
+    ) * 0.055;
+
+    vec3 finalColor =
+      baseColor *
+      diffuse +
+      vec3(rim);
+
+    gl_FragColor =
+      vec4(
+        finalColor,
+        1.0
+      );
+
+    #include <tonemapping_fragment>
+    #include <colorspace_fragment>
+  }
+`;
+
+function makeZoneMaterial(
+  zone,
+  bounds,
+  objectToProjection
+) {
+  const material =
+    new THREE.ShaderMaterial({
+      uniforms: {
+        uShading: {
+          value:
+            photoTextures.shading
+        },
+
+        uMask: {
+          value:
+            photoTextures[
+              "mask_" + zone
+            ]
+        },
+
+        uOverlay: {
+          value:
+            overlayTextures[zone]
+        },
+
+        uPrimary: {
+          value:
+            new THREE.Color(
+              state.colors[
+                zone
+              ].primary
+            )
+        },
+
+        uSecondary: {
+          value:
+            new THREE.Color(
+              state.colors[
+                zone
+              ].secondary
+            )
+        },
+
+        uZoneMin: {
+          value:
+            new THREE.Vector2(
+              bounds.min.x,
+              bounds.min.y
+            )
+        },
+
+        uZoneSize: {
+          value:
+            new THREE.Vector2(
+              Math.max(
+                0.0001,
+                bounds.max.x -
+                  bounds.min.x
+              ),
+              Math.max(
+                0.0001,
+                bounds.max.y -
+                  bounds.min.y
+              )
+            )
+        },
+
+        uMaskRect: {
+          value:
+            boundsToUvRect(
+              maskBounds[zone]
+            )
+        },
+
+        uDesign: {
+          value: designCode()
+        },
+
+        uLightDirection: {
+          value:
+            new THREE.Vector3(
+              0.45,
+              0.8,
+              0.7
+            ).normalize()
+        },
+
+        uObjectToProjection: {
+          value:
+            objectToProjection.clone()
+        }
+      },
+
+      vertexShader,
+      fragmentShader,
+      side: THREE.DoubleSide,
+      transparent: false,
+      depthWrite: true,
+      depthTest: true,
+      toneMapped: true
+    });
+
+  material.name =
+    "photo-projector-" + zone;
+
+  zoneMaterials[
+    zone
+  ].push(material);
+
+  return material;
+}
+
+function materialZone(
+  materialName,
+  materialIndex,
+  meshName
+) {
+  const name =
+    (
+      String(
+        materialName || ""
+      ) +
+      " " +
+      String(
+        meshName || ""
+      )
+    ).toLowerCase();
+
+  if (
+    /short|pantal/.test(name)
+  ) {
+    return "pantaloncini";
+  }
+
+  if (
+    /sock|calz/.test(name)
+  ) {
+    return "calze";
+  }
+
+  if (
+    /body|jersey|shirt|sleeve|collar|maglia/.test(
+      name
+    )
+  ) {
+    return "maglia";
+  }
+
+  if (materialIndex === 3) {
+    return "pantaloncini";
+  }
+
+  if (materialIndex >= 4) {
+    return "calze";
+  }
+
+  return "maglia";
+}
+
+function expandBoundsFromGroup(
+  box,
+  geometry,
+  group,
+  transform
+) {
+  const position =
+    geometry.attributes.position;
+
+  const index = geometry.index;
+
+  const start = group
+    ? group.start
+    : 0;
+
+  const count = group
+    ? group.count
+    : index
+      ? index.count
+      : position.count;
+
+  const point =
+    new THREE.Vector3();
+
+  for (
+    let cursor = start;
+    cursor < start + count;
+    cursor += 1
+  ) {
+    const vertexIndex = index
+      ? index.getX(cursor)
+      : cursor;
+
+    point
+      .fromBufferAttribute(
+        position,
+        vertexIndex
+      )
+      .applyMatrix4(transform);
+
+    box.expandByPoint(point);
+  }
+}
+
+function applyProjectedMaterials(
+  root
+) {
+  root.updateMatrixWorld(true);
+
+  const rootInverse =
+    root.matrixWorld
+      .clone()
+      .invert();
+
+  const entries = [];
+
+  const aggregateZoneBoxes = {
+    maglia: new THREE.Box3(),
+    pantaloncini: new THREE.Box3(),
+    calze: new THREE.Box3()
+  };
+
+  root.traverse((object) => {
+    if (
+      !object.isMesh ||
+      !object.geometry ||
+      !object.geometry.attributes
+        .position
+    ) {
+      return;
+    }
+
+    const originalMaterials =
+      Array.isArray(
+        object.material
+      )
+        ? object.material
+        : [object.material];
+
+    const geometry =
+      object.geometry;
+
+    const groups =
+      geometry.groups.length
+        ? geometry.groups
+        : [
+            {
+              start: 0,
+              count: geometry.index
+                ? geometry.index.count
+                : geometry.attributes
+                    .position.count,
+              materialIndex: 0
+            }
+          ];
+
+    const objectToProjection =
+      rootInverse
+        .clone()
+        .multiply(
+          object.matrixWorld
+        );
+
+    groups.forEach((group) => {
+      const materialIndex =
+        group.materialIndex || 0;
+
+      const original =
+        originalMaterials[
+          materialIndex
+        ] ||
+        originalMaterials[0];
+
+      const zone =
+        materialZone(
+          original &&
+            original.name,
+          materialIndex,
+          object.name
+        );
+
+      expandBoundsFromGroup(
+        aggregateZoneBoxes[
+          zone
+        ],
+        geometry,
+        group,
+        objectToProjection
+      );
+    });
+
+    entries.push({
+      object,
+      originalMaterials,
+      objectToProjection
+    });
+  });
+
+  if (!entries.length) {
+    throw new Error(
+      "La mesh GLB non contiene superfici renderizzabili."
+    );
+  }
+
+  const wholeKitBox =
+    new THREE.Box3();
+
+  entries.forEach((entry) => {
+    const geometry =
+      entry.object.geometry;
+
+    const fullGroup = {
+      start: 0,
+      count: geometry.index
+        ? geometry.index.count
+        : geometry.attributes
+            .position.count
+    };
+
+    expandBoundsFromGroup(
+      wholeKitBox,
+      geometry,
+      fullGroup,
+      entry.objectToProjection
+    );
+  });
+
+  GARMENTS.forEach((zone) => {
+    if (
+      aggregateZoneBoxes[
+        zone
+      ].isEmpty()
+    ) {
+      aggregateZoneBoxes[
+        zone
+      ].copy(wholeKitBox);
+    }
+  });
+
+  entries.forEach((entry) => {
+    const replacements =
+      entry.originalMaterials.map(
+        (
+          original,
+          materialIndex
+        ) => {
+          const zone =
+            materialZone(
+              original &&
+                original.name,
+              materialIndex,
+              entry.object.name
+            );
+
+          return makeZoneMaterial(
+            zone,
+            aggregateZoneBoxes[
+              zone
+            ],
+            entry.objectToProjection
+          );
+        }
+      );
+
+    entry.object.material =
+      Array.isArray(
+        entry.object.material
+      )
+        ? replacements
+        : replacements[0];
+
+    entry.object.castShadow = false;
+    entry.object.receiveShadow = false;
+    entry.object.frustumCulled = true;
+  });
+
+  window.__kit3d.projectionBounds =
+    Object.fromEntries(
+      GARMENTS.map((zone) => [
+        zone,
+        {
+          min:
+            aggregateZoneBoxes[
+              zone
+            ].min.toArray(),
+
+          max:
+            aggregateZoneBoxes[
+              zone
+            ].max.toArray()
+        }
+      ])
+    );
+}
+
+function updateMaterialUniforms() {
+  GARMENTS.forEach((zone) => {
+    zoneMaterials[
+      zone
+    ].forEach((material) => {
+      material.uniforms
+        .uPrimary.value.set(
+          state.colors[
+            zone
+          ].primary
+        );
+
+      material.uniforms
+        .uSecondary.value.set(
+          state.colors[
+            zone
+          ].secondary
+        );
+
+      material.uniforms
+        .uDesign.value =
+          designCode();
+
+      material.uniforms
+        .uMaskRect.value.copy(
+          boundsToUvRect(
+            maskBounds[zone]
+          )
+        );
+    });
+  });
+
+  window.__kit3d.design =
+    state.design;
+
+  window.__kit3d.colors =
+    JSON.parse(
+      JSON.stringify(
+        state.colors
+      )
+    );
+}
+
+function createGroundShadow() {
+  const shadowCanvas =
+    document.createElement(
+      "canvas"
+    );
+
+  shadowCanvas.width = 256;
+  shadowCanvas.height = 256;
+
+  const shadowCtx =
+    shadowCanvas.getContext("2d");
+
+  const gradient =
+    shadowCtx.createRadialGradient(
+      128,
+      128,
+      18,
+      128,
+      128,
+      122
+    );
+
+  gradient.addColorStop(
+    0,
+    "rgba(0,0,0,0.48)"
+  );
+
+  gradient.addColorStop(
+    0.55,
+    "rgba(0,0,0,0.18)"
+  );
+
+  gradient.addColorStop(
+    1,
+    "rgba(0,0,0,0)"
+  );
+
+  shadowCtx.fillStyle = gradient;
+
+  shadowCtx.fillRect(
+    0,
+    0,
+    256,
+    256
+  );
+
+  const texture =
+    new THREE.CanvasTexture(
+      shadowCanvas
+    );
+
+  texture.colorSpace =
+    THREE.SRGBColorSpace;
+
+  const material =
+    new THREE.MeshBasicMaterial({
+      map: texture,
+      transparent: true,
+      depthWrite: false
+    });
+
+  const mesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(
+      6.8,
+      3.4
+    ),
+    material
+  );
+
+  mesh.rotation.x =
+    -Math.PI / 2;
+
+  mesh.position.y = -3.15;
+  mesh.renderOrder = -1;
+
+  scene.add(mesh);
+}
+
+function initThree() {
+  renderer =
+    new THREE.WebGLRenderer({
+      canvas: dom.canvas,
+      antialias: true,
+      alpha: true,
+      powerPreference:
+        "high-performance"
+    });
+
+  renderer.setPixelRatio(
+    Math.min(
+      window.devicePixelRatio || 1,
+      2
+    )
+  );
+
+  renderer.outputColorSpace =
+    THREE.SRGBColorSpace;
+
+  renderer.toneMapping =
+    THREE.ACESFilmicToneMapping;
+
+  renderer.toneMappingExposure =
+    1.02;
+
+  scene = new THREE.Scene();
+
+  scene.fog = new THREE.Fog(
+    0x10151c,
+    12,
+    24
+  );
+
+  camera =
+    new THREE.PerspectiveCamera(
+      34,
+      1,
+      0.05,
+      100
+    );
+
+  camera.position.set(
+    0,
+    0.15,
+    9.4
+  );
+
+  controls = new OrbitControls(
+    camera,
+    renderer.domElement
+  );
+
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.075;
+  controls.enablePan = false;
+  controls.enableZoom = true;
+  controls.minDistance = 5.8;
+  controls.maxDistance = 13.5;
+
+  controls.minAzimuthAngle =
+    THREE.MathUtils.degToRad(
+      -70
+    );
+
+  controls.maxAzimuthAngle =
+    THREE.MathUtils.degToRad(
+      70
+    );
+
+  controls.minPolarAngle =
+    THREE.MathUtils.degToRad(
+      78
+    );
+
+  controls.maxPolarAngle =
+    THREE.MathUtils.degToRad(
+      102
+    );
+
+  controls.target.set(
+    0,
+    0,
+    0
+  );
+
+  createGroundShadow();
+
+  window.__kit3d.THREE = THREE;
+  window.__kit3d.scene = scene;
+  window.__kit3d.camera = camera;
+  window.__kit3d.controls = controls;
+  window.__kit3d.renderer = renderer;
+}
+
+function frameKit(root) {
+  const box =
+    new THREE.Box3()
+      .setFromObject(root);
+
+  const size =
+    box.getSize(
+      new THREE.Vector3()
+    );
+
+  const height = Math.max(
+    size.y,
+    0.001
+  );
+
+  const targetHeight = 6.0;
+  const scale =
+    targetHeight / height;
+
+  root.scale.setScalar(scale);
+  root.updateMatrixWorld(true);
+
+  const scaledBox =
+    new THREE.Box3()
+      .setFromObject(root);
+
+  const scaledCenter =
+    scaledBox.getCenter(
+      new THREE.Vector3()
+    );
+
+  root.position.sub(
+    scaledCenter
+  );
+
+  root.updateMatrixWorld(true);
+
+  const finalBox =
+    new THREE.Box3()
+      .setFromObject(root);
+
+  const finalSize =
+    finalBox.getSize(
+      new THREE.Vector3()
+    );
+
+  const radius =
+    finalSize.length() * 0.5;
+
+  const fovRadians =
+    THREE.MathUtils.degToRad(
+      camera.fov
+    );
+
+  const distance = clamp(
+    radius /
+      Math.sin(
+        fovRadians / 2
+      ) *
+      0.82,
+    7.2,
+    11.5
+  );
+
+  camera.position.set(
+    0,
+    0.15,
+    distance
+  );
+
+  controls.minDistance =
+    distance * 0.72;
+
+  controls.maxDistance =
+    distance * 1.42;
+
+  controls.target.set(
+    0,
+    0,
+    0
+  );
+
+  controls.update();
+
+  window.__kit3d.bounds = {
+    width: finalSize.x,
+    height: finalSize.y,
+    depth: finalSize.z
+  };
+}
+
+function resizeRenderer() {
+  const width = Math.max(
+    1,
+    dom.viewerShell.clientWidth
+  );
+
+  const height = Math.max(
+    1,
+    dom.viewerShell.clientHeight
+  );
+
+  renderer.setSize(
+    width,
+    height,
+    false
+  );
+
+  camera.aspect =
+    width / height;
+
   camera.updateProjectionMatrix();
 }
-window.addEventListener('resize', resize);
-resize();
 
-// --- Loop di rendering ---
+function setView(angleDegrees) {
+  if (
+    !camera ||
+    !controls
+  ) {
+    return;
+  }
+
+  const radius =
+    camera.position.distanceTo(
+      controls.target
+    );
+
+  const angle =
+    THREE.MathUtils.degToRad(
+      clamp(
+        angleDegrees,
+        -70,
+        70
+      )
+    );
+
+  const y = clamp(
+    camera.position.y,
+    -0.7,
+    0.9
+  );
+
+  viewTween =
+    new THREE.Vector3(
+      Math.sin(angle) * radius,
+      y,
+      Math.cos(angle) * radius
+    );
+}
+
 function animate() {
   requestAnimationFrame(animate);
-  if (camTarget) {
-    camera.position.lerp(camTarget, 0.12);
-    if (camera.position.distanceTo(camTarget) < 0.02) camTarget = null;
+
+  if (viewTween) {
+    camera.position.lerp(
+      viewTween,
+      0.14
+    );
+
+    if (
+      camera.position.distanceTo(
+        viewTween
+      ) < 0.015
+    ) {
+      camera.position.copy(
+        viewTween
+      );
+
+      viewTween = null;
+    }
   }
+
   controls.update();
-  renderer.render(scene, camera);
+
+  renderer.render(
+    scene,
+    camera
+  );
 }
-animate();
+
+function drawDesignPreview(
+  canvas,
+  designId
+) {
+  const ctx =
+    canvas.getContext("2d");
+
+  const ratio =
+    window.devicePixelRatio || 1;
+
+  const width = 120;
+  const height = 42;
+
+  canvas.width =
+    width * ratio;
+
+  canvas.height =
+    height * ratio;
+
+  ctx.setTransform(
+    ratio,
+    0,
+    0,
+    ratio,
+    0,
+    0
+  );
+
+  const primary =
+    state.colors.maglia.primary;
+
+  const secondary =
+    state.colors.maglia.secondary;
+
+  ctx.clearRect(
+    0,
+    0,
+    width,
+    height
+  );
+
+  ctx.fillStyle = primary;
+
+  ctx.fillRect(
+    0,
+    0,
+    width,
+    height
+  );
+
+  ctx.fillStyle = secondary;
+  ctx.strokeStyle = secondary;
+  ctx.lineJoin = "miter";
+  ctx.lineCap = "butt";
+
+  const id = designId;
+
+  if (
+    id === "vertical-stripes"
+  ) {
+    const step = width / 8;
+
+    for (
+      let i = 0;
+      i < 8;
+      i += 2
+    ) {
+      ctx.fillRect(
+        i * step,
+        0,
+        step,
+        height
+      );
+    }
+  } else if (
+    id === "horizontal-stripes"
+  ) {
+    const step = height / 8;
+
+    for (
+      let i = 0;
+      i < 8;
+      i += 2
+    ) {
+      ctx.fillRect(
+        0,
+        i * step,
+        width,
+        step
+      );
+    }
+  } else if (
+    id === "horizontal-band"
+  ) {
+    ctx.fillRect(
+      0,
+      height * 0.41,
+      width,
+      height * 0.2
+    );
+  } else if (
+    id === "diagonal-band"
+  ) {
+    ctx.lineWidth = 11;
+    ctx.beginPath();
+
+    ctx.moveTo(
+      -8,
+      height + 3
+    );
+
+    ctx.lineTo(
+      width + 8,
+      -3
+    );
+
+    ctx.stroke();
+  } else if (
+    id === "half-split"
+  ) {
+    ctx.fillRect(
+      width / 2,
+      0,
+      width / 2,
+      height
+    );
+  } else if (
+    id === "chevron"
+  ) {
+    ctx.lineWidth = 9;
+    ctx.beginPath();
+
+    ctx.moveTo(
+      -4,
+      height * 0.34
+    );
+
+    ctx.lineTo(
+      width / 2,
+      height * 0.68
+    );
+
+    ctx.lineTo(
+      width + 4,
+      height * 0.34
+    );
+
+    ctx.stroke();
+  } else if (
+    id === "side-panels"
+  ) {
+    ctx.fillRect(
+      0,
+      0,
+      width * 0.18,
+      height
+    );
+
+    ctx.fillRect(
+      width * 0.82,
+      0,
+      width * 0.18,
+      height
+    );
+  } else if (
+    id === "contrast-shoulders"
+  ) {
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+
+    ctx.lineTo(
+      width * 0.33,
+      0
+    );
+
+    ctx.lineTo(
+      width * 0.25,
+      height * 0.43
+    );
+
+    ctx.lineTo(
+      0,
+      height * 0.55
+    );
+
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+      width,
+      0
+    );
+
+    ctx.lineTo(
+      width * 0.67,
+      0
+    );
+
+    ctx.lineTo(
+      width * 0.75,
+      height * 0.43
+    );
+
+    ctx.lineTo(
+      width,
+      height * 0.55
+    );
+
+    ctx.closePath();
+    ctx.fill();
+  } else if (
+    id === "center-band"
+  ) {
+    ctx.fillRect(
+      width * 0.37,
+      0,
+      width * 0.26,
+      height
+    );
+  } else if (
+    id === "quarters"
+  ) {
+    ctx.fillRect(
+      width / 2,
+      0,
+      width / 2,
+      height / 2
+    );
+
+    ctx.fillRect(
+      0,
+      height / 2,
+      width / 2,
+      height / 2
+    );
+  } else if (
+    id === "pinstripes"
+  ) {
+    ctx.lineWidth = 2;
+
+    for (
+      let x = 6;
+      x < width;
+      x += 10
+    ) {
+      ctx.beginPath();
+
+      ctx.moveTo(
+        x,
+        0
+      );
+
+      ctx.lineTo(
+        x,
+        height
+      );
+
+      ctx.stroke();
+    }
+  }
+}
+
+function buildDesignGallery() {
+  dom.designGallery.innerHTML = "";
+
+  DESIGNS.forEach((design) => {
+    const button =
+      document.createElement(
+        "button"
+      );
+
+    const preview =
+      document.createElement(
+        "canvas"
+      );
+
+    const label =
+      document.createElement(
+        "span"
+      );
+
+    button.type = "button";
+    button.className =
+      "design-card";
+
+    button.dataset.design =
+      design.id;
+
+    button.setAttribute(
+      "aria-pressed",
+      String(
+        design.id ===
+          state.design
+      )
+    );
+
+    button.setAttribute(
+      "aria-label",
+      "Seleziona " +
+        design.name
+    );
+
+    preview.className =
+      "design-preview";
+
+    preview.setAttribute(
+      "aria-hidden",
+      "true"
+    );
+
+    label.className =
+      "design-name";
+
+    label.textContent =
+      design.name;
+
+    button.append(
+      preview,
+      label
+    );
+
+    button.addEventListener(
+      "click",
+      () => {
+        state.design =
+          design.id;
+
+        dom.designGallery
+          .querySelectorAll(
+            ".design-card"
+          )
+          .forEach((card) => {
+            card.setAttribute(
+              "aria-pressed",
+              String(
+                card.dataset
+                  .design ===
+                  state.design
+              )
+            );
+          });
+
+        updateMaterialUniforms();
+      }
+    );
+
+    dom.designGallery.appendChild(
+      button
+    );
+  });
+
+  updateDesignPreviews();
+}
+
+function updateDesignPreviews() {
+  dom.designGallery
+    .querySelectorAll(
+      ".design-card"
+    )
+    .forEach((card) => {
+      drawDesignPreview(
+        card.querySelector(
+          "canvas"
+        ),
+        card.dataset.design
+      );
+    });
+}
+
+function makeColorControl(
+  zone,
+  role,
+  label
+) {
+  const wrapper =
+    document.createElement(
+      "label"
+    );
+
+  const title =
+    document.createElement(
+      "span"
+    );
+
+  const input =
+    document.createElement(
+      "input"
+    );
+
+  const value =
+    document.createElement(
+      "span"
+    );
+
+  const id =
+    zone + "-" + role;
+
+  wrapper.className =
+    "color-control";
+
+  wrapper.setAttribute(
+    "for",
+    id
+  );
+
+  title.textContent = label;
+
+  input.type = "color";
+  input.id = id;
+
+  input.value =
+    state.colors[zone][role];
+
+  value.className =
+    "color-value";
+
+  value.textContent =
+    input.value.toUpperCase();
+
+  input.addEventListener(
+    "input",
+    () => {
+      state.colors[
+        zone
+      ][role] = input.value;
+
+      value.textContent =
+        input.value.toUpperCase();
+
+      updateMaterialUniforms();
+
+      if (zone === "maglia") {
+        updateDesignPreviews();
+      }
+    }
+  );
+
+  wrapper.append(
+    title,
+    input,
+    value
+  );
+
+  return wrapper;
+}
+
+function buildZoneControls() {
+  const labels = {
+    maglia: "Maglia",
+    pantaloncini:
+      "Pantaloncini",
+    calze: "Calze"
+  };
+
+  dom.zoneControls.innerHTML = "";
+
+  GARMENTS.forEach((zone) => {
+    const card =
+      document.createElement(
+        "div"
+      );
+
+    const heading =
+      document.createElement(
+        "h3"
+      );
+
+    const grid =
+      document.createElement(
+        "div"
+      );
+
+    card.className =
+      "zone-card";
+
+    heading.textContent =
+      labels[zone];
+
+    grid.className =
+      "color-grid";
+
+    grid.append(
+      makeColorControl(
+        zone,
+        "primary",
+        "Primario"
+      ),
+      makeColorControl(
+        zone,
+        "secondary",
+        "Secondario"
+      )
+    );
+
+    card.append(
+      heading,
+      grid
+    );
+
+    dom.zoneControls.appendChild(
+      card
+    );
+  });
+}
+
+function rangeControl(options) {
+  const field =
+    document.createElement(
+      "div"
+    );
+
+  const head =
+    document.createElement(
+      "div"
+    );
+
+  const label =
+    document.createElement(
+      "label"
+    );
+
+  const output =
+    document.createElement(
+      "span"
+    );
+
+  const input =
+    document.createElement(
+      "input"
+    );
+
+  field.className =
+    "range-field" +
+    (
+      options.full
+        ? " full"
+        : ""
+    );
+
+  head.className =
+    "range-head";
+
+  label.className =
+    "range-label";
+
+  label.htmlFor =
+    options.id;
+
+  label.textContent =
+    options.label;
+
+  output.className =
+    "range-output";
+
+  input.type = "range";
+  input.id = options.id;
+  input.min = String(
+    options.min
+  );
+  input.max = String(
+    options.max
+  );
+  input.step = String(
+    options.step || 1
+  );
+  input.value = String(
+    options.value
+  );
+
+  const format =
+    options.format ||
+    (
+      (value) =>
+        String(value)
+    );
+
+  const sync = () => {
+    const number =
+      Number(input.value);
+
+    output.textContent =
+      format(number);
+
+    options.onInput(number);
+  };
+
+  output.textContent =
+    format(
+      Number(input.value)
+    );
+
+  input.addEventListener(
+    "input",
+    sync
+  );
+
+  head.append(
+    label,
+    output
+  );
+
+  field.append(
+    head,
+    input
+  );
+
+  return field;
+}
+
+function buildPersonalizationRanges() {
+  const placementGroups = [
+    {
+      container:
+        dom.nameRanges,
+      key: "namePlacement",
+      prefix: "name"
+    },
+    {
+      container:
+        dom.numberRanges,
+      key: "numberPlacement",
+      prefix: "number"
+    }
+  ];
+
+  placementGroups.forEach(
+    (group) => {
+      const placement =
+        state.personalization[
+          group.key
+        ];
+
+      group.container.innerHTML =
+        "";
+
+      group.container.append(
+        rangeControl({
+          id:
+            group.prefix +
+            "-x",
+          label: "Orizzontale",
+          min: 5,
+          max: 95,
+          value: placement.x,
+
+          format:
+            (value) =>
+              value + "%",
+
+          onInput:
+            (value) => {
+              placement.x =
+                value;
+
+              scheduleOverlayRender();
+            }
+        }),
+
+        rangeControl({
+          id:
+            group.prefix +
+            "-y",
+          label: "Verticale",
+          min: 5,
+          max: 95,
+          value: placement.y,
+
+          format:
+            (value) =>
+              value + "%",
+
+          onInput:
+            (value) => {
+              placement.y =
+                value;
+
+              scheduleOverlayRender();
+            }
+        }),
+
+        rangeControl({
+          id:
+            group.prefix +
+            "-scale",
+          label: "Scala",
+          min: 45,
+          max: 180,
+          value:
+            placement.scale,
+          full: true,
+
+          format:
+            (value) =>
+              value + "%",
+
+          onInput:
+            (value) => {
+              placement.scale =
+                value;
+
+              scheduleOverlayRender();
+            }
+        })
+      );
+    }
+  );
+}
+
+function setGraphicMessage(
+  graphicId,
+  message,
+  kind
+) {
+  const element =
+    document.getElementById(
+      "graphic-message-" +
+        graphicId
+    );
+
+  if (!element) {
+    return;
+  }
+
+  element.textContent =
+    message;
+
+  element.className =
+    "graphic-message" +
+    (
+      kind
+        ? " " + kind
+        : ""
+    );
+}
+
+function updateGraphicCard(
+  graphicId
+) {
+  const graphic =
+    state.graphics[
+      graphicId
+    ];
+
+  const thumb =
+    document.getElementById(
+      "graphic-thumb-" +
+        graphicId
+    );
+
+  const fileName =
+    document.getElementById(
+      "graphic-file-name-" +
+        graphicId
+    );
+
+  const remove =
+    document.getElementById(
+      "graphic-remove-" +
+        graphicId
+    );
+
+  if (
+    !thumb ||
+    !fileName ||
+    !remove
+  ) {
+    return;
+  }
+
+  thumb.innerHTML = "";
+
+  if (graphic.dataUrl) {
+    const image =
+      document.createElement(
+        "img"
+      );
+
+    image.src =
+      graphic.dataUrl;
+
+    image.alt =
+      "Anteprima " +
+      graphic.label;
+
+    thumb.appendChild(image);
+
+    fileName.textContent =
+      graphic.fileName;
+  } else {
+    thumb.textContent =
+      "Nessuna immagine";
+
+    fileName.textContent =
+      "Non caricato";
+  }
+
+  remove.disabled =
+    !graphic.image;
+}
+
+function clearGraphic(graphicId) {
+  const graphic =
+    state.graphics[
+      graphicId
+    ];
+
+  graphic.image = null;
+  graphic.dataUrl = "";
+  graphic.fileName = "";
+
+  const input =
+    document.getElementById(
+      "graphic-file-" +
+        graphicId
+    );
+
+  if (input) {
+    input.value = "";
+  }
+
+  updateGraphicCard(
+    graphicId
+  );
+
+  setGraphicMessage(
+    graphicId,
+    "Elemento rimosso dalla memoria.",
+    "ok"
+  );
+
+  scheduleOverlayRender();
+}
+
+function handleGraphicFile(
+  graphicId,
+  fileInput
+) {
+  const file =
+    fileInput.files &&
+    fileInput.files[0];
+
+  if (!file) {
+    return;
+  }
+
+  if (
+    !file.type ||
+    !/^image\//i.test(
+      file.type
+    )
+  ) {
+    fileInput.value = "";
+
+    setGraphicMessage(
+      graphicId,
+      "File rifiutato: seleziona un'immagine valida.",
+      "error"
+    );
+
+    return;
+  }
+
+  if (
+    file.size >
+    MAX_IMAGE_BYTES
+  ) {
+    fileInput.value = "";
+
+    setGraphicMessage(
+      graphicId,
+      "File rifiutato: supera il limite di 5 MB.",
+      "error"
+    );
+
+    return;
+  }
+
+  const reader =
+    new FileReader();
+
+  reader.onerror = () => {
+    fileInput.value = "";
+
+    setGraphicMessage(
+      graphicId,
+      "Il file non può essere letto.",
+      "error"
+    );
+  };
+
+  reader.onload = () => {
+    const dataUrl =
+      typeof reader.result ===
+      "string"
+        ? reader.result
+        : "";
+
+    if (
+      !/^data:image\//i.test(
+        dataUrl
+      )
+    ) {
+      fileInput.value = "";
+
+      setGraphicMessage(
+        graphicId,
+        "Il contenuto non è un'immagine valida.",
+        "error"
+      );
+
+      return;
+    }
+
+    const decoded =
+      new Image();
+
+    decoded.onload = () => {
+      const graphic =
+        state.graphics[
+          graphicId
+        ];
+
+      graphic.image =
+        decoded;
+
+      graphic.dataUrl =
+        dataUrl;
+
+      graphic.fileName =
+        file.name;
+
+      updateGraphicCard(
+        graphicId
+      );
+
+      setGraphicMessage(
+        graphicId,
+        "Immagine applicata alla superficie.",
+        "ok"
+      );
+
+      scheduleOverlayRender();
+    };
+
+    decoded.onerror = () => {
+      fileInput.value = "";
+
+      setGraphicMessage(
+        graphicId,
+        "Immagine non decodificabile.",
+        "error"
+      );
+    };
+
+    decoded.src = dataUrl;
+  };
+
+  reader.readAsDataURL(file);
+}
+
+function buildGraphicControls() {
+  dom.graphicControls.innerHTML =
+    "";
+
+  Object.entries(
+    state.graphics
+  ).forEach(
+    ([graphicId, graphic]) => {
+      const card =
+        document.createElement(
+          "div"
+        );
+
+      const head =
+        document.createElement(
+          "div"
+        );
+
+      const thumb =
+        document.createElement(
+          "div"
+        );
+
+      const meta =
+        document.createElement(
+          "div"
+        );
+
+      const title =
+        document.createElement(
+          "strong"
+        );
+
+      const fileName =
+        document.createElement(
+          "span"
+        );
+
+      const remove =
+        document.createElement(
+          "button"
+        );
+
+      const fieldGrid =
+        document.createElement(
+          "div"
+        );
+
+      const fileField =
+        document.createElement(
+          "div"
+        );
+
+      const fileLabel =
+        document.createElement(
+          "label"
+        );
+
+      const fileInput =
+        document.createElement(
+          "input"
+        );
+
+      const zoneField =
+        document.createElement(
+          "div"
+        );
+
+      const zoneLabel =
+        document.createElement(
+          "label"
+        );
+
+      const zoneSelect =
+        document.createElement(
+          "select"
+        );
+
+      const ranges =
+        document.createElement(
+          "div"
+        );
+
+      const message =
+        document.createElement(
+          "p"
+        );
+
+      card.className =
+        "graphic-card";
+
+      head.className =
+        "graphic-head";
+
+      thumb.className =
+        "graphic-thumb";
+
+      thumb.id =
+        "graphic-thumb-" +
+        graphicId;
+
+      meta.className =
+        "graphic-meta";
+
+      title.textContent =
+        graphic.label;
+
+      fileName.id =
+        "graphic-file-name-" +
+        graphicId;
+
+      remove.type = "button";
+      remove.className =
+        "small-button";
+
+      remove.id =
+        "graphic-remove-" +
+        graphicId;
+
+      remove.textContent =
+        "Rimuovi";
+
+      remove.addEventListener(
+        "click",
+        () =>
+          clearGraphic(
+            graphicId
+          )
+      );
+
+      meta.append(
+        title,
+        fileName
+      );
+
+      head.append(
+        thumb,
+        meta,
+        remove
+      );
+
+      fieldGrid.className =
+        "field-grid";
+
+      fileField.className =
+        "field full";
+
+      fileLabel.htmlFor =
+        "graphic-file-" +
+        graphicId;
+
+      fileLabel.textContent =
+        "Carica immagine";
+
+      fileInput.className =
+        "file-input";
+
+      fileInput.type =
+        "file";
+
+      fileInput.accept =
+        "image/*";
+
+      fileInput.id =
+        "graphic-file-" +
+        graphicId;
+
+      fileInput.addEventListener(
+        "change",
+        () =>
+          handleGraphicFile(
+            graphicId,
+            fileInput
+          )
+      );
+
+      fileField.append(
+        fileLabel,
+        fileInput
+      );
+
+      zoneField.className =
+        "field full";
+
+      zoneLabel.htmlFor =
+        "graphic-zone-" +
+        graphicId;
+
+      zoneLabel.textContent =
+        "Capo di destinazione";
+
+      zoneSelect.className =
+        "select-input";
+
+      zoneSelect.id =
+        "graphic-zone-" +
+        graphicId;
+
+      [
+        [
+          "maglia",
+          "Maglia"
+        ],
+        [
+          "pantaloncini",
+          "Pantaloncini"
+        ],
+        [
+          "calze",
+          "Calze"
+        ]
+      ].forEach(
+        ([value, label]) => {
+          const option =
+            document.createElement(
+              "option"
+            );
+
+          option.value = value;
+          option.textContent =
+            label;
+
+          zoneSelect.appendChild(
+            option
+          );
+        }
+      );
+
+      zoneSelect.value =
+        graphic.zone;
+
+      zoneSelect.addEventListener(
+        "change",
+        () => {
+          graphic.zone =
+            zoneSelect.value;
+
+          scheduleOverlayRender();
+        }
+      );
+
+      zoneField.append(
+        zoneLabel,
+        zoneSelect
+      );
+
+      fieldGrid.append(
+        fileField,
+        zoneField
+      );
+
+      ranges.className =
+        "range-grid";
+
+      ranges.style.marginTop =
+        "10px";
+
+      ranges.append(
+        rangeControl({
+          id:
+            "graphic-x-" +
+            graphicId,
+          label: "Orizzontale",
+          min: 0,
+          max: 100,
+          value: graphic.x,
+
+          format:
+            (value) =>
+              value + "%",
+
+          onInput:
+            (value) => {
+              graphic.x =
+                value;
+
+              scheduleOverlayRender();
+            }
+        }),
+
+        rangeControl({
+          id:
+            "graphic-y-" +
+            graphicId,
+          label: "Verticale",
+          min: 0,
+          max: 100,
+          value: graphic.y,
+
+          format:
+            (value) =>
+              value + "%",
+
+          onInput:
+            (value) => {
+              graphic.y =
+                value;
+
+              scheduleOverlayRender();
+            }
+        }),
+
+        rangeControl({
+          id:
+            "graphic-scale-" +
+            graphicId,
+          label: "Scala",
+          min: 5,
+          max: 90,
+          value:
+            graphic.scale,
+
+          format:
+            (value) =>
+              value + "%",
+
+          onInput:
+            (value) => {
+              graphic.scale =
+                value;
+
+              scheduleOverlayRender();
+            }
+        }),
+
+        rangeControl({
+          id:
+            "graphic-rotation-" +
+            graphicId,
+          label: "Rotazione",
+          min: -180,
+          max: 180,
+          value:
+            graphic.rotation,
+
+          format:
+            (value) =>
+              value + "°",
+
+          onInput:
+            (value) => {
+              graphic.rotation =
+                value;
+
+              scheduleOverlayRender();
+            }
+        })
+      );
+
+      message.className =
+        "graphic-message";
+
+      message.id =
+        "graphic-message-" +
+        graphicId;
+
+      message.setAttribute(
+        "role",
+        "status"
+      );
+
+      message.setAttribute(
+        "aria-live",
+        "polite"
+      );
+
+      message.textContent =
+        "Nessuna immagine in memoria.";
+
+      card.append(
+        head,
+        fieldGrid,
+        ranges,
+        message
+      );
+
+      dom.graphicControls.appendChild(
+        card
+      );
+
+      updateGraphicCard(
+        graphicId
+      );
+    }
+  );
+}
+
+function applyUrlParameters() {
+  const params =
+    new URLSearchParams(
+      location.search
+    );
+
+  const requestedDesign =
+    params.get("design");
+
+  if (
+    DESIGNS.some(
+      (design) =>
+        design.id ===
+        requestedDesign
+    )
+  ) {
+    state.design =
+      requestedDesign;
+  }
+
+  GARMENTS.forEach((zone) => {
+    const legacyPrimary =
+      safeHex(
+        params.get(zone)
+      );
+
+    const primary =
+      safeHex(
+        params.get(
+          zone + "1"
+        )
+      ) ||
+      legacyPrimary;
+
+    const secondary =
+      safeHex(
+        params.get(
+          zone + "2"
+        )
+      );
+
+    if (primary) {
+      state.colors[
+        zone
+      ].primary = primary;
+    }
+
+    if (secondary) {
+      state.colors[
+        zone
+      ].secondary =
+        secondary;
+    }
+  });
+
+  if (params.has("name")) {
+    state.personalization.name =
+      normalizeName(
+        params.get("name")
+      );
+  }
+
+  if (params.has("number")) {
+    state.personalization.number =
+      normalizeNumber(
+        params.get("number")
+      );
+  }
+
+  if (
+    params.has("font") &&
+    FONT_STACKS[
+      params.get("font")
+    ]
+  ) {
+    state.personalization.font =
+      params.get("font");
+  }
+
+  const print =
+    safeHex(
+      params.get("print")
+    );
+
+  if (print) {
+    state.personalization.color =
+      print;
+  }
+
+  const numericParameters = [
+    [
+      "nameX",
+      state.personalization
+        .namePlacement,
+      "x",
+      5,
+      95
+    ],
+    [
+      "nameY",
+      state.personalization
+        .namePlacement,
+      "y",
+      5,
+      95
+    ],
+    [
+      "nameScale",
+      state.personalization
+        .namePlacement,
+      "scale",
+      45,
+      180
+    ],
+    [
+      "numberX",
+      state.personalization
+        .numberPlacement,
+      "x",
+      5,
+      95
+    ],
+    [
+      "numberY",
+      state.personalization
+        .numberPlacement,
+      "y",
+      5,
+      95
+    ],
+    [
+      "numberScale",
+      state.personalization
+        .numberPlacement,
+      "scale",
+      45,
+      180
+    ]
+  ];
+
+  numericParameters.forEach(
+    (
+      [
+        param,
+        target,
+        key,
+        min,
+        max
+      ]
+    ) => {
+      const value =
+        Number(
+          params.get(param)
+        );
+
+      if (
+        Number.isFinite(value)
+      ) {
+        target[key] = clamp(
+          value,
+          min,
+          max
+        );
+      }
+    }
+  );
+}
+
+function syncPersonalizationInputs() {
+  dom.playerName.value =
+    state.personalization.name;
+
+  dom.playerNumber.value =
+    state.personalization.number;
+
+  dom.playerFont.value =
+    state.personalization.font;
+
+  dom.printColor.value =
+    state.personalization.color;
+
+  dom.printColorValue.textContent =
+    state.personalization.color
+      .toUpperCase();
+}
+
+function bindStaticControls() {
+  dom.playerName.addEventListener(
+    "input",
+    () => {
+      state.personalization.name =
+        normalizeName(
+          dom.playerName.value
+        );
+
+      scheduleOverlayRender();
+    }
+  );
+
+  dom.playerName.addEventListener(
+    "blur",
+    () => {
+      dom.playerName.value =
+        state.personalization.name;
+    }
+  );
+
+  dom.playerNumber.addEventListener(
+    "input",
+    () => {
+      state.personalization.number =
+        normalizeNumber(
+          dom.playerNumber.value
+        );
+
+      dom.playerNumber.value =
+        state.personalization.number;
+
+      scheduleOverlayRender();
+    }
+  );
+
+  dom.playerFont.addEventListener(
+    "change",
+    () => {
+      state.personalization.font =
+        FONT_STACKS[
+          dom.playerFont.value
+        ]
+          ? dom.playerFont.value
+          : "impact";
+
+      scheduleOverlayRender();
+    }
+  );
+
+  dom.printColor.addEventListener(
+    "input",
+    () => {
+      state.personalization.color =
+        dom.printColor.value;
+
+      dom.printColorValue.textContent =
+        dom.printColor.value
+          .toUpperCase();
+
+      scheduleOverlayRender();
+    }
+  );
+
+  document
+    .querySelectorAll(
+      "[data-view]"
+    )
+    .forEach((button) => {
+      button.addEventListener(
+        "click",
+        () => {
+          const view =
+            button.dataset.view;
+
+          setView(
+            view === "left"
+              ? -55
+              : view === "right"
+                ? 55
+                : 0
+          );
+        }
+      );
+    });
+
+  window.addEventListener(
+    "resize",
+    resizeRenderer
+  );
+}
+
+async function loadPhotoAssets() {
+  const [
+    shading,
+    maglia,
+    pantaloncini,
+    calze
+  ] = await Promise.all([
+    loadImage(
+      PHOTO_DIR +
+        "shading_base.jpg"
+    ),
+
+    loadImage(
+      PHOTO_DIR +
+        "mask_maglia.png"
+    ),
+
+    loadImage(
+      PHOTO_DIR +
+        "mask_pantaloncini.png"
+    ),
+
+    loadImage(
+      PHOTO_DIR +
+        "mask_calze.png"
+    )
+  ]);
+
+  assetImages.shading =
+    shading;
+
+  assetImages.mask_maglia =
+    maglia;
+
+  assetImages.mask_pantaloncini =
+    pantaloncini;
+
+  assetImages.mask_calze =
+    calze;
+
+  GARMENTS.forEach((zone) => {
+    maskBounds[zone] =
+      computeMaskBounds(
+        assetImages[
+          "mask_" + zone
+        ],
+        zone
+      );
+  });
+
+  photoTextures.shading =
+    makeTexture(
+      shading,
+      THREE.SRGBColorSpace
+    );
+
+  GARMENTS.forEach((zone) => {
+    photoTextures[
+      "mask_" + zone
+    ] = makeTexture(
+      assetImages[
+        "mask_" + zone
+      ],
+      THREE.NoColorSpace
+    );
+  });
+}
+
+async function loadKitMesh() {
+  const loader =
+    new GLTFLoader();
+
+  const gltf =
+    await loader.loadAsync(
+      MESH_URL
+    );
+
+  kitRoot = gltf.scene;
+
+  kitRoot.name =
+    "kit-photo-projected";
+
+  applyProjectedMaterials(
+    kitRoot
+  );
+
+  scene.add(kitRoot);
+
+  frameKit(kitRoot);
+
+  window.__kit3d.kit =
+    kitRoot;
+}
+
+async function start() {
+  try {
+    applyUrlParameters();
+    syncPersonalizationInputs();
+    buildDesignGallery();
+    buildZoneControls();
+    buildPersonalizationRanges();
+    buildGraphicControls();
+    bindStaticControls();
+    initThree();
+    createOverlayTextures();
+    resizeRenderer();
+    animate();
+
+    dom.loadingCopy.textContent =
+      "Caricamento della fotografia e delle tre maschere.";
+
+    await loadPhotoAssets();
+
+    assetsReady = true;
+
+    renderOverlayCanvases();
+
+    dom.loadingCopy.textContent =
+      "Applicazione della fotografia alla mesh 3D.";
+
+    await loadKitMesh();
+
+    updateMaterialUniforms();
+    hideLoading();
+
+    window.__kit3d.ready = true;
+
+    window.__kit3d.maskBounds =
+      JSON.parse(
+        JSON.stringify(
+          maskBounds
+        )
+      );
+
+    window.__kit3d.state =
+      state;
+  } catch (error) {
+    console.error(error);
+
+    const meshHint =
+      String(
+        error &&
+          error.message ||
+          ""
+      ).includes("kit.glb")
+        ? "Mesh assets/kit.glb non trovata. Generala con tools/kit_build.py e servi la cartella via HTTP."
+        : (
+            error &&
+            error.message
+          ) ||
+          "Errore sconosciuto.";
+
+    showFatal(
+      "Configuratore non disponibile",
+      meshHint
+    );
+  }
+}
+
+start();
 </script>
 </body>
 </html>
