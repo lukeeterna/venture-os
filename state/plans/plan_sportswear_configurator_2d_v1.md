@@ -59,10 +59,11 @@ and commercial use", attribuzione non-mandatoria). MT-2D.8 NON aggiunge attribuz
   technical/college). Difetto rinviato MT-2D.7: numero petto disegnato sopra lo shading
   (adesivo vs stampa); font stack: 3/5 visibilmente distinti (geometric+college vs blocco
   tri-stack simile). Verify `verify/mt4/`: 5 screenshot font committati.
-- [ ] **MT-2D.5** SPONSOR. Upload immagine client-side (`FileReader`), posiziona sul
-  petto sopra shading. Immagine resta in RAM/localStorage: **MAI su disco del repo, MAI
-  committata, MAI nel payload**. Verify: sponsor di prova generato dallo script (non
-  asset terzi), screenshot.
+- [x] **MT-2D.5** DONE 2026-07-30 (commit vedi report). Upload logo client-side
+  (`FileReader`), overlay petto, reset pulito (sponsor_off/on/reset byte-identici).
+  Immagine resta in RAM: **MAI su disco del repo, MAI committata, MAI nel payload**.
+  Difetti rinviati a MT-2D.7: sponsor sopra shading (adesivo, non multiply); posizione/
+  scala fisse (area petto fissa). Verify: `verify/mt5/` — drive.mjs + 3 screenshot.
 - [ ] **MT-2D.6** OUTPUT CLIENTE. Riepilogo config **NO-PREZZO**
   (`grep -i "prezzo|costo|eur|€"` = zero match sull'output cliente); payload `v:1`
   **SENZA campi economici**, schema congelato in `configurator-2d/PAYLOAD_SPEC.md`;
@@ -110,8 +111,8 @@ Derivazione già eseguita: `lab/composite_base.png` (3715×5573), `lab/shading_b
 `lab/venv`. MT-2D.2 formalizza questi asset in `tools/` + `assets-mockup/derived/`.
 
 ## Resume point
-2026-07-30: **MT-2D.4 DONE** (report `docs/judge/2026-07-30-sportswear-mt2d4.md`):
-numero petto canvas + anteprima retro testuale + 5 font system stack. PSD confermato
-SENZA retro. Difetti rinviati a MT-2D.7 (vedi STATE.md e report).
-**Prossima sessione = MT-2D.5** (sponsor upload client-side).
-FASE 0 attesa: HEAD = ultimo commit MT-2D.4 (+ auto-close tollerati).
+2026-07-31: **MT-2D.5 DONE** (report `docs/judge/2026-07-30-sportswear-mt2d5.md`):
+upload sponsor client-side, overlay petto, reset pulito (byte-identico pre/post).
+Difetti rinviati a MT-2D.7 (vedi STATE.md e report).
+**Prossima sessione = MT-2D.6** (output cliente NO-PREZZO + payload v:1).
+FASE 0 attesa: HEAD = commit "sportswear: MT-2D.5 sponsor upload client-side (RAM, reset pulito)" (+ auto-close tollerati).
