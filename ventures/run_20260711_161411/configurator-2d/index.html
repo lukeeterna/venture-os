@@ -1839,11 +1839,17 @@ function copyQuote() {
         target.style.opacity = "1";
       }
       target.select();
+      var copied = false;
       try {
-        document.execCommand("copy");
-        onSuccess();
+        copied = document.execCommand("copy");
       } catch (ignored) {
-        // Lascia il JSON visibile e selezionato, nessun alert
+        copied = false;
+      }
+      if (copied) {
+        onSuccess();
+      } else {
+        // execCommand ha restituito false: lascia textarea visibile e selezionata,
+        // mostra feedback aria-live, non dichiarare successo.
         messageEl.textContent = "Seleziona e copia manualmente il codice sopra.";
         if (target === fallback) {
           setTimeout(function () {
@@ -1876,6 +1882,8 @@ function sendQuoteByMail() {
 
   var subject = "Preventivo kit sportivo \u2014 [ATTIVITA]";
   var body = [
+    "Attivit\u00e0: [ATTIVITA]",
+    "",
     "Buongiorno,",
     "",
     "Vi inviamo la configurazione del kit sportivo scelta tramite il configuratore.",
