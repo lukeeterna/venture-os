@@ -23,6 +23,9 @@
 <!-- HANDOFF-SEMANTIC: scritto a mano a fine sessione — hook NON sovrascrive sotto questa riga -->
 
 ## 6. INCOLLA-AL-GIUDICE
-- Aperti / BLOCKED-ON (ognuno col fatto terminale che lo sblocca): 
-- DISCORDANZE giudice↔disco: 
-- Prossima unità proposta (una, scoped): 
+- Aperti / BLOCKED-ON (ognuno col fatto terminale che lo sblocca):
+  MT-2D.6 BLOCKED-ON: founder incolla prompt su «vos1» (ChatGPT) → Sol consegna →
+  `pbpaste > configurator-2d/incoming/MT-2D.6.html` → CC riprende integrità+regressione.
+- DISCORDANZE giudice↔disco: nessuna. HEAD 07b582e = base attesa STATE.md (3815e9a via
+  post-head tollerati). chatgpt.com network-blocked da CLI: strutturale, non risolvibile da CC.
+- Prossima unità proposta (una, scoped): MT-2D.6 OUTPUT CLIENTE (prompt Sol già emesso).
