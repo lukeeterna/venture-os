@@ -466,6 +466,155 @@
       grid-column: auto;
     }
   }
+
+  /* MT-2D.6 — Riepilogo e richiesta preventivo */
+  #summary-section {
+    margin: 0 24px 32px;
+    padding: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  #summary-section h2 {
+    margin: 0 0 20px;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .summary-block {
+    padding: 14px 16px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+
+  .summary-block-title {
+    display: block;
+    margin-bottom: 10px;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+    font-size: 13px;
+    color: var(--text);
+    gap: 8px;
+  }
+
+  .summary-row + .summary-row {
+    border-top: 1px solid var(--border);
+  }
+
+  .summary-label {
+    color: var(--muted);
+    flex-shrink: 0;
+    min-width: 110px;
+  }
+
+  .summary-value {
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    word-break: break-all;
+  }
+
+  .summary-swatch {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    vertical-align: middle;
+    margin-right: 5px;
+    flex-shrink: 0;
+  }
+
+  .summary-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+  }
+
+  .primary-button {
+    min-height: 42px;
+    padding: 10px 18px;
+    color: #fff;
+    background: var(--accent);
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+  }
+
+  .primary-button:hover {
+    opacity: 0.88;
+  }
+
+  .primary-button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+
+  .summary-actions .secondary-button {
+    min-height: 42px;
+    font-size: 14px;
+  }
+
+  .copy-message {
+    min-height: 18px;
+    margin-top: 8px;
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  #payload-textarea {
+    width: 100%;
+    min-height: 80px;
+    margin-top: 14px;
+    padding: 10px 12px;
+    color: var(--muted);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: ui-monospace, "SF Mono", "Fira Code", monospace;
+    font-size: 11px;
+    line-height: 1.5;
+    resize: vertical;
+  }
+
+  @media (max-width: 620px) {
+    #summary-section {
+      margin: 0 16px 24px;
+      padding: 16px;
+    }
+
+    .summary-actions {
+      flex-direction: column;
+    }
+
+    .primary-button,
+    .summary-actions .secondary-button {
+      width: 100%;
+    }
+  }
 </style>
 </head>
 <body>
@@ -652,6 +801,106 @@
     </section>
   </aside>
 </main>
+
+<!-- MT-2D.6 — Riepilogo e richiesta preventivo -->
+<section id="summary-section" aria-labelledby="summary-heading">
+  <h2 id="summary-heading">Riepilogo e richiesta preventivo</h2>
+
+  <div class="summary-grid">
+    <div class="summary-block">
+      <span class="summary-block-title">Design</span>
+      <div class="summary-row">
+        <span class="summary-label">Archetipo</span>
+        <span class="summary-value" id="sum-archetipo">—</span>
+      </div>
+    </div>
+
+    <div class="summary-block">
+      <span class="summary-block-title">Colori — Maglia</span>
+      <div class="summary-row">
+        <span class="summary-label">Primario</span>
+        <span class="summary-value"><span class="summary-swatch" id="sw-maglia-p"></span><span id="sum-maglia-p">—</span></span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Secondario</span>
+        <span class="summary-value"><span class="summary-swatch" id="sw-maglia-s"></span><span id="sum-maglia-s">—</span></span>
+      </div>
+    </div>
+
+    <div class="summary-block">
+      <span class="summary-block-title">Colori — Pantaloncini</span>
+      <div class="summary-row">
+        <span class="summary-label">Primario</span>
+        <span class="summary-value"><span class="summary-swatch" id="sw-pantaloncini-p"></span><span id="sum-pantaloncini-p">—</span></span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Secondario</span>
+        <span class="summary-value"><span class="summary-swatch" id="sw-pantaloncini-s"></span><span id="sum-pantaloncini-s">—</span></span>
+      </div>
+    </div>
+
+    <div class="summary-block">
+      <span class="summary-block-title">Colori — Calze</span>
+      <div class="summary-row">
+        <span class="summary-label">Primario</span>
+        <span class="summary-value"><span class="summary-swatch" id="sw-calze-p"></span><span id="sum-calze-p">—</span></span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Secondario</span>
+        <span class="summary-value"><span class="summary-swatch" id="sw-calze-s"></span><span id="sum-calze-s">—</span></span>
+      </div>
+    </div>
+
+    <div class="summary-block">
+      <span class="summary-block-title">Stampa</span>
+      <div class="summary-row">
+        <span class="summary-label">Nome</span>
+        <span class="summary-value" id="sum-stampa-nome">—</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Numero</span>
+        <span class="summary-value" id="sum-stampa-numero">—</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Font</span>
+        <span class="summary-value" id="sum-stampa-font">—</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Colore stampa</span>
+        <span class="summary-value"><span class="summary-swatch" id="sw-stampa-colore"></span><span id="sum-stampa-colore">—</span></span>
+      </div>
+    </div>
+
+    <div class="summary-block">
+      <span class="summary-block-title">Sponsor</span>
+      <div class="summary-row">
+        <span class="summary-label">Logo caricato</span>
+        <span class="summary-value" id="sum-sponsor">No</span>
+      </div>
+    </div>
+  </div>
+
+  <textarea
+    id="payload-textarea"
+    readonly
+    aria-label="Codice configurazione (aggiornato in tempo reale)"
+    aria-live="polite"
+    spellcheck="false"
+  ></textarea>
+
+  <div class="summary-actions">
+    <button class="secondary-button" id="copy-quote" type="button">Copia codice preventivo</button>
+    <button class="primary-button" id="send-quote" type="button">Invia richiesta preventivo</button>
+  </div>
+  <p class="copy-message" id="copy-message" role="status" aria-live="polite"></p>
+  <!-- Fallback textarea per browser senza clipboard API -->
+  <textarea
+    id="copy-fallback"
+    readonly
+    aria-label="Codice preventivo da copiare manualmente (fallback)"
+    style="position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;opacity:0;"
+  ></textarea>
+</section>
 
 <script>
 "use strict";
@@ -1099,6 +1348,8 @@ function removeSponsor() {
 
   if (imgs.base) {
     render();
+  } else {
+    updatePayload();
   }
 }
 
@@ -1110,6 +1361,8 @@ function applySponsorImage(dataUrl, decodedImage) {
 
   if (imgs.base) {
     render();
+  } else {
+    updatePayload();
   }
 }
 
@@ -1271,6 +1524,9 @@ function render() {
   };
   window.__fontApplied = personalization.fontId;
   window.__rendered = true;
+
+  // MT-2D.6: aggiorna payload live ad ogni render
+  updatePayload();
 }
 
 function drawThumbnail(canvasElement, designId) {
@@ -1409,6 +1665,7 @@ function bindControls() {
         } else {
           updateColorLabels();
           updateRearSummary(getPersonalization());
+          updatePayload();
         }
       });
     });
@@ -1419,6 +1676,7 @@ function bindControls() {
       render();
     } else {
       updateRearSummary(getPersonalization());
+      updatePayload();
     }
   });
 
@@ -1427,6 +1685,8 @@ function bindControls() {
 
     if (imgs.base) {
       render();
+    } else {
+      updatePayload();
     }
   });
 
@@ -1437,6 +1697,7 @@ function bindControls() {
       render();
     } else {
       updateRearSummary(getPersonalization());
+      updatePayload();
     }
   });
 
@@ -1445,6 +1706,7 @@ function bindControls() {
       render();
     } else {
       updateRearSummary(getPersonalization());
+      updatePayload();
     }
   });
 
@@ -1455,12 +1717,205 @@ function bindControls() {
       render();
     } else {
       updateRearSummary(getPersonalization());
+      updatePayload();
     }
   });
 
   document.getElementById("sponsor-file").addEventListener("change", handleSponsorFile);
   document.getElementById("remove-sponsor").addEventListener("click", removeSponsor);
 }
+
+// ── MT-2D.6 — Payload deterministico v:1 e riepilogo live ──────────────────
+
+function buildPayload() {
+  var personalization = getPersonalization();
+  var fontId = personalization.fontId;
+
+  return {
+    v: 1,
+    archetipo: selectedDesign,
+    colori: {
+      maglia_p: getColor("maglia", "primary").toLowerCase(),
+      maglia_s: getColor("maglia", "secondary").toLowerCase(),
+      pantaloncini_p: getColor("pantaloncini", "primary").toLowerCase(),
+      pantaloncini_s: getColor("pantaloncini", "secondary").toLowerCase(),
+      calze_p: getColor("calze", "primary").toLowerCase(),
+      calze_s: getColor("calze", "secondary").toLowerCase()
+    },
+    stampa: {
+      nome: personalization.name,
+      numero: personalization.number,
+      font: fontId,
+      colore: personalization.color.toLowerCase()
+    },
+    sponsor: Boolean(sponsorImage && sponsorDataUrl)
+  };
+}
+
+function setSwatchColor(id, hex) {
+  var el = document.getElementById(id);
+  if (el) {
+    el.style.backgroundColor = hex;
+  }
+}
+
+function setText(id, value) {
+  var el = document.getElementById(id);
+  if (el) {
+    el.textContent = value;
+  }
+}
+
+function updateSummaryUI(payload) {
+  var designObj = DESIGNS.find(function (d) { return d.id === payload.archetipo; });
+  var designLabel = designObj ? designObj.name : payload.archetipo;
+  var fontObj = SPORT_FONTS[payload.stampa.font];
+  var fontLabel = fontObj ? fontObj.label : payload.stampa.font;
+
+  setText("sum-archetipo", designLabel);
+
+  setText("sum-maglia-p", payload.colori.maglia_p);
+  setSwatchColor("sw-maglia-p", payload.colori.maglia_p);
+  setText("sum-maglia-s", payload.colori.maglia_s);
+  setSwatchColor("sw-maglia-s", payload.colori.maglia_s);
+
+  setText("sum-pantaloncini-p", payload.colori.pantaloncini_p);
+  setSwatchColor("sw-pantaloncini-p", payload.colori.pantaloncini_p);
+  setText("sum-pantaloncini-s", payload.colori.pantaloncini_s);
+  setSwatchColor("sw-pantaloncini-s", payload.colori.pantaloncini_s);
+
+  setText("sum-calze-p", payload.colori.calze_p);
+  setSwatchColor("sw-calze-p", payload.colori.calze_p);
+  setText("sum-calze-s", payload.colori.calze_s);
+  setSwatchColor("sw-calze-s", payload.colori.calze_s);
+
+  setText("sum-stampa-nome", payload.stampa.nome || "—");
+  setText("sum-stampa-numero", payload.stampa.numero || "—");
+  setText("sum-stampa-font", fontLabel);
+  setText("sum-stampa-colore", payload.stampa.colore);
+  setSwatchColor("sw-stampa-colore", payload.stampa.colore);
+
+  setText("sum-sponsor", payload.sponsor ? "Sì" : "No");
+}
+
+function updatePayload() {
+  var payload = buildPayload();
+  window.__payload = payload;
+  updateSummaryUI(payload);
+
+  // Aggiorna textarea visibile live (rappresentazione canonica compatta)
+  var ta = document.getElementById("payload-textarea");
+  if (ta) {
+    ta.value = JSON.stringify(payload);
+  }
+}
+
+function copyQuote() {
+  var payload = window.__payload || buildPayload();
+  var text = JSON.stringify(payload);
+  var btn = document.getElementById("copy-quote");
+  var messageEl = document.getElementById("copy-message");
+
+  function onSuccess() {
+    btn.textContent = "Copiato \u2713";
+    setTimeout(function () {
+      btn.textContent = "Copia codice preventivo";
+      messageEl.textContent = "";
+    }, 2000);
+  }
+
+  function onFail() {
+    // Fallback execCommand: rende la textarea visibile e la seleziona
+    var ta = document.getElementById("payload-textarea");
+    var fallback = document.getElementById("copy-fallback");
+    var target = ta || fallback;
+
+    if (target) {
+      if (target === fallback) {
+        target.value = text;
+        target.style.position = "static";
+        target.style.width = "100%";
+        target.style.height = "80px";
+        target.style.opacity = "1";
+      }
+      target.select();
+      var copied = false;
+      try {
+        copied = document.execCommand("copy");
+      } catch (ignored) {
+        copied = false;
+      }
+      if (copied) {
+        onSuccess();
+      } else {
+        // execCommand ha restituito false: lascia textarea visibile e selezionata,
+        // mostra feedback aria-live, non dichiarare successo.
+        messageEl.textContent = "Seleziona e copia manualmente il codice sopra.";
+        if (target === fallback) {
+          setTimeout(function () {
+            target.style.position = "absolute";
+            target.style.left = "-9999px";
+            target.style.top = "-9999px";
+            target.style.width = "1px";
+            target.style.height = "1px";
+            target.style.opacity = "0";
+            messageEl.textContent = "";
+          }, 8000);
+        }
+      }
+    }
+  }
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(onSuccess, onFail);
+  } else {
+    onFail();
+  }
+}
+
+function sendQuoteByMail() {
+  var payload = window.__payload || buildPayload();
+  var designObj = DESIGNS.find(function (d) { return d.id === payload.archetipo; });
+  var designLabel = designObj ? designObj.name : payload.archetipo;
+  var fontObj = SPORT_FONTS[payload.stampa.font];
+  var fontLabel = fontObj ? fontObj.label : payload.stampa.font;
+
+  var subject = "Preventivo kit sportivo \u2014 [ATTIVITA]";
+  var body = [
+    "Attivit\u00e0: [ATTIVITA]",
+    "",
+    "Buongiorno,",
+    "",
+    "Vi inviamo la configurazione del kit sportivo scelta tramite il configuratore.",
+    "",
+    "Design: " + designLabel,
+    "",
+    "Maglia — primario: " + payload.colori.maglia_p + ", secondario: " + payload.colori.maglia_s,
+    "Pantaloncini — primario: " + payload.colori.pantaloncini_p + ", secondario: " + payload.colori.pantaloncini_s,
+    "Calze — primario: " + payload.colori.calze_p + ", secondario: " + payload.colori.calze_s,
+    "",
+    "Nome retro: " + (payload.stampa.nome || "—"),
+    "Numero: " + (payload.stampa.numero || "—"),
+    "Font: " + fontLabel,
+    "Colore stampa: " + payload.stampa.colore,
+    "",
+    "Sponsor: " + (payload.sponsor ? "Sì (ricarica immagine alla conferma)" : "No"),
+    "",
+    "Contatto: [TEL]",
+    "",
+    "Codice configurazione: " + JSON.stringify(window.__payload || payload)
+  ].join("\n");
+
+  window.location.href =
+    "mailto:" + encodeURIComponent("[EMAIL_ATTIVITA]") +
+    "?subject=" + encodeURIComponent(subject) +
+    "&body=" + encodeURIComponent(body);
+}
+
+document.getElementById("copy-quote").addEventListener("click", copyQuote);
+document.getElementById("send-quote").addEventListener("click", sendQuoteByMail);
+
+// ── Fine MT-2D.6 ────────────────────────────────────────────────────────────
 
 applyQueryParameters();
 buildGallery();
@@ -1469,6 +1924,7 @@ updateColorLabels();
 updateThumbnails();
 updateRearSummary(getPersonalization());
 updateSponsorControls();
+updatePayload(); // MT-2D.6: inizializza payload e riepilogo al caricamento
 
 Promise.all([
   load(ASSET_DIR + "shading_base.jpg").then(function (image) {
