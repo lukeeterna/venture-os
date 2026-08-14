@@ -1,11 +1,11 @@
 venture: sportswear
 repo: github.com/lukeeterna/venture-os
-head_atteso: 3815e9a
-unita_corrente: MT-2D.6
+head_atteso: 1e8ee36572e77039e6a6f02c6df05b7525ede4b0
+unita_corrente: MT-2D.7
 modello_previsto: Sol
 blocco_attivo: nessuno
 
-Ultima unità chiusa: MT-2D.5 sponsor upload — PASS: FileReader client-side, overlay petto, reset pulito (sponsor_off/on/reset byte-identici); nessuna scrittura su disco del repo; regressione mt2+mt3+mt4 verde; 3 screenshot sponsor committati. Difetti rinviati a MT-2D.7.
+Ultima unità chiusa: MT-2D.6 output cliente — PASS: PR #2 mergiata su master; sezione "Riepilogo e richiesta preventivo" sotto il canvas; window.__payload deterministico v:1 con colori lowercase; textarea readonly/live con JSON.stringify(window.__payload); copia con Clipboard API + fallback execCommand fail-closed e stato "Copiato ✓" per 2s; mailto esplicito con placeholder [ATTIVITA], [EMAIL_ATTIVITA], [TEL]; PAYLOAD_SPEC.md completo; regressioni MT2+MT3+MT4+MT5 verdi. Writer head f9e99a9cf2d4ea0a4dc085f7cd3ef2d26d544a2b; merge commit 1e8ee36572e77039e6a6f02c6df05b7525ede4b0.
 
 Decisioni chiuse (NON si ridiscutono):
 - Binario MOCKUP. SVG congelato in mano al founder, mai su disco né in repo.
@@ -21,7 +21,7 @@ Decisioni chiuse (NON si ridiscutono):
 - FASE 0: tollerati dopo head_atteso i commit "auto-close session" e "docs(judge): state".
 
 Pendenti founder: "PDF ok" preventivatore; margin_floor fissata (mai numeri nel repo).
-Catena: MT-2D.6 → 2D.7 → 2D.8 (deploy) → 2D.9. Produzione entro 27/08.
+Catena: MT-2D.7 → 2D.8 (deploy) → 2D.9. Produzione entro 27/08.
 Questo file si RISCRIVE a ogni FASE CHIUSURA e sostituisce gli handoff in prosa.
 
 DIFETTI RINVIATI (da chiudere entro MT-2D.7):
