@@ -585,6 +585,21 @@
     font-size: 12px;
   }
 
+  #payload-textarea {
+    width: 100%;
+    min-height: 80px;
+    margin-top: 14px;
+    padding: 10px 12px;
+    color: var(--muted);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: ui-monospace, "SF Mono", "Fira Code", monospace;
+    font-size: 11px;
+    line-height: 1.5;
+    resize: vertical;
+  }
+
   @media (max-width: 620px) {
     #summary-section {
       margin: 0 16px 24px;
@@ -865,6 +880,14 @@
     </div>
   </div>
 
+  <textarea
+    id="payload-textarea"
+    readonly
+    aria-label="Codice configurazione (aggiornato in tempo reale)"
+    aria-live="polite"
+    spellcheck="false"
+  ></textarea>
+
   <div class="summary-actions">
     <button class="secondary-button" id="copy-quote" type="button">Copia codice preventivo</button>
     <button class="primary-button" id="send-quote" type="button">Invia richiesta preventivo</button>
@@ -874,7 +897,7 @@
   <textarea
     id="copy-fallback"
     readonly
-    aria-label="Codice preventivo da copiare manualmente"
+    aria-label="Codice preventivo da copiare manualmente (fallback)"
     style="position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;opacity:0;"
   ></textarea>
 </section>
@@ -1712,18 +1735,18 @@ function buildPayload() {
     v: 1,
     archetipo: selectedDesign,
     colori: {
-      maglia_p: getColor("maglia", "primary").toUpperCase(),
-      maglia_s: getColor("maglia", "secondary").toUpperCase(),
-      pantaloncini_p: getColor("pantaloncini", "primary").toUpperCase(),
-      pantaloncini_s: getColor("pantaloncini", "secondary").toUpperCase(),
-      calze_p: getColor("calze", "primary").toUpperCase(),
-      calze_s: getColor("calze", "secondary").toUpperCase()
+      maglia_p: getColor("maglia", "primary").toLowerCase(),
+      maglia_s: getColor("maglia", "secondary").toLowerCase(),
+      pantaloncini_p: getColor("pantaloncini", "primary").toLowerCase(),
+      pantaloncini_s: getColor("pantaloncini", "secondary").toLowerCase(),
+      calze_p: getColor("calze", "primary").toLowerCase(),
+      calze_s: getColor("calze", "secondary").toLowerCase()
     },
     stampa: {
       nome: personalization.name,
       numero: personalization.number,
       font: fontId,
-      colore: personalization.color.toUpperCase()
+      colore: personalization.color.toLowerCase()
     },
     sponsor: Boolean(sponsorImage && sponsorDataUrl)
   };
@@ -1779,42 +1802,61 @@ function updatePayload() {
   var payload = buildPayload();
   window.__payload = payload;
   updateSummaryUI(payload);
+
+  // Aggiorna textarea visibile live (rappresentazione canonica compatta)
+  var ta = document.getElementById("payload-textarea");
+  if (ta) {
+    ta.value = JSON.stringify(payload);
+  }
 }
 
 function copyQuote() {
   var payload = window.__payload || buildPayload();
-  var text = JSON.stringify(payload, null, 2);
+  var text = JSON.stringify(payload);
+  var btn = document.getElementById("copy-quote");
   var messageEl = document.getElementById("copy-message");
 
   function onSuccess() {
-    messageEl.textContent = "Codice preventivo copiato.";
-    setTimeout(function () { messageEl.textContent = ""; }, 3000);
+    btn.textContent = "Copiato \u2713";
+    setTimeout(function () {
+      btn.textContent = "Copia codice preventivo";
+      messageEl.textContent = "";
+    }, 2000);
   }
 
   function onFail() {
+    // Fallback execCommand: rende la textarea visibile e la seleziona
+    var ta = document.getElementById("payload-textarea");
     var fallback = document.getElementById("copy-fallback");
-    if (fallback) {
-      fallback.value = text;
-      fallback.style.position = "static";
-      fallback.style.width = "100%";
-      fallback.style.height = "120px";
-      fallback.style.opacity = "1";
-      fallback.select();
+    var target = ta || fallback;
+
+    if (target) {
+      if (target === fallback) {
+        target.value = text;
+        target.style.position = "static";
+        target.style.width = "100%";
+        target.style.height = "80px";
+        target.style.opacity = "1";
+      }
+      target.select();
       try {
         document.execCommand("copy");
-        messageEl.textContent = "Codice copiato (fallback).";
+        onSuccess();
       } catch (ignored) {
-        messageEl.textContent = "Seleziona e copia manualmente il testo sopra.";
+        // Lascia il JSON visibile e selezionato, nessun alert
+        messageEl.textContent = "Seleziona e copia manualmente il codice sopra.";
+        if (target === fallback) {
+          setTimeout(function () {
+            target.style.position = "absolute";
+            target.style.left = "-9999px";
+            target.style.top = "-9999px";
+            target.style.width = "1px";
+            target.style.height = "1px";
+            target.style.opacity = "0";
+            messageEl.textContent = "";
+          }, 8000);
+        }
       }
-      setTimeout(function () {
-        fallback.style.position = "absolute";
-        fallback.style.left = "-9999px";
-        fallback.style.top = "-9999px";
-        fallback.style.width = "1px";
-        fallback.style.height = "1px";
-        fallback.style.opacity = "0";
-        messageEl.textContent = "";
-      }, 8000);
     }
   }
 
@@ -1832,41 +1874,32 @@ function sendQuoteByMail() {
   var fontObj = SPORT_FONTS[payload.stampa.font];
   var fontLabel = fontObj ? fontObj.label : payload.stampa.font;
 
-  var subject = "Richiesta preventivo kit sportivo — [ATTIVITA]";
+  var subject = "Preventivo kit sportivo \u2014 [ATTIVITA]";
   var body = [
     "Buongiorno,",
     "",
     "Vi inviamo la configurazione del kit sportivo scelta tramite il configuratore.",
     "",
-    "=== RIEPILOGO CONFIGURAZIONE ===",
-    "",
     "Design: " + designLabel,
     "",
-    "Colori maglia:        primario " + payload.colori.maglia_p + " / secondario " + payload.colori.maglia_s,
-    "Colori pantaloncini:  primario " + payload.colori.pantaloncini_p + " / secondario " + payload.colori.pantaloncini_s,
-    "Colori calze:         primario " + payload.colori.calze_p + " / secondario " + payload.colori.calze_s,
+    "Maglia — primario: " + payload.colori.maglia_p + ", secondario: " + payload.colori.maglia_s,
+    "Pantaloncini — primario: " + payload.colori.pantaloncini_p + ", secondario: " + payload.colori.pantaloncini_s,
+    "Calze — primario: " + payload.colori.calze_p + ", secondario: " + payload.colori.calze_s,
     "",
-    "Nome retro:   " + (payload.stampa.nome || "—"),
-    "Numero:       " + (payload.stampa.numero || "—"),
-    "Font:         " + fontLabel,
+    "Nome retro: " + (payload.stampa.nome || "—"),
+    "Numero: " + (payload.stampa.numero || "—"),
+    "Font: " + fontLabel,
     "Colore stampa: " + payload.stampa.colore,
     "",
-    "Sponsor: " + (payload.sponsor ? "Sì (logo allegato separatamente)" : "No"),
+    "Sponsor: " + (payload.sponsor ? "Sì (ricarica immagine alla conferma)" : "No"),
     "",
-    "=== CODICE PREVENTIVO (v:" + payload.v + ") ===",
-    JSON.stringify(payload),
+    "Contatto: [TEL]",
     "",
-    "=== DATI RICHIEDENTE ===",
-    "Attività: [ATTIVITA]",
-    "Email:    [EMAIL_ATTIVITA]",
-    "Tel.:     [TEL]",
-    "",
-    "In attesa di una vostra risposta,",
-    "Cordiali saluti"
+    "Codice configurazione: " + JSON.stringify(window.__payload || payload)
   ].join("\n");
 
   window.location.href =
-    "mailto:[EMAIL_ATTIVITA]" +
+    "mailto:" + encodeURIComponent("[EMAIL_ATTIVITA]") +
     "?subject=" + encodeURIComponent(subject) +
     "&body=" + encodeURIComponent(body);
 }
