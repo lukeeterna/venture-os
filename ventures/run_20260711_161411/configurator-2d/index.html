@@ -354,6 +354,26 @@
     text-align: center;
   }
 
+  /* D7-07 — Controlli posizione/scala sponsor touch-friendly */
+  .sponsor-layout-controls {
+    margin-top: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .sponsor-layout-controls .field label {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .sponsor-layout-controls input[type=range] {
+    width: 100%;
+    height: 40px;
+    cursor: pointer;
+    accent-color: var(--accent);
+  }
+
   .sponsor-actions {
     margin-top: 10px;
     display: flex;
@@ -789,6 +809,22 @@
         <span class="sponsor-placeholder" id="sponsor-placeholder">Nessun logo caricato</span>
       </div>
 
+      <!-- D7-07 — Controlli posizione/scala sponsor -->
+      <div class="sponsor-layout-controls" id="sponsor-layout-controls">
+        <div class="field">
+          <label for="sponsor-x">Posizione orizzontale logo</label>
+          <input type="range" id="sponsor-x" min="0.1" max="0.9" step="0.01" value="0.5" />
+        </div>
+        <div class="field">
+          <label for="sponsor-y">Posizione verticale logo</label>
+          <input type="range" id="sponsor-y" min="0.1" max="0.9" step="0.01" value="0.25" />
+        </div>
+        <div class="field">
+          <label for="sponsor-scale">Scala logo</label>
+          <input type="range" id="sponsor-scale" min="0.05" max="0.4" step="0.01" value="0.2" />
+        </div>
+      </div>
+
       <div class="sponsor-actions">
         <button class="secondary-button" id="remove-sponsor" type="button" disabled>
           Rimuovi sponsor
@@ -925,32 +961,43 @@ var DESIGNS = [
   { id: "pinstripes", name: "Gessato fine" }
 ];
 
-// Stack di sistema: nessun file font, CDN o download esterno.
+// D7-05 — Stack font di sistema visivamente distinti: ZERO CDN, ZERO @import.
+// Ogni ID produce una resa percettivamente diversa sui sistemi Mac/Win/Linux.
 var SPORT_FONTS = {
   block: {
     label: "Blocco",
-    family: "Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif",
-    weight: "900"
+    // Impact: ultra-wide condensed bold — molto caratteristico, largo, piatto
+    family: "Impact, 'Arial Black', Haettenschweiler, sans-serif",
+    weight: "900",
+    style: "normal"
   },
   condensed: {
     label: "Condensato",
-    family: "'Arial Narrow', 'Helvetica Neue Condensed', Arial, sans-serif",
-    weight: "800"
+    // Arial Narrow: stretto, alto — distinto da Impact perché narrower
+    family: "'Arial Narrow', 'Helvetica Neue', Arial, sans-serif",
+    weight: "800",
+    style: "normal"
   },
   geometric: {
     label: "Geometrico",
-    family: "Futura, 'Century Gothic', Avenir, Arial, sans-serif",
-    weight: "800"
+    // Century Gothic / Trebuchet MS: forme geometriche tonde, o-perfetti
+    family: "'Century Gothic', 'Trebuchet MS', Futura, Avenir, Arial, sans-serif",
+    weight: "700",
+    style: "normal"
   },
   technical: {
     label: "Tecnico",
-    family: "'Trebuchet MS', Verdana, Arial, sans-serif",
-    weight: "900"
+    // Courier New: monospace a larghezza fissa, look tecnico/militare
+    family: "'Courier New', Courier, 'Lucida Console', monospace",
+    weight: "900",
+    style: "normal"
   },
   college: {
     label: "College",
-    family: "Rockwell, 'Rockwell Extra Bold', 'Courier New', serif",
-    weight: "900"
+    // Georgia bold italic: serif con grazie, stile collegiale
+    family: "Georgia, 'Times New Roman', Times, serif",
+    weight: "900",
+    style: "italic"
   }
 };
 
@@ -961,6 +1008,9 @@ var H = canvas.height;
 var imgs = {};
 var bounds = {};
 var selectedDesign = "solid";
+
+// D7-07 — Stato layout sponsor (valori normalizzati [0,1])
+var sponsorLayout = { x: 0.5, y: 0.25, scala: 0.2 };
 
 var patternCanvas = document.createElement("canvas");
 var shadedCanvas = document.createElement("canvas");
@@ -1118,6 +1168,76 @@ function fillBox(target, box, color) {
   target.fillRect(box.x, box.y, box.w, box.h);
 }
 
+// D7-02 — Calcola luminosità relativa (0..1) di un colore hex.
+function hexLuminance(hex) {
+  var v = safeHex(hex) || "#ffffff";
+  var r = parseInt(v.slice(1, 3), 16) / 255;
+  var g = parseInt(v.slice(3, 5), 16) / 255;
+  var b = parseInt(v.slice(5, 7), 16) / 255;
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+// D7-02 — Modifica la luminosità HSL di un hex per contrasto adattivo chevron.
+// delta: positivo = schiarisci, negativo = scurisci. Restituisce hex lowercase.
+function shiftLightness(hex, delta) {
+  var v = safeHex(hex) || "#888888";
+  var r = parseInt(v.slice(1, 3), 16) / 255;
+  var g = parseInt(v.slice(3, 5), 16) / 255;
+  var b = parseInt(v.slice(5, 7), 16) / 255;
+
+  // RGB → HSL
+  var max = Math.max(r, g, b);
+  var min = Math.min(r, g, b);
+  var l = (max + min) / 2;
+  var s = 0;
+  var h = 0;
+  var d;
+
+  if (max !== min) {
+    d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+
+    if (max === r) {
+      h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+    } else if (max === g) {
+      h = ((b - r) / d + 2) / 6;
+    } else {
+      h = ((r - g) / d + 4) / 6;
+    }
+  }
+
+  // Applica delta sulla luminosità, clamped [0,1]
+  l = Math.max(0, Math.min(1, l + delta));
+
+  // HSL → RGB
+  function hue2rgb(p, q, t) {
+    if (t < 0) { t += 1; }
+    if (t > 1) { t -= 1; }
+    if (t < 1 / 6) { return p + (q - p) * 6 * t; }
+    if (t < 1 / 2) { return q; }
+    if (t < 2 / 3) { return p + (q - p) * (2 / 3 - t) * 6; }
+    return p;
+  }
+
+  var nr, ng, nb;
+  if (s === 0) {
+    nr = ng = nb = l;
+  } else {
+    var q2 = l < 0.5 ? l * (1 + s) : l + s - l * s;
+    var p2 = 2 * l - q2;
+    nr = hue2rgb(p2, q2, h + 1 / 3);
+    ng = hue2rgb(p2, q2, h);
+    nb = hue2rgb(p2, q2, h - 1 / 3);
+  }
+
+  function toHexByte(c) {
+    var hex = Math.round(c * 255).toString(16);
+    return hex.length === 1 ? "0" + hex : hex;
+  }
+
+  return "#" + toHexByte(nr) + toHexByte(ng) + toHexByte(nb);
+}
+
 function drawDesign(target, designId, box, primary, secondary) {
   var x = box.x;
   var y = box.y;
@@ -1142,8 +1262,9 @@ function drawDesign(target, designId, box, primary, secondary) {
       target.fillRect(x + i * step, y, step, h);
     }
   } else if (designId === "horizontal-stripes") {
+    // D7-03 — Stripe minima 4px per leggibilità calze
     count = 8;
-    step = h / count;
+    step = Math.max(4, h / count);
 
     for (i = 0; i < count; i += 2) {
       target.fillRect(x, y + i * step, w, step);
@@ -1159,6 +1280,17 @@ function drawDesign(target, designId, box, primary, secondary) {
   } else if (designId === "half-split") {
     target.fillRect(x + w * 0.5, y, w * 0.5, h);
   } else if (designId === "chevron") {
+    // D7-02 — Contrasto adattivo: su sfondi scuri schiarisci il chevron
+    var lum = hexLuminance(primary);
+    var chevronColor;
+    if (lum < 0.3) {
+      // Sfondo scuro: schiarisci il colore secondario per garantire visibilità
+      chevronColor = shiftLightness(secondary, 0.30);
+    } else {
+      // Sfondo chiaro: scurisci leggermente
+      chevronColor = shiftLightness(secondary, -0.10);
+    }
+    target.strokeStyle = chevronColor;
     target.lineWidth = Math.max(8, Math.min(w, h) * 0.15);
     target.lineCap = "square";
     target.lineJoin = "miter";
@@ -1192,7 +1324,8 @@ function drawDesign(target, designId, box, primary, secondary) {
     target.fillRect(x + w * 0.5, y, w * 0.5, h * 0.5);
     target.fillRect(x, y + h * 0.5, w * 0.5, h * 0.5);
   } else if (designId === "pinstripes") {
-    step = Math.max(8, w * 0.1);
+    // D7-03 — Pinstripes: passo minimo 4px per distinguibilità a piccole dimensioni
+    step = Math.max(4, Math.min(8, w * 0.1));
     target.lineWidth = Math.max(2, w * 0.018);
 
     for (i = x + step * 0.5; i < x + w; i += step) {
@@ -1210,6 +1343,13 @@ function renderGarment(garment) {
   var primary = getColor(garment, "primary");
   var secondary = getColor(garment, "secondary");
 
+  // D7-01 FIX — Alpha edge erosion reale:
+  // 1. Disegna pattern su patternCanvas
+  // 2. Applica mask con destination-in su patternCanvas
+  // 3. Applica shading multiply su shadedCanvas (scope: solo il capo)
+  // 4. Rimask su shadedCanvas con scala leggermente ridotta (0.999x) per
+  //    erodere i pixel di bordo alpha 1-2px senza deformare il capo.
+
   patternCtx.globalCompositeOperation = "source-over";
   patternCtx.clearRect(0, 0, W, H);
   drawDesign(patternCtx, selectedDesign, bounds[garment], primary, secondary);
@@ -1217,7 +1357,7 @@ function renderGarment(garment) {
   patternCtx.globalCompositeOperation = "destination-in";
   patternCtx.drawImage(imgs["mask_" + garment], 0, 0, W, H);
 
-  // Pattern prima, shading fotografico sopra in multiply.
+  // Pattern + shading su shadedCanvas (scope: solo il capo, multiply confinato)
   shadedCtx.globalCompositeOperation = "source-over";
   shadedCtx.clearRect(0, 0, W, H);
   shadedCtx.drawImage(patternCanvas, 0, 0);
@@ -1225,8 +1365,19 @@ function renderGarment(garment) {
   shadedCtx.globalCompositeOperation = "multiply";
   shadedCtx.drawImage(imgs.base, 0, 0, W, H);
 
+  // Rimask finale con inset di 1px: scala 0.999x centrata per eliminare
+  // i pixel di bordo alpha semitrasparenti prodotti dall'antialiasing della mask PNG.
   shadedCtx.globalCompositeOperation = "destination-in";
+  shadedCtx.save();
+  var inset = 0.999;
+  var cx = W * 0.5;
+  var cy = H * 0.5;
+  shadedCtx.translate(cx, cy);
+  shadedCtx.scale(inset, inset);
+  shadedCtx.translate(-cx, -cy);
   shadedCtx.drawImage(imgs["mask_" + garment], 0, 0, W, H);
+  shadedCtx.restore();
+  shadedCtx.globalCompositeOperation = "source-over";
 
   ctx.drawImage(shadedCanvas, 0, 0);
 }
@@ -1280,6 +1431,9 @@ function drawFrontNumber(personalization) {
   var maxWidth;
   var outline;
 
+  // D7-04 — Numero petto con shading/pieghe:
+  // Prima disegna il numero sul personalizationCanvas, poi applica multiply
+  // con lo shading base per integrarlo nelle pieghe del tessuto.
   personalizationCtx.globalCompositeOperation = "source-over";
   personalizationCtx.clearRect(0, 0, W, H);
 
@@ -1296,8 +1450,12 @@ function drawFrontNumber(personalization) {
   personalizationCtx.save();
   personalizationCtx.textAlign = "center";
   personalizationCtx.textBaseline = "middle";
+
+  // D7-05 — Font con stile (italic per college)
+  var fontDef = personalization.font;
+  var fontStyle = fontDef.style && fontDef.style !== "normal" ? fontDef.style + " " : "";
   personalizationCtx.font =
-    personalization.font.weight + " " + fontSize + "px " + personalization.font.family;
+    fontStyle + fontDef.weight + " " + fontSize + "px " + fontDef.family;
   personalizationCtx.lineJoin = "round";
   personalizationCtx.strokeStyle = outline;
   personalizationCtx.lineWidth = Math.max(2, fontSize * 0.045);
@@ -1306,10 +1464,28 @@ function drawFrontNumber(personalization) {
   personalizationCtx.fillText(personalization.number, x, y, maxWidth);
   personalizationCtx.restore();
 
+  // D7-04 FIX — Shading applicato SOLO al personalizationCanvas (layer separato),
+  // NON al ctx principale. Questo evita di re-scurire il kit già renderizzato.
+  // Pipeline: testo → multiply shading su personalizationCtx → mask maglia → composite su ctx.
+
+  // 1. Applica multiply shading SOLO sul personalizationCanvas (scope: solo il testo)
+  personalizationCtx.globalCompositeOperation = "multiply";
+  personalizationCtx.globalAlpha = 0.55;
+  personalizationCtx.drawImage(imgs.base, 0, 0, W, H);
+  personalizationCtx.globalAlpha = 1.0;
+  personalizationCtx.globalCompositeOperation = "source-over";
+
+  // 2. Clippa alla maschera maglia (destination-in su personalizationCanvas)
   personalizationCtx.globalCompositeOperation = "destination-in";
   personalizationCtx.drawImage(imgs.mask_maglia, 0, 0, W, H);
+  personalizationCtx.globalCompositeOperation = "source-over";
 
+  // 3. Composite personalizationCanvas sul ctx principale (non tocca il resto del kit)
+  ctx.save();
+  ctx.globalAlpha = 0.85;
   ctx.drawImage(personalizationCanvas, 0, 0);
+  ctx.globalAlpha = 1.0;
+  ctx.restore();
 }
 
 function setSponsorMessage(message, isError) {
@@ -1425,11 +1601,7 @@ function drawSponsor() {
   var box = bounds.maglia;
   var sourceWidth;
   var sourceHeight;
-  var areaWidth;
-  var areaHeight;
-  var areaX;
-  var areaY;
-  var scale;
+  var cx, cy;
   var drawWidth;
   var drawHeight;
   var drawX;
@@ -1451,24 +1623,48 @@ function drawSponsor() {
     return;
   }
 
-  // Area sponsor orizzontalmente centrata nella parte alta del petto.
-  // Il logo usa un contain fit: proporzioni preservate, nessuna deformazione.
-  areaWidth = box.w * 0.48;
-  areaHeight = box.h * 0.12;
-  areaX = box.x + (box.w - areaWidth) * 0.5;
-  areaY = box.y + box.h * 0.2;
-  scale = Math.min(areaWidth / sourceWidth, areaHeight / sourceHeight);
-  drawWidth = sourceWidth * scale;
-  drawHeight = sourceHeight * scale;
-  drawX = areaX + (areaWidth - drawWidth) * 0.5;
-  drawY = areaY + (areaHeight - drawHeight) * 0.5;
+  // D7-07 FIX — Posizione sicura con clamp basato sulle half-dimensions reali del logo.
+  // cx/cy = centro desiderato, poi clampato in modo che il logo stia INTERAMENTE
+  // nell'area petto della maglia.
+  var logoAspect = sourceWidth / sourceHeight;
+  var maxLogoW = box.w * sponsorLayout.scala;
+  var maxLogoH = box.h * sponsorLayout.scala;
+  if (logoAspect > 1) {
+    drawWidth = maxLogoW;
+    drawHeight = maxLogoW / logoAspect;
+  } else {
+    drawHeight = maxLogoH;
+    drawWidth = maxLogoH * logoAspect;
+  }
 
+  // Centro desiderato in coordinate canvas
+  cx = box.x + box.w * sponsorLayout.x;
+  cy = box.y + box.h * sponsorLayout.y;
+
+  // Clamp: il logo deve stare interamente nel bounding box della maglia
+  drawX = Math.max(box.x, Math.min(box.x + box.w - drawWidth, cx - drawWidth * 0.5));
+  drawY = Math.max(box.y, Math.min(box.y + box.h - drawHeight, cy - drawHeight * 0.5));
+
+  // D7-06 FIX — Fase 1: disegna il logo su sponsorCanvas (source-over)
+  sponsorCtx.globalCompositeOperation = "source-over";
   sponsorCtx.drawImage(sponsorImage, drawX, drawY, drawWidth, drawHeight);
+
+  // D7-06 FIX — Fase 2: shading multiply SOLO su sponsorCanvas (non sul ctx principale)
+  // Questo evita di re-scurire il kit già renderizzato sotto il logo.
+  sponsorCtx.globalCompositeOperation = "multiply";
+  sponsorCtx.globalAlpha = 0.4;
+  sponsorCtx.drawImage(imgs.base, 0, 0, W, H);
+  sponsorCtx.globalAlpha = 1.0;
+  sponsorCtx.globalCompositeOperation = "source-over";
+
+  // Fase 3: clippa alla maschera maglia su sponsorCanvas
   sponsorCtx.globalCompositeOperation = "destination-in";
   sponsorCtx.drawImage(imgs.mask_maglia, 0, 0, W, H);
+  sponsorCtx.globalCompositeOperation = "source-over";
 
-  // Overlay finale sopra lo shading, come richiesto per lo sponsor.
+  // Fase 4: composite sponsorCanvas sul ctx principale (non tocca il resto del kit)
   ctx.drawImage(sponsorCanvas, 0, 0);
+
   window.__sponsorApplied = true;
 }
 
@@ -1482,25 +1678,30 @@ function updateRearSummary(personalization) {
   rearName.textContent = personalization.name || "NOME";
   rearNumber.textContent = personalization.number || "–";
 
-  rearName.style.fontFamily = personalization.font.family;
-  rearName.style.fontWeight = personalization.font.weight;
+  // D7-05 — Applica font-style (italic per college) anche all'anteprima testuale
+  var fontDef = personalization.font;
+  rearName.style.fontFamily = fontDef.family;
+  rearName.style.fontWeight = fontDef.weight;
+  rearName.style.fontStyle = fontDef.style || "normal";
   rearName.style.color = personalization.color;
   rearName.style.textShadow = "0 1px 2px " + outline;
 
-  rearNumber.style.fontFamily = personalization.font.family;
-  rearNumber.style.fontWeight = personalization.font.weight;
+  rearNumber.style.fontFamily = fontDef.family;
+  rearNumber.style.fontWeight = fontDef.weight;
+  rearNumber.style.fontStyle = fontDef.style || "normal";
   rearNumber.style.color = personalization.color;
   rearNumber.style.textShadow = "0 2px 3px " + outline;
 
   preview.style.backgroundColor = getColor("maglia", "primary");
   preview.setAttribute("data-font", personalization.fontId);
-  status.textContent = "Font applicato: " + personalization.font.label;
+  status.textContent = "Font applicato: " + fontDef.label;
 }
 
 function render() {
   var personalization = getPersonalization();
 
   window.__rendered = false;
+  // D7-01 — clearRect esplicito sul canvas principale prima di ogni ridisegno
   ctx.clearRect(0, 0, W, H);
   ctx.drawImage(imgs.base, 0, 0, W, H);
   GARMENTS.forEach(renderGarment);
@@ -1654,6 +1855,13 @@ function applyQueryParameters() {
   }
 }
 
+// D7-07 — Legge i range input e aggiorna sponsorLayout
+function readSponsorLayoutControls() {
+  sponsorLayout.x = parseFloat(document.getElementById("sponsor-x").value) || 0.5;
+  sponsorLayout.y = parseFloat(document.getElementById("sponsor-y").value) || 0.25;
+  sponsorLayout.scala = parseFloat(document.getElementById("sponsor-scale").value) || 0.2;
+}
+
 function bindControls() {
   GARMENTS.forEach(function (garment) {
     ["primary", "secondary"].forEach(function (role) {
@@ -1723,16 +1931,29 @@ function bindControls() {
 
   document.getElementById("sponsor-file").addEventListener("change", handleSponsorFile);
   document.getElementById("remove-sponsor").addEventListener("click", removeSponsor);
+
+  // D7-07 — Binding controlli posizione/scala sponsor con aggiornamento live
+  ["sponsor-x", "sponsor-y", "sponsor-scale"].forEach(function (id) {
+    document.getElementById(id).addEventListener("input", function () {
+      readSponsorLayoutControls();
+      if (imgs.base) {
+        render();
+      } else {
+        updatePayload();
+      }
+    });
+  });
 }
 
-// ── MT-2D.6 — Payload deterministico v:1 e riepilogo live ──────────────────
+// ── MT-2D.6 — Payload deterministico v:2 e riepilogo live ──────────────────
 
 function buildPayload() {
   var personalization = getPersonalization();
   var fontId = personalization.fontId;
 
+  // MT-2D.7: payload v:2 — aggiunge sponsor_layout per posizione/scala normalizzate
   return {
-    v: 1,
+    v: 2,
     archetipo: selectedDesign,
     colori: {
       maglia_p: getColor("maglia", "primary").toLowerCase(),
@@ -1748,7 +1969,12 @@ function buildPayload() {
       font: fontId,
       colore: personalization.color.toLowerCase()
     },
-    sponsor: Boolean(sponsorImage && sponsorDataUrl)
+    sponsor: Boolean(sponsorImage && sponsorDataUrl),
+    sponsor_layout: {
+      x: sponsorLayout.x,
+      y: sponsorLayout.y,
+      scala: sponsorLayout.scala
+    }
   };
 }
 
@@ -1915,7 +2141,7 @@ function sendQuoteByMail() {
 document.getElementById("copy-quote").addEventListener("click", copyQuote);
 document.getElementById("send-quote").addEventListener("click", sendQuoteByMail);
 
-// ── Fine MT-2D.6 ────────────────────────────────────────────────────────────
+// ── Fine MT-2D.6 / MT-2D.7 ─────────────────────────────────────────────────
 
 applyQueryParameters();
 buildGallery();
