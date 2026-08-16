@@ -1343,8 +1343,13 @@ function renderGarment(garment) {
   var primary = getColor(garment, "primary");
   var secondary = getColor(garment, "secondary");
 
-  // D7-01 — Alpha edge bleed: clearRect esplicito prima di ogni ridisegno
-  // per azzerare pixel residui prima di composite operations successive.
+  // D7-01 FIX — Alpha edge erosion reale:
+  // 1. Disegna pattern su patternCanvas
+  // 2. Applica mask con destination-in su patternCanvas
+  // 3. Applica shading multiply su shadedCanvas (scope: solo il capo)
+  // 4. Rimask su shadedCanvas con scala leggermente ridotta (0.999x) per
+  //    erodere i pixel di bordo alpha 1-2px senza deformare il capo.
+
   patternCtx.globalCompositeOperation = "source-over";
   patternCtx.clearRect(0, 0, W, H);
   drawDesign(patternCtx, selectedDesign, bounds[garment], primary, secondary);
@@ -1352,7 +1357,7 @@ function renderGarment(garment) {
   patternCtx.globalCompositeOperation = "destination-in";
   patternCtx.drawImage(imgs["mask_" + garment], 0, 0, W, H);
 
-  // Pattern prima, shading fotografico sopra in multiply.
+  // Pattern + shading su shadedCanvas (scope: solo il capo, multiply confinato)
   shadedCtx.globalCompositeOperation = "source-over";
   shadedCtx.clearRect(0, 0, W, H);
   shadedCtx.drawImage(patternCanvas, 0, 0);
@@ -1360,10 +1365,19 @@ function renderGarment(garment) {
   shadedCtx.globalCompositeOperation = "multiply";
   shadedCtx.drawImage(imgs.base, 0, 0, W, H);
 
-  // D7-01 — destination-in rimask dopo multiply per confinare esattamente
-  // alla sagoma PNG, eliminando l'alone alpha 1-2px da antialiasing.
+  // Rimask finale con inset di 1px: scala 0.999x centrata per eliminare
+  // i pixel di bordo alpha semitrasparenti prodotti dall'antialiasing della mask PNG.
   shadedCtx.globalCompositeOperation = "destination-in";
+  shadedCtx.save();
+  var inset = 0.999;
+  var cx = W * 0.5;
+  var cy = H * 0.5;
+  shadedCtx.translate(cx, cy);
+  shadedCtx.scale(inset, inset);
+  shadedCtx.translate(-cx, -cy);
   shadedCtx.drawImage(imgs["mask_" + garment], 0, 0, W, H);
+  shadedCtx.restore();
+  shadedCtx.globalCompositeOperation = "source-over";
 
   ctx.drawImage(shadedCanvas, 0, 0);
 }
@@ -1450,22 +1464,26 @@ function drawFrontNumber(personalization) {
   personalizationCtx.fillText(personalization.number, x, y, maxWidth);
   personalizationCtx.restore();
 
-  // Clippa alla maschera maglia
+  // D7-04 FIX — Shading applicato SOLO al personalizationCanvas (layer separato),
+  // NON al ctx principale. Questo evita di re-scurire il kit già renderizzato.
+  // Pipeline: testo → multiply shading su personalizationCtx → mask maglia → composite su ctx.
+
+  // 1. Applica multiply shading SOLO sul personalizationCanvas (scope: solo il testo)
+  personalizationCtx.globalCompositeOperation = "multiply";
+  personalizationCtx.globalAlpha = 0.55;
+  personalizationCtx.drawImage(imgs.base, 0, 0, W, H);
+  personalizationCtx.globalAlpha = 1.0;
+  personalizationCtx.globalCompositeOperation = "source-over";
+
+  // 2. Clippa alla maschera maglia (destination-in su personalizationCanvas)
   personalizationCtx.globalCompositeOperation = "destination-in";
   personalizationCtx.drawImage(imgs.mask_maglia, 0, 0, W, H);
+  personalizationCtx.globalCompositeOperation = "source-over";
 
-  // D7-04 — Disegna il numero con globalAlpha ridotto per semitrasparenza (effetto stampa)
+  // 3. Composite personalizationCanvas sul ctx principale (non tocca il resto del kit)
   ctx.save();
   ctx.globalAlpha = 0.85;
   ctx.drawImage(personalizationCanvas, 0, 0);
-
-  // D7-04 — Sovrapponi lo shading in multiply per integrare il numero nelle pieghe
-  ctx.globalCompositeOperation = "multiply";
-  ctx.globalAlpha = 0.55;
-  ctx.drawImage(imgs.base, 0, 0, W, H);
-
-  // Torna a source-over per gli elementi successivi
-  ctx.globalCompositeOperation = "source-over";
   ctx.globalAlpha = 1.0;
   ctx.restore();
 }
@@ -1605,40 +1623,47 @@ function drawSponsor() {
     return;
   }
 
-  // D7-07 — Posizione e scala controllate dall'utente via sponsorLayout normalizzato [0,1].
-  // cx/cy = centro del logo in coordinate canvas, scala = frazione della larghezza maglia.
+  // D7-07 FIX — Posizione sicura con clamp basato sulle half-dimensions reali del logo.
+  // cx/cy = centro desiderato, poi clampato in modo che il logo stia INTERAMENTE
+  // nell'area petto della maglia.
+  var logoAspect = sourceWidth / sourceHeight;
+  var maxLogoW = box.w * sponsorLayout.scala;
+  var maxLogoH = box.h * sponsorLayout.scala;
+  if (logoAspect > 1) {
+    drawWidth = maxLogoW;
+    drawHeight = maxLogoW / logoAspect;
+  } else {
+    drawHeight = maxLogoH;
+    drawWidth = maxLogoH * logoAspect;
+  }
+
+  // Centro desiderato in coordinate canvas
   cx = box.x + box.w * sponsorLayout.x;
   cy = box.y + box.h * sponsorLayout.y;
 
-  var maxW = box.w * sponsorLayout.scala;
-  var maxH = box.h * sponsorLayout.scala * (sourceHeight / sourceWidth);
-  var scale = Math.min(maxW / sourceWidth, maxH / sourceHeight);
-  drawWidth = sourceWidth * scale;
-  drawHeight = sourceHeight * scale;
-  drawX = cx - drawWidth * 0.5;
-  drawY = cy - drawHeight * 0.5;
+  // Clamp: il logo deve stare interamente nel bounding box della maglia
+  drawX = Math.max(box.x, Math.min(box.x + box.w - drawWidth, cx - drawWidth * 0.5));
+  drawY = Math.max(box.y, Math.min(box.y + box.h - drawHeight, cy - drawHeight * 0.5));
 
-  // D7-06 — Fase 1: disegna il logo in source-over (colori originali)
+  // D7-06 FIX — Fase 1: disegna il logo su sponsorCanvas (source-over)
   sponsorCtx.globalCompositeOperation = "source-over";
   sponsorCtx.drawImage(sponsorImage, drawX, drawY, drawWidth, drawHeight);
 
-  // Clippa alla maschera maglia
+  // D7-06 FIX — Fase 2: shading multiply SOLO su sponsorCanvas (non sul ctx principale)
+  // Questo evita di re-scurire il kit già renderizzato sotto il logo.
+  sponsorCtx.globalCompositeOperation = "multiply";
+  sponsorCtx.globalAlpha = 0.4;
+  sponsorCtx.drawImage(imgs.base, 0, 0, W, H);
+  sponsorCtx.globalAlpha = 1.0;
+  sponsorCtx.globalCompositeOperation = "source-over";
+
+  // Fase 3: clippa alla maschera maglia su sponsorCanvas
   sponsorCtx.globalCompositeOperation = "destination-in";
   sponsorCtx.drawImage(imgs.mask_maglia, 0, 0, W, H);
+  sponsorCtx.globalCompositeOperation = "source-over";
 
-  // D7-06 — Fase 2: integra con le pieghe usando multiply con alpha ridotto.
-  // Disegna prima il logo con alpha piena, poi lo shading in multiply.
-  ctx.save();
+  // Fase 4: composite sponsorCanvas sul ctx principale (non tocca il resto del kit)
   ctx.drawImage(sponsorCanvas, 0, 0);
-
-  // Sovrapponi lo shading fotografico in multiply per dare profondità tessile
-  ctx.globalCompositeOperation = "multiply";
-  ctx.globalAlpha = 0.4;
-  ctx.drawImage(imgs.base, 0, 0, W, H);
-
-  ctx.globalCompositeOperation = "source-over";
-  ctx.globalAlpha = 1.0;
-  ctx.restore();
 
   window.__sponsorApplied = true;
 }
