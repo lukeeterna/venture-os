@@ -1,5 +1,8 @@
 # MT-3D.FOOTBALL — Convergenza produzione calcio
 
+> **ARCHITECTURE AUTHORITY — VINCOLANTE**  
+> Prima di qualunque modifica leggere integralmente `docs/judge/2026-08-16-sportswear-3d-reuse-architecture.md`. Quel documento decide donor, commit pin, moduli, decision tree delle superfici e sequenza di integrazione. Claude Code è writer/executor soltanto: non deve fare web research, library selection, redesign o sostituzione dei donor. In caso di conflitto, la reuse architecture prevale su qualunque formulazione di questo brief che lasci discrezionalità architetturale.
+
 Data: 2026-08-16
 Autore: GPT-5.6 Sol
 Base canonica: `08b97b1342c82049ca17945e00b6a3478dabb7b8`
@@ -76,7 +79,7 @@ Superfici minime calcio:
 - pantaloncino sinistro;
 - pantaloncino destro.
 
-Se il GLB non espone tutte le superfici come materiali distinti, CC deve ispezionare mesh/material names e implementare una mappatura deterministica object-space/UV o dichiarare quale superficie non è tecnicamente separabile. Non inventare PASS.
+Se il GLB non espone tutte le superfici come materiali distinti, applicare esclusivamente il decision tree PATH A/PATH B della reuse architecture. Non inventare una terza strategia e non inventare PASS.
 
 ### P0-4 — Colori e design
 Mantenere i 12 archetipi e le 3 zone già esistenti.
@@ -126,7 +129,7 @@ Integrare nel 3D la funzionalità già chiusa nel 2D:
 
 ### P0-9 — Self-contained deploy
 Eliminare la dipendenza runtime critica da CDN per Three.js/OrbitControls/GLTFLoader.
-Bundle/moduli locali versionati o altra soluzione self-contained zero-cost.
+Usare esclusivamente Three.js r160 ufficiale pinnato nella reuse architecture; nessuna library/version selection autonoma.
 Nessun nuovo SaaS.
 
 ## Verifica obbligatoria
@@ -158,6 +161,18 @@ Marker:
 - `THREE_RUNTIME_LOCAL=PASS`
 - `MOBILE_390=PASS`
 
+Reuse evidence aggiuntiva obbligatoria:
+- `DONOR_CUSTOMIZER3D_PIN=c9a9f4b41e10fd2a6cc8c71d8b2317d18adb0fce`
+- `DONOR_TSHIRT_RUNTIME=PASS`
+- `DONOR_LICENSE=MIT`
+- `KIT_SURFACE_PATH=A|B`
+- `THREE_R160_PIN=d04539a76736ff500cae883d6a38b3dd8643c548`
+- `CUSTOM_LAYER_ENGINE_SOURCE=Customizer3D`
+- `CUSTOM_DECAL_ALGORITHM=NO`
+- `REACT_INTRODUCED=NO`
+- `FABRIC_INTRODUCED=NO`
+- `UNLICENSED_CODE_COPIED=NO`
+
 Screenshot/evidence minime:
 - fronte 0°;
 - tre quarti;
@@ -175,16 +190,7 @@ Screenshot/evidence minime:
 - Cloudflare deploy finale.
 
 ## Ciclismo — vincolo architetturale
-Non implementarlo ora, ma il modello dati deve evitare nomi hardcoded che rendano impossibile il riuso.
-Separare dove ragionevole:
-- `sportAdapter`;
-- `garmentZones`;
-- `surfaces`;
-- `designs`;
-- `graphics[]`;
-- `personalization`.
-
-Dopo il calcio verde, il ciclismo deve essere un adapter/configurazione dello stesso motore 3D, non una seconda codebase duplicata.
+Non implementarlo ora. La reuse architecture ha già fissato il pattern product-adapter: dopo football verde si aggiunge `cyclingAdapter` sullo stesso engine/layer system, con nuovo GLB/zone/surfaces. Nessuna seconda codebase.
 
 ## Gate
 NON dichiarare FOOTBALL_READY finché tutti i P0 non sono PASS o i soli `TECH_LIMIT` ammessi sono quelli sulle sub-superfici non separabili della mesh.
