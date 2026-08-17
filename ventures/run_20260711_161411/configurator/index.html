@@ -39,24 +39,19 @@
 
     <aside class="panel">
       <section>
-        <header class="section-head">
-          <h2>Design</h2><span>12 modelli</span>
-        </header>
+        <header class="section-head"><h2>Design</h2><span>12 modelli</span></header>
         <div id="design-gallery" class="design-grid"></div>
       </section>
 
       <section>
-        <header class="section-head">
-          <h2>Colori</h2><span>5 parti</span>
-        </header>
+        <header class="section-head"><h2>Colori</h2><span>5 parti</span></header>
         <p class="help">Corpo, maniche, colletto, pantaloncini e calze sono regolabili separatamente.</p>
         <div id="part-colors"></div>
       </section>
 
       <section>
-        <header class="section-head">
-          <h2>Nome e numero</h2><span>retro reale</span>
-        </header>
+        <header class="section-head"><h2>Nome e numero</h2><span>retro 3D</span></header>
+        <p class="help">Il nome viene applicato sopra il numero sul dorso. Il numero frontale è opzionale e parte disattivato.</p>
         <div class="fields two">
           <label>Nome<input id="player-name" type="text" maxlength="18" value="ROSSI" autocomplete="off"></label>
           <label>Numero<input id="player-number" type="text" maxlength="2" value="10" inputmode="numeric" autocomplete="off"></label>
@@ -64,25 +59,14 @@
           <label>Colore<input id="print-color" type="color" value="#ffffff"></label>
         </div>
         <label class="check"><input id="front-number-toggle" type="checkbox"> Mostra anche il numero sul fronte</label>
-        <div class="subcard">
-          <h3>Nome — retro</h3>
-          <div id="back-name-controls" class="sliders"></div>
-        </div>
-        <div class="subcard">
-          <h3>Numero — retro</h3>
-          <div id="back-number-controls" class="sliders"></div>
-        </div>
-        <div id="front-number-card" class="subcard" hidden>
-          <h3>Numero — fronte</h3>
-          <div id="front-number-controls" class="sliders"></div>
-        </div>
+        <div class="subcard"><h3>Nome — retro</h3><div id="back-name-controls" class="sliders"></div></div>
+        <div class="subcard"><h3>Numero — retro</h3><div id="back-number-controls" class="sliders"></div></div>
+        <div id="front-number-card" class="subcard" hidden><h3>Numero — fronte</h3><div id="front-number-controls" class="sliders"></div></div>
       </section>
 
       <section>
-        <header class="section-head">
-          <h2>Sponsor e patch</h2><span id="graphics-count">0 / 12</span>
-        </header>
-        <p class="help">Ogni elemento può essere posizionato, scalato e ruotato su una superficie diversa.</p>
+        <header class="section-head"><h2>Sponsor, patch e badge</h2><span id="graphics-count">0 / 12</span></header>
+        <p class="help">Aggiungi più elementi e scegli superficie, posizione, scala, rotazione e opacità. Le immagini restano solo in RAM.</p>
         <div id="graphics-list"></div>
         <div class="add-row">
           <button id="add-sponsor" type="button">+ Sponsor</button>
@@ -97,8 +81,8 @@
         <div id="summary" class="summary"></div>
         <textarea id="payload" readonly aria-label="Payload configurazione"></textarea>
         <div class="actions">
-          <button id="copy-payload" type="button">Copia codice</button>
-          <button id="send-email" type="button">Invia richiesta</button>
+          <button id="copy-payload" type="button">Copia codice preventivo</button>
+          <button id="send-email" type="button">Invia richiesta preventivo</button>
         </div>
         <p id="output-message" class="message" role="status" aria-live="polite"></p>
       </section>
