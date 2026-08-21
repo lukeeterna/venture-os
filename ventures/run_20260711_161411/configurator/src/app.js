@@ -851,22 +851,30 @@ function updateOutput() {
 async function copyPayload() {
   const original = "Copia codice preventivo";
   const text = dom.payload.value;
-  try {
-    if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(text);
-    else {
-      dom.payload.focus();
-      dom.payload.select();
-      if (!document.execCommand("copy")) throw new Error("copy fallita");
+  let copied = false;
+  if (navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(text);
+      copied = true;
+    } catch (error) {
+      console.warn("Clipboard API non disponibile, provo fallback", error);
     }
-    dom["copy-payload"].textContent = "Copiato ✓";
-    setMessage(dom["output-message"], "Codice configurazione copiato.", "ok");
-    clearTimeout(copyTimer);
-    copyTimer = setTimeout(() => { dom["copy-payload"].textContent = original; }, 2000);
-  } catch (error) {
+  }
+  if (!copied) {
+    dom.payload.focus();
+    dom.payload.select();
+    try { copied = document.execCommand("copy") === true; } catch (error) { copied = false; }
+  }
+  if (!copied) {
     dom.payload.focus();
     dom.payload.select();
     setMessage(dom["output-message"], "Copia automatica non riuscita: il codice resta selezionato.", "error");
+    return;
   }
+  dom["copy-payload"].textContent = "Copiato ✓";
+  setMessage(dom["output-message"], "Codice configurazione copiato.", "ok");
+  clearTimeout(copyTimer);
+  copyTimer = setTimeout(() => { dom["copy-payload"].textContent = original; }, 2000);
 }
 
 function sendEmail() {
@@ -890,7 +898,7 @@ function wireUi() {
   buildFontOptions();
   dom["player-name"].addEventListener("input", () => { const value = cleanText(dom["player-name"].value, 24); dom["player-name"].value = value; state.personalization.name = value; rebuildDecals(); });
   dom["player-number"].addEventListener("input", () => { const value = cleanText(dom["player-number"].value, 6); dom["player-number"].value = value; state.personalization.number = value; rebuildDecals(); });
-  dom["player-font"].addEventListener("change", () => { state.personalization.font = dom["player-font"].value; rebuildDecals(); });
+  dom["player-font"].addEventListener("change", () => { state.personalization.font = dom["player-font"].value; state.personalization.customFontPresent = state.personalization.font === "custom-upload"; rebuildDecals(); });
   dom["print-color"].addEventListener("input", () => { state.personalization.color = safeColor(dom["print-color"].value); rebuildDecals(); });
   dom["custom-font-file"].addEventListener("change", () => loadCustomFont(dom["custom-font-file"].files?.[0]));
   dom["front-number-toggle"].addEventListener("change", () => { state.personalization.frontNumberEnabled = dom["front-number-toggle"].checked; dom["front-number-card"].hidden = !state.personalization.frontNumberEnabled; rebuildDecals(); });
