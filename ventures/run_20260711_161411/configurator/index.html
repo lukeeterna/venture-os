@@ -7,108 +7,125 @@
   <link rel="stylesheet" href="./src/style.css">
 </head>
 <body>
-<header class="topbar">
-  <div>
-    <h1>Configuratore Kit 3D</h1>
-    <p>[ATTIVITA] · calcio · personalizzazione 360°</p>
-  </div>
-  <span id="view-badge" class="badge">Fronte</span>
-</header>
-
-<main class="layout">
-  <section class="viewer-card" aria-label="Anteprima 3D">
-    <div id="viewer-shell" class="viewer-shell">
-      <canvas id="scene-canvas" aria-label="Divisa 3D ruotabile"></canvas>
-      <div id="loading-overlay" class="loading">
-        <div class="spinner" aria-hidden="true"></div>
-        <strong id="loading-title">Preparazione divisa 3D</strong>
-        <span id="loading-copy">Costruzione modello parametrico.</span>
-      </div>
-      <div class="viewbar" aria-label="Viste rapide">
-        <button type="button" data-view="left">Sinistra</button>
-        <button type="button" data-view="front" class="active">Fronte</button>
-        <button type="button" data-view="back">Retro</button>
-        <button type="button" data-view="right">Destra</button>
-      </div>
+  <header class="topbar">
+    <div>
+      <h1>Configuratore Kit 3D</h1>
+      <p>[ATTIVITA] · calcio · divisa 3D personalizzabile</p>
     </div>
-    <div class="viewer-footer">
-      <span><i id="status-dot"></i><span id="viewer-status">Inizializzazione</span></span>
-      <span>Trascina per ruotare · rotella/pizzica per zoomare</span>
-    </div>
-  </section>
+    <span id="view-badge" class="badge">Fronte</span>
+  </header>
 
-  <aside class="panel">
-    <section>
-      <header class="section-head"><h2>Colori</h2><span>5 parti indipendenti</span></header>
-      <p class="help">Corpo, maniche, colletto, pantaloncini e calze sono colorabili separatamente.</p>
-      <div id="part-colors"></div>
+  <main class="layout">
+    <section class="viewer-card" aria-label="Anteprima divisa 3D">
+      <div id="viewer-shell" class="viewer-shell">
+        <canvas id="scene-canvas" aria-label="Divisa 3D ruotabile"></canvas>
+        <div id="loading-overlay" class="loading">
+          <div class="spinner" aria-hidden="true"></div>
+          <strong id="loading-title">Caricamento divisa 3D</strong>
+          <span id="loading-copy">Caricamento delle mesh reali e dei materiali.</span>
+        </div>
+        <div class="viewbar" aria-label="Viste rapide">
+          <button type="button" data-view="left">Sinistra</button>
+          <button type="button" data-view="front" class="active">Fronte</button>
+          <button type="button" data-view="back">Retro</button>
+          <button type="button" data-view="right">Destra</button>
+        </div>
+      </div>
+      <div class="viewer-footer">
+        <span><i id="status-dot"></i><span id="viewer-status">Inizializzazione</span></span>
+        <span>Trascina per ruotare · rotella/pizzica per zoomare</span>
+      </div>
     </section>
 
-    <section>
-      <header class="section-head"><h2>Fantasie personalizzate</h2><span>PNG / JPG / WebP</span></header>
-      <p class="help"><strong>Formato consigliato:</strong> PNG quadrato 1024×1024, seamless/tileable. Funzionano anche JPG e WebP. Il file resta solo nel browser.</p>
-      <div class="fields two">
-        <label>Parte<select id="pattern-part"></select></label>
-        <label>File<input id="pattern-file" type="file" accept="image/png,image/jpeg,image/webp"></label>
-      </div>
-      <div class="pattern-preview-row">
-        <div id="pattern-thumb" class="thumb">Nessuna fantasia</div>
-        <button id="pattern-clear" type="button" class="secondary">Rimuovi fantasia</button>
-      </div>
-      <div id="pattern-controls" class="sliders"></div>
-      <p id="pattern-message" class="message" aria-live="polite"></p>
-    </section>
+    <aside class="panel">
+      <section>
+        <header class="section-head"><h2>Colori divisa</h2><span>3 parti</span></header>
+        <p class="help">La vista iniziale riproduce il riferimento: maglia azzurro chiaro e pantaloncini bianchi.</p>
+        <div class="color-grid">
+          <label>Maglia<input id="shirt-color" type="color" value="#9bbcf0"></label>
+          <label>Pantaloncini<input id="shorts-color" type="color" value="#ffffff"></label>
+          <label>Calze<input id="socks-color" type="color" value="#9bbcf0"></label>
+        </div>
+        <label class="check"><input id="show-socks" type="checkbox"> Mostra anche le calze nel kit</label>
+      </section>
 
-    <section>
-      <header class="section-head"><h2>Nome e numero</h2><span>retro + font personalizzato</span></header>
-      <div class="fields two">
-        <label>Nome / testo<input id="player-name" type="text" maxlength="24" value="ROSSI" autocomplete="off"></label>
-        <label>Numero / caratteri<input id="player-number" type="text" maxlength="6" value="10" autocomplete="off"></label>
-        <label>Font<select id="player-font"></select></label>
-        <label>Colore<input id="print-color" type="color" value="#ffffff"></label>
-        <label class="wide">Carica font (.ttf/.otf/.woff/.woff2)<input id="custom-font-file" type="file" accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2"></label>
-      </div>
-      <p id="font-message" class="message"></p>
-      <label class="check"><input id="front-number-toggle" type="checkbox"> Mostra anche numero/caratteri sul fronte</label>
-      <div class="subcard"><h3>Nome — retro</h3><div id="back-name-controls" class="sliders"></div></div>
-      <div class="subcard"><h3>Numero / caratteri — retro</h3><div id="back-number-controls" class="sliders"></div></div>
-      <div id="front-number-card" class="subcard" hidden><h3>Numero / caratteri — fronte</h3><div id="front-number-controls" class="sliders"></div></div>
-    </section>
+      <section>
+        <header class="section-head"><h2>Fantasia personalizzata</h2><span>file universale</span></header>
+        <p class="help"><strong>Consigliato:</strong> PNG 1024×1024 o 2048×2048, seamless/tileable. Accettati anche JPG e WebP.</p>
+        <div class="fields two">
+          <label>Applica a
+            <select id="pattern-part">
+              <option value="shirt">Maglia</option>
+              <option value="shorts">Pantaloncini</option>
+              <option value="socks">Calze</option>
+            </select>
+          </label>
+          <label>File fantasia<input id="pattern-file" type="file" accept="image/png,image/jpeg,image/webp"></label>
+        </div>
+        <div class="sliders pattern-sliders">
+          <label>Ripetizione X <output id="pattern-repeat-x-out">1.0</output><input id="pattern-repeat-x" type="range" min="0.5" max="8" step="0.1" value="1"></label>
+          <label>Ripetizione Y <output id="pattern-repeat-y-out">1.0</output><input id="pattern-repeat-y" type="range" min="0.5" max="8" step="0.1" value="1"></label>
+          <label>Rotazione <output id="pattern-rotation-out">0°</output><input id="pattern-rotation" type="range" min="-180" max="180" step="1" value="0"></label>
+          <label>Offset X <output id="pattern-offset-x-out">0.00</output><input id="pattern-offset-x" type="range" min="-1" max="1" step="0.01" value="0"></label>
+          <label>Offset Y <output id="pattern-offset-y-out">0.00</output><input id="pattern-offset-y" type="range" min="-1" max="1" step="0.01" value="0"></label>
+        </div>
+        <div class="inline-actions"><button id="clear-pattern" type="button">Rimuovi fantasia</button></div>
+        <p id="pattern-message" class="message" aria-live="polite"></p>
+      </section>
 
-    <section>
-      <header class="section-head"><h2>Loghi, sponsor e patch</h2><span id="graphics-count">0 / 20</span></header>
-      <p class="help">PNG trasparente consigliato. Ogni elemento può stare su fronte, retro, maniche, pantaloncini o calze con posizione, scala, rotazione e opacità indipendenti.</p>
-      <div id="graphics-list"></div>
-      <div class="add-row">
-        <button id="add-logo" type="button">+ Logo</button>
-        <button id="add-sponsor" type="button">+ Sponsor</button>
-        <button id="add-patch" type="button">+ Patch</button>
-        <button id="add-badge" type="button">+ Badge</button>
-      </div>
-      <p id="graphics-message" class="message" aria-live="polite"></p>
-    </section>
+      <section>
+        <header class="section-head"><h2>Nome e numero</h2><span>retro reale</span></header>
+        <p class="help">Nome sopra il numero sul retro. Entrambi accettano testo e caratteri; il numero frontale è opzionale.</p>
+        <div class="fields two">
+          <label>Nome<input id="player-name" type="text" maxlength="24" value="ROSSI" autocomplete="off"></label>
+          <label>Numero / caratteri<input id="player-number" type="text" maxlength="6" value="10" autocomplete="off"></label>
+          <label>Font<select id="player-font"></select></label>
+          <label>Colore<input id="print-color" type="color" value="#ffffff"></label>
+        </div>
+        <div class="fields two custom-font-row">
+          <label>Font personale<input id="custom-font-file" type="file" accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2"></label>
+          <span id="custom-font-status" class="file-status">Nessun font personale</span>
+        </div>
+        <label class="check"><input id="front-number-toggle" type="checkbox"> Mostra anche numero/caratteri sul fronte</label>
+        <div class="subcard"><h3>Nome — retro</h3><div id="back-name-controls" class="sliders"></div></div>
+        <div class="subcard"><h3>Numero — retro</h3><div id="back-number-controls" class="sliders"></div></div>
+        <div id="front-number-card" class="subcard" hidden><h3>Numero — fronte</h3><div id="front-number-controls" class="sliders"></div></div>
+      </section>
 
-    <section>
-      <header class="section-head"><h2>Riepilogo e richiesta preventivo</h2></header>
-      <div id="summary" class="summary"></div>
-      <textarea id="payload" readonly aria-label="Payload configurazione"></textarea>
-      <div class="actions">
-        <button id="copy-payload" type="button">Copia codice preventivo</button>
-        <button id="send-email" type="button">Invia richiesta preventivo</button>
-      </div>
-      <p id="output-message" class="message" role="status" aria-live="polite"></p>
-    </section>
-  </aside>
-</main>
+      <section>
+        <header class="section-head"><h2>Loghi, sponsor e patch</h2><span id="graphics-count">0 / 20</span></header>
+        <p class="help">PNG trasparente consigliato. Ogni elemento può essere spostato, scalato e ruotato su fronte, retro, maniche, pantaloncini o calze.</p>
+        <div id="graphics-list"></div>
+        <div class="add-row">
+          <button id="add-logo" type="button">+ Logo</button>
+          <button id="add-sponsor" type="button">+ Sponsor</button>
+          <button id="add-patch" type="button">+ Patch</button>
+          <button id="add-badge" type="button">+ Badge</button>
+        </div>
+        <p id="graphics-message" class="message" aria-live="polite"></p>
+      </section>
 
-<script type="importmap">
-{
-  "imports": {
-    "three": "./vendor/three-r160/build/three.module.js",
-    "three/addons/": "./vendor/three-r160/examples/jsm/"
+      <section>
+        <header class="section-head"><h2>Riepilogo e richiesta preventivo</h2></header>
+        <div id="summary" class="summary"></div>
+        <textarea id="payload" readonly aria-label="Payload configurazione"></textarea>
+        <div class="actions">
+          <button id="copy-payload" type="button">Copia codice</button>
+          <button id="send-email" type="button">Invia richiesta</button>
+        </div>
+        <p id="output-message" class="message" role="status" aria-live="polite"></p>
+      </section>
+    </aside>
+  </main>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "./vendor/three-r160/build/three.module.js",
+      "three/addons/": "./vendor/three-r160/examples/jsm/"
+    }
   }
-}
-</script>
-<script type="module" src="./src/app.js"></script>
+  </script>
+  <script type="module" src="./src/app.js"></script>
 </body>
 </html>
