@@ -1,0 +1,121 @@
+{
+  "football-shirt.glb": {
+    "generator": "Khronos glTF Blender I/O v1.8.19",
+    "materials": [
+      "lambert1"
+    ],
+    "meshes": [
+      {
+        "index": 0,
+        "name": "Mesh",
+        "primitives": [
+          {
+            "material": 0,
+            "max": [
+              0.2742999494075775,
+              0.26103538274765015,
+              0.14407110214233398
+            ],
+            "min": [
+              -0.27585458755493164,
+              -0.35195234417915344,
+              -0.12488541007041931
+            ],
+            "position_accessor": 0,
+            "primitive": 0
+          }
+        ]
+      }
+    ],
+    "nodes": [
+      {
+        "mesh": 0,
+        "name": "T_Shirt_male",
+        "rotation": null,
+        "scale": null,
+        "translation": null
+      }
+    ]
+  },
+  "football-shorts.glb": {
+    "generator": "Khronos glTF Blender I/O v1.7.33",
+    "materials": [
+      "male_shorts"
+    ],
+    "meshes": [
+      {
+        "index": 0,
+        "name": "Body (merged).baked.008",
+        "primitives": [
+          {
+            "material": 0,
+            "max": [
+              0.16595734655857086,
+              0.26463741064071655,
+              0.1212034747004509
+            ],
+            "min": [
+              -0.1659596711397171,
+              -0.3204662799835205,
+              -0.11833896487951279
+            ],
+            "position_accessor": 0,
+            "primitive": 0
+          }
+        ]
+      }
+    ],
+    "nodes": [
+      {
+        "mesh": 0,
+        "name": "male_shorts",
+        "rotation": [
+          0,
+          -1,
+          0,
+          4.371138828673793e-08
+        ],
+        "scale": null,
+        "translation": null
+      }
+    ]
+  },
+  "football-socks.glb": {
+    "generator": "Khronos glTF Blender I/O v1.6.16",
+    "materials": [
+      "Materiale"
+    ],
+    "meshes": [
+      {
+        "index": 0,
+        "name": "Body (merged).baked.001",
+        "primitives": [
+          {
+            "material": 0,
+            "max": [
+              0.14813175797462463,
+              0.3947354853153229,
+              0.163142591714859
+            ],
+            "min": [
+              -0.14813175797462463,
+              -6.28167811100866e-08,
+              -0.11212839186191559
+            ],
+            "position_accessor": 0,
+            "primitive": 0
+          }
+        ]
+      }
+    ],
+    "nodes": [
+      {
+        "mesh": 0,
+        "name": "Body.001",
+        "rotation": null,
+        "scale": null,
+        "translation": null
+      }
+    ]
+  }
+}
