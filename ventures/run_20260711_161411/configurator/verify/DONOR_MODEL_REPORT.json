@@ -1,4 +1,136 @@
 {
+  "football-shirt-baked2.glb": {
+    "generator": "Khronos glTF Blender I/O v3.2.40",
+    "materials": [
+      "lambert1"
+    ],
+    "meshes": [
+      {
+        "index": 0,
+        "name": "Mesh",
+        "primitives": [
+          {
+            "material": 0,
+            "max": [
+              -0.1447134166955948,
+              0.13886281847953796,
+              0.05741079896688461
+            ],
+            "min": [
+              -0.6947416663169861,
+              -0.13010403513908386,
+              -0.55552077293396
+            ],
+            "position_accessor": 0,
+            "primitive": 0
+          }
+        ]
+      }
+    ],
+    "nodes": [
+      {
+        "mesh": 0,
+        "name": "T_Shirt_male",
+        "rotation": [
+          0.7071068286895752,
+          0,
+          0,
+          0.7071067094802856
+        ],
+        "scale": null,
+        "translation": [
+          0.41923636198043823,
+          0,
+          0
+        ]
+      }
+    ]
+  },
+  "football-shirt-lower2.glb": {
+    "generator": "Khronos glTF Blender I/O v3.2.40",
+    "materials": [
+      "lambert1",
+      "Material.001"
+    ],
+    "meshes": [
+      {
+        "index": 0,
+        "name": "Mesh",
+        "primitives": [
+          {
+            "material": 0,
+            "max": [
+              -0.14326167106628418,
+              0.13935163617134094,
+              0.05756649374961853
+            ],
+            "min": [
+              -0.695993959903717,
+              -0.1304769366979599,
+              -0.5558814406394958
+            ],
+            "position_accessor": 0,
+            "primitive": 0
+          }
+        ]
+      },
+      {
+        "index": 1,
+        "name": "Plane",
+        "primitives": [
+          {
+            "material": 1,
+            "max": [
+              1.4207992553710938,
+              0,
+              1.4207992553710938
+            ],
+            "min": [
+              -1.4207992553710938,
+              0,
+              -1.4207992553710938
+            ],
+            "position_accessor": 4,
+            "primitive": 0
+          }
+        ]
+      }
+    ],
+    "nodes": [
+      {
+        "mesh": 0,
+        "name": "T_Shirt_male",
+        "rotation": [
+          0.7071068286895752,
+          0,
+          0,
+          0.7071067094802856
+        ],
+        "scale": null,
+        "translation": [
+          0.41923636198043823,
+          0,
+          0
+        ]
+      },
+      {
+        "mesh": 1,
+        "name": "Plane",
+        "rotation": [
+          0.7071068286895752,
+          0,
+          0,
+          0.7071068286895752
+        ],
+        "scale": null,
+        "translation": [
+          0,
+          0,
+          -0.1323043256998062
+        ]
+      }
+    ]
+  },
   "football-shirt.glb": {
     "generator": "Khronos glTF Blender I/O v1.8.19",
     "materials": [
