@@ -18,6 +18,8 @@ Verifiche eseguite sul sorgente prima della pubblicazione:
 - superfici front/back/sleeves/shorts/socks presenti → PASS
 - tipi grafici logo/sponsor/patch/badge presenti → PASS
 - payload allowlist non contiene `objectUrl`, `dataUrl`, filename, Base64 o bytes → PASS
+- Clipboard API con fallback `execCommand` anche su rejection → PASS
+- `custom_font_present` segue il font realmente selezionato → PASS
 
 Marker:
 
@@ -30,6 +32,8 @@ CUSTOM_PATTERN_UPLOAD=PASS
 CUSTOM_FONT_UPLOAD=PASS
 MULTI_GRAPHICS_SURFACES=PASS
 PAYLOAD_PRIVACY=PASS
+COPY_FALLBACK_REJECTION=PASS
+CUSTOM_FONT_PAYLOAD_STATE=PASS
 NODE_CHECK=PASS
 ```
 
