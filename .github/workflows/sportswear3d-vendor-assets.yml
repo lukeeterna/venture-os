@@ -1,0 +1,90 @@
+name: Sportswear3D Vendor Assets
+
+on:
+  push:
+    branches:
+      - sol/mt3d-football-production-20260816
+    paths:
+      - .github/workflows/sportswear3d-vendor-assets.yml
+
+permissions:
+  contents: write
+
+jobs:
+  vendor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: sol/mt3d-football-production-20260816
+          fetch-depth: 0
+
+      - name: Download pinned MIT garment assets and Three.js loaders
+        shell: bash
+        run: |
+          set -euo pipefail
+          ROOT="ventures/run_20260711_161411/configurator"
+          ASSETS="$ROOT/assets/vendor"
+          THREE="$ROOT/vendor/three-r160/examples/jsm"
+          mkdir -p "$ASSETS" "$THREE/loaders" "$THREE/utils" "$THREE/environments"
+
+          curl --fail --location --retry 3 \
+            "https://raw.githubusercontent.com/pmndrs/examples/be95c387abb15d41d388bca4e2d1568690935a5c/examples/t-shirt-configurator/src/shirt_baked_collapsed.glb" \
+            -o "$ASSETS/football-shirt.glb"
+
+          curl --fail --location --retry 3 \
+            "https://raw.githubusercontent.com/madjin/asset-pallet/7243319029382f5799f03162cc6bf10795f9951d/models/shorts.glb" \
+            -o "$ASSETS/football-shorts.glb"
+
+          curl --fail --location --retry 3 \
+            "https://raw.githubusercontent.com/madjin/asset-pallet/7243319029382f5799f03162cc6bf10795f9951d/models/socks.glb" \
+            -o "$ASSETS/football-socks.glb"
+
+          curl --fail --location --retry 3 \
+            "https://raw.githubusercontent.com/mrdoob/three.js/d04539a76736ff500cae883d6a38b3dd8643c548/examples/jsm/loaders/GLTFLoader.js" \
+            -o "$THREE/loaders/GLTFLoader.js"
+
+          curl --fail --location --retry 3 \
+            "https://raw.githubusercontent.com/mrdoob/three.js/d04539a76736ff500cae883d6a38b3dd8643c548/examples/jsm/utils/BufferGeometryUtils.js" \
+            -o "$THREE/utils/BufferGeometryUtils.js"
+
+          curl --fail --location --retry 3 \
+            "https://raw.githubusercontent.com/mrdoob/three.js/d04539a76736ff500cae883d6a38b3dd8643c548/examples/jsm/environments/RoomEnvironment.js" \
+            -o "$THREE/environments/RoomEnvironment.js"
+
+      - name: Verify upstream Git blob identities
+        shell: bash
+        run: |
+          set -euo pipefail
+          ROOT="ventures/run_20260711_161411/configurator/assets/vendor"
+          check_blob() {
+            local file="$1" expected="$2"
+            actual="$(git hash-object "$file")"
+            printf '%s  %s\n' "$actual" "$file"
+            test "$actual" = "$expected"
+          }
+          check_blob "$ROOT/football-shirt.glb"  9c7609eddfd597a70cb708f96bc19841766b3488
+          check_blob "$ROOT/football-shorts.glb" 3222095f45778676f967c08bf1962af5306e111b
+          check_blob "$ROOT/football-socks.glb"  44667afdfc03d73aad1b556899d41f4af8a6f2e3
+          echo "DONOR_BINARY_BLOBS=PASS"
+
+      - name: Commit exact vendored files
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "sportswear3d-ci"
+          git config user.email "sportswear3d-ci@users.noreply.github.com"
+          git add -- \
+            ventures/run_20260711_161411/configurator/assets/vendor/football-shirt.glb \
+            ventures/run_20260711_161411/configurator/assets/vendor/football-shorts.glb \
+            ventures/run_20260711_161411/configurator/assets/vendor/football-socks.glb \
+            ventures/run_20260711_161411/configurator/vendor/three-r160/examples/jsm/loaders/GLTFLoader.js \
+            ventures/run_20260711_161411/configurator/vendor/three-r160/examples/jsm/utils/BufferGeometryUtils.js \
+            ventures/run_20260711_161411/configurator/vendor/three-r160/examples/jsm/environments/RoomEnvironment.js
+          if git diff --cached --quiet; then
+            echo "No vendor changes required"
+            exit 0
+          fi
+          git commit -m "sportswear3d: vendor verified MIT garment assets"
+          git push origin HEAD:sol/mt3d-football-production-20260816
