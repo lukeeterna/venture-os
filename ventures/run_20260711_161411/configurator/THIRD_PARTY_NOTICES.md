@@ -17,8 +17,6 @@ The complete MIT license text is included at:
 Vendored runtime used by the football configurator:
 - `build/three.module.js`
 - `examples/jsm/controls/OrbitControls.js`
-- `examples/jsm/loaders/GLTFLoader.js`
-- `examples/jsm/utils/BufferGeometryUtils.js`
 - `examples/jsm/geometries/DecalGeometry.js`
 
 `DecalGeometry.js` is the official Three.js r160 implementation from the pinned upstream commit.
