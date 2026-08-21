@@ -1,0 +1,88 @@
+const { chromium } = require('playwright');
+const fs = require('node:fs');
+const path = require('node:path');
+
+const BASE = process.env.SPORTSWEAR_URL || 'http://127.0.0.1:8282/';
+const ROOT = path.resolve(__dirname, '..');
+const OUT = path.join(__dirname, 'visual-output');
+const FIX = path.join(__dirname, 'fixtures');
+fs.mkdirSync(OUT, { recursive: true });
+
+function fail(message) { throw new Error(message); }
+
+(async () => {
+  const browser = await chromium.launch({
+    headless: true,
+    args: ['--enable-webgl', '--ignore-gpu-blocklist', '--use-angle=swiftshader', '--disable-dev-shm-usage']
+  });
+  const page = await browser.newPage({ viewport: { width: 1440, height: 1000 }, deviceScaleFactor: 1 });
+  const errors = [];
+  page.on('pageerror', (err) => errors.push(`pageerror: ${err.stack || err.message}`));
+  page.on('console', (msg) => { if (msg.type() === 'error') errors.push(`console.error: ${msg.text()}`); });
+
+  const response = await page.goto(BASE, { waitUntil: 'networkidle', timeout: 60000 });
+  if (!response || !response.ok()) fail(`HTTP ${response?.status()} loading ${BASE}`);
+
+  await page.waitForFunction(() => window.__sportswear3d?.ready === true, null, { timeout: 45000 });
+  await page.waitForTimeout(900);
+
+  const webgl = await page.evaluate(() => {
+    const c = document.createElement('canvas');
+    return Boolean(c.getContext('webgl2') || c.getContext('webgl'));
+  });
+  if (!webgl) fail('WebGL unavailable in browser test');
+
+  let diagnostics = await page.evaluate(() => window.__sportswear3d.diagnostics());
+  if (diagnostics.meshes.shirt < 1 || diagnostics.meshes.shorts < 1) fail(`Missing real garment meshes: ${JSON.stringify(diagnostics.meshes)}`);
+  if (diagnostics.decals < 2) fail(`Back name/number decals not projected: ${diagnostics.decals}`);
+  if (diagnostics.donor_assets.shirt.blob !== '9c7609eddfd597a70cb708f96bc19841766b3488') fail('Unexpected shirt donor identity');
+
+  const viewer = page.locator('#viewer-shell');
+  await viewer.screenshot({ path: path.join(OUT, '01-front-reference.png') });
+
+  await page.evaluate(() => window.__sportswear3d.setView('back'));
+  await page.waitForTimeout(900);
+  await viewer.screenshot({ path: path.join(OUT, '02-back-name-number.png') });
+
+  await page.locator('#player-number').fill('A10');
+  await page.locator('#player-number').dispatchEvent('input');
+  await page.waitForTimeout(350);
+  const numberValue = await page.evaluate(() => window.__payload3d.personalization.number);
+  if (numberValue !== 'A10') fail(`Free-text number/characters failed: ${numberValue}`);
+
+  await page.evaluate(() => window.__sportswear3d.setView('front'));
+  await page.waitForTimeout(800);
+  await page.locator('#pattern-file').setInputFiles(path.join(FIX, 'ci-pattern.png'));
+  await page.waitForTimeout(900);
+  const patternPresent = await page.evaluate(() => window.__payload3d.patterns.shirt.present);
+  if (!patternPresent) fail('Pattern upload did not reach payload/material state');
+  await viewer.screenshot({ path: path.join(OUT, '03-pattern-upload.png') });
+
+  await page.locator('#clear-pattern').click();
+  await page.locator('#add-patch').click();
+  const card = page.locator('[data-graphic]').last();
+  await card.locator('input[data-field="file"]').setInputFiles(path.join(FIX, 'ci-logo.png'));
+  await page.waitForTimeout(900);
+  const graphicPresent = await page.evaluate(() => window.__payload3d.graphics.some((g) => g.type === 'patch' && g.image_present));
+  if (!graphicPresent) fail('Patch upload did not reach payload/decal state');
+  await page.evaluate(() => window.__sportswear3d.setView('right'));
+  await page.waitForTimeout(900);
+  await viewer.screenshot({ path: path.join(OUT, '04-patch-right-sleeve.png') });
+
+  diagnostics = await page.evaluate(() => window.__sportswear3d.diagnostics());
+  fs.writeFileSync(path.join(OUT, 'runtime-diagnostics.json'), JSON.stringify({ diagnostics, errors }, null, 2));
+  if (errors.length) fail(errors.join('\n'));
+
+  console.log('SPORTSWEAR_REAL_BROWSER=PASS');
+  console.log(`THREE_REVISION=${diagnostics.three_revision}`);
+  console.log(`REAL_MESHES=${JSON.stringify(diagnostics.meshes)}`);
+  console.log(`DECALS=${diagnostics.decals}`);
+  console.log('PATTERN_UPLOAD=PASS');
+  console.log('PATCH_UPLOAD=PASS');
+  console.log('FREE_TEXT_NUMBER=PASS');
+  console.log('ROTATION_FRONT_BACK_RIGHT=PASS');
+  await browser.close();
+})().catch(async (error) => {
+  console.error(error.stack || error);
+  process.exitCode = 1;
+});
