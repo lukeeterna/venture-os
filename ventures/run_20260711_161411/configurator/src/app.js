@@ -1,951 +1,926 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { DecalGeometry } from "three/addons/geometries/DecalGeometry.js";
+import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+
+const ASSETS = Object.freeze({
+  shirt: "./assets/vendor/football-shirt.glb",
+  shorts: "./assets/vendor/football-shorts.glb",
+  socks: "./assets/vendor/football-socks.glb"
+});
+
+const DONORS = Object.freeze({
+  shirt: {
+    repository: "pmndrs/examples",
+    commit: "be95c387abb15d41d388bca4e2d1568690935a5c",
+    blob: "9c7609eddfd597a70cb708f96bc19841766b3488",
+    license: "MIT"
+  },
+  shortsAndSocks: {
+    repository: "madjin/asset-pallet",
+    commit: "7243319029382f5799f03162cc6bf10795f9951d",
+    shortsBlob: "3222095f45778676f967c08bf1962af5306e111b",
+    socksBlob: "44667afdfc03d73aad1b556899d41f4af8a6f2e3",
+    license: "MIT"
+  }
+});
 
 const MAX_GRAPHICS = 20;
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
-const MAX_FONT_BYTES = 5 * 1024 * 1024;
-const IMAGE_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
-const FONT_EXTENSIONS = /\.(ttf|otf|woff2?)$/i;
+const ALLOWED_IMAGE_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
+const ALLOWED_FONT_EXT = /\.(ttf|otf|woff2?|woff)$/i;
 
-const PARTS = [
-  { id: "body", label: "Corpo maglia" },
-  { id: "sleeves", label: "Maniche" },
-  { id: "collar", label: "Colletto" },
-  { id: "shorts", label: "Pantaloncini" },
-  { id: "socks", label: "Calze" }
-];
-
-const SURFACES = [
-  { id: "shirt-front", label: "Maglia fronte", target: "body", face: "front" },
-  { id: "shirt-back", label: "Maglia retro", target: "body", face: "back" },
-  { id: "left-sleeve", label: "Manica sinistra", target: "leftSleeve", face: "left" },
-  { id: "right-sleeve", label: "Manica destra", target: "rightSleeve", face: "right" },
-  { id: "shorts-left", label: "Pantaloncino sinistro", target: "leftShort", face: "front" },
-  { id: "shorts-right", label: "Pantaloncino destro", target: "rightShort", face: "front" },
-  { id: "socks-left", label: "Calza sinistra", target: "leftSock", face: "front" },
-  { id: "socks-right", label: "Calza destra", target: "rightSock", face: "front" }
-];
-
-const FONTS = {
+const FONTS = Object.freeze({
   impact: { label: "Blocco", family: "Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif", weight: 900 },
-  futura: { label: "Geometrico", family: "Futura, Avenir, 'Century Gothic', Arial, sans-serif", weight: 800 },
-  copperplate: { label: "Inciso", family: "Copperplate, 'Copperplate Gothic Light', Georgia, serif", weight: 700 },
-  menlo: { label: "Tecnico", family: "Menlo, Monaco, 'Courier New', monospace", weight: 800 },
-  georgia: { label: "Classico", family: "Georgia, 'Times New Roman', serif", weight: 800 },
+  geometric: { label: "Geometrico", family: "Futura, Avenir, 'Century Gothic', Arial, sans-serif", weight: 800 },
   condensed: { label: "Condensato", family: "'Arial Narrow', 'Helvetica Neue Condensed', Arial, sans-serif", weight: 900 },
-  varsity: { label: "College", family: "Rockwell, 'Courier New', serif", weight: 900 },
-  modern: { label: "Moderno", family: "Avenir Next, Avenir, Arial, sans-serif", weight: 800 }
-};
+  college: { label: "College", family: "Rockwell, 'Courier New', serif", weight: 900 },
+  classic: { label: "Classico", family: "Georgia, 'Times New Roman', serif", weight: 800 },
+  technical: { label: "Tecnico", family: "Menlo, Monaco, 'Courier New', monospace", weight: 800 },
+  modern: { label: "Moderno", family: "Avenir Next, Avenir, Arial, sans-serif", weight: 800 },
+  system: { label: "Pulito", family: "Inter, ui-sans-serif, system-ui, Arial, sans-serif", weight: 800 }
+});
 
-function makePatternState() {
-  return { image: null, objectUrl: "", repeat: 3, rotation: 0, offsetX: 0, offsetY: 0, opacity: 1 };
-}
+const SURFACES = Object.freeze([
+  { id: "shirt-front", label: "Maglia fronte", part: "shirt", side: "front" },
+  { id: "shirt-back", label: "Maglia retro", part: "shirt", side: "back" },
+  { id: "left-sleeve", label: "Manica sinistra", part: "shirt", side: "left" },
+  { id: "right-sleeve", label: "Manica destra", part: "shirt", side: "right" },
+  { id: "shorts-left", label: "Pantaloncino sinistro", part: "shorts", side: "front-left" },
+  { id: "shorts-right", label: "Pantaloncino destro", part: "shorts", side: "front-right" },
+  { id: "socks-left", label: "Calza sinistra", part: "socks", side: "front-left" },
+  { id: "socks-right", label: "Calza destra", part: "socks", side: "front-right" }
+]);
 
 const state = {
-  sport: "football",
-  colors: {
-    body: "#87aaf0",
-    sleeves: "#87aaf0",
-    collar: "#6f91d6",
-    shorts: "#f4f4f4",
-    socks: "#87aaf0"
+  colors: { shirt: "#9bbcf0", shorts: "#ffffff", socks: "#9bbcf0" },
+  showSocks: false,
+  patternPart: "shirt",
+  patterns: {
+    shirt: { present: false, texture: null, objectUrl: null, repeatX: 1, repeatY: 1, rotation: 0, offsetX: 0, offsetY: 0 },
+    shorts: { present: false, texture: null, objectUrl: null, repeatX: 1, repeatY: 1, rotation: 0, offsetX: 0, offsetY: 0 },
+    socks: { present: false, texture: null, objectUrl: null, repeatX: 1, repeatY: 1, rotation: 0, offsetX: 0, offsetY: 0 }
   },
-  patterns: Object.fromEntries(PARTS.map((part) => [part.id, makePatternState()])),
   personalization: {
     name: "ROSSI",
     number: "10",
     font: "impact",
+    customFontFamily: null,
     color: "#ffffff",
-    customFontPresent: false,
     frontNumberEnabled: false,
-    backName: { surface: "shirt-back", x: 50, y: 25, scale: 34, rotation: 0 },
-    backNumber: { surface: "shirt-back", x: 50, y: 52, scale: 47, rotation: 0 },
-    frontNumber: { surface: "shirt-front", x: 50, y: 52, scale: 23, rotation: 0 }
+    backName: { x: 50, y: 26, scale: 40, rotation: 0 },
+    backNumber: { x: 50, y: 53, scale: 48, rotation: 0 },
+    frontNumber: { x: 50, y: 50, scale: 24, rotation: 0 }
   },
   graphics: []
 };
 
-const dom = Object.fromEntries([
+const ids = [
   "scene-canvas", "viewer-shell", "loading-overlay", "loading-title", "loading-copy", "view-badge",
-  "status-dot", "viewer-status", "part-colors", "pattern-part", "pattern-file", "pattern-thumb",
-  "pattern-clear", "pattern-controls", "pattern-message", "player-name", "player-number", "player-font",
-  "print-color", "custom-font-file", "font-message", "front-number-toggle", "front-number-card",
-  "back-name-controls", "back-number-controls", "front-number-controls", "graphics-list", "graphics-count",
-  "graphics-message", "add-logo", "add-sponsor", "add-patch", "add-badge", "summary", "payload",
-  "copy-payload", "send-email", "output-message"
-].map((id) => [id, document.getElementById(id)]));
+  "status-dot", "viewer-status", "shirt-color", "shorts-color", "socks-color", "show-socks",
+  "pattern-part", "pattern-file", "pattern-repeat-x", "pattern-repeat-y", "pattern-rotation", "pattern-offset-x", "pattern-offset-y",
+  "pattern-repeat-x-out", "pattern-repeat-y-out", "pattern-rotation-out", "pattern-offset-x-out", "pattern-offset-y-out", "clear-pattern", "pattern-message",
+  "player-name", "player-number", "player-font", "print-color", "custom-font-file", "custom-font-status", "front-number-toggle", "front-number-card",
+  "back-name-controls", "back-number-controls", "front-number-controls", "graphics-list", "graphics-count", "graphics-message",
+  "add-logo", "add-sponsor", "add-patch", "add-badge", "summary", "payload", "copy-payload", "send-email", "output-message"
+];
+const dom = Object.fromEntries(ids.map((id) => [id, document.getElementById(id)]));
 
 let renderer;
 let scene;
 let camera;
 let controls;
-let garmentGroup;
+let modelGroup;
 let decalGroup;
+let ground;
 let viewTween = null;
+let ready = false;
 let nextGraphicId = 1;
-let modelReady = false;
-let copyTimer = null;
-let customFontFace = null;
-let customFontUrl = "";
+let copyResetTimer = null;
+let customFontObjectUrl = null;
 
-const meshes = {};
-const materials = {};
-const patternTextures = {};
+const roots = { shirt: null, shorts: null, socks: null };
+const meshes = { shirt: [], shorts: [], socks: [] };
+const bounds = { shirt: new THREE.Box3(), shorts: new THREE.Box3(), socks: new THREE.Box3() };
+const materialRecords = { shirt: [], shorts: [], socks: [] };
+const raycaster = new THREE.Raycaster();
+const tmpSize = new THREE.Vector3();
+const zAxis = new THREE.Vector3(0, 0, 1);
+const textureLoader = new THREE.TextureLoader();
 
 function clamp(value, min, max) { return Math.min(max, Math.max(min, value)); }
+function lerp(a, b, t) { return a + (b - a) * t; }
+function radians(deg) { return THREE.MathUtils.degToRad(Number(deg) || 0); }
+function cleanText(value, max) { return String(value ?? "").replace(/[\r\n\t]/g, " ").replace(/\s+/g, " ").trim().slice(0, max); }
 function safeColor(value, fallback = "#ffffff") { return /^#[0-9a-f]{6}$/i.test(String(value)) ? String(value).toLowerCase() : fallback; }
 function escapeHtml(value) { return String(value).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
-function cleanText(value, maxLength) { return String(value ?? "").replace(/[\u0000-\u001f\u007f]/g, "").slice(0, maxLength); }
-function setStatus(text, kind = "") { dom["viewer-status"].textContent = text; dom["status-dot"].className = kind; }
-function setMessage(element, text, kind = "") { element.textContent = text; element.className = `message${kind ? ` ${kind}` : ""}`; }
-function surfaceDef(id) { return SURFACES.find((surface) => surface.id === id) || SURFACES[0]; }
+function surfaceDef(id) { return SURFACES.find((s) => s.id === id) || SURFACES[0]; }
 
-function createMaterial(part) {
-  const material = new THREE.MeshStandardMaterial({
-    color: new THREE.Color(state.colors[part]),
-    roughness: 0.76,
-    metalness: 0,
-    side: THREE.DoubleSide
-  });
-  material.name = `sportswear-${part}`;
-  materials[part] = material;
-  return material;
+function setStatus(text, kind = "") {
+  dom["viewer-status"].textContent = text;
+  dom["status-dot"].className = kind;
+}
+function message(node, text = "", kind = "") {
+  node.textContent = text;
+  node.className = `message${kind ? ` ${kind}` : ""}`;
+}
+function fatal(title, copy, error) {
+  console.error(title, error || copy);
+  dom["loading-title"].textContent = title;
+  dom["loading-copy"].textContent = copy;
+  dom["loading-overlay"].hidden = false;
+  setStatus(title, "error");
+  window.__sportswear3dError = String(error?.stack || error || copy);
 }
 
-function smoothGeometry(geometry) {
-  geometry.computeVertexNormals();
-  geometry.computeBoundingBox();
-  geometry.computeBoundingSphere();
-  return geometry;
-}
-
-function registerMesh(key, mesh) {
-  mesh.name = key;
-  mesh.castShadow = true;
-  mesh.receiveShadow = true;
-  meshes[key] = mesh;
-  garmentGroup.add(mesh);
-  return mesh;
-}
-
-function buildGarment() {
-  garmentGroup = new THREE.Group();
-  garmentGroup.name = "sportswear-football-procedural-kit";
-  scene.add(garmentGroup);
-
-  const body = registerMesh("body", new THREE.Mesh(
-    smoothGeometry(new THREE.CylinderGeometry(1.03, 1.22, 2.65, 56, 10, true)),
-    createMaterial("body")
-  ));
-  body.position.y = 0.63;
-  body.scale.z = 0.56;
-
-  const sleeveGeometry = smoothGeometry(new THREE.CylinderGeometry(0.35, 0.48, 1.18, 36, 5, true));
-  const sleeveMaterial = createMaterial("sleeves");
-  const leftSleeve = registerMesh("leftSleeve", new THREE.Mesh(sleeveGeometry.clone(), sleeveMaterial));
-  leftSleeve.position.set(-1.26, 1.05, 0);
-  leftSleeve.rotation.z = -1.05;
-  leftSleeve.scale.z = 0.72;
-  const rightSleeve = registerMesh("rightSleeve", new THREE.Mesh(sleeveGeometry.clone(), sleeveMaterial));
-  rightSleeve.position.set(1.26, 1.05, 0);
-  rightSleeve.rotation.z = 1.05;
-  rightSleeve.scale.z = 0.72;
-  sleeveGeometry.dispose();
-
-  const collar = registerMesh("collar", new THREE.Mesh(
-    smoothGeometry(new THREE.TorusGeometry(0.36, 0.082, 18, 56)),
-    createMaterial("collar")
-  ));
-  collar.position.set(0, 1.96, 0);
-  collar.rotation.x = Math.PI / 2;
-  collar.scale.z = 0.74;
-
-  const shortsMaterial = createMaterial("shorts");
-  const waist = registerMesh("waist", new THREE.Mesh(
-    smoothGeometry(new THREE.CylinderGeometry(1.18, 1.23, 0.30, 48, 2, true)),
-    shortsMaterial
-  ));
-  waist.position.y = -0.79;
-  waist.scale.z = 0.66;
-
-  const shortGeometry = smoothGeometry(new THREE.CylinderGeometry(0.62, 0.76, 1.18, 40, 5, true));
-  const leftShort = registerMesh("leftShort", new THREE.Mesh(shortGeometry.clone(), shortsMaterial));
-  leftShort.position.set(-0.56, -1.39, 0);
-  leftShort.scale.z = 0.70;
-  leftShort.rotation.z = 0.05;
-  const rightShort = registerMesh("rightShort", new THREE.Mesh(shortGeometry.clone(), shortsMaterial));
-  rightShort.position.set(0.56, -1.39, 0);
-  rightShort.scale.z = 0.70;
-  rightShort.rotation.z = -0.05;
-  shortGeometry.dispose();
-
-  const sockMaterial = createMaterial("socks");
-  const sockGeometry = smoothGeometry(new THREE.CylinderGeometry(0.25, 0.30, 1.38, 32, 5, true));
-  const leftSock = registerMesh("leftSock", new THREE.Mesh(sockGeometry.clone(), sockMaterial));
-  leftSock.position.set(-0.54, -2.72, 0);
-  leftSock.scale.z = 0.72;
-  const rightSock = registerMesh("rightSock", new THREE.Mesh(sockGeometry.clone(), sockMaterial));
-  rightSock.position.set(0.54, -2.72, 0);
-  rightSock.scale.z = 0.72;
-  sockGeometry.dispose();
-
-  garmentGroup.rotation.x = -0.03;
-  garmentGroup.updateMatrixWorld(true);
-
-  decalGroup = new THREE.Group();
-  decalGroup.name = "sportswear-decals";
-  scene.add(decalGroup);
-  modelReady = true;
-}
-
-function createGroundShadow() {
-  const canvas = document.createElement("canvas");
-  canvas.width = 256;
-  canvas.height = 256;
-  const ctx = canvas.getContext("2d");
-  const gradient = ctx.createRadialGradient(128, 128, 12, 128, 128, 122);
-  gradient.addColorStop(0, "rgba(0,0,0,.50)");
-  gradient.addColorStop(.6, "rgba(0,0,0,.16)");
-  gradient.addColorStop(1, "rgba(0,0,0,0)");
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, 256, 256);
-  const texture = new THREE.CanvasTexture(canvas);
-  const plane = new THREE.Mesh(
-    new THREE.PlaneGeometry(5.4, 2.7),
-    new THREE.MeshBasicMaterial({ map: texture, transparent: true, depthWrite: false })
-  );
-  plane.rotation.x = -Math.PI / 2;
-  plane.position.y = -3.45;
-  plane.renderOrder = -1;
-  scene.add(plane);
-}
-
-function initThree() {
-  renderer = new THREE.WebGLRenderer({ canvas: dom["scene-canvas"], antialias: true, alpha: true, powerPreference: "high-performance" });
+function initScene() {
+  renderer = new THREE.WebGLRenderer({ canvas: dom["scene-canvas"], antialias: true, alpha: false, preserveDrawingBuffer: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setSize(dom["viewer-shell"].clientWidth, dom["viewer-shell"].clientHeight, false);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.04;
-  renderer.shadowMap.enabled = false;
+  renderer.toneMappingExposure = 1.06;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
   scene = new THREE.Scene();
-  scene.fog = new THREE.Fog(0x111821, 11, 20);
-  camera = new THREE.PerspectiveCamera(32, 1, 0.05, 100);
-  camera.position.set(0, 0.15, 8.8);
+  scene.background = new THREE.Color(0x0d1014);
 
-  controls = new OrbitControls(camera, renderer.domElement);
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  const env = pmrem.fromScene(new RoomEnvironment(renderer), 0.04).texture;
+  scene.environment = env;
+  pmrem.dispose();
+
+  camera = new THREE.PerspectiveCamera(29, 1, 0.1, 100);
+  camera.position.set(0, 0.25, 12.2);
+
+  controls = new OrbitControls(camera, dom["scene-canvas"]);
   controls.enableDamping = true;
-  controls.dampingFactor = 0.07;
+  controls.dampingFactor = 0.075;
   controls.enablePan = false;
-  controls.minDistance = 5.6;
-  controls.maxDistance = 12.5;
+  controls.minDistance = 7.4;
+  controls.maxDistance = 18;
+  controls.minPolarAngle = 0.22;
+  controls.maxPolarAngle = Math.PI - 0.22;
   controls.minAzimuthAngle = -Infinity;
   controls.maxAzimuthAngle = Infinity;
-  controls.minPolarAngle = Math.PI * 0.28;
-  controls.maxPolarAngle = Math.PI * 0.72;
-  controls.target.set(0, -0.45, 0);
+  controls.target.set(0, 0.25, 0);
 
-  scene.add(new THREE.HemisphereLight(0xeaf2ff, 0x18202a, 2.15));
-  const key = new THREE.DirectionalLight(0xffffff, 3.0);
-  key.position.set(4.5, 6.5, 7.0);
+  modelGroup = new THREE.Group();
+  modelGroup.name = "football-kit";
+  scene.add(modelGroup);
+  decalGroup = new THREE.Group();
+  decalGroup.name = "customization-decals";
+  scene.add(decalGroup);
+
+  scene.add(new THREE.HemisphereLight(0xe8f0ff, 0x232933, 1.35));
+  const key = new THREE.DirectionalLight(0xffffff, 3.1);
+  key.position.set(4.5, 7.5, 7.5);
+  key.castShadow = true;
+  key.shadow.mapSize.set(2048, 2048);
+  key.shadow.camera.near = 0.5;
+  key.shadow.camera.far = 30;
+  key.shadow.camera.left = -6;
+  key.shadow.camera.right = 6;
+  key.shadow.camera.top = 8;
+  key.shadow.camera.bottom = -8;
   scene.add(key);
-  const fill = new THREE.DirectionalLight(0x9cbcff, 1.15);
-  fill.position.set(-5, 2.5, -4.5);
+  const fill = new THREE.DirectionalLight(0xa9c3ff, 1.75);
+  fill.position.set(-6, 3.2, 4);
   scene.add(fill);
-  const rim = new THREE.DirectionalLight(0xd9e6ff, 1.0);
-  rim.position.set(0, 3, -7);
+  const rim = new THREE.DirectionalLight(0xd8e6ff, 2.0);
+  rim.position.set(2.5, 4.5, -7);
   scene.add(rim);
 
-  buildGarment();
-  createGroundShadow();
-  resize();
-  window.addEventListener("resize", resize);
-  animate();
+  ground = new THREE.Mesh(
+    new THREE.PlaneGeometry(18, 18),
+    new THREE.ShadowMaterial({ color: 0x000000, opacity: 0.30 })
+  );
+  ground.rotation.x = -Math.PI / 2;
+  ground.position.y = -2.72;
+  ground.receiveShadow = true;
+  scene.add(ground);
+
+  new ResizeObserver(resizeRenderer).observe(dom["viewer-shell"]);
 }
 
-function resize() {
-  if (!renderer) return;
-  const width = Math.max(1, dom["viewer-shell"].clientWidth);
-  const height = Math.max(1, dom["viewer-shell"].clientHeight);
-  renderer.setSize(width, height, false);
-  camera.aspect = width / height;
+function resizeRenderer() {
+  if (!renderer || !camera) return;
+  const w = Math.max(1, dom["viewer-shell"].clientWidth);
+  const h = Math.max(1, dom["viewer-shell"].clientHeight);
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
   camera.updateProjectionMatrix();
 }
 
-function setView(name) {
-  const angles = { front: 0, right: 90, back: 180, left: -90 };
-  const labels = { front: "Fronte", right: "Destra", back: "Retro", left: "Sinistra" };
-  const deg = angles[name] ?? 0;
-  const radius = camera.position.distanceTo(controls.target);
-  const angle = THREE.MathUtils.degToRad(deg);
-  viewTween = new THREE.Vector3(Math.sin(angle) * radius, camera.position.y, Math.cos(angle) * radius);
-  dom["view-badge"].textContent = labels[name] || "Vista";
-  document.querySelectorAll("[data-view]").forEach((button) => button.classList.toggle("active", button.dataset.view === name));
+function firstMeshes(root) {
+  const list = [];
+  root.traverse((obj) => { if (obj.isMesh) list.push(obj); });
+  return list;
 }
 
-function animate() {
-  requestAnimationFrame(animate);
-  if (viewTween) {
-    camera.position.lerp(viewTween, 0.14);
-    if (camera.position.distanceTo(viewTween) < 0.012) {
-      camera.position.copy(viewTween);
-      viewTween = null;
+function configureMesh(part, mesh) {
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  mesh.frustumCulled = true;
+  const source = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+  const materials = source.map((original) => {
+    const material = original?.clone?.() || new THREE.MeshStandardMaterial();
+    if (!material.isMeshStandardMaterial && !material.isMeshPhysicalMaterial) {
+      const replacement = new THREE.MeshStandardMaterial();
+      replacement.normalMap = material.normalMap || null;
+      replacement.aoMap = material.aoMap || null;
+      replacement.roughnessMap = material.roughnessMap || null;
+      material.dispose?.();
+      return replacement;
     }
-  }
-  controls.update();
-  renderer.render(scene, camera);
-}
-
-function drawCover(ctx, image, width, height, opacity) {
-  const sw = image.naturalWidth || image.width || 1;
-  const sh = image.naturalHeight || image.height || 1;
-  const scale = Math.max(width / sw, height / sh);
-  const dw = sw * scale;
-  const dh = sh * scale;
-  ctx.globalAlpha = opacity;
-  ctx.drawImage(image, (width - dw) / 2, (height - dh) / 2, dw, dh);
-  ctx.globalAlpha = 1;
-}
-
-function disposePatternTexture(part) {
-  if (patternTextures[part]) {
-    patternTextures[part].dispose();
-    patternTextures[part] = null;
-  }
-}
-
-function updatePartAppearance(part) {
-  const material = materials[part];
-  if (!material) return;
-  const pattern = state.patterns[part];
-  disposePatternTexture(part);
-  if (!pattern.image) {
+    return material;
+  });
+  materials.forEach((material) => {
+    material.name = `sportswear-${part}`;
     material.map = null;
     material.color.set(state.colors[part]);
+    material.metalness = 0;
+    material.roughness = Math.max(0.72, Number(material.roughness ?? 0.86));
+    material.envMapIntensity = 0.8;
+    material.side = THREE.DoubleSide;
+    material.transparent = false;
+    material.opacity = 1;
     material.needsUpdate = true;
-    updateOutput();
-    return;
+    materialRecords[part].push(material);
+  });
+  mesh.material = Array.isArray(mesh.material) ? materials : materials[0];
+}
+
+async function loadKit() {
+  const loader = new GLTFLoader();
+  const [shirtGltf, shortsGltf, socksGltf] = await Promise.all([
+    loader.loadAsync(ASSETS.shirt),
+    loader.loadAsync(ASSETS.shorts),
+    loader.loadAsync(ASSETS.socks)
+  ]);
+
+  roots.shirt = shirtGltf.scene;
+  roots.shorts = shortsGltf.scene;
+  roots.socks = socksGltf.scene;
+  roots.shirt.name = "donor-shirt";
+  roots.shorts.name = "donor-shorts";
+  roots.socks.name = "donor-socks";
+
+  roots.shirt.scale.setScalar(7.0);
+  roots.shirt.position.set(0, 1.50, 0);
+
+  roots.shorts.scale.set(7.40, 3.20, 5.50);
+  roots.shorts.position.set(0, -1.60, 0);
+
+  roots.socks.scale.set(7.20, 4.20, 5.20);
+  roots.socks.position.set(0, -4.20, 0);
+  roots.socks.visible = state.showSocks;
+
+  for (const part of ["shirt", "shorts", "socks"]) {
+    meshes[part] = firstMeshes(roots[part]);
+    if (!meshes[part].length) throw new Error(`Nessuna mesh trovata per ${part}`);
+    meshes[part].forEach((mesh) => configureMesh(part, mesh));
+    modelGroup.add(roots[part]);
   }
 
-  const size = 1024;
-  const canvas = document.createElement("canvas");
-  canvas.width = size;
-  canvas.height = size;
-  const ctx = canvas.getContext("2d");
-  ctx.fillStyle = state.colors[part];
-  ctx.fillRect(0, 0, size, size);
-  drawCover(ctx, pattern.image, size, size, pattern.opacity);
+  scene.updateMatrixWorld(true);
+  refreshBounds();
+  applyAllMaterials();
+  rebuildDecals();
+}
 
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.colorSpace = THREE.SRGBColorSpace;
-  texture.wrapS = THREE.RepeatWrapping;
-  texture.wrapT = THREE.RepeatWrapping;
-  texture.repeat.set(pattern.repeat, pattern.repeat);
-  texture.center.set(0.5, 0.5);
-  texture.rotation = THREE.MathUtils.degToRad(pattern.rotation);
-  texture.offset.set(pattern.offsetX / 100, pattern.offsetY / 100);
-  texture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
-  texture.needsUpdate = true;
-  patternTextures[part] = texture;
-  material.map = texture;
-  material.color.set(0xffffff);
-  material.needsUpdate = true;
+function refreshBounds() {
+  scene.updateMatrixWorld(true);
+  for (const part of ["shirt", "shorts", "socks"]) bounds[part].setFromObject(roots[part]);
+  if (ground) ground.position.y = state.showSocks ? bounds.socks.min.y - 0.06 : bounds.shorts.min.y - 0.06;
+}
+
+function applyPartMaterial(part) {
+  const pattern = state.patterns[part];
+  for (const material of materialRecords[part]) {
+    material.map = pattern.present ? pattern.texture : null;
+    material.color.set(pattern.present ? 0xffffff : state.colors[part]);
+    material.needsUpdate = true;
+  }
+  if (pattern.present && pattern.texture) updatePatternTexture(part);
+}
+function applyAllMaterials() { ["shirt", "shorts", "socks"].forEach(applyPartMaterial); }
+
+function updatePatternTexture(part) {
+  const p = state.patterns[part];
+  if (!p.texture) return;
+  p.texture.wrapS = THREE.RepeatWrapping;
+  p.texture.wrapT = THREE.RepeatWrapping;
+  p.texture.colorSpace = THREE.SRGBColorSpace;
+  p.texture.center.set(0.5, 0.5);
+  p.texture.repeat.set(p.repeatX, p.repeatY);
+  p.texture.rotation = radians(p.rotation);
+  p.texture.offset.set(p.offsetX, p.offsetY);
+  p.texture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+  p.texture.needsUpdate = true;
+}
+
+function disposePattern(part) {
+  const p = state.patterns[part];
+  p.texture?.dispose?.();
+  if (p.objectUrl) URL.revokeObjectURL(p.objectUrl);
+  p.texture = null;
+  p.objectUrl = null;
+  p.present = false;
+  applyPartMaterial(part);
+}
+
+async function loadPatternFile(file) {
+  if (!file) return;
+  if (!ALLOWED_IMAGE_TYPES.has(file.type) || file.size > MAX_IMAGE_BYTES) {
+    message(dom["pattern-message"], "Usa PNG/JPG/WebP fino a 8 MB.", "error");
+    dom["pattern-file"].value = "";
+    return;
+  }
+  const part = state.patternPart;
+  disposePattern(part);
+  const objectUrl = URL.createObjectURL(file);
+  try {
+    const texture = await textureLoader.loadAsync(objectUrl);
+    const p = state.patterns[part];
+    p.texture = texture;
+    p.objectUrl = objectUrl;
+    p.present = true;
+    updatePatternTexture(part);
+    applyPartMaterial(part);
+    message(dom["pattern-message"], `Fantasia applicata a ${part === "shirt" ? "maglia" : part === "shorts" ? "pantaloncini" : "calze"}.`, "ok");
+    updateOutput();
+  } catch (error) {
+    URL.revokeObjectURL(objectUrl);
+    message(dom["pattern-message"], "Immagine non leggibile.", "error");
+    console.error(error);
+  }
+}
+
+function syncPatternControls() {
+  const p = state.patterns[state.patternPart];
+  const values = {
+    "pattern-repeat-x": p.repeatX,
+    "pattern-repeat-y": p.repeatY,
+    "pattern-rotation": p.rotation,
+    "pattern-offset-x": p.offsetX,
+    "pattern-offset-y": p.offsetY
+  };
+  for (const [id, value] of Object.entries(values)) dom[id].value = String(value);
+  updatePatternOutputs();
+}
+function updatePatternOutputs() {
+  dom["pattern-repeat-x-out"].textContent = Number(dom["pattern-repeat-x"].value).toFixed(1);
+  dom["pattern-repeat-y-out"].textContent = Number(dom["pattern-repeat-y"].value).toFixed(1);
+  dom["pattern-rotation-out"].textContent = `${Math.round(Number(dom["pattern-rotation"].value))}°`;
+  dom["pattern-offset-x-out"].textContent = Number(dom["pattern-offset-x"].value).toFixed(2);
+  dom["pattern-offset-y-out"].textContent = Number(dom["pattern-offset-y"].value).toFixed(2);
+}
+function readPatternControls() {
+  const p = state.patterns[state.patternPart];
+  p.repeatX = Number(dom["pattern-repeat-x"].value);
+  p.repeatY = Number(dom["pattern-repeat-y"].value);
+  p.rotation = Number(dom["pattern-rotation"].value);
+  p.offsetX = Number(dom["pattern-offset-x"].value);
+  p.offsetY = Number(dom["pattern-offset-y"].value);
+  updatePatternOutputs();
+  updatePatternTexture(state.patternPart);
   updateOutput();
 }
 
-function buildPartColors() {
-  dom["part-colors"].innerHTML = "";
-  for (const part of PARTS) {
-    const card = document.createElement("div");
-    card.className = "part-card";
-    const title = document.createElement("h3");
-    title.textContent = part.label;
-    const colors = document.createElement("div");
-    colors.className = "colors";
-    const label = document.createElement("label");
-    label.className = "color-field";
-    const input = document.createElement("input");
-    input.type = "color";
-    input.value = state.colors[part.id];
-    const span = document.createElement("span");
-    span.textContent = "Colore base";
-    input.addEventListener("input", () => {
-      state.colors[part.id] = input.value.toLowerCase();
-      updatePartAppearance(part.id);
-    });
-    label.append(input, span);
-    colors.appendChild(label);
-    card.append(title, colors);
-    dom["part-colors"].appendChild(card);
-  }
+function worldNormal(intersection) {
+  const normal = intersection.face?.normal?.clone() || new THREE.Vector3(0, 0, 1);
+  return normal.transformDirection(intersection.object.matrixWorld).normalize();
 }
 
-function slider(container, id, label, min, max, step, value, onInput, suffix = "", full = false) {
-  const wrap = document.createElement("div");
-  wrap.className = `slider${full ? " full" : ""}`;
-  const head = document.createElement("div");
-  head.className = "slider-head";
-  const lab = document.createElement("label");
-  lab.htmlFor = id;
-  lab.textContent = label;
-  const output = document.createElement("output");
-  output.textContent = `${value}${suffix}`;
-  const input = document.createElement("input");
-  input.type = "range";
-  input.id = id;
-  input.min = String(min);
-  input.max = String(max);
-  input.step = String(step);
-  input.value = String(value);
-  input.addEventListener("input", () => {
-    const next = Number(input.value);
-    output.textContent = `${next}${suffix}`;
-    onInput(next);
-  });
-  head.append(lab, output);
-  wrap.append(head, input);
-  container.appendChild(wrap);
+function rayHit(meshList, origin, direction) {
+  raycaster.set(origin, direction);
+  const hits = raycaster.intersectObjects(meshList, false);
+  if (!hits.length) return null;
+  const hit = hits[0];
+  return { point: hit.point.clone(), normal: worldNormal(hit), mesh: hit.object };
 }
 
-function selectedPatternPart() { return dom["pattern-part"].value || "body"; }
+function surfaceHit(surfaceId, xPct, yPct) {
+  const def = surfaceDef(surfaceId);
+  const box = bounds[def.part];
+  if (box.isEmpty()) return null;
+  const x = clamp(Number(xPct) || 50, 0, 100) / 100;
+  const y = clamp(Number(yPct) || 50, 0, 100) / 100;
+  const sx = lerp(0.17, 0.83, x);
+  const sy = lerp(0.82, 0.18, y);
+  const width = box.max.x - box.min.x;
+  const height = box.max.y - box.min.y;
+  const depth = box.max.z - box.min.z;
+  const far = Math.max(width, height, depth) * 2.5 + 2;
+  let origin;
+  let direction;
 
-function updatePatternThumb() {
-  const part = selectedPatternPart();
-  const pattern = state.patterns[part];
-  dom["pattern-thumb"].innerHTML = "";
-  if (pattern.objectUrl) {
-    const img = document.createElement("img");
-    img.src = pattern.objectUrl;
-    img.alt = "Anteprima fantasia";
-    dom["pattern-thumb"].appendChild(img);
+  if (def.side === "front" || def.side === "back" || def.side === "front-left" || def.side === "front-right") {
+    let px;
+    if (def.side === "front-left") px = lerp(box.min.x + width * 0.10, box.min.x + width * 0.48, sx);
+    else if (def.side === "front-right") px = lerp(box.min.x + width * 0.52, box.max.x - width * 0.10, sx);
+    else px = lerp(box.min.x, box.max.x, sx);
+    const py = lerp(box.min.y, box.max.y, sy);
+    if (def.side === "back") {
+      origin = new THREE.Vector3(px, py, box.min.z - far);
+      direction = new THREE.Vector3(0, 0, 1);
+    } else {
+      origin = new THREE.Vector3(px, py, box.max.z + far);
+      direction = new THREE.Vector3(0, 0, -1);
+    }
   } else {
-    dom["pattern-thumb"].textContent = "Nessuna fantasia";
+    const py = lerp(box.min.y + height * 0.08, box.max.y - height * 0.08, sy);
+    const pz = lerp(box.max.z - depth * 0.12, box.min.z + depth * 0.12, sx);
+    if (def.side === "left") {
+      origin = new THREE.Vector3(box.min.x - far, py, pz);
+      direction = new THREE.Vector3(1, 0, 0);
+    } else {
+      origin = new THREE.Vector3(box.max.x + far, py, pz);
+      direction = new THREE.Vector3(-1, 0, 0);
+    }
+  }
+  return rayHit(meshes[def.part], origin, direction);
+}
+
+function projectorOrientation(normal, rotationDeg = 0) {
+  const q = new THREE.Quaternion().setFromUnitVectors(zAxis, normal.clone().normalize());
+  const roll = new THREE.Quaternion().setFromAxisAngle(zAxis, radians(rotationDeg));
+  q.multiply(roll);
+  return new THREE.Euler().setFromQuaternion(q, "XYZ");
+}
+
+function makeDecal(target, texture, sizeX, sizeY, rotationDeg, opacity = 1) {
+  if (!target || !texture || !target.mesh) return null;
+  const position = target.point.clone().add(target.normal.clone().multiplyScalar(0.018));
+  const orientation = projectorOrientation(target.normal, rotationDeg);
+  const size = new THREE.Vector3(Math.max(0.02, sizeX), Math.max(0.02, sizeY), Math.max(0.18, Math.min(sizeX, sizeY) * 0.55));
+  let geometry;
+  try {
+    geometry = new DecalGeometry(target.mesh, position, orientation, size);
+  } catch (error) {
+    console.warn("DecalGeometry failed", error);
+    return null;
+  }
+  if (!geometry.attributes.position || geometry.attributes.position.count === 0) {
+    geometry.dispose();
+    return null;
+  }
+  const material = new THREE.MeshStandardMaterial({
+    map: texture,
+    transparent: true,
+    opacity: clamp(Number(opacity) || 1, 0.05, 1),
+    depthTest: true,
+    depthWrite: false,
+    polygonOffset: true,
+    polygonOffsetFactor: -6,
+    roughness: 0.82,
+    metalness: 0,
+    side: THREE.DoubleSide,
+    alphaTest: 0.02
+  });
+  const decal = new THREE.Mesh(geometry, material);
+  decal.renderOrder = 10;
+  decal.castShadow = false;
+  decal.receiveShadow = false;
+  decalGroup.add(decal);
+  return decal;
+}
+
+function currentFont() {
+  if (state.personalization.font === "custom" && state.personalization.customFontFamily) {
+    return { label: "Personale", family: `'${state.personalization.customFontFamily}'`, weight: 800 };
+  }
+  return FONTS[state.personalization.font] || FONTS.impact;
+}
+
+function textTexture(text, kind) {
+  const clean = cleanText(text, kind === "name" ? 24 : 6) || (kind === "name" ? "ROSSI" : "10");
+  const canvas = document.createElement("canvas");
+  canvas.width = kind === "name" ? 1400 : 900;
+  canvas.height = kind === "name" ? 420 : 900;
+  const ctx = canvas.getContext("2d");
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const font = currentFont();
+  let px = kind === "name" ? 250 : 720;
+  ctx.font = `${font.weight} ${px}px ${font.family}`;
+  while (ctx.measureText(clean).width > canvas.width * 0.90 && px > 70) {
+    px -= 8;
+    ctx.font = `${font.weight} ${px}px ${font.family}`;
+  }
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.lineJoin = "round";
+  ctx.strokeStyle = "rgba(0,0,0,.45)";
+  ctx.lineWidth = Math.max(3, px * 0.022);
+  ctx.strokeText(clean, canvas.width / 2, canvas.height / 2 + px * 0.02);
+  ctx.fillStyle = state.personalization.color;
+  ctx.fillText(clean, canvas.width / 2, canvas.height / 2 + px * 0.02);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+  texture.needsUpdate = true;
+  texture.userData.canvasAspect = canvas.width / canvas.height;
+  return texture;
+}
+
+function disposeDecals() {
+  for (const child of [...decalGroup.children]) {
+    decalGroup.remove(child);
+    child.geometry?.dispose?.();
+    child.material?.map?.userData?.generatedText && child.material.map.dispose?.();
+    child.material?.dispose?.();
   }
 }
 
-function buildPatternControls() {
-  const part = selectedPatternPart();
-  const pattern = state.patterns[part];
-  dom["pattern-controls"].innerHTML = "";
-  slider(dom["pattern-controls"], "pattern-repeat", "Ripetizione", 1, 12, 1, pattern.repeat, (value) => { pattern.repeat = value; updatePartAppearance(part); }, "×");
-  slider(dom["pattern-controls"], "pattern-rotation", "Rotazione", -180, 180, 1, pattern.rotation, (value) => { pattern.rotation = value; updatePartAppearance(part); }, "°");
-  slider(dom["pattern-controls"], "pattern-x", "Offset X", -100, 100, 1, pattern.offsetX, (value) => { pattern.offsetX = value; updatePartAppearance(part); }, "%");
-  slider(dom["pattern-controls"], "pattern-y", "Offset Y", -100, 100, 1, pattern.offsetY, (value) => { pattern.offsetY = value; updatePartAppearance(part); }, "%");
-  slider(dom["pattern-controls"], "pattern-opacity", "Opacità fantasia", 0, 100, 1, Math.round(pattern.opacity * 100), (value) => { pattern.opacity = value / 100; updatePartAppearance(part); }, "%", true);
-  updatePatternThumb();
+function addTextDecal(surface, config, text, kind) {
+  if (!cleanText(text, kind === "name" ? 24 : 6)) return;
+  const hit = surfaceHit(surface, config.x, config.y);
+  if (!hit) return;
+  const texture = textTexture(text, kind);
+  texture.userData.generatedText = true;
+  const shirtWidth = bounds.shirt.getSize(tmpSize).x;
+  const sizeX = shirtWidth * clamp(config.scale, 8, 80) / 100;
+  const aspect = texture.userData.canvasAspect || 1;
+  makeDecal(hit, texture, sizeX, sizeX / aspect, config.rotation, 1);
 }
 
-function handlePatternFile(file) {
-  const part = selectedPatternPart();
-  if (!file) return;
-  if (!IMAGE_TYPES.has(file.type)) {
-    setMessage(dom["pattern-message"], "Formato non supportato. Usa PNG, JPG o WebP.", "error");
-    dom["pattern-file"].value = "";
-    return;
+function rebuildDecals() {
+  if (!ready && !roots.shirt) return;
+  scene.updateMatrixWorld(true);
+  refreshBounds();
+  disposeDecals();
+  addTextDecal("shirt-back", state.personalization.backName, state.personalization.name, "name");
+  addTextDecal("shirt-back", state.personalization.backNumber, state.personalization.number, "number");
+  if (state.personalization.frontNumberEnabled) {
+    addTextDecal("shirt-front", state.personalization.frontNumber, state.personalization.number, "number");
   }
-  if (file.size > MAX_IMAGE_BYTES) {
-    setMessage(dom["pattern-message"], "File oltre 8 MB.", "error");
-    dom["pattern-file"].value = "";
-    return;
+  for (const graphic of state.graphics) {
+    if (!graphic.texture) continue;
+    if (surfaceDef(graphic.surface).part === "socks" && !state.showSocks) continue;
+    const hit = surfaceHit(graphic.surface, graphic.x, graphic.y);
+    if (!hit) continue;
+    const box = bounds[surfaceDef(graphic.surface).part];
+    const base = box.getSize(tmpSize).x * clamp(graphic.scale, 4, 70) / 100;
+    const aspect = graphic.aspect || 1;
+    makeDecal(hit, graphic.texture, base * Math.sqrt(aspect), base / Math.sqrt(aspect), graphic.rotation, graphic.opacity);
   }
-  const pattern = state.patterns[part];
-  if (pattern.objectUrl) URL.revokeObjectURL(pattern.objectUrl);
-  const url = URL.createObjectURL(file);
-  const image = new Image();
-  image.onload = () => {
-    pattern.objectUrl = url;
-    pattern.image = image;
-    updatePartAppearance(part);
-    updatePatternThumb();
-    setMessage(dom["pattern-message"], "Fantasia caricata. Per una continuità perfetta usa un PNG seamless quadrato 1024×1024.", "ok");
-  };
-  image.onerror = () => {
-    URL.revokeObjectURL(url);
-    setMessage(dom["pattern-message"], "Immagine non leggibile.", "error");
-  };
-  image.src = url;
 }
 
-function clearPattern() {
-  const part = selectedPatternPart();
-  const pattern = state.patterns[part];
-  if (pattern.objectUrl) URL.revokeObjectURL(pattern.objectUrl);
-  Object.assign(pattern, makePatternState());
-  dom["pattern-file"].value = "";
-  updatePartAppearance(part);
-  buildPatternControls();
-  setMessage(dom["pattern-message"], "Fantasia rimossa.", "ok");
+function sliderMarkup(label, key, value, min, max, step, suffix = "") {
+  const safe = escapeHtml(key);
+  return `<label>${escapeHtml(label)} <output data-out="${safe}">${Number(value).toFixed(step < 1 ? 1 : 0)}${suffix}</output><input data-key="${safe}" type="range" min="${min}" max="${max}" step="${step}" value="${value}"></label>`;
 }
 
-function buildFontOptions() {
-  dom["player-font"].innerHTML = "";
-  for (const [key, font] of Object.entries(FONTS)) {
-    const option = document.createElement("option");
-    option.value = key;
-    option.textContent = font.label;
-    dom["player-font"].appendChild(option);
-  }
+function renderTextControls(container, config, onChange) {
+  container.innerHTML = [
+    sliderMarkup("X", "x", config.x, 15, 85, 1, "%"),
+    sliderMarkup("Y", "y", config.y, 8, 88, 1, "%"),
+    sliderMarkup("Scala", "scale", config.scale, 10, 70, 1, "%"),
+    sliderMarkup("Rotaz.", "rotation", config.rotation, -25, 25, 1, "°")
+  ].join("");
+  container.querySelectorAll("input[data-key]").forEach((input) => {
+    input.addEventListener("input", () => {
+      const key = input.dataset.key;
+      config[key] = Number(input.value);
+      const out = container.querySelector(`[data-out="${key}"]`);
+      out.textContent = `${Number(input.value).toFixed(Number(input.step) < 1 ? 1 : 0)}${key === "rotation" ? "°" : "%"}`;
+      onChange();
+    });
+  });
+}
+
+function populateFonts() {
+  dom["player-font"].innerHTML = Object.entries(FONTS).map(([id, f]) => `<option value="${id}">${escapeHtml(f.label)}</option>`).join("");
   dom["player-font"].value = state.personalization.font;
 }
 
 async function loadCustomFont(file) {
   if (!file) return;
-  if (file.size > MAX_FONT_BYTES || !FONT_EXTENSIONS.test(file.name)) {
-    setMessage(dom["font-message"], "Font non supportato. Usa TTF, OTF, WOFF o WOFF2 fino a 5 MB.", "error");
-    dom["custom-font-file"].value = "";
+  if (!ALLOWED_FONT_EXT.test(file.name) || file.size > 8 * 1024 * 1024) {
+    dom["custom-font-status"].textContent = "Formato non valido: TTF/OTF/WOFF/WOFF2 max 8 MB";
     return;
   }
+  if (customFontObjectUrl) URL.revokeObjectURL(customFontObjectUrl);
+  customFontObjectUrl = URL.createObjectURL(file);
+  const family = `SportswearCustom_${Date.now()}`;
   try {
-    if (customFontFace) document.fonts.delete(customFontFace);
-    if (customFontUrl) URL.revokeObjectURL(customFontUrl);
-    customFontUrl = URL.createObjectURL(file);
-    customFontFace = new FontFace("SportswearCustomUpload", `url(${customFontUrl})`);
-    await customFontFace.load();
-    document.fonts.add(customFontFace);
-    FONTS["custom-upload"] = { label: "Font caricato", family: "SportswearCustomUpload, sans-serif", weight: 700 };
-    state.personalization.font = "custom-upload";
-    state.personalization.customFontPresent = true;
-    buildFontOptions();
-    await document.fonts.load("700 64px SportswearCustomUpload");
+    const face = new FontFace(family, `url(${customFontObjectUrl})`);
+    await face.load();
+    document.fonts.add(face);
+    state.personalization.customFontFamily = family;
+    if (!dom["player-font"].querySelector('option[value="custom"]')) {
+      const opt = document.createElement("option");
+      opt.value = "custom";
+      opt.textContent = "Personale";
+      dom["player-font"].append(opt);
+    }
+    state.personalization.font = "custom";
+    dom["player-font"].value = "custom";
+    dom["custom-font-status"].textContent = "Font personale caricato ✓";
     rebuildDecals();
-    setMessage(dom["font-message"], "Font caricato in memoria e applicato.", "ok");
+    updateOutput();
   } catch (error) {
     console.error(error);
-    setMessage(dom["font-message"], "Il font non è stato caricato dal browser.", "error");
+    dom["custom-font-status"].textContent = "Font non leggibile";
   }
 }
 
-function buildPersonalizationControls() {
-  const p = state.personalization;
-  const name = dom["back-name-controls"];
-  const number = dom["back-number-controls"];
-  const front = dom["front-number-controls"];
-  name.innerHTML = number.innerHTML = front.innerHTML = "";
-  slider(name, "back-name-x", "Orizzontale", 10, 90, 1, p.backName.x, (v) => { p.backName.x = v; rebuildDecals(); }, "%");
-  slider(name, "back-name-y", "Verticale", 8, 55, 1, p.backName.y, (v) => { p.backName.y = v; rebuildDecals(); }, "%");
-  slider(name, "back-name-scale", "Scala", 12, 65, 1, p.backName.scale, (v) => { p.backName.scale = v; rebuildDecals(); }, "%", true);
-  slider(name, "back-name-rotation", "Rotazione", -30, 30, 1, p.backName.rotation, (v) => { p.backName.rotation = v; rebuildDecals(); }, "°", true);
-  slider(number, "back-number-x", "Orizzontale", 10, 90, 1, p.backNumber.x, (v) => { p.backNumber.x = v; rebuildDecals(); }, "%");
-  slider(number, "back-number-y", "Verticale", 25, 84, 1, p.backNumber.y, (v) => { p.backNumber.y = v; rebuildDecals(); }, "%");
-  slider(number, "back-number-scale", "Scala", 15, 72, 1, p.backNumber.scale, (v) => { p.backNumber.scale = v; rebuildDecals(); }, "%", true);
-  slider(number, "back-number-rotation", "Rotazione", -30, 30, 1, p.backNumber.rotation, (v) => { p.backNumber.rotation = v; rebuildDecals(); }, "°", true);
-  slider(front, "front-number-x", "Orizzontale", 10, 90, 1, p.frontNumber.x, (v) => { p.frontNumber.x = v; rebuildDecals(); }, "%");
-  slider(front, "front-number-y", "Verticale", 15, 82, 1, p.frontNumber.y, (v) => { p.frontNumber.y = v; rebuildDecals(); }, "%");
-  slider(front, "front-number-scale", "Scala", 10, 50, 1, p.frontNumber.scale, (v) => { p.frontNumber.scale = v; rebuildDecals(); }, "%", true);
-}
-
-function textureFromCanvas(canvas) {
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.colorSpace = THREE.SRGBColorSpace;
-  texture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
-  texture.userData.sportswearOwned = true;
-  return texture;
-}
-
-function textTexture(text, fontKey, color, kind) {
-  const font = FONTS[fontKey] || FONTS.impact;
-  const canvas = document.createElement("canvas");
-  canvas.width = kind === "number" ? 900 : 1600;
-  canvas.height = kind === "number" ? 900 : 420;
-  const ctx = canvas.getContext("2d");
-  const fontSize = kind === "number" ? 680 : 260;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillStyle = safeColor(color);
-  ctx.font = `${font.weight} ${fontSize}px ${font.family}`;
-  ctx.fillText(text, canvas.width / 2, canvas.height / 2, canvas.width * 0.94);
-  return { texture: textureFromCanvas(canvas), aspect: canvas.width / canvas.height };
-}
-
-function imageTexture(image) {
-  const texture = new THREE.Texture(image);
-  texture.colorSpace = THREE.SRGBColorSpace;
-  texture.needsUpdate = true;
-  texture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
-  texture.userData.sportswearOwned = true;
-  const width = image.naturalWidth || image.width || 1;
-  const height = image.naturalHeight || image.height || 1;
-  return { texture, aspect: width / height };
-}
-
-function targetMesh(surface) {
-  return meshes[surfaceDef(surface).target] || meshes.body;
-}
-
-function projectorFrame(surface, xPct, yPct, rotationDeg) {
-  const def = surfaceDef(surface);
-  const target = targetMesh(surface);
-  target.updateMatrixWorld(true);
-  const box = new THREE.Box3().setFromObject(target);
-  const size = box.getSize(new THREE.Vector3());
-  const x = clamp(xPct, 0, 100) / 100;
-  const y = clamp(yPct, 0, 100) / 100;
-  const rotation = THREE.MathUtils.degToRad(rotationDeg || 0);
-  const eps = 0.012;
-  let position;
-  let orientation;
-  let uSpan;
-  let vSpan;
-  let depth;
-
-  if (def.face === "front") {
-    position = new THREE.Vector3(THREE.MathUtils.lerp(box.min.x, box.max.x, x), THREE.MathUtils.lerp(box.max.y, box.min.y, y), box.max.z + eps);
-    orientation = new THREE.Euler(0, 0, rotation);
-    uSpan = size.x; vSpan = size.y; depth = size.z;
-  } else if (def.face === "back") {
-    position = new THREE.Vector3(THREE.MathUtils.lerp(box.min.x, box.max.x, x), THREE.MathUtils.lerp(box.max.y, box.min.y, y), box.min.z - eps);
-    orientation = new THREE.Euler(0, Math.PI, -rotation);
-    uSpan = size.x; vSpan = size.y; depth = size.z;
-  } else if (def.face === "left") {
-    position = new THREE.Vector3(box.min.x - eps, THREE.MathUtils.lerp(box.max.y, box.min.y, y), THREE.MathUtils.lerp(box.max.z, box.min.z, x));
-    orientation = new THREE.Euler(0, -Math.PI / 2, rotation);
-    uSpan = size.z; vSpan = size.y; depth = size.x;
-  } else {
-    position = new THREE.Vector3(box.max.x + eps, THREE.MathUtils.lerp(box.max.y, box.min.y, y), THREE.MathUtils.lerp(box.min.z, box.max.z, x));
-    orientation = new THREE.Euler(0, Math.PI / 2, rotation);
-    uSpan = size.z; vSpan = size.y; depth = size.x;
-  }
-
-  return { target, position, orientation, uSpan: Math.max(0.15, uSpan), vSpan: Math.max(0.15, vSpan), depth: Math.max(0.12, depth) };
-}
-
-function addDecal({ surface, x, y, scale, rotation, texture, aspect, opacity = 1 }) {
-  const frame = projectorFrame(surface, x, y, rotation);
-  const width = clamp(frame.uSpan * (scale / 100), 0.10, frame.uSpan * 0.84);
-  const height = clamp(width / Math.max(0.18, aspect), 0.08, frame.vSpan * 0.72);
-  const projectorDepth = clamp(frame.depth * 0.22, 0.08, 0.24);
-  const geometry = new DecalGeometry(frame.target, frame.position, frame.orientation, new THREE.Vector3(width, height, projectorDepth));
-  if (!geometry.attributes.position || geometry.attributes.position.count === 0) {
-    geometry.dispose();
-    texture.dispose();
-    return false;
-  }
-  const material = new THREE.MeshStandardMaterial({
-    map: texture,
-    transparent: true,
-    opacity: clamp(opacity, 0, 1),
-    alphaTest: 0.01,
-    depthWrite: false,
-    depthTest: true,
-    roughness: 0.78,
-    metalness: 0,
-    polygonOffset: true,
-    polygonOffsetFactor: -4,
-    side: THREE.FrontSide
-  });
-  const mesh = new THREE.Mesh(geometry, material);
-  mesh.renderOrder = 10;
-  decalGroup.add(mesh);
-  return true;
-}
-
-function disposeDecalObject(object) {
-  object.geometry?.dispose?.();
-  const list = Array.isArray(object.material) ? object.material : [object.material];
-  for (const material of list) {
-    if (material?.map?.userData?.sportswearOwned) material.map.dispose();
-    material?.dispose?.();
-  }
-}
-
-function clearDecals() {
-  if (!decalGroup) return;
-  for (const child of [...decalGroup.children]) {
-    decalGroup.remove(child);
-    disposeDecalObject(child);
-  }
-}
-
-function rebuildDecals() {
-  if (!modelReady) { updateOutput(); return; }
-  clearDecals();
-  const failures = [];
-  const p = state.personalization;
-  if (p.name) {
-    const t = textTexture(p.name, p.font, p.color, "name");
-    if (!addDecal({ ...p.backName, texture: t.texture, aspect: t.aspect })) failures.push("nome retro");
-  }
-  if (p.number) {
-    const t = textTexture(p.number, p.font, p.color, "number");
-    if (!addDecal({ ...p.backNumber, texture: t.texture, aspect: t.aspect })) failures.push("numero retro");
-    if (p.frontNumberEnabled) {
-      const f = textTexture(p.number, p.font, p.color, "number");
-      if (!addDecal({ ...p.frontNumber, texture: f.texture, aspect: f.aspect })) failures.push("numero fronte");
-    }
-  }
-  for (const graphic of state.graphics) {
-    if (!graphic.image) continue;
-    const image = imageTexture(graphic.image);
-    if (!addDecal({ surface: graphic.surface, x: graphic.x, y: graphic.y, scale: graphic.scale, rotation: graphic.rotation, opacity: graphic.opacity, texture: image.texture, aspect: image.aspect })) failures.push(`${graphic.type} #${graphic.id}`);
-  }
-  setMessage(dom["graphics-message"], failures.length ? `Elementi non proiettati: ${failures.join(", ")}` : "", failures.length ? "error" : "");
-  updateOutput();
-}
-
-function addGraphic(type) {
-  if (state.graphics.length >= MAX_GRAPHICS) return;
+function defaultGraphic(type) {
   const defaults = {
-    logo: { surface: "shirt-front", x: 32, y: 27, scale: 16 },
-    sponsor: { surface: "shirt-front", x: 50, y: 47, scale: 34 },
-    patch: { surface: "left-sleeve", x: 52, y: 46, scale: 24 },
-    badge: { surface: "shirt-front", x: 68, y: 27, scale: 15 }
-  }[type];
-  state.graphics.push({ id: nextGraphicId++, type, surface: defaults.surface, x: defaults.x, y: defaults.y, scale: defaults.scale, rotation: 0, opacity: 1, image: null, objectUrl: "" });
-  renderGraphics();
-  updateOutput();
-}
-
-function removeGraphic(id) {
-  const index = state.graphics.findIndex((graphic) => graphic.id === id);
-  if (index < 0) return;
-  const [graphic] = state.graphics.splice(index, 1);
-  if (graphic.objectUrl) URL.revokeObjectURL(graphic.objectUrl);
-  renderGraphics();
-  rebuildDecals();
-}
-
-function fieldSelect(label, options, value, onChange) {
-  const wrapper = document.createElement("label");
-  wrapper.className = "field";
-  wrapper.textContent = label;
-  const select = document.createElement("select");
-  for (const optionData of options) {
-    const option = document.createElement("option");
-    option.value = optionData.value;
-    option.textContent = optionData.label;
-    option.selected = optionData.value === value;
-    select.appendChild(option);
-  }
-  select.addEventListener("change", () => onChange(select.value));
-  wrapper.appendChild(select);
-  return wrapper;
-}
-
-function graphicSlider(container, graphic, key, label, min, max, step = 1, suffix = "%") {
-  slider(container, `graphic-${graphic.id}-${key}`, label, min, max, step, graphic[key], (value) => { graphic[key] = value; rebuildDecals(); }, suffix);
-}
-
-function renderGraphics() {
-  dom["graphics-list"].innerHTML = "";
-  const labels = { logo: "Logo", sponsor: "Sponsor", patch: "Patch / scudetto", badge: "Badge" };
-  for (const graphic of state.graphics) {
-    const card = document.createElement("div");
-    card.className = "graphic-card";
-    const head = document.createElement("div");
-    head.className = "graphic-head";
-    const title = document.createElement("strong");
-    title.textContent = `${labels[graphic.type]} #${graphic.id}`;
-    const remove = document.createElement("button");
-    remove.type = "button";
-    remove.className = "remove-btn";
-    remove.textContent = "Rimuovi";
-    remove.addEventListener("click", () => removeGraphic(graphic.id));
-    head.append(title, remove);
-
-    const grid = document.createElement("div");
-    grid.className = "graphic-grid";
-    const fileLabel = document.createElement("label");
-    fileLabel.className = "field wide";
-    fileLabel.textContent = "Immagine (PNG trasparente consigliato)";
-    const file = document.createElement("input");
-    file.type = "file";
-    file.accept = "image/png,image/jpeg,image/webp";
-    file.addEventListener("change", () => {
-      const selected = file.files?.[0];
-      if (!selected) return;
-      if (!IMAGE_TYPES.has(selected.type) || selected.size > MAX_IMAGE_BYTES) {
-        setMessage(dom["graphics-message"], "Immagine non valida o oltre 8 MB.", "error");
-        file.value = "";
-        return;
-      }
-      if (graphic.objectUrl) URL.revokeObjectURL(graphic.objectUrl);
-      const url = URL.createObjectURL(selected);
-      const image = new Image();
-      image.onload = () => {
-        graphic.objectUrl = url;
-        graphic.image = image;
-        renderGraphics();
-        rebuildDecals();
-      };
-      image.onerror = () => {
-        URL.revokeObjectURL(url);
-        setMessage(dom["graphics-message"], "Immagine non leggibile.", "error");
-      };
-      image.src = url;
-    });
-    fileLabel.appendChild(file);
-    grid.appendChild(fileLabel);
-    grid.appendChild(fieldSelect("Superficie", SURFACES.map((surface) => ({ value: surface.id, label: surface.label })), graphic.surface, (value) => { graphic.surface = value; rebuildDecals(); }));
-
-    const thumb = document.createElement("div");
-    thumb.className = "thumb";
-    if (graphic.objectUrl) {
-      const image = document.createElement("img");
-      image.src = graphic.objectUrl;
-      image.alt = "Anteprima grafica";
-      thumb.appendChild(image);
-    } else thumb.textContent = "Nessuna immagine";
-    grid.appendChild(thumb);
-
-    graphicSlider(grid, graphic, "x", "Orizzontale", 5, 95);
-    graphicSlider(grid, graphic, "y", "Verticale", 5, 95);
-    graphicSlider(grid, graphic, "scale", "Scala", 5, 75);
-    graphicSlider(grid, graphic, "rotation", "Rotazione", -180, 180, 1, "°");
-    graphicSlider(grid, graphic, "opacity", "Opacità", 0.1, 1, 0.05, "");
-    card.append(head, grid);
-    dom["graphics-list"].appendChild(card);
-  }
-  dom["graphics-count"].textContent = `${state.graphics.length} / ${MAX_GRAPHICS}`;
-  const disabled = state.graphics.length >= MAX_GRAPHICS;
-  for (const id of ["add-logo", "add-sponsor", "add-patch", "add-badge"]) dom[id].disabled = disabled;
-}
-
-function payload() {
-  const p = state.personalization;
+    logo: { surface: "shirt-front", x: 38, y: 32, scale: 14 },
+    sponsor: { surface: "shirt-front", x: 50, y: 52, scale: 30 },
+    patch: { surface: "right-sleeve", x: 50, y: 42, scale: 18 },
+    badge: { surface: "shorts-right", x: 50, y: 35, scale: 18 }
+  }[type] || { surface: "shirt-front", x: 50, y: 50, scale: 20 };
   return {
-    v: 2,
-    sport: "football",
-    model: "procedural-kit-v2",
-    colors: Object.fromEntries(PARTS.map((part) => [part.id, state.colors[part.id]])),
-    patterns: Object.fromEntries(PARTS.map((part) => {
-      const pattern = state.patterns[part.id];
-      return [part.id, { image_present: Boolean(pattern.image), repeat: pattern.repeat, rotation: pattern.rotation, offset_x: pattern.offsetX, offset_y: pattern.offsetY, opacity: pattern.opacity }];
-    })),
-    personalization: {
-      name: p.name,
-      number: p.number,
-      font: p.font,
-      custom_font_present: p.customFontPresent,
-      color: p.color,
-      front_number_enabled: p.frontNumberEnabled,
-      back_name: { ...p.backName },
-      back_number: { ...p.backNumber },
-      front_number: { ...p.frontNumber }
-    },
-    graphics: state.graphics.map((graphic) => ({ type: graphic.type, surface: graphic.surface, x: graphic.x, y: graphic.y, scale: graphic.scale, rotation: graphic.rotation, opacity: graphic.opacity, image_present: Boolean(graphic.image) }))
+    id: nextGraphicId++, type, ...defaults, rotation: 0, opacity: 1,
+    texture: null, objectUrl: null, aspect: 1, imagePresent: false
   };
 }
 
-function readableSummary() {
-  const patterns = PARTS.filter((part) => state.patterns[part.id].image).map((part) => part.label);
-  const graphics = state.graphics.filter((graphic) => graphic.image).length;
-  return [
-    `Nome: ${state.personalization.name || "—"}`,
-    `Numero/caratteri: ${state.personalization.number || "—"}`,
-    `Font: ${FONTS[state.personalization.font]?.label || state.personalization.font}`,
-    `Fantasie caricate: ${patterns.length ? patterns.join(", ") : "nessuna"}`,
-    `Loghi/sponsor/patch caricati: ${graphics}`,
-    `Numero fronte: ${state.personalization.frontNumberEnabled ? "Sì" : "No"}`
-  ].join("\n");
+function addGraphic(type) {
+  if (state.graphics.length >= MAX_GRAPHICS) {
+    message(dom["graphics-message"], `Massimo ${MAX_GRAPHICS} elementi.`, "error");
+    return;
+  }
+  state.graphics.push(defaultGraphic(type));
+  renderGraphics();
+  updateOutput();
+}
+function removeGraphic(id) {
+  const index = state.graphics.findIndex((g) => g.id === id);
+  if (index < 0) return;
+  const [graphic] = state.graphics.splice(index, 1);
+  graphic.texture?.dispose?.();
+  if (graphic.objectUrl) URL.revokeObjectURL(graphic.objectUrl);
+  renderGraphics();
+  rebuildDecals();
+  updateOutput();
+}
+
+function graphicCard(graphic) {
+  const surfaces = SURFACES.map((s) => `<option value="${s.id}"${s.id === graphic.surface ? " selected" : ""}>${escapeHtml(s.label)}</option>`).join("");
+  return `<div class="graphic-card" data-graphic="${graphic.id}">
+    <div class="graphic-head"><strong>${escapeHtml(graphic.type)}</strong><button type="button" data-remove="${graphic.id}">Rimuovi</button></div>
+    <div class="graphic-grid">
+      <label>Superficie<select data-field="surface">${surfaces}</select></label>
+      <label>Immagine<input data-field="file" type="file" accept="image/png,image/jpeg,image/webp"></label>
+    </div>
+    <div class="graphic-preview" data-preview>${graphic.objectUrl ? `<img src="${graphic.objectUrl}" alt="">` : "Nessuna immagine"}</div>
+    <div class="sliders">
+      ${sliderMarkup("X", "x", graphic.x, 5, 95, 1, "%")}
+      ${sliderMarkup("Y", "y", graphic.y, 5, 95, 1, "%")}
+      ${sliderMarkup("Scala", "scale", graphic.scale, 4, 70, 1, "%")}
+      ${sliderMarkup("Rotaz.", "rotation", graphic.rotation, -180, 180, 1, "°")}
+      ${sliderMarkup("Opacità", "opacity", graphic.opacity, 0.1, 1, 0.05, "")}
+    </div>
+  </div>`;
+}
+
+function renderGraphics() {
+  dom["graphics-count"].textContent = `${state.graphics.length} / ${MAX_GRAPHICS}`;
+  dom["graphics-list"].innerHTML = state.graphics.map(graphicCard).join("");
+  dom["graphics-list"].querySelectorAll("[data-graphic]").forEach((card) => {
+    const graphic = state.graphics.find((g) => g.id === Number(card.dataset.graphic));
+    card.querySelector("[data-remove]").addEventListener("click", () => removeGraphic(graphic.id));
+    card.querySelector('[data-field="surface"]').addEventListener("change", (event) => {
+      graphic.surface = event.target.value;
+      rebuildDecals(); updateOutput();
+    });
+    card.querySelector('[data-field="file"]').addEventListener("change", async (event) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      if (!ALLOWED_IMAGE_TYPES.has(file.type) || file.size > MAX_IMAGE_BYTES) {
+        message(dom["graphics-message"], "Usa PNG/JPG/WebP fino a 8 MB.", "error");
+        event.target.value = "";
+        return;
+      }
+      graphic.texture?.dispose?.();
+      if (graphic.objectUrl) URL.revokeObjectURL(graphic.objectUrl);
+      const objectUrl = URL.createObjectURL(file);
+      try {
+        const texture = await textureLoader.loadAsync(objectUrl);
+        texture.colorSpace = THREE.SRGBColorSpace;
+        texture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+        const image = texture.image;
+        graphic.aspect = image?.width && image?.height ? image.width / image.height : 1;
+        graphic.texture = texture;
+        graphic.objectUrl = objectUrl;
+        graphic.imagePresent = true;
+        card.querySelector("[data-preview]").innerHTML = `<img src="${objectUrl}" alt="">`;
+        message(dom["graphics-message"], `${graphic.type} caricato.`, "ok");
+        rebuildDecals(); updateOutput();
+      } catch (error) {
+        URL.revokeObjectURL(objectUrl);
+        console.error(error);
+        message(dom["graphics-message"], "Immagine non leggibile.", "error");
+      }
+    });
+    card.querySelectorAll("input[data-key]").forEach((input) => {
+      input.addEventListener("input", () => {
+        const key = input.dataset.key;
+        graphic[key] = Number(input.value);
+        const out = card.querySelector(`[data-out="${key}"]`);
+        const suffix = key === "rotation" ? "°" : ["x", "y", "scale"].includes(key) ? "%" : "";
+        out.textContent = `${Number(input.value).toFixed(Number(input.step) < 1 ? 2 : 0)}${suffix}`;
+        rebuildDecals(); updateOutput();
+      });
+    });
+  });
+}
+
+function safePatternPayload(p) {
+  return { present: p.present, repeat_x: p.repeatX, repeat_y: p.repeatY, rotation: p.rotation, offset_x: p.offsetX, offset_y: p.offsetY };
+}
+function payloadObject() {
+  return {
+    v: 3,
+    sport: "football",
+    model_source: "verified-mit-garment-assets",
+    colors: { ...state.colors },
+    show_socks: state.showSocks,
+    patterns: {
+      shirt: safePatternPayload(state.patterns.shirt),
+      shorts: safePatternPayload(state.patterns.shorts),
+      socks: safePatternPayload(state.patterns.socks)
+    },
+    personalization: {
+      name: state.personalization.name,
+      number: state.personalization.number,
+      font: state.personalization.font === "custom" ? "custom" : state.personalization.font,
+      custom_font_present: state.personalization.font === "custom" && Boolean(state.personalization.customFontFamily),
+      color: state.personalization.color,
+      front_number_enabled: state.personalization.frontNumberEnabled,
+      back_name: { ...state.personalization.backName },
+      back_number: { ...state.personalization.backNumber },
+      front_number: { ...state.personalization.frontNumber }
+    },
+    graphics: state.graphics.map((g) => ({
+      type: g.type, surface: g.surface, x: g.x, y: g.y, scale: g.scale,
+      rotation: g.rotation, opacity: g.opacity, image_present: g.imagePresent
+    }))
+  };
 }
 
 function updateOutput() {
-  const data = payload();
-  window.__payload3d = data;
-  dom.payload.value = JSON.stringify(data);
-  dom.summary.innerHTML = `<strong>Configurazione corrente</strong><br>${readableSummary().split("\n").map(escapeHtml).join("<br>")}`;
+  const payload = payloadObject();
+  window.__payload3d = payload;
+  dom["payload"].value = JSON.stringify(payload, null, 2);
+  const patternCount = Object.values(payload.patterns).filter((p) => p.present).length;
+  const graphicsWithImage = payload.graphics.filter((g) => g.image_present).length;
+  dom["summary"].innerHTML = [
+    ["Maglia", state.colors.shirt],
+    ["Pantaloncini", state.colors.shorts],
+    ["Nome / numero", `${state.personalization.name || "—"} · ${state.personalization.number || "—"}`],
+    ["Font", currentFont().label],
+    ["Fantasie caricate", String(patternCount)],
+    ["Loghi / patch con immagine", String(graphicsWithImage)]
+  ].map(([a, b]) => `<div class="summary-row"><span>${escapeHtml(a)}</span><span>${escapeHtml(b)}</span></div>`).join("");
 }
 
 async function copyPayload() {
-  const original = "Copia codice preventivo";
-  const text = dom.payload.value;
-  let copied = false;
-  if (navigator.clipboard?.writeText) {
-    try {
-      await navigator.clipboard.writeText(text);
-      copied = true;
-    } catch (error) {
-      console.warn("Clipboard API non disponibile, provo fallback", error);
-    }
-  }
-  if (!copied) {
-    dom.payload.focus();
-    dom.payload.select();
-    try { copied = document.execCommand("copy") === true; } catch (error) { copied = false; }
-  }
-  if (!copied) {
-    dom.payload.focus();
-    dom.payload.select();
-    setMessage(dom["output-message"], "Copia automatica non riuscita: il codice resta selezionato.", "error");
-    return;
+  const text = dom["payload"].value;
+  try {
+    if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(text);
+    else throw new Error("Clipboard API unavailable");
+  } catch (_) {
+    dom["payload"].focus(); dom["payload"].select();
+    document.execCommand("copy");
   }
   dom["copy-payload"].textContent = "Copiato ✓";
-  setMessage(dom["output-message"], "Codice configurazione copiato.", "ok");
-  clearTimeout(copyTimer);
-  copyTimer = setTimeout(() => { dom["copy-payload"].textContent = original; }, 2000);
+  clearTimeout(copyResetTimer);
+  copyResetTimer = setTimeout(() => { dom["copy-payload"].textContent = "Copia codice"; }, 2000);
+  message(dom["output-message"], "Configurazione copiata.", "ok");
 }
 
 function sendEmail() {
-  const subject = "Preventivo kit sportivo — [ATTIVITA]";
-  const body = `Attività: [ATTIVITA]\n\n${readableSummary()}\n\nContatto: [TEL]\n\nCodice configurazione: ${JSON.stringify(window.__payload3d)}`;
-  window.location.href = `mailto:${encodeURIComponent("[EMAIL_ATTIVITA]")}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  const subject = encodeURIComponent("Preventivo kit sportivo — [ATTIVITA]");
+  const body = encodeURIComponent(`Buongiorno [ATTIVITA],\n\nvorrei un preventivo per questa configurazione:\n\n${dom["payload"].value}\n\nRecapito: [TEL]`);
+  location.href = `mailto:[EMAIL_ATTIVITA]?subject=${subject}&body=${body}`;
 }
 
-function wireUi() {
-  for (const part of PARTS) {
-    const option = document.createElement("option");
-    option.value = part.id;
-    option.textContent = part.label;
-    dom["pattern-part"].appendChild(option);
+function setView(name, immediate = false) {
+  const target = controls.target.clone();
+  const distance = camera.position.distanceTo(target);
+  const positions = {
+    front: new THREE.Vector3(0, target.y, distance),
+    back: new THREE.Vector3(0, target.y, -distance),
+    left: new THREE.Vector3(-distance, target.y, 0),
+    right: new THREE.Vector3(distance, target.y, 0)
+  };
+  const end = positions[name] || positions.front;
+  dom["view-badge"].textContent = name === "front" ? "Fronte" : name === "back" ? "Retro" : name === "left" ? "Sinistra" : "Destra";
+  document.querySelectorAll("[data-view]").forEach((button) => button.classList.toggle("active", button.dataset.view === name));
+  if (immediate) {
+    camera.position.copy(end); controls.update(); viewTween = null; return;
   }
-  buildPatternControls();
-  dom["pattern-part"].addEventListener("change", () => { dom["pattern-file"].value = ""; buildPatternControls(); setMessage(dom["pattern-message"], ""); });
-  dom["pattern-file"].addEventListener("change", () => handlePatternFile(dom["pattern-file"].files?.[0]));
-  dom["pattern-clear"].addEventListener("click", clearPattern);
+  viewTween = { start: camera.position.clone(), end, started: performance.now(), duration: 520 };
+}
 
-  buildFontOptions();
-  dom["player-name"].addEventListener("input", () => { const value = cleanText(dom["player-name"].value, 24); dom["player-name"].value = value; state.personalization.name = value; rebuildDecals(); });
-  dom["player-number"].addEventListener("input", () => { const value = cleanText(dom["player-number"].value, 6); dom["player-number"].value = value; state.personalization.number = value; rebuildDecals(); });
-  dom["player-font"].addEventListener("change", () => { state.personalization.font = dom["player-font"].value; state.personalization.customFontPresent = state.personalization.font === "custom-upload"; rebuildDecals(); });
-  dom["print-color"].addEventListener("input", () => { state.personalization.color = safeColor(dom["print-color"].value); rebuildDecals(); });
-  dom["custom-font-file"].addEventListener("change", () => loadCustomFont(dom["custom-font-file"].files?.[0]));
-  dom["front-number-toggle"].addEventListener("change", () => { state.personalization.frontNumberEnabled = dom["front-number-toggle"].checked; dom["front-number-card"].hidden = !state.personalization.frontNumberEnabled; rebuildDecals(); });
+function updateViewTween(now) {
+  if (!viewTween) return;
+  const t = clamp((now - viewTween.started) / viewTween.duration, 0, 1);
+  const e = 1 - Math.pow(1 - t, 3);
+  camera.position.lerpVectors(viewTween.start, viewTween.end, e);
+  if (t >= 1) viewTween = null;
+}
 
-  document.querySelectorAll("[data-view]").forEach((button) => button.addEventListener("click", () => setView(button.dataset.view)));
+function bindUi() {
+  dom["shirt-color"].addEventListener("input", (e) => { state.colors.shirt = safeColor(e.target.value, state.colors.shirt); if (!state.patterns.shirt.present) applyPartMaterial("shirt"); updateOutput(); });
+  dom["shorts-color"].addEventListener("input", (e) => { state.colors.shorts = safeColor(e.target.value, state.colors.shorts); if (!state.patterns.shorts.present) applyPartMaterial("shorts"); updateOutput(); });
+  dom["socks-color"].addEventListener("input", (e) => { state.colors.socks = safeColor(e.target.value, state.colors.socks); if (!state.patterns.socks.present) applyPartMaterial("socks"); updateOutput(); });
+  dom["show-socks"].addEventListener("change", (e) => { state.showSocks = e.target.checked; if (roots.socks) roots.socks.visible = state.showSocks; refreshBounds(); rebuildDecals(); updateOutput(); });
+
+  dom["pattern-part"].addEventListener("change", (e) => { state.patternPart = e.target.value; syncPatternControls(); message(dom["pattern-message"]); });
+  dom["pattern-file"].addEventListener("change", (e) => loadPatternFile(e.target.files?.[0]));
+  ["pattern-repeat-x", "pattern-repeat-y", "pattern-rotation", "pattern-offset-x", "pattern-offset-y"].forEach((id) => dom[id].addEventListener("input", readPatternControls));
+  dom["clear-pattern"].addEventListener("click", () => { disposePattern(state.patternPart); dom["pattern-file"].value = ""; message(dom["pattern-message"], "Fantasia rimossa.", "ok"); updateOutput(); });
+
+  dom["player-name"].addEventListener("input", (e) => { state.personalization.name = cleanText(e.target.value, 24); rebuildDecals(); updateOutput(); });
+  dom["player-number"].addEventListener("input", (e) => { state.personalization.number = cleanText(e.target.value, 6); rebuildDecals(); updateOutput(); });
+  dom["player-font"].addEventListener("change", (e) => { state.personalization.font = e.target.value; rebuildDecals(); updateOutput(); });
+  dom["print-color"].addEventListener("input", (e) => { state.personalization.color = safeColor(e.target.value); rebuildDecals(); updateOutput(); });
+  dom["custom-font-file"].addEventListener("change", (e) => loadCustomFont(e.target.files?.[0]));
+  dom["front-number-toggle"].addEventListener("change", (e) => { state.personalization.frontNumberEnabled = e.target.checked; dom["front-number-card"].hidden = !e.target.checked; rebuildDecals(); updateOutput(); });
+
+  renderTextControls(dom["back-name-controls"], state.personalization.backName, () => { rebuildDecals(); updateOutput(); });
+  renderTextControls(dom["back-number-controls"], state.personalization.backNumber, () => { rebuildDecals(); updateOutput(); });
+  renderTextControls(dom["front-number-controls"], state.personalization.frontNumber, () => { rebuildDecals(); updateOutput(); });
+
   dom["add-logo"].addEventListener("click", () => addGraphic("logo"));
   dom["add-sponsor"].addEventListener("click", () => addGraphic("sponsor"));
   dom["add-patch"].addEventListener("click", () => addGraphic("patch"));
   dom["add-badge"].addEventListener("click", () => addGraphic("badge"));
   dom["copy-payload"].addEventListener("click", copyPayload);
   dom["send-email"].addEventListener("click", sendEmail);
+  document.querySelectorAll("[data-view]").forEach((button) => button.addEventListener("click", () => setView(button.dataset.view)));
 }
 
-function disposeRuntimeObjects() {
-  for (const pattern of Object.values(state.patterns)) if (pattern.objectUrl) URL.revokeObjectURL(pattern.objectUrl);
-  for (const graphic of state.graphics) if (graphic.objectUrl) URL.revokeObjectURL(graphic.objectUrl);
-  if (customFontUrl) URL.revokeObjectURL(customFontUrl);
-}
-
-function main() {
-  buildPartColors();
-  buildPersonalizationControls();
-  renderGraphics();
-  wireUi();
-  updateOutput();
-  initThree();
-  PARTS.forEach((part) => updatePartAppearance(part.id));
-  rebuildDecals();
-  dom["loading-overlay"].hidden = true;
-  setStatus("Divisa 3D pronta — 360°", "ready");
-  window.addEventListener("beforeunload", disposeRuntimeObjects);
-  window.__sportswear3d = {
-    state,
-    setView,
-    rebuildDecals,
-    payload,
-    model: "procedural-kit-v2",
-    surfaces: SURFACES.map((surface) => surface.id),
-    parts: PARTS.map((part) => part.id)
+function diagnostics() {
+  const box = (part) => ({ min: bounds[part].min.toArray(), max: bounds[part].max.toArray(), size: bounds[part].getSize(new THREE.Vector3()).toArray() });
+  return {
+    ready,
+    three_revision: THREE.REVISION,
+    webgl2: renderer?.capabilities?.isWebGL2 ?? false,
+    donor_assets: DONORS,
+    meshes: { shirt: meshes.shirt.length, shorts: meshes.shorts.length, socks: meshes.socks.length },
+    bounds: { shirt: box("shirt"), shorts: box("shorts"), socks: box("socks") },
+    decals: decalGroup?.children?.length ?? 0,
+    show_socks: state.showSocks,
+    payload: payloadObject()
   };
 }
 
-try { main(); }
-catch (error) {
-  console.error(error);
-  dom["loading-title"].textContent = "Errore configuratore";
-  dom["loading-copy"].textContent = String(error?.message || error);
-  dom["loading-overlay"].hidden = false;
-  setStatus("Errore configuratore", "error");
+function animate(now) {
+  requestAnimationFrame(animate);
+  updateViewTween(now);
+  controls.update();
+  renderer.render(scene, camera);
 }
+
+async function boot() {
+  try {
+    initScene();
+    requestAnimationFrame(animate);
+    populateFonts();
+    renderGraphics();
+    syncPatternControls();
+    bindUi();
+    updateOutput();
+    setStatus("Caricamento mesh reali");
+    await loadKit();
+    ready = true;
+    refreshBounds();
+    rebuildDecals();
+    dom["loading-overlay"].hidden = true;
+    setStatus("Divisa 3D pronta — mesh reali", "ok");
+    setView("front", true);
+    updateOutput();
+    window.__sportswear3d.ready = true;
+    window.__sportswear3d.diagnostics = diagnostics;
+  } catch (error) {
+    fatal("Caricamento 3D fallito", "La divisa non può essere mostrata. Controlla la console.", error);
+  }
+}
+
+window.__sportswear3d = {
+  ready: false,
+  donors: DONORS,
+  state,
+  setView,
+  rebuildDecals,
+  payload: payloadObject,
+  diagnostics,
+  version: "football-real-garment-v3"
+};
+
+window.addEventListener("beforeunload", () => {
+  for (const p of Object.values(state.patterns)) { p.texture?.dispose?.(); if (p.objectUrl) URL.revokeObjectURL(p.objectUrl); }
+  for (const g of state.graphics) { g.texture?.dispose?.(); if (g.objectUrl) URL.revokeObjectURL(g.objectUrl); }
+  if (customFontObjectUrl) URL.revokeObjectURL(customFontObjectUrl);
+});
+
+boot();
