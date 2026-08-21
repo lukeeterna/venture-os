@@ -33,6 +33,12 @@ jobs:
             "https://raw.githubusercontent.com/pmndrs/examples/be95c387abb15d41d388bca4e2d1568690935a5c/examples/t-shirt-configurator/src/shirt_baked_collapsed.glb" \
             -o "$ASSETS/football-shirt.glb"
           curl --fail --location --retry 3 \
+            "https://raw.githubusercontent.com/pmndrs/examples/be95c387abb15d41d388bca4e2d1568690935a5c/examples/t-shirt-configurator/src/shirt_baked_2.glb" \
+            -o "$ASSETS/football-shirt-baked2.glb"
+          curl --fail --location --retry 3 \
+            "https://raw.githubusercontent.com/pmndrs/examples/be95c387abb15d41d388bca4e2d1568690935a5c/examples/t-shirt-configurator/src/shirt_baked_lower2.glb" \
+            -o "$ASSETS/football-shirt-lower2.glb"
+          curl --fail --location --retry 3 \
             "https://raw.githubusercontent.com/madjin/asset-pallet/7243319029382f5799f03162cc6bf10795f9951d/models/shorts.glb" \
             -o "$ASSETS/football-shorts.glb"
           curl --fail --location --retry 3 \
@@ -60,9 +66,11 @@ jobs:
             printf '%s  %s\n' "$actual" "$file"
             test "$actual" = "$expected"
           }
-          check_blob "$ROOT/football-shirt.glb"  9c7609eddfd597a70cb708f96bc19841766b3488
-          check_blob "$ROOT/football-shorts.glb" 3222095f45778676f967c08bf1962af5306e111b
-          check_blob "$ROOT/football-socks.glb"  44667afdfc03d73aad1b556899d41f4af8a6f2e3
+          check_blob "$ROOT/football-shirt.glb"        9c7609eddfd597a70cb708f96bc19841766b3488
+          check_blob "$ROOT/football-shirt-baked2.glb" b8fdcbcfacf9b842323045009a10b70abe1d8889
+          check_blob "$ROOT/football-shirt-lower2.glb" 1a14068cb85a72e12d82cd58dc7cc7840d1d693e
+          check_blob "$ROOT/football-shorts.glb"       3222095f45778676f967c08bf1962af5306e111b
+          check_blob "$ROOT/football-socks.glb"        44667afdfc03d73aad1b556899d41f4af8a6f2e3
           echo "DONOR_BINARY_BLOBS=PASS"
 
       - name: Record donor GLB geometry metadata
@@ -96,13 +104,7 @@ jobs:
                   for pi, prim in enumerate(mesh.get('primitives', [])):
                       pos_idx = prim.get('attributes', {}).get('POSITION')
                       acc = accessors[pos_idx] if pos_idx is not None else {}
-                      primitives.append({
-                          'primitive': pi,
-                          'position_accessor': pos_idx,
-                          'min': acc.get('min'),
-                          'max': acc.get('max'),
-                          'material': prim.get('material')
-                      })
+                      primitives.append({'primitive': pi, 'position_accessor': pos_idx, 'min': acc.get('min'), 'max': acc.get('max'), 'material': prim.get('material')})
                   meshes.append({'index': mi, 'name': mesh.get('name'), 'primitives': primitives})
               out[path.name] = {
                   'generator': doc.get('asset', {}).get('generator'),
@@ -123,6 +125,8 @@ jobs:
           git config user.email "sportswear3d-ci@users.noreply.github.com"
           git add -- \
             ventures/run_20260711_161411/configurator/assets/vendor/football-shirt.glb \
+            ventures/run_20260711_161411/configurator/assets/vendor/football-shirt-baked2.glb \
+            ventures/run_20260711_161411/configurator/assets/vendor/football-shirt-lower2.glb \
             ventures/run_20260711_161411/configurator/assets/vendor/football-shorts.glb \
             ventures/run_20260711_161411/configurator/assets/vendor/football-socks.glb \
             ventures/run_20260711_161411/configurator/vendor/three-r160/examples/jsm/loaders/GLTFLoader.js \
@@ -133,5 +137,5 @@ jobs:
             echo "No vendor changes required"
             exit 0
           fi
-          git commit -m "sportswear3d: record verified donor geometry"
+          git commit -m "sportswear3d: vendor verified shirt candidates"
           git push origin HEAD:sol/mt3d-football-production-20260816
