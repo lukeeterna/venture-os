@@ -31,7 +31,12 @@ jobs:
           ROOT="ventures/run_20260711_161411/configurator"
           node --check "$ROOT/src/app.js"
           node --check "$ROOT/verify/visual-ci.cjs"
+          node --check "$ROOT/verify/candidate-ci.cjs"
+          node --check "$ROOT/verify/candidate-viewer.js"
           test -s "$ROOT/assets/vendor/football-shirt.glb"
+          test -s "$ROOT/assets/vendor/football-shirt-baked2.glb"
+          test -s "$ROOT/assets/vendor/football-shirt-lower2.glb"
+          test -s "$ROOT/assets/vendor/football-shirt-madjin-apose2.glb"
           test -s "$ROOT/assets/vendor/football-shorts.glb"
           test -s "$ROOT/assets/vendor/football-socks.glb"
           echo "STATIC_AND_ASSETS=PASS"
@@ -42,6 +47,7 @@ jobs:
           set -euo pipefail
           ROOT="ventures/run_20260711_161411/configurator"
           mkdir -p "$ROOT/verify/fixtures" "$ROOT/verify/visual-output"
+          rm -f "$ROOT/verify/visual-output"/*
           python3 - <<'PY'
           import pathlib, struct, zlib
           root = pathlib.Path('ventures/run_20260711_161411/configurator/verify/fixtures')
@@ -93,6 +99,13 @@ jobs:
           set -euo pipefail
           ROOT="$GITHUB_WORKSPACE/ventures/run_20260711_161411/configurator"
           NODE_PATH=/tmp/sportswear-pw/node_modules SPORTSWEAR_URL=http://127.0.0.1:8282/ node "$ROOT/verify/visual-ci.cjs"
+
+      - name: Render shirt candidate comparison
+        shell: bash
+        run: |
+          set -euo pipefail
+          ROOT="$GITHUB_WORKSPACE/ventures/run_20260711_161411/configurator"
+          NODE_PATH=/tmp/sportswear-pw/node_modules SPORTSWEAR_URL=http://127.0.0.1:8282/ node "$ROOT/verify/candidate-ci.cjs"
 
       - name: Upload visual evidence
         if: always()
