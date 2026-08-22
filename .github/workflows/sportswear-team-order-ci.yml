@@ -34,8 +34,11 @@ jobs:
           set -euo pipefail
           ROOT="ventures/run_20260711_161411/configurator"
           node --check "$ROOT/src/team-order.js"
+          node --check "$ROOT/src/team-size-availability.js"
           node --check "$ROOT/verify/team-order-ci.cjs"
+          node --check "$ROOT/verify/team-size-ci.cjs"
           grep -q 'const teamOrder = import("./team-order.js")' "$ROOT/src/bootstrap.js"
+          grep -q 'await import("./team-size-availability.js")' "$ROOT/src/bootstrap.js"
           grep -q 'men: {' "$ROOT/src/team-order.js"
           grep -q 'women: {' "$ROOT/src/team-order.js"
           grep -q 'boys: {' "$ROOT/src/team-order.js"
@@ -74,3 +77,10 @@ jobs:
           set -euo pipefail
           ROOT="$GITHUB_WORKSPACE/ventures/run_20260711_161411/configurator"
           NODE_PATH=/tmp/sportswear-team-pw/node_modules SPORTSWEAR_URL=http://127.0.0.1:8282/ node "$ROOT/verify/team-order-ci.cjs"
+
+      - name: Fabric-specific size availability acceptance
+        shell: bash
+        run: |
+          set -euo pipefail
+          ROOT="$GITHUB_WORKSPACE/ventures/run_20260711_161411/configurator"
+          NODE_PATH=/tmp/sportswear-team-pw/node_modules SPORTSWEAR_URL=http://127.0.0.1:8282/ node "$ROOT/verify/team-size-ci.cjs"
