@@ -45,6 +45,7 @@ jobs:
           node --check "$ROOT/src/football-realism.js"
           node --check "$ROOT/src/football-crest-conformal.js"
           node --check "$ROOT/src/team-order.js"
+          node --check "$ROOT/src/team-size-availability.js"
           node --check "$ROOT/verify/visual-ci.cjs"
           node --check "$ROOT/verify/visual-ci-core.cjs"
           test -s "$ROOT/assets/vendor/football-shirt.glb"
@@ -53,7 +54,7 @@ jobs:
           grep -q 'football-real-garment-v4-conformal' "$ROOT/src/app.js"
           grep -q 'buildSurfaceOverlayGeometry' "$ROOT/src/app.js"
           grep -q 'football-realism-v6-physical-20260822' "$ROOT/src/football-realism.js"
-          grep -q 'football-crest-conformal-v1-20260822' "$ROOT/src/football-crest-conformal.js"
+          grep -q 'football-crest-conformal-v2-20260822' "$ROOT/src/football-crest-conformal.js"
           grep -q 'await import("./football-realism.js")' "$ROOT/src/bootstrap.js"
           grep -q 'await import("./football-crest-conformal.js")' "$ROOT/src/bootstrap.js"
           if grep -q 'football-realism-post.js\|football-realism-calibration.js' "$ROOT/src/bootstrap.js"; then echo "Legacy realism layers still loaded"; exit 1; fi
