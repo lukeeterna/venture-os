@@ -1,0 +1,103 @@
+name: Sportswear Backoffice CI
+
+on:
+  pull_request:
+    paths:
+      - 'ventures/run_20260711_161411/sportswear-backoffice/**'
+      - '.github/workflows/sportswear-backoffice-ci.yml'
+  push:
+    branches:
+      - 'sol/mt3d-football-production-20260816'
+    paths:
+      - 'ventures/run_20260711_161411/sportswear-backoffice/**'
+      - '.github/workflows/sportswear-backoffice-ci.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: sportswear
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/sportswear
+      STORE_CORS: http://127.0.0.1:8282
+      ADMIN_CORS: http://127.0.0.1:9000
+      AUTH_CORS: http://127.0.0.1:9000
+      JWT_SECRET: ci-jwt-secret-not-for-production
+      COOKIE_SECRET: ci-cookie-secret-not-for-production
+    steps:
+      - name: Checkout candidate
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install pinned Medusa backend
+        working-directory: ventures/run_20260711_161411/sportswear-backoffice
+        run: npm install --no-audit --no-fund
+
+      - name: Build backend and Admin
+        working-directory: ventures/run_20260711_161411/sportswear-backoffice
+        run: npm run build
+
+      - name: Migrate database
+        working-directory: ventures/run_20260711_161411/sportswear-backoffice
+        run: npm run db:migrate
+
+      - name: Initialize structural Sportswear catalog
+        working-directory: ventures/run_20260711_161411/sportswear-backoffice
+        run: npm run init:sportswear
+
+      - name: Verify idempotent catalog initialization
+        working-directory: ventures/run_20260711_161411/sportswear-backoffice
+        run: npm run init:sportswear | tee /tmp/sportswear-init-second.log
+
+      - name: Start Medusa
+        working-directory: ventures/run_20260711_161411/sportswear-backoffice
+        run: |
+          npm run start >/tmp/sportswear-medusa.log 2>&1 &
+          echo $! >/tmp/sportswear-medusa.pid
+          for i in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:9000/health >/dev/null; then
+              echo "MEDUSA_HEALTH=PASS"
+              exit 0
+            fi
+            sleep 2
+          done
+          cat /tmp/sportswear-medusa.log
+          exit 1
+
+      - name: Admin bundle smoke
+        run: |
+          set -euo pipefail
+          curl --fail --silent http://127.0.0.1:9000/app >/tmp/sportswear-admin.html
+          grep -qi '<html' /tmp/sportswear-admin.html
+          echo "MEDUSA_ADMIN=PASS"
+
+      - name: Verify structural products directly
+        working-directory: ventures/run_20260711_161411/sportswear-backoffice
+        run: |
+          npm run init:sportswear | tee /tmp/sportswear-init-third.log
+          grep -q 'SPORTSWEAR_CATALOG=ALREADY_PRESENT' /tmp/sportswear-init-third.log
+          echo "SPORTSWEAR_STRUCTURE=PASS"
+
+      - name: Dump logs on failure
+        if: failure()
+        run: cat /tmp/sportswear-medusa.log 2>/dev/null || true
