@@ -131,6 +131,48 @@
       }
     ]
   },
+  "football-shirt-madjin-apose2.glb": {
+    "generator": "Khronos glTF Blender I/O v3.3.27",
+    "materials": [
+      "tshirt"
+    ],
+    "meshes": [
+      {
+        "index": 0,
+        "name": "Body.baked.024",
+        "primitives": [
+          {
+            "material": 0,
+            "max": [
+              0.38639387488365173,
+              0.33309829235076904,
+              0.18215882778167725
+            ],
+            "min": [
+              -0.38154086470603943,
+              -0.3709155321121216,
+              -0.154599130153656
+            ],
+            "position_accessor": 0,
+            "primitive": 0
+          }
+        ]
+      }
+    ],
+    "nodes": [
+      {
+        "mesh": 0,
+        "name": "tshirt_apose",
+        "rotation": null,
+        "scale": null,
+        "translation": [
+          0,
+          0.34369194507598877,
+          0
+        ]
+      }
+    ]
+  },
   "football-shirt.glb": {
     "generator": "Khronos glTF Blender I/O v1.8.19",
     "materials": [
