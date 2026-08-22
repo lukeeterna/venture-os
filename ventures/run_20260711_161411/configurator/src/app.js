@@ -1,7 +1,6 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-import { DecalGeometry } from "three/addons/geometries/DecalGeometry.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 
 const ASSETS = Object.freeze({
@@ -69,8 +68,8 @@ const state = {
     customFontFamily: null,
     color: "#ffffff",
     frontNumberEnabled: false,
-    backName: { x: 50, y: 26, scale: 40, rotation: 0 },
-    backNumber: { x: 50, y: 53, scale: 48, rotation: 0 },
+    backName: { x: 50, y: 23, scale: 36, rotation: 0 },
+    backNumber: { x: 50, y: 55, scale: 44, rotation: 0 },
     frontNumber: { x: 50, y: 50, scale: 24, rotation: 0 }
   },
   graphics: []
@@ -106,7 +105,6 @@ const bounds = { shirt: new THREE.Box3(), shorts: new THREE.Box3(), socks: new T
 const materialRecords = { shirt: [], shorts: [], socks: [] };
 const raycaster = new THREE.Raycaster();
 const tmpSize = new THREE.Vector3();
-const zAxis = new THREE.Vector3(0, 0, 1);
 const textureLoader = new THREE.TextureLoader();
 
 function clamp(value, min, max) { return Math.min(max, Math.max(min, value)); }
@@ -253,6 +251,38 @@ function configureMesh(part, mesh) {
   mesh.material = Array.isArray(mesh.material) ? materials : materials[0];
 }
 
+function applyAthleticFit(root) {
+  const seen = new Set();
+  const smoothstep = (a, b, x) => {
+    const t = clamp((x - a) / Math.max(1e-6, b - a), 0, 1);
+    return t * t * (3 - 2 * t);
+  };
+  root.traverse((obj) => {
+    if (!obj.isMesh || !obj.geometry || seen.has(obj.geometry)) return;
+    seen.add(obj.geometry);
+    const geometry = obj.geometry;
+    const position = geometry.attributes?.position;
+    if (!position) return;
+    geometry.computeBoundingBox();
+    const box = geometry.boundingBox;
+    const height = Math.max(1e-6, box.max.y - box.min.y);
+    for (let i = 0; i < position.count; i++) {
+      const y = position.getY(i);
+      const t = clamp((y - box.min.y) / height, 0, 1);
+      const waist = Math.exp(-Math.pow((t - 0.36) / 0.28, 2));
+      const shoulder = smoothstep(0.72, 1.0, t);
+      const xFactor = 0.95 - 0.09 * waist + 0.05 * shoulder;
+      const zFactor = 0.90 + 0.10 * shoulder;
+      position.setX(i, position.getX(i) * xFactor);
+      position.setZ(i, position.getZ(i) * zFactor);
+    }
+    position.needsUpdate = true;
+    geometry.computeVertexNormals();
+    geometry.computeBoundingBox();
+    geometry.computeBoundingSphere();
+  });
+}
+
 async function loadKit() {
   const loader = new GLTFLoader();
   const [shirtGltf, shortsGltf, socksGltf] = await Promise.all([
@@ -268,6 +298,7 @@ async function loadKit() {
   roots.shorts.name = "donor-shorts";
   roots.socks.name = "donor-socks";
 
+  applyAthleticFit(roots.shirt);
   roots.shirt.scale.setScalar(7.0);
   roots.shirt.position.set(0, 1.50, 0);
 
@@ -403,27 +434,23 @@ function rayHit(meshList, origin, direction) {
   return { point: hit.point.clone(), normal: worldNormal(hit), mesh: hit.object };
 }
 
-function surfaceHit(surfaceId, xPct, yPct) {
+function surfaceRay(surfaceId, xPct, yPct) {
   const def = surfaceDef(surfaceId);
   const box = bounds[def.part];
-  if (box.isEmpty()) return null;
+  if (!box || box.isEmpty()) return null;
   const x = clamp(Number(xPct) || 50, 0, 100) / 100;
   const y = clamp(Number(yPct) || 50, 0, 100) / 100;
-  const sx = lerp(0.17, 0.83, x);
-  const sy = lerp(0.82, 0.18, y);
   const width = box.max.x - box.min.x;
   const height = box.max.y - box.min.y;
   const depth = box.max.z - box.min.z;
   const far = Math.max(width, height, depth) * 2.5 + 2;
+  const centerX = (box.min.x + box.max.x) * 0.5;
   let origin;
   let direction;
 
-  if (def.side === "front" || def.side === "back" || def.side === "front-left" || def.side === "front-right") {
-    let px;
-    if (def.side === "front-left") px = lerp(box.min.x + width * 0.10, box.min.x + width * 0.48, sx);
-    else if (def.side === "front-right") px = lerp(box.min.x + width * 0.52, box.max.x - width * 0.10, sx);
-    else px = lerp(box.min.x, box.max.x, sx);
-    const py = lerp(box.min.y, box.max.y, sy);
+  if (def.side === "front" || def.side === "back") {
+    const px = lerp(box.min.x + width * 0.16, box.max.x - width * 0.16, x);
+    const py = lerp(box.max.y - height * 0.15, box.min.y + height * 0.15, y);
     if (def.side === "back") {
       origin = new THREE.Vector3(px, py, box.min.z - far);
       direction = new THREE.Vector3(0, 0, 1);
@@ -431,9 +458,9 @@ function surfaceHit(surfaceId, xPct, yPct) {
       origin = new THREE.Vector3(px, py, box.max.z + far);
       direction = new THREE.Vector3(0, 0, -1);
     }
-  } else {
-    const py = lerp(box.min.y + height * 0.08, box.max.y - height * 0.08, sy);
-    const pz = lerp(box.max.z - depth * 0.12, box.min.z + depth * 0.12, sx);
+  } else if (def.side === "left" || def.side === "right") {
+    const py = lerp(box.max.y - height * 0.08, box.max.y - height * 0.43, y);
+    const pz = lerp(box.max.z - depth * 0.12, box.min.z + depth * 0.12, x);
     if (def.side === "left") {
       origin = new THREE.Vector3(box.min.x - far, py, pz);
       direction = new THREE.Vector3(1, 0, 0);
@@ -441,33 +468,102 @@ function surfaceHit(surfaceId, xPct, yPct) {
       origin = new THREE.Vector3(box.max.x + far, py, pz);
       direction = new THREE.Vector3(-1, 0, 0);
     }
+  } else {
+    const left = def.side === "front-left";
+    const px = left
+      ? lerp(box.min.x + width * 0.09, centerX - width * 0.04, x)
+      : lerp(centerX + width * 0.04, box.max.x - width * 0.09, x);
+    const py = lerp(box.max.y - height * 0.12, box.min.y + height * 0.12, y);
+    origin = new THREE.Vector3(px, py, box.max.z + far);
+    direction = new THREE.Vector3(0, 0, -1);
   }
-  return rayHit(meshes[def.part], origin, direction);
+  return { def, origin, direction, outward: direction.clone().negate() };
 }
 
-function projectorOrientation(normal, rotationDeg = 0) {
-  const q = new THREE.Quaternion().setFromUnitVectors(zAxis, normal.clone().normalize());
-  const roll = new THREE.Quaternion().setFromAxisAngle(zAxis, radians(rotationDeg));
-  q.multiply(roll);
-  return new THREE.Euler().setFromQuaternion(q, "XYZ");
+function surfaceHit(surfaceId, xPct, yPct) {
+  const ray = surfaceRay(surfaceId, xPct, yPct);
+  if (!ray) return null;
+  const hit = rayHit(meshes[ray.def.part], ray.origin, ray.direction);
+  if (!hit) return null;
+  if (hit.normal.dot(ray.outward) < 0) hit.normal.negate();
+  hit.outward = ray.outward;
+  return hit;
 }
 
-function makeDecal(target, texture, sizeX, sizeY, rotationDeg, opacity = 1) {
-  if (!target || !texture || !target.mesh) return null;
-  const position = target.point.clone().add(target.normal.clone().multiplyScalar(0.018));
-  const orientation = projectorOrientation(target.normal, rotationDeg);
-  const size = new THREE.Vector3(Math.max(0.02, sizeX), Math.max(0.02, sizeY), Math.max(0.18, Math.min(sizeX, sizeY) * 0.55));
-  let geometry;
-  try {
-    geometry = new DecalGeometry(target.mesh, position, orientation, size);
-  } catch (error) {
-    console.warn("DecalGeometry failed", error);
-    return null;
+function surfaceSafeSize(surfaceId) {
+  const def = surfaceDef(surfaceId);
+  const size = bounds[def.part].getSize(new THREE.Vector3());
+  if (def.side === "front" || def.side === "back") {
+    return { width: size.x * 0.68, height: size.y * 0.70 };
   }
-  if (!geometry.attributes.position || geometry.attributes.position.count === 0) {
-    geometry.dispose();
-    return null;
+  if (def.side === "left" || def.side === "right") {
+    return { width: Math.max(size.z * 0.76, size.x * 0.14), height: size.y * 0.35 };
   }
+  return { width: size.x * 0.37, height: size.y * 0.76 };
+}
+
+function buildSurfaceOverlayGeometry(surfaceId, xPct, yPct, sizeX, sizeY, rotationDeg = 0, cols = 8, rows = 6) {
+  const safe = surfaceSafeSize(surfaceId);
+  if (!safe.width || !safe.height) return null;
+  const spanX = clamp(sizeX / safe.width * 100, 2, 86);
+  const spanY = clamp(sizeY / safe.height * 100, 2, 86);
+  const angle = radians(rotationDeg);
+  const cos = Math.cos(angle);
+  const sin = Math.sin(angle);
+
+  for (const shrink of [1, 0.86, 0.72, 0.58]) {
+    const halfX = spanX * shrink * 0.5;
+    const halfY = spanY * shrink * 0.5;
+    const cx = clamp(Number(xPct) || 50, 2 + halfX, 98 - halfX);
+    const cy = clamp(Number(yPct) || 50, 2 + halfY, 98 - halfY);
+    const positions = [];
+    const normals = [];
+    const uvs = [];
+    let ok = true;
+
+    for (let row = 0; row <= rows && ok; row++) {
+      for (let col = 0; col <= cols; col++) {
+        const du = (col / cols - 0.5) * spanX * shrink;
+        const dv = (row / rows - 0.5) * spanY * shrink;
+        const rx = du * cos - dv * sin;
+        const ry = du * sin + dv * cos;
+        const hit = surfaceHit(surfaceId, cx + rx, cy + ry);
+        if (!hit) { ok = false; break; }
+        const point = hit.point.clone().add(hit.normal.clone().multiplyScalar(0.012));
+        positions.push(point.x, point.y, point.z);
+        normals.push(hit.normal.x, hit.normal.y, hit.normal.z);
+        uvs.push(col / cols, 1 - row / rows);
+      }
+    }
+    if (!ok) continue;
+
+    const indices = [];
+    const stride = cols + 1;
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        const a = row * stride + col;
+        const b = a + 1;
+        const c = a + stride;
+        const d = c + 1;
+        indices.push(a, c, b, b, c, d);
+      }
+    }
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+    geometry.setAttribute("normal", new THREE.Float32BufferAttribute(normals, 3));
+    geometry.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
+    geometry.setIndex(indices);
+    geometry.computeBoundingSphere();
+    geometry.userData.shrink = shrink;
+    return geometry;
+  }
+  return null;
+}
+
+function makeSurfaceOverlay(surfaceId, texture, xPct, yPct, sizeX, sizeY, rotationDeg, opacity = 1, cols = 8, rows = 6) {
+  if (!texture) return null;
+  const geometry = buildSurfaceOverlayGeometry(surfaceId, xPct, yPct, sizeX, sizeY, rotationDeg, cols, rows);
+  if (!geometry) return null;
   const material = new THREE.MeshStandardMaterial({
     map: texture,
     transparent: true,
@@ -475,18 +571,18 @@ function makeDecal(target, texture, sizeX, sizeY, rotationDeg, opacity = 1) {
     depthTest: true,
     depthWrite: false,
     polygonOffset: true,
-    polygonOffsetFactor: -6,
-    roughness: 0.82,
+    polygonOffsetFactor: -4,
+    roughness: 0.80,
     metalness: 0,
     side: THREE.DoubleSide,
-    alphaTest: 0.02
+    alphaTest: 0.015
   });
-  const decal = new THREE.Mesh(geometry, material);
-  decal.renderOrder = 10;
-  decal.castShadow = false;
-  decal.receiveShadow = false;
-  decalGroup.add(decal);
-  return decal;
+  const overlay = new THREE.Mesh(geometry, material);
+  overlay.renderOrder = 10;
+  overlay.castShadow = false;
+  overlay.receiveShadow = false;
+  decalGroup.add(overlay);
+  return overlay;
 }
 
 function currentFont() {
@@ -513,8 +609,8 @@ function textTexture(text, kind) {
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.lineJoin = "round";
-  ctx.strokeStyle = "rgba(0,0,0,.45)";
-  ctx.lineWidth = Math.max(3, px * 0.022);
+  ctx.strokeStyle = "rgba(0,0,0,.30)";
+  ctx.lineWidth = Math.max(2, px * 0.014);
   ctx.strokeText(clean, canvas.width / 2, canvas.height / 2 + px * 0.02);
   ctx.fillStyle = state.personalization.color;
   ctx.fillText(clean, canvas.width / 2, canvas.height / 2 + px * 0.02);
@@ -537,14 +633,12 @@ function disposeDecals() {
 
 function addTextDecal(surface, config, text, kind) {
   if (!cleanText(text, kind === "name" ? 24 : 6)) return;
-  const hit = surfaceHit(surface, config.x, config.y);
-  if (!hit) return;
   const texture = textTexture(text, kind);
   texture.userData.generatedText = true;
-  const shirtWidth = bounds.shirt.getSize(tmpSize).x;
-  const sizeX = shirtWidth * clamp(config.scale, 8, 80) / 100;
+  const safe = surfaceSafeSize(surface);
+  const sizeX = safe.width * clamp(config.scale, 8, 80) / 100;
   const aspect = texture.userData.canvasAspect || 1;
-  makeDecal(hit, texture, sizeX, sizeX / aspect, config.rotation, 1);
+  makeSurfaceOverlay(surface, texture, config.x, config.y, sizeX, sizeX / aspect, config.rotation, 1, kind === "name" ? 10 : 9, kind === "name" ? 3 : 8);
 }
 
 function rebuildDecals() {
@@ -559,13 +653,23 @@ function rebuildDecals() {
   }
   for (const graphic of state.graphics) {
     if (!graphic.texture) continue;
-    if (surfaceDef(graphic.surface).part === "socks" && !state.showSocks) continue;
-    const hit = surfaceHit(graphic.surface, graphic.x, graphic.y);
-    if (!hit) continue;
-    const box = bounds[surfaceDef(graphic.surface).part];
-    const base = box.getSize(tmpSize).x * clamp(graphic.scale, 4, 70) / 100;
-    const aspect = graphic.aspect || 1;
-    makeDecal(hit, graphic.texture, base * Math.sqrt(aspect), base / Math.sqrt(aspect), graphic.rotation, graphic.opacity);
+    const def = surfaceDef(graphic.surface);
+    if (def.part === "socks" && !state.showSocks) continue;
+    const safe = surfaceSafeSize(graphic.surface);
+    const base = safe.width * clamp(graphic.scale, 4, 70) / 100;
+    const aspect = clamp(Number(graphic.aspect) || 1, 0.12, 8);
+    makeSurfaceOverlay(
+      graphic.surface,
+      graphic.texture,
+      graphic.x,
+      graphic.y,
+      base * Math.sqrt(aspect),
+      base / Math.sqrt(aspect),
+      graphic.rotation,
+      graphic.opacity,
+      def.side === "left" || def.side === "right" ? 5 : 8,
+      def.side === "left" || def.side === "right" ? 5 : 6
+    );
   }
 }
 
@@ -914,7 +1018,7 @@ window.__sportswear3d = {
   rebuildDecals,
   payload: payloadObject,
   diagnostics,
-  version: "football-real-garment-v3"
+  version: "football-real-garment-v4-conformal"
 };
 
 window.addEventListener("beforeunload", () => {
