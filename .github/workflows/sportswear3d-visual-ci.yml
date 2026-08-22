@@ -30,12 +30,19 @@ jobs:
           set -euo pipefail
           ROOT="ventures/run_20260711_161411/configurator"
           node --check "$ROOT/src/app.js"
+          node --check "$ROOT/src/football-realism-prelude.js"
+          node --check "$ROOT/src/bootstrap.js"
+          node --check "$ROOT/src/football-realism.js"
+          node --check "$ROOT/src/football-realism-post.js"
           node --check "$ROOT/verify/visual-ci.cjs"
           test -s "$ROOT/assets/vendor/football-shirt.glb"
           test -s "$ROOT/assets/vendor/football-shorts.glb"
           test -s "$ROOT/assets/vendor/football-socks.glb"
           grep -q 'football-real-garment-v4-conformal' "$ROOT/src/app.js"
           grep -q 'buildSurfaceOverlayGeometry' "$ROOT/src/app.js"
+          grep -q 'football-realism-v5-20260822' "$ROOT/src/football-realism.js"
+          grep -q 'src/bootstrap.js' "$ROOT/index.html"
+          grep -q 'FOOTBALL_REALISM_REFERENCES' <(find "$ROOT" -maxdepth 1 -type f -printf '%f\n')
           if grep -q 'DecalGeometry' "$ROOT/src/app.js"; then
             echo "Unexpected DecalGeometry runtime dependency"
             exit 1
