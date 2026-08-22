@@ -1,11 +1,27 @@
 import * as THREE from "three";
 
-const VERSION = "football-crest-conformal-v1-20260822";
+const VERSION = "football-crest-conformal-v2-20260822";
 const raycaster = new THREE.Raycaster();
 let scene;
 let shirt;
 let state;
-let rebuildQueued = false;
+let settleTimers = [];
+const status = {
+  version: VERSION,
+  stage: "bootstrap",
+  enabled: false,
+  sourcePresent: false,
+  alphaPixels: 0,
+  vertices: 0,
+  maxInward: 0,
+  builds: 0,
+  lastReason: null,
+};
+
+function publishStatus(patch = {}) {
+  Object.assign(status, patch);
+  window.__footballCrestConformalStatus = { ...status };
+}
 
 function disposeObject(object) {
   if (!object) return;
@@ -13,7 +29,7 @@ function disposeObject(object) {
     node.geometry?.dispose?.();
     const materials = node.material ? (Array.isArray(node.material) ? node.material : [node.material]) : [];
     for (const material of materials) {
-      material?.map?.dispose?.();
+      if (material?.map?.userData?.footballRealismGenerated) material.map.dispose?.();
       material?.dispose?.();
     }
   });
@@ -34,8 +50,13 @@ function currentFont() {
   return fonts[state.personalization.font] || fonts.condensed;
 }
 
+function sourceGraphic() {
+  return state.graphics.find((graphic) => ["crest", "logo"].includes(graphic.type) && graphic.texture?.image) || null;
+}
+
 function crestCanvas() {
-  const source = state.graphics.find((graphic) => ["crest", "logo"].includes(graphic.type) && graphic.texture?.image);
+  const source = sourceGraphic();
+  publishStatus({ sourcePresent: Boolean(source) });
   if (!source) return null;
   const image = source.texture.image;
   const canvas = document.createElement("canvas");
@@ -44,8 +65,8 @@ function crestCanvas() {
   const ctx = canvas.getContext("2d", { willReadFrequently: true });
   ctx.clearRect(0, 0, 900, 900);
 
-  const iw = image.width || 512;
-  const ih = image.height || 512;
+  const iw = image.width || image.naturalWidth || 512;
+  const ih = image.height || image.naturalHeight || 512;
   const cell = 190;
   for (const x of [245, 450, 655]) {
     const h = Math.min(240, cell * ih / Math.max(1, iw));
@@ -86,7 +107,8 @@ function safeBackHit(xPct, yPct, centerX, centerY) {
     const hit = rawBackHit(x, y);
     if (hit) return { ...hit, inward };
   }
-  return rawBackHit(centerX, centerY);
+  const center = rawBackHit(centerX, centerY);
+  return center ? { ...center, inward: 1 } : null;
 }
 
 function targetSpans() {
@@ -100,9 +122,14 @@ function targetSpans() {
   return { widthPct, heightPct };
 }
 
-function rebuild() {
-  if (!scene || !shirt || !state) return;
+function rebuild(reason = "manual") {
+  publishStatus({ builds: status.builds + 1, lastReason: reason, stage: "start" });
+  if (!scene || !shirt || !state) {
+    publishStatus({ stage: "not-ready" });
+    return;
+  }
   const enabled = window.__sportswear3d?.realism?.crestInNumber === true || document.getElementById("crest-in-number")?.value === "on";
+  publishStatus({ enabled });
   const previous = scene.getObjectByName("football-realism-crest-number-v6");
   if (previous) disposeObject(previous);
 
@@ -110,15 +137,25 @@ function rebuild() {
   group.name = "football-realism-crest-number-v6";
   group.userData.conformalVersion = VERSION;
   scene.add(group);
-  if (!enabled) return;
+  if (!enabled) {
+    publishStatus({ stage: "disabled", alphaPixels: 0, vertices: 0, maxInward: 0 });
+    return;
+  }
 
   const canvas = crestCanvas();
-  if (!canvas) return;
+  if (!canvas) {
+    publishStatus({ stage: "missing-source", alphaPixels: 0, vertices: 0 });
+    return;
+  }
   const ctx = canvas.getContext("2d", { willReadFrequently: true });
   const alpha = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
   let alphaPixels = 0;
   for (let i = 3; i < alpha.length; i += 4) if (alpha[i] > 20) alphaPixels++;
-  if (alphaPixels < 1000) return;
+  publishStatus({ alphaPixels });
+  if (alphaPixels < 1000) {
+    publishStatus({ stage: "insufficient-alpha", vertices: 0 });
+    return;
+  }
 
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
@@ -147,6 +184,7 @@ function rebuild() {
       if (!hit) {
         texture.dispose();
         disposeObject(group);
+        publishStatus({ stage: "projection-miss", vertices: positions.length / 3, maxInward });
         return;
       }
       maxInward = Math.max(maxInward, Number(hit.inward) || 0);
@@ -188,15 +226,15 @@ function rebuild() {
   mesh.userData.alphaPixels = alphaPixels;
   mesh.userData.maxInward = maxInward;
   group.add(mesh);
+  publishStatus({ stage: "built", vertices: positions.length / 3, maxInward });
 }
 
-function schedule(delay = 0) {
-  if (rebuildQueued) return;
-  rebuildQueued = true;
-  setTimeout(() => {
-    rebuildQueued = false;
-    rebuild();
-  }, delay);
+function settle(reason) {
+  for (const timer of settleTimers) clearTimeout(timer);
+  settleTimers = [];
+  for (const delay of [0, 140, 320]) {
+    settleTimers.push(setTimeout(() => rebuild(`${reason}@${delay}`), delay));
+  }
 }
 
 async function waitReady() {
@@ -207,21 +245,24 @@ async function waitReady() {
   return false;
 }
 
+publishStatus();
 if (await waitReady()) {
   scene = window.__footballRealismScene;
   state = window.__sportswear3d.state;
   shirt = scene.getObjectByName("donor-shirt");
   if (!shirt) throw new Error("football crest conformal: donor shirt not found");
 
-  document.getElementById("crest-in-number")?.addEventListener("change", () => schedule(0));
-  document.addEventListener("input", () => schedule(40));
-  document.addEventListener("change", () => schedule(120));
+  document.getElementById("crest-in-number")?.addEventListener("change", () => settle("crest-select"));
+  document.addEventListener("input", () => settle("document-input"));
+  document.addEventListener("change", () => settle("document-change"));
   const graphics = document.getElementById("graphics-list");
-  if (graphics) new MutationObserver(() => schedule(80)).observe(graphics, { childList: true, subtree: true });
+  if (graphics) new MutationObserver(() => settle("graphics-mutation")).observe(graphics, { childList: true, subtree: true });
 
-  window.__sportswear3d.rebuildCrestInNumber = rebuild;
+  window.__sportswear3d.rebuildCrestInNumber = () => rebuild("api");
   window.__footballCrestConformalReady = true;
-  schedule(0);
+  publishStatus({ stage: "ready" });
+  settle("bootstrap");
 } else {
   window.__footballCrestConformalError = "football crest conformal bootstrap timeout";
+  publishStatus({ stage: "bootstrap-timeout" });
 }
