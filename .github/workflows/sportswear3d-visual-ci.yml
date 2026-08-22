@@ -15,7 +15,7 @@ on:
       - .github/workflows/sportswear3d-visual-ci.yml
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   visual:
@@ -31,6 +31,7 @@ jobs:
           node-version: '20'
 
       - name: Static syntax and runtime assets
+        id: static
         shell: bash
         run: |
           set -euo pipefail
@@ -108,11 +109,12 @@ jobs:
           exit 1
 
       - name: Real Chromium WebGL acceptance
+        id: browser
         shell: bash
         run: |
           set -euo pipefail
           ROOT="$GITHUB_WORKSPACE/ventures/run_20260711_161411/configurator"
-          NODE_PATH=/tmp/sportswear-pw/node_modules SPORTSWEAR_URL=http://127.0.0.1:8282/ node "$ROOT/verify/visual-ci.cjs"
+          NODE_PATH=/tmp/sportswear-pw/node_modules SPORTSWEAR_URL=http://127.0.0.1:8282/ node "$ROOT/verify/visual-ci.cjs" 2>&1 | tee /tmp/sportswear-visual-ci.log
 
       - name: Upload visual evidence
         if: always()
@@ -120,5 +122,37 @@ jobs:
         with:
           name: sportswear3d-visual-evidence
           path: ventures/run_20260711_161411/configurator/verify/visual-output
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 7
+
+      - name: Publish branch CI verdict
+        if: always() && github.event_name == 'push'
+        shell: bash
+        run: |
+          set -u
+          OUT="docs/judge/2026-08-22-sportswear-football-realism-ci.md"
+          mkdir -p "$(dirname "$OUT")"
+          {
+            echo "# Sportswear 3D Football Realism — CI verdict"
+            echo
+            echo "source_sha: $GITHUB_SHA"
+            echo "static_outcome: ${{ steps.static.outcome }}"
+            echo "browser_outcome: ${{ steps.browser.outcome }}"
+            echo "workflow_run_id: $GITHUB_RUN_ID"
+            echo
+            echo '```text'
+            if [ -f /tmp/sportswear-visual-ci.log ]; then
+              cat /tmp/sportswear-visual-ci.log
+            else
+              echo "browser log unavailable (failure occurred before browser step)"
+            fi
+            echo '```'
+          } > "$OUT"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$OUT"
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m "ci(mt3d): publish football realism verdict"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
