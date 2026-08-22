@@ -68,7 +68,7 @@ https://it.uefa.com/MultimediaFiles/Download/EuroExperience/uefaorg/Publications
 
 Documented kit examples used to keep the variants era-plausible include early-1990s Italy/Northern Ireland polo collars, 1990s wide/retro collars, and modern open-V/polo hybrids such as Fiorentina 2024/25.
 
-The UI exposes: original mesh, crew rib, V rib, fold-over polo, button polo, tapered, split-V, retro-wide and modern hybrid. `original` remains the default so the founder-approved garment silhouette is not degraded unless a collar option is deliberately selected.
+The UI exposes: original mesh, crew rib, V rib, fold-over polo, button polo, rib a contrasto (crew geometry with independent collar colour), split-V, retro-wide and modern hybrid. `original` remains the default so the founder-approved garment silhouette is not degraded unless a collar option is deliberately selected.
 
 ## Lower body / footwear
 
