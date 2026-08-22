@@ -1,6 +1,12 @@
 name: Sportswear3D Visual CI
 
 on:
+  push:
+    branches:
+      - sol/mt3d-football-production-20260816
+    paths:
+      - ventures/run_20260711_161411/configurator/**
+      - .github/workflows/sportswear3d-visual-ci.yml
   pull_request:
     branches:
       - master
@@ -16,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
-      - name: Checkout PR
+      - name: Checkout PR or branch
         uses: actions/checkout@v4
 
       - name: Setup Node
@@ -42,7 +48,7 @@ jobs:
           grep -q 'buildSurfaceOverlayGeometry' "$ROOT/src/app.js"
           grep -q 'football-realism-v5-20260822' "$ROOT/src/football-realism.js"
           grep -q 'src/bootstrap.js' "$ROOT/index.html"
-          grep -q 'FOOTBALL_REALISM_REFERENCES' <(find "$ROOT" -maxdepth 1 -type f -printf '%f\n')
+          test -s "$ROOT/FOOTBALL_REALISM_REFERENCES.md"
           if grep -q 'DecalGeometry' "$ROOT/src/app.js"; then
             echo "Unexpected DecalGeometry runtime dependency"
             exit 1
