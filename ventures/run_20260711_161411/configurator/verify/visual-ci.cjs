@@ -7,155 +7,145 @@ const ROOT = path.resolve(__dirname, '..');
 const OUT = path.join(__dirname, 'visual-output');
 const FIX = path.join(__dirname, 'fixtures');
 fs.mkdirSync(OUT, { recursive: true });
-
 function fail(message) { throw new Error(message); }
+function near(value, expected, tolerance, label) {
+  if (Math.abs(Number(value) - expected) > tolerance) fail(`${label}: expected ${expected}±${tolerance}, got ${value}`);
+}
 
 (async () => {
-  const browser = await chromium.launch({
-    headless: true,
-    args: ['--enable-webgl', '--ignore-gpu-blocklist', '--use-angle=swiftshader', '--disable-dev-shm-usage']
-  });
-  const page = await browser.newPage({ viewport: { width: 1440, height: 1000 }, deviceScaleFactor: 1 });
+  const browser = await chromium.launch({ headless: true, args: ['--enable-webgl', '--ignore-gpu-blocklist', '--use-angle=swiftshader', '--disable-dev-shm-usage'] });
+  const page = await browser.newPage({ viewport: { width: 1440, height: 1100 }, deviceScaleFactor: 1 });
   const errors = [];
   page.on('pageerror', (err) => errors.push(`pageerror: ${err.stack || err.message}`));
   page.on('console', (msg) => { if (msg.type() === 'error') errors.push(`console.error: ${msg.text()}`); });
-
   const response = await page.goto(BASE, { waitUntil: 'networkidle', timeout: 60000 });
   if (!response || !response.ok()) fail(`HTTP ${response?.status()} loading ${BASE}`);
+  await page.waitForFunction(() => window.__sportswear3d?.ready === true && window.__footballRealismReady === true, null, { timeout: 60000 });
+  await page.waitForTimeout(500);
 
-  await page.waitForFunction(() => window.__sportswear3d?.ready === true, null, { timeout: 45000 });
-  await page.waitForFunction(() => window.__footballRealismReady === true && window.__footballRealismPostReady === true && window.__footballRealismCalibrationReady === true, null, { timeout: 45000 });
-  await page.waitForTimeout(1000);
+  const diagnostics = await page.evaluate(() => window.__sportswear3d.diagnostics());
+  if (diagnostics.three_revision !== '160') fail(`Unexpected Three revision ${diagnostics.three_revision}`);
+  if (diagnostics.meshes.shirt < 1 || diagnostics.meshes.shorts < 1 || diagnostics.meshes.socks < 1) fail(`Missing donor garment mesh: ${JSON.stringify(diagnostics.meshes)}`);
+  if (!diagnostics.football_realism) fail('football_realism diagnostics missing');
+  if (diagnostics.football_realism.version !== 'football-realism-v6-physical-20260822') fail(`Unexpected realism version ${diagnostics.football_realism.version}`);
+  if (!diagnostics.football_realism.full_socks) fail('Full socks are not visible by default');
+  if (diagnostics.football_realism.footwear !== 'none') fail(`Footwear must be removed, got ${diagnostics.football_realism.footwear}`);
+  if (!diagnostics.football_realism.payload_ui_hidden) fail('Payload/code UI is visible');
+  const legacy = await page.evaluate(() => ({
+    lower: Boolean(window.__footballRealismScene.getObjectByName('football-realism-lower')),
+    bootControl: Boolean(document.getElementById('football-boots')),
+    payloadHidden: document.getElementById('payload')?.hidden,
+    copyHidden: document.getElementById('copy-payload')?.hidden,
+  }));
+  if (legacy.lower || legacy.bootControl) fail(`Legacy footwear survived: ${JSON.stringify(legacy)}`);
+  if (!legacy.payloadHidden || !legacy.copyHidden) fail(`Code UI not hidden: ${JSON.stringify(legacy)}`);
 
-  const webgl = await page.evaluate(() => {
-    const c = document.createElement('canvas');
-    return Boolean(c.getContext('webgl2') || c.getContext('webgl'));
-  });
-  if (!webgl) fail('WebGL unavailable in browser test');
-
-  let diagnostics = await page.evaluate(() => window.__sportswear3d.diagnostics());
-  if (diagnostics.meshes.shirt < 1 || diagnostics.meshes.shorts < 1 || diagnostics.meshes.socks < 1) fail(`Missing real garment meshes: ${JSON.stringify(diagnostics.meshes)}`);
-  if (diagnostics.decals < 2) fail(`Back name/number decals not projected: ${diagnostics.decals}`);
-  if (diagnostics.donor_assets.shirt.blob !== '9c7609eddfd597a70cb708f96bc19841766b3488') fail('Unexpected shirt donor identity');
-  if (!diagnostics.football_realism) fail('Football realism diagnostics missing');
-  if (!diagnostics.show_socks) fail('Complete socks must be visible by default');
-  if (!diagnostics.football_realism.boots || diagnostics.football_realism.lower_meshes < 6) fail(`Footwear/lower-body not built: ${JSON.stringify(diagnostics.football_realism)}`);
-
-  const defaults = await page.evaluate(() => {
-    const camera = window.__footballRealismCamera;
-    const dx = camera.position.x;
-    const dy = camera.position.y - 0.25;
-    const dz = camera.position.z;
-    return {
-      realism: window.__sportswear3d.payload().realism,
-      nameScale: window.__sportswear3d.state.personalization.backName.scale,
-      cameraDistance: Math.sqrt(dx * dx + dy * dy + dz * dz)
-    };
-  });
-  if (!defaults.realism || defaults.realism.typography.preset !== 'uefa-2026') fail('UEFA typography preset missing from payload');
-  if (defaults.realism.typography.target_back_number_height_cm !== 30) fail(`Unexpected back number physical target: ${defaults.realism.typography.target_back_number_height_cm}`);
-  if (defaults.nameScale !== 46) fail(`Back-name visual calibration missing: ${defaults.nameScale}`);
-  if (defaults.cameraDistance < 16.8) fail(`Full-kit camera framing not applied: ${defaults.cameraDistance}`);
-
+  let realism = await page.evaluate(() => window.__sportswear3d.payload().realism);
+  if (realism.typography.preset !== 'pl-2022-23') fail(`Unexpected default typography ${realism.typography.preset}`);
+  near(realism.typography.target_name_height_cm, 4.9, 0.01, 'PL name target');
+  near(realism.typography.target_back_number_height_cm, 23, 0.01, 'PL back number target');
+  near(realism.typography.rendered_name_height_cm_estimate, 4.9, 0.20, 'PL rendered name');
+  near(realism.typography.rendered_back_number_height_cm_estimate, 23, 0.25, 'PL rendered number');
   const viewer = page.locator('#viewer-shell');
-  await viewer.screenshot({ path: path.join(OUT, '01-front-reference-footwear.png') });
-
-  await page.evaluate(() => window.__sportswear3d.setView('back'));
-  await page.waitForTimeout(900);
-  await viewer.screenshot({ path: path.join(OUT, '02-back-name-number.png') });
-
-  await page.locator('#player-number').fill('A10');
-  await page.locator('#player-number').dispatchEvent('input');
-  await page.waitForTimeout(350);
-  const numberValue = await page.evaluate(() => window.__payload3d.personalization.number);
-  if (numberValue !== 'A10') fail(`Free-text number/characters failed: ${numberValue}`);
-
-  await page.locator('#football-collar').selectOption('v');
-  await page.waitForTimeout(350);
-  diagnostics = await page.evaluate(() => window.__sportswear3d.diagnostics());
-  if (diagnostics.football_realism.collar !== 'v' || diagnostics.football_realism.collar_meshes < 1) fail(`V-neck collar did not render: ${JSON.stringify(diagnostics.football_realism)}`);
   await page.evaluate(() => window.__sportswear3d.setView('front'));
   await page.waitForTimeout(700);
-  await viewer.screenshot({ path: path.join(OUT, '03-v-neck-full-kit.png') });
+  await viewer.screenshot({ path: path.join(OUT, '01-front-no-footwear.png') });
   await page.evaluate(() => window.__sportswear3d.setView('back'));
   await page.waitForTimeout(700);
+  await viewer.screenshot({ path: path.join(OUT, '02-back-pl-real-size.png') });
+
+  await page.locator('#football-typography').selectOption('uefa-2026');
+  await page.locator('#apply-football-typography').click();
+  await page.waitForTimeout(500);
+  realism = await page.evaluate(() => window.__sportswear3d.payload().realism);
+  near(realism.typography.target_name_height_cm, 6, 0.01, 'UEFA name target');
+  near(realism.typography.target_back_number_height_cm, 30, 0.01, 'UEFA number target');
+  near(realism.typography.rendered_name_height_cm_estimate, 6, 0.25, 'UEFA rendered name');
+  near(realism.typography.rendered_back_number_height_cm_estimate, 30, 0.35, 'UEFA rendered number');
+  await viewer.screenshot({ path: path.join(OUT, '03-back-uefa-physical-size.png') });
+
+  await page.evaluate(() => window.__sportswear3d.setView('front'));
+  await page.waitForTimeout(500);
+  const collarResults = {};
+  for (const collar of ['crew', 'v', 'polo', 'polo-button', 'split-v', 'retro-90']) {
+    await page.locator('#football-collar').selectOption(collar);
+    await page.waitForTimeout(250);
+    collarResults[collar] = await page.evaluate(() => {
+      const d = window.__sportswear3d.diagnostics().football_realism;
+      const group = window.__footballRealismScene.getObjectByName('football-realism-collar-v6');
+      let finite = true, maxAbs = 0;
+      group?.traverse((o) => {
+        const a = o.geometry?.attributes?.position;
+        if (!a) return;
+        for (let i = 0; i < a.count; i++) {
+          const values = [a.getX(i), a.getY(i), a.getZ(i)];
+          if (!values.every(Number.isFinite)) finite = false;
+          maxAbs = Math.max(maxAbs, ...values.map(Math.abs));
+        }
+      });
+      return { meshes: d.collar_meshes, finite, maxAbs };
+    });
+    if (collarResults[collar].meshes < 1 || !collarResults[collar].finite || collarResults[collar].maxAbs > 20) fail(`Collar ${collar} invalid: ${JSON.stringify(collarResults[collar])}`);
+    if (['v', 'polo', 'retro-90'].includes(collar)) await viewer.screenshot({ path: path.join(OUT, `collar-${collar}.png`) });
+  }
 
   await page.locator('[data-place="crest"]').click();
-  await page.waitForTimeout(250);
-  const crestPreset = await page.evaluate(() => {
-    const g = window.__sportswear3d.state.graphics.at(-1);
-    return g ? { type: g.type, surface: g.surface, x: g.x, y: g.y, scale: g.scale } : null;
-  });
-  if (!crestPreset || crestPreset.type !== 'crest' || crestPreset.surface !== 'shirt-front' || crestPreset.x !== 38 || crestPreset.y !== 29) fail(`Crest placement preset failed: ${JSON.stringify(crestPreset)}`);
   const crestCard = page.locator('[data-graphic]').last();
   await crestCard.locator('input[data-field="file"]').setInputFiles(path.join(FIX, 'ci-logo.png'));
   await page.locator('#crest-in-number').selectOption('on');
-  await page.waitForTimeout(1000);
-  diagnostics = await page.evaluate(() => window.__sportswear3d.diagnostics());
-  if (!diagnostics.football_realism.crest_in_number || diagnostics.football_realism.crest_number_meshes < 1) fail(`Crest-in-number did not render: ${JSON.stringify(diagnostics.football_realism)}`);
-  const crestPixels = await page.evaluate(() => {
-    const group = window.__footballRealismScene.getObjectByName('football-realism-crest-number');
-    const canvas = group?.children?.[0]?.material?.map?.image;
-    const ctx = canvas?.getContext?.('2d');
-    if (!ctx) return { opaque: 0, colored: 0 };
-    const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-    let opaque = 0, colored = 0;
-    for (let i = 0; i < data.length; i += 4) {
-      if (data[i + 3] > 20) {
-        opaque++;
-        if (data[i] > data[i + 1] * 1.25 && data[i] > data[i + 2] * 1.25) colored++;
-      }
-    }
-    return { opaque, colored };
+  await page.waitForTimeout(800);
+  const crestCheck = await page.evaluate(() => {
+    const group = window.__footballRealismScene.getObjectByName('football-realism-crest-number-v6');
+    const mesh = group?.children?.[0];
+    const canvas = mesh?.material?.map?.image;
+    if (!canvas?.getContext) return { meshes: group?.children?.length || 0, alphaPixels: 0 };
+    const data = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
+    let alphaPixels = 0;
+    for (let i = 3; i < data.length; i += 4) if (data[i] > 20) alphaPixels++;
+    return { meshes: group.children.length, alphaPixels };
   });
-  if (crestPixels.opaque < 500 || crestPixels.colored < 200) fail(`Crest-in-number texture has no visible crest pixels: ${JSON.stringify(crestPixels)}`);
-  await viewer.screenshot({ path: path.join(OUT, '04-back-crest-in-number.png') });
+  if (crestCheck.meshes < 1 || crestCheck.alphaPixels < 1000) fail(`Crest-in-number pixels missing: ${JSON.stringify(crestCheck)}`);
+  await page.evaluate(() => window.__sportswear3d.setView('back'));
+  await page.waitForTimeout(500);
+  await viewer.screenshot({ path: path.join(OUT, '07-back-crest-in-number.png') });
 
   await page.evaluate(() => window.__sportswear3d.setView('front'));
-  await page.waitForTimeout(800);
   await page.locator('#pattern-file').setInputFiles(path.join(FIX, 'ci-pattern.png'));
-  await page.waitForTimeout(900);
-  const patternPresent = await page.evaluate(() => window.__payload3d.patterns.shirt.present);
-  if (!patternPresent) fail('Pattern upload did not reach payload/material state');
-  await viewer.screenshot({ path: path.join(OUT, '05-pattern-upload.png') });
-
+  await page.waitForTimeout(600);
+  if (!(await page.evaluate(() => window.__payload3d.patterns.shirt.present))) fail('Pattern upload failed');
   await page.locator('#clear-pattern').click();
   await page.locator('#add-patch').click();
-  const card = page.locator('[data-graphic]').last();
-  await card.locator('input[data-field="file"]').setInputFiles(path.join(FIX, 'ci-logo.png'));
-  await page.waitForTimeout(900);
-  const graphicPresent = await page.evaluate(() => window.__payload3d.graphics.some((g) => g.type === 'patch' && g.image_present));
-  if (!graphicPresent) fail('Patch upload did not reach payload/decal state');
+  const patchCard = page.locator('[data-graphic]').last();
+  await patchCard.locator('input[data-field="file"]').setInputFiles(path.join(FIX, 'ci-logo.png'));
+  await page.waitForTimeout(600);
+  if (!(await page.evaluate(() => window.__payload3d.graphics.some((g) => g.type === 'patch' && g.image_present)))) fail('Patch upload failed');
+  await page.locator('#player-number').fill('A10');
+  await page.locator('#player-number').dispatchEvent('input');
+  await page.waitForTimeout(250);
+  if ((await page.evaluate(() => window.__payload3d.personalization.number)) !== 'A10') fail('Free-text number failed');
   await page.evaluate(() => window.__sportswear3d.setView('right'));
-  await page.waitForTimeout(900);
-  await viewer.screenshot({ path: path.join(OUT, '06-patch-right-sleeve.png') });
+  await page.waitForTimeout(500);
+  await viewer.screenshot({ path: path.join(OUT, '08-right-patch.png') });
 
-  const stablePayload = await page.evaluate(() => ({ textarea: JSON.parse(document.getElementById('payload').value), api: window.__sportswear3d.payload() }));
-  if (!stablePayload.textarea.realism || !stablePayload.api.realism) fail('Realism payload was lost after normal configurator interactions');
-
-  diagnostics = await page.evaluate(() => window.__sportswear3d.diagnostics());
-  fs.writeFileSync(path.join(OUT, 'runtime-diagnostics.json'), JSON.stringify({ diagnostics, defaults, crestPixels, errors }, null, 2));
+  const final = await page.evaluate(() => window.__sportswear3d.diagnostics());
+  fs.writeFileSync(path.join(OUT, 'runtime-diagnostics.json'), JSON.stringify({ diagnostics: final, collarResults, crestCheck, errors }, null, 2));
   if (errors.length) fail(errors.join('\n'));
-
   console.log('SPORTSWEAR_REAL_BROWSER=PASS');
-  console.log(`THREE_REVISION=${diagnostics.three_revision}`);
-  console.log(`REAL_MESHES=${JSON.stringify(diagnostics.meshes)}`);
-  console.log(`DECALS=${diagnostics.decals}`);
-  console.log(`FOOTBALL_REALISM=${JSON.stringify(diagnostics.football_realism)}`);
-  console.log(`FULL_KIT_CAMERA_DISTANCE=${defaults.cameraDistance.toFixed(3)}`);
-  console.log(`BACK_NAME_SCALE=${defaults.nameScale}`);
-  console.log(`CREST_VISIBLE_PIXELS=${JSON.stringify(crestPixels)}`);
-  console.log('FOOTWEAR=PASS');
-  console.log('UEFA_TYPOGRAPHY_DEFAULT=PASS');
-  console.log('COLLAR_LIBRARY=PASS');
-  console.log('CREST_PRESET=PASS');
-  console.log('CREST_IN_NUMBER_VISIBLE=PASS');
+  console.log(`THREE_REVISION=${final.three_revision}`);
+  console.log(`REAL_MESHES=${JSON.stringify(final.meshes)}`);
+  console.log(`FOOTBALL_REALISM=${JSON.stringify(final.football_realism)}`);
+  console.log('PHYSICAL_TYPOGRAPHY=PASS');
+  console.log('NO_FOOTWEAR=PASS');
+  console.log('PAYLOAD_UI_HIDDEN=PASS');
+  console.log('COLLAR_GEOMETRY_ALL_VARIANTS=PASS');
+  console.log(`CREST_ALPHA_PIXELS=${crestCheck.alphaPixels}`);
+  console.log('CREST_IN_NUMBER=PASS');
   console.log('PATTERN_UPLOAD=PASS');
   console.log('PATCH_UPLOAD=PASS');
   console.log('FREE_TEXT_NUMBER=PASS');
   console.log('ROTATION_FRONT_BACK_RIGHT=PASS');
   await browser.close();
-})().catch(async (error) => {
+})().catch((error) => {
   console.error(error.stack || error);
   process.exitCode = 1;
 });

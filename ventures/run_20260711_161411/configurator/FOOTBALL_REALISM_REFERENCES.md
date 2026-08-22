@@ -1,86 +1,110 @@
-# Football realism defaults — research basis (1990–2026/27)
+# Football realism references — v6 physical calibration
 
 Date: 2026-08-22
-Scope: incremental realism layer for `configurator/`, preserving the approved real-garment 3D runtime.
+Runtime: `football-realism-v6-physical-20260822`
 
-## Authority order
+This file records the evidence used for defaults. A regulatory maximum/range is never presented as a measured club value.
 
-1. Current UEFA Equipment Regulations (enforcement 1 June 2026) for measurable placement/legibility defaults.
-2. Historical UEFA kit regulations for historically valid options no longer expressed the same way in the current text.
-3. Official competition sources (Premier League) for modern name/number and sleeve-badge practice.
-4. Teamwear catalogues and documented European kit examples for collar taxonomy and era variants.
+## 1. Current UEFA dimensions
 
-These are design defaults, not a claim that every domestic league uses identical rules. Every graphic remains manually adjustable by X/Y/rotation/scale.
+UEFA Equipment Regulations, effective 1 June 2026:
 
-## Typography defaults
+- player name, when shown, is on the back above the number;
+- each name letter is at most **7.5 cm** high;
+- men's back numbers are **25–35 cm** high;
+- digit stroke width is **2–5 cm**;
+- front-shirt numbers, when used, are **10–15 cm** high;
+- a team emblem may occupy at most **5 cm²** at the bottom of each digit.
 
-Current UEFA Equipment Regulations:
+Official sources:
+- https://documents.uefa.com/r/G4ozoVUlyB6CEGZ1efpJPg/_xmVDZGRigAabXoSDMpTsw
+- https://documents.uefa.com/r/G4ozoVUlyB6CEGZ1efpJPg/6~b5EJW11Isr9ctgKcfk9A
 
-- Article 11: player name, when used, is on the back above the number; each letter is no more than 7.5 cm high.
-  https://documents.uefa.com/r/G4ozoVUlyB6CEGZ1efpJPg/6~b5EJW11Isr9ctgKcfk9A
-- Article 10: men's back numbers are 25–35 cm high, with a 2–5 cm stroke width; short numbers are 10–15 cm high.
-  https://documents.uefa.com/r/G4ozoVUlyB6CEGZ1efpJPg/_xmVDZGRigAabXoSDMpTsw
-- Premier League 2023/24: the fourth league-wide redesign increased number height and integrated the league graphic pattern to improve visibility.
-  https://www.premierleague.com/en/news/3614236
+The `uefa-2026` preset uses 30 cm for the back number, 6 cm for the name and 12.5 cm for an optional front number. These are deliberately labelled **range-derived defaults**, not mandatory UEFA values.
 
-Chosen default target in the configurator: 7.0 cm name and 30 cm back number. The current conformal projection remains percentage-based, so the preset stores the physical target and uses calibrated projection percentages rather than pretending that screen/world units are centimetres.
+## 2. Serie A current range
 
-## Crest / manufacturer / sponsor / badges
+Lega Serie A `Regolamento Divise da Gioco 2024–2027`, Article 6:
 
-Current UEFA Equipment Regulations:
+- back digits centred;
+- back digit height **25–30 cm**;
+- shorts numbers **10–15 cm**;
+- a team emblem/symbol may appear at the bottom of each back digit up to **5 cm²**.
 
-- Article 14: team emblem on shirt front at chest height, above sponsor advertising, max 100 cm².
-  https://documents.uefa.com/r/G4ozoVUlyB6CEGZ1efpJPg/2dWICY3_T9o~YJ2WnRZ3VA
-- Article 22: one manufacturer identification on the chest, above sponsor advertising, max 20 cm².
-  https://documents.uefa.com/r/G4ozoVUlyB6CEGZ1efpJPg/FPcbDIH~rQanNup5Vcg3YQ
-- Article 28: front sponsor is positioned in the centre of the torso, max 200 cm²; a second sponsor may use the left sleeve free zone subject to the regulation.
-  https://documents.uefa.com/r/G4ozoVUlyB6CEGZ1efpJPg/jT6ByA7x9dsfPye5Rz1z6w
-- Article 36: UEFA campaign badge uses the sleeve free zone; in club competitions it is on the right sleeve below the competition badge.
-  https://documents.uefa.com/r/G4ozoVUlyB6CEGZ1efpJPg/IRM_Xso84eUb15_nuoebkQ
-- UEFA U21 2025–27 Article 37: competition badge right sleeve; campaign badge left sleeve.
-  https://documents.uefa.com/r/Regulations-of-the-UEFA-European-Under-21-Championship-2025-27/Article-37-Badges-in-the-final-tournament-Online
-- Article 34: match-related/commemorative match information is at chest height on the torso, max 50 cm².
-  https://documents.uefa.com/r/G4ozoVUlyB6CEGZ1efpJPg/QKAS7IxLYS29iCPmW6OY7A
+Source:
+- https://img.legaseriea.it/vimages/686538c6/1%20-%20Regolamento%20Divise%20da%20Gioco%202024-2027.pdf
 
-Historical examples also show anniversary marks integrated with or adjacent to the crest (Chelsea 2025/26 anniversary crest, Wolfsburg 2025/26 anniversary crest) and centenary badges at centre chest (Athletic Club 1997/98). Therefore the configurator uses an upper-centre chest preset for a generic commemorative/match badge while keeping full manual override.
+The Serie A preset uses 27.5 cm, the midpoint of the official 25–30 cm range. The UI says this explicitly.
 
-## Crest inside the number
+## 3. Measured real Premier League references
 
-Historical UEFA Kit Regulations explicitly allowed the club emblem to be incorporated at the bottom of each individual figure of the player's number (Article 14.04 in the historical edition surfaced by UEFA).
+Historical Premier League namesets provide concrete real-world dimensions rather than only regulatory maxima:
 
-https://www.uefa.com/MultimediaFiles/Download/Regulations/uefa/Others/72/77/76/727776_DOWNLOAD.pdf
+- Manchester City 2022/23, `HAALAND 9`: number **23 cm**, letters **4.9 cm**;
+- Manchester City 2017–23 / Chelsea 2017–19 references: number **23 cm**, letters **5 cm**;
+- Arsenal 2013/14, `BENDTNER 23`: number **26 cm**, letters **5 cm**.
 
-Modern league typography also uses embedded competition branding: Premier League 2023/24 names/numbers integrate the league graphic pattern, and official shirt numbers visibly carry the league lion mark near the base.
+References:
+- https://www.kitroomfootball.com/shop/2022-23-manchester-city-premier-league-home-name-number-set-9-haaland-repro/
+- https://www.kitroomfootball.com/shop/2017-23-manchester-city-navy-blue-name-number-set-17-de-bruyne-premier-repro/
+- https://www.kitroomfootball.com/shop/2013-14-arsenal-home-name-number-set-23-bendtner-premier-league-repro/
 
-https://www.premierleague.com/en/news/3614236
+Avery Dennison is the official Premier League supplier of names, numbers and sleeve badges. Its 2023 redesign increased number height after visibility testing, which is why historical PL dimensions are kept as explicitly dated presets rather than treated as the 2026/27 standard.
 
-Implementation: optional, OFF by default. When enabled it uses the first uploaded crest/logo and masks it into the lower part of each character of the back number, rather than floating an unrelated logo over the shirt.
+Official context:
+- https://www.averydennison.com/en/home/news/press-releases/avery-dennison-and-the-premier-league-present-the-name-behind-the-numbers.html
 
-## Collar library
+## 4. Physical scale calibration against the 3D shirt
 
-Castore Teamwear 2024 MTO Football catalogue, p.12, lists eight football neckline constructions: crew, V-neck, fold-over polo and tapered, each in self-fabric and ribbed variants.
+The previous implementation stored arbitrary overlay percentages. That was the source of the visibly undersized `ROSSI` and number.
 
-https://admdirect.co.uk/wp-content/uploads/2024/09/Castore-Teamwear-2024.pdf
+The v6 runtime converts centimetres into the actual Three.js donor-shirt bounds. It uses a documented adult replica back length as the physical reference:
 
-UEFA's historical overview of football shirts describes the long evolution from laced crew necks to polo necks and V-necks.
+- Fulham 2026/27 adult adidas replica, size L: back length **74.5 cm**.
 
-https://it.uefa.com/MultimediaFiles/Download/EuroExperience/uefaorg/Publications/02/45/38/88/2453888_DOWNLOAD.pdf
+Source:
+- https://shop.fulhamfc.com/kit/homeadultkit/homeadultkit/6906_fulham-2627-adult-home-shirt.html
 
-Documented kit examples used to keep the variants era-plausible include early-1990s Italy/Northern Ireland polo collars, 1990s wide/retro collars, and modern open-V/polo hybrids such as Fiorentina 2024/25.
+The mapping is deterministic:
 
-The UI exposes: original mesh, crew rib, V rib, fold-over polo, button polo, rib a contrasto (crew geometry with independent collar colour), split-V, retro-wide and modern hybrid. `original` remains the default so the founder-approved garment silhouette is not degraded unless a collar option is deliberately selected.
+1. compute donor shirt world-space height;
+2. divide by 74.5 cm to obtain world-units/cm;
+3. compensate for the existing text-canvas glyph fill ratio;
+4. derive the existing overlay `scale` value needed for the requested physical glyph height;
+5. keep X/Y/rotation/scale editable afterwards.
 
-## Lower body / footwear
+This preserves the approved conformal-text renderer while replacing guessed size percentages with a physical calibration.
 
-The existing donor socks remain the primary garment asset. The realism layer forces the full socks visible by default and adds a small sock-foot/ankle completion plus football boots below them. The default boot is neutral dark with an azzurro detail matching the current 2D reference palette (`#9bbcf0` shirt, white shorts), and both boot and accent colours remain editable.
+## 5. Collar library
 
-No third-party boot model or new runtime dependency is introduced; the boot geometry is generated locally with Three.js primitives, so licensing/runtime guarantees of the approved v4 garment base remain unchanged.
+The old v5 collar system used tubes/solid primitives floating above the garment and is retired.
 
-## Non-regression constraints
+The v6 collar system projects thin fabric ribbons/panels onto the **actual shirt surface** with raycasts. It exposes these historically common constructions:
 
-- Existing real shirt/shorts/socks GLBs are untouched.
-- Existing 360° OrbitControls, front/back/left/right views and conformal overlays remain untouched.
-- Existing name/number text, custom font loading and pattern uploads remain untouched.
-- Existing manual graphic controls remain the authority after preset creation.
-- No CDN, SaaS, React or new donor runtime dependency.
-- PR stays Draft pending founder visual approval.
+- original garment neckline;
+- crew rib;
+- V-neck rib;
+- fold-over polo;
+- button polo;
+- split-V modern;
+- wide 1990s polo.
+
+Taxonomy references:
+- UEFA historical football-shirt overview: https://it.uefa.com/MultimediaFiles/Download/EuroExperience/uefaorg/Publications/02/45/38/88/2453888_DOWNLOAD.pdf
+- Castore Teamwear 2024 football catalogue: https://admdirect.co.uk/wp-content/uploads/2024/09/Castore-Teamwear-2024.pdf
+
+These are construction families, not claims that one exact mesh reproduces a specific club's proprietary 3D pattern.
+
+## 6. Lower body and footwear
+
+The donor socks remain visible by default as the complete lower-body garment component.
+
+**Procedural boots have been removed completely.** No boot mesh, boot control, boot payload option or footwear claim remains in v6.
+
+## 7. Visible payload/code
+
+The configuration object remains available internally as `window.__payload3d` / `window.__sportswear3d.payload()` for quotation and backoffice integration, but the raw JSON textarea and “copy code” control are hidden from the customer UI.
+
+## 8. Release rule
+
+A static syntax pass is insufficient. A candidate can only be called green after the real Chromium/WebGL acceptance covers physical name/number targets, no footwear remnants, hidden raw payload UI, every collar variant, visual collar screenshots, crest-in-number non-transparent pixels, pattern/patch upload, free-text number, rotation and zero browser/page errors.
