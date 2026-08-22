@@ -1,7 +1,7 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 import { z } from "@medusajs/framework/zod"
-import { calculateSportswearVariant, tierLabel, validateRosterSizes } from "../../../../lib/sportswear"
+import { calculateSportswearVariant, parseSizeMatrix, tierLabel, validateRosterSizes } from "../../../../lib/sportswear"
 import { SportswearQuoteSchema } from "./validators"
 
 type Input = z.infer<typeof SportswearQuoteSchema>
@@ -21,9 +21,29 @@ export async function POST(req: MedusaRequest<Input>, res: MedusaResponse) {
   }
 
   const query = req.scope.resolve(ContainerRegistrationKeys.QUERY) as any
+  const fabricPrice = await calculateSportswearVariant(query, input.fabric_sku, input.currency_code, input.quantity)
+  if (fabricPrice) {
+    const matrix = parseSizeMatrix(fabricPrice.metadata)
+    const unsupported = input.roster.flatMap((player, index) => {
+      const allowed = matrix[player.category] || []
+      const fields: string[] = []
+      if (!allowed.includes(player.shirt_size)) fields.push(`players[${index}].shirt_size`)
+      if (!allowed.includes(player.shorts_size)) fields.push(`players[${index}].shorts_size`)
+      return fields
+    })
+    if (unsupported.length) {
+      return res.status(422).json({
+        type: "invalid_data",
+        message: "Selected fabric does not support one or more roster sizes",
+        fields: unsupported,
+        size_matrix: matrix,
+      })
+    }
+  }
+
   const requested = [
-    { sku: input.fabric_sku, unitsPerKit: 1, kind: "fabric" },
-    ...input.feature_units.map((item) => ({ sku: item.sku, unitsPerKit: item.units_per_kit, kind: "personalization" })),
+    { sku: input.fabric_sku, unitsPerKit: 1, kind: "fabric", prefetched: fabricPrice },
+    ...input.feature_units.map((item) => ({ sku: item.sku, unitsPerKit: item.units_per_kit, kind: "personalization", prefetched: null })),
   ]
   const lines: any[] = []
   const missing: string[] = []
@@ -31,7 +51,7 @@ export async function POST(req: MedusaRequest<Input>, res: MedusaResponse) {
   let originalTotalAmount = 0
 
   for (const item of requested) {
-    const price = await calculateSportswearVariant(query, item.sku, input.currency_code, input.quantity)
+    const price = item.prefetched || await calculateSportswearVariant(query, item.sku, input.currency_code, input.quantity)
     if (!price || price.amount == null) {
       missing.push(item.sku)
       continue
