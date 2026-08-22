@@ -532,7 +532,7 @@ function buildSurfaceOverlayGeometry(surfaceId, xPct, yPct, sizeX, sizeY, rotati
         const point = hit.point.clone().add(hit.normal.clone().multiplyScalar(0.012));
         positions.push(point.x, point.y, point.z);
         normals.push(hit.normal.x, hit.normal.y, hit.normal.z);
-        uvs.push(col / cols, 1 - row / rows);
+        uvs.push(surfaceDef(surfaceId).side === "back" ? 1 - col / cols : col / cols, 1 - row / rows);
       }
     }
     if (!ok) continue;
