@@ -1,4 +1,4 @@
-name: Sportswear3D Vendor Assets
+name: Sportswear3D Back Orientation Hotfix
 
 on:
   push:
@@ -11,7 +11,7 @@ permissions:
   contents: write
 
 jobs:
-  vendor:
+  hotfix:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout feature branch
@@ -20,139 +20,39 @@ jobs:
           ref: sol/mt3d-football-production-20260816
           fetch-depth: 0
 
-      - name: Download pinned MIT garment assets and Three.js loaders
+      - name: Apply Sol-authored back UV orientation fix
         shell: bash
         run: |
           set -euo pipefail
-          ROOT="ventures/run_20260711_161411/configurator"
-          ASSETS="$ROOT/assets/vendor"
-          THREE="$ROOT/vendor/three-r160/examples/jsm"
-          mkdir -p "$ASSETS" "$THREE/loaders" "$THREE/utils" "$THREE/environments" "$ROOT/verify"
-
-          curl --fail --location --retry 3 \
-            "https://raw.githubusercontent.com/pmndrs/examples/be95c387abb15d41d388bca4e2d1568690935a5c/examples/t-shirt-configurator/src/shirt_baked_collapsed.glb" \
-            -o "$ASSETS/football-shirt.glb"
-          curl --fail --location --retry 3 \
-            "https://raw.githubusercontent.com/pmndrs/examples/be95c387abb15d41d388bca4e2d1568690935a5c/examples/t-shirt-configurator/src/shirt_baked_2.glb" \
-            -o "$ASSETS/football-shirt-baked2.glb"
-          curl --fail --location --retry 3 \
-            "https://raw.githubusercontent.com/pmndrs/examples/be95c387abb15d41d388bca4e2d1568690935a5c/examples/t-shirt-configurator/src/shirt_baked_lower2.glb" \
-            -o "$ASSETS/football-shirt-lower2.glb"
-          curl --fail --location --retry 3 \
-            "https://raw.githubusercontent.com/madjin/asset-pallet/7243319029382f5799f03162cc6bf10795f9951d/models/tshirt_apose2.glb" \
-            -o "$ASSETS/football-shirt-madjin-apose2.glb"
-          curl --fail --location --retry 3 \
-            "https://raw.githubusercontent.com/madjin/asset-pallet/7243319029382f5799f03162cc6bf10795f9951d/models/shorts.glb" \
-            -o "$ASSETS/football-shorts.glb"
-          curl --fail --location --retry 3 \
-            "https://raw.githubusercontent.com/madjin/asset-pallet/7243319029382f5799f03162cc6bf10795f9951d/models/socks.glb" \
-            -o "$ASSETS/football-socks.glb"
-
-          curl --fail --location --retry 3 \
-            "https://raw.githubusercontent.com/mrdoob/three.js/d04539a76736ff500cae883d6a38b3dd8643c548/examples/jsm/loaders/GLTFLoader.js" \
-            -o "$THREE/loaders/GLTFLoader.js"
-          curl --fail --location --retry 3 \
-            "https://raw.githubusercontent.com/mrdoob/three.js/d04539a76736ff500cae883d6a38b3dd8643c548/examples/jsm/utils/BufferGeometryUtils.js" \
-            -o "$THREE/utils/BufferGeometryUtils.js"
-          curl --fail --location --retry 3 \
-            "https://raw.githubusercontent.com/mrdoob/three.js/d04539a76736ff500cae883d6a38b3dd8643c548/examples/jsm/environments/RoomEnvironment.js" \
-            -o "$THREE/environments/RoomEnvironment.js"
-
-      - name: Verify upstream Git blob identities
-        shell: bash
-        run: |
-          set -euo pipefail
-          ROOT="ventures/run_20260711_161411/configurator/assets/vendor"
-          check_blob() {
-            local file="$1" expected="$2"
-            actual="$(git hash-object "$file")"
-            printf '%s  %s\n' "$actual" "$file"
-            test "$actual" = "$expected"
-          }
-          check_blob "$ROOT/football-shirt.glb"                9c7609eddfd597a70cb708f96bc19841766b3488
-          check_blob "$ROOT/football-shirt-baked2.glb"         b8fdcbcfacf9b842323045009a10b70abe1d8889
-          check_blob "$ROOT/football-shirt-lower2.glb"         1a14068cb85a72e12d82cd58dc7cc7840d1d693e
-          check_blob "$ROOT/football-shirt-madjin-apose2.glb"  f647d5e712bf3f660e94edfca740c96cded5796d
-          check_blob "$ROOT/football-shorts.glb"               3222095f45778676f967c08bf1962af5306e111b
-          check_blob "$ROOT/football-socks.glb"                44667afdfc03d73aad1b556899d41f4af8a6f2e3
-          echo "DONOR_BINARY_BLOBS=PASS"
-
-      - name: Record donor GLB geometry metadata
-        shell: bash
-        run: |
-          set -euo pipefail
+          APP="ventures/run_20260711_161411/configurator/src/app.js"
           python3 - <<'PY'
-          import json, pathlib, struct
-          root = pathlib.Path('ventures/run_20260711_161411/configurator')
-          assets = root / 'assets' / 'vendor'
-          out = {}
-          for path in sorted(assets.glob('football-*.glb')):
-              data = path.read_bytes()
-              magic, version, length = struct.unpack_from('<4sII', data, 0)
-              assert magic == b'glTF' and version == 2 and length == len(data)
-              off = 12
-              doc = None
-              while off < len(data):
-                  chunk_len, chunk_type = struct.unpack_from('<II', data, off)
-                  off += 8
-                  chunk = data[off:off + chunk_len]
-                  off += chunk_len
-                  if chunk_type == 0x4E4F534A:
-                      doc = json.loads(chunk.rstrip(b' \t\r\n\x00').decode('utf-8'))
-                      break
-              assert doc is not None
-              accessors = doc.get('accessors', [])
-              meshes = []
-              for mi, mesh in enumerate(doc.get('meshes', [])):
-                  primitives = []
-                  for pi, prim in enumerate(mesh.get('primitives', [])):
-                      pos_idx = prim.get('attributes', {}).get('POSITION')
-                      acc = accessors[pos_idx] if pos_idx is not None else {}
-                      primitives.append({'primitive': pi, 'position_accessor': pos_idx, 'min': acc.get('min'), 'max': acc.get('max'), 'material': prim.get('material')})
-                  meshes.append({'index': mi, 'name': mesh.get('name'), 'primitives': primitives})
-              out[path.name] = {
-                  'generator': doc.get('asset', {}).get('generator'),
-                  'nodes': [{'name': n.get('name'), 'mesh': n.get('mesh'), 'translation': n.get('translation'), 'rotation': n.get('rotation'), 'scale': n.get('scale')} for n in doc.get('nodes', [])],
-                  'meshes': meshes,
-                  'materials': [m.get('name') for m in doc.get('materials', [])]
-              }
-          report = root / 'verify' / 'DONOR_MODEL_REPORT.json'
-          report.write_text(json.dumps(out, indent=2, sort_keys=True) + '\n')
-          print(report.read_text())
+          from pathlib import Path
+          p = Path('ventures/run_20260711_161411/configurator/src/app.js')
+          s = p.read_text()
+          old = '        uvs.push(col / cols, 1 - row / rows);'
+          new = '        uvs.push(surfaceDef(surfaceId).side === "back" ? 1 - col / cols : col / cols, 1 - row / rows);'
+          if new in s:
+              print('BACK_UV_FIX_ALREADY_PRESENT=YES')
+          else:
+              assert old in s, 'expected conformal UV line not found'
+              s = s.replace(old, new, 1)
+              p.write_text(s)
+              print('BACK_UV_FIX_APPLIED=YES')
           PY
+          node --check "$APP"
+          grep -Fq 'side === "back" ? 1 - col / cols : col / cols' "$APP"
+          echo "BACK_UV_STATIC=PASS"
 
-      - name: Apply final runtime hardening
-        shell: bash
-        run: |
-          set -euo pipefail
-          ROOT="ventures/run_20260711_161411/configurator"
-          python3 "$ROOT/verify/apply-final-runtime-hardening.py"
-          node --check "$ROOT/src/app.js"
-          grep -q 'football-real-garment-v4-conformal' "$ROOT/src/app.js"
-          grep -q 'buildSurfaceOverlayGeometry' "$ROOT/src/app.js"
-          echo "FINAL_RUNTIME_STATIC=PASS"
-
-      - name: Commit verified donor runtime
+      - name: Commit orientation fix
         shell: bash
         run: |
           set -euo pipefail
           git config user.name "sportswear3d-ci"
           git config user.email "sportswear3d-ci@users.noreply.github.com"
-          git add -- \
-            ventures/run_20260711_161411/configurator/assets/vendor/football-shirt.glb \
-            ventures/run_20260711_161411/configurator/assets/vendor/football-shirt-baked2.glb \
-            ventures/run_20260711_161411/configurator/assets/vendor/football-shirt-lower2.glb \
-            ventures/run_20260711_161411/configurator/assets/vendor/football-shirt-madjin-apose2.glb \
-            ventures/run_20260711_161411/configurator/assets/vendor/football-shorts.glb \
-            ventures/run_20260711_161411/configurator/assets/vendor/football-socks.glb \
-            ventures/run_20260711_161411/configurator/vendor/three-r160/examples/jsm/loaders/GLTFLoader.js \
-            ventures/run_20260711_161411/configurator/vendor/three-r160/examples/jsm/utils/BufferGeometryUtils.js \
-            ventures/run_20260711_161411/configurator/vendor/three-r160/examples/jsm/environments/RoomEnvironment.js \
-            ventures/run_20260711_161411/configurator/verify/DONOR_MODEL_REPORT.json \
-            ventures/run_20260711_161411/configurator/src/app.js
+          git add ventures/run_20260711_161411/configurator/src/app.js
           if git diff --cached --quiet; then
-            echo "No vendor/runtime changes required"
+            echo "No hotfix change required"
             exit 0
           fi
-          git commit -m "sportswear3d: finalize athletic fit and conformal overlays"
+          git commit -m "sportswear3d: correct back overlay orientation"
           git push origin HEAD:sol/mt3d-football-production-20260816
