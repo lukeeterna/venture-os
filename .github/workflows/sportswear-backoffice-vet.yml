@@ -1,0 +1,159 @@
+name: Sportswear Backoffice Vet
+
+on:
+  push:
+    branches:
+      - sol/sportswear-backoffice-vet-20260822
+    paths:
+      - .github/workflows/sportswear-backoffice-vet.yml
+
+permissions:
+  contents: write
+
+jobs:
+  medusa-vet:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: medusa
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d medusa"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/medusa
+      STORE_CORS: http://localhost:8000,http://127.0.0.1:8000,http://localhost:8282,http://127.0.0.1:8282
+      ADMIN_CORS: http://localhost:9000,http://127.0.0.1:9000
+      AUTH_CORS: http://localhost:9000,http://127.0.0.1:9000
+      JWT_SECRET: sportswear-vet-jwt-not-production
+      COOKIE_SECRET: sportswear-vet-cookie-not-production
+      DISABLE_MEDUSA_ADMIN: "false"
+      MEDUSA_DISABLE_TELEMETRY: "true"
+    steps:
+      - name: Checkout Venture OS vet branch
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20.19
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.19.0
+
+      - name: Install pnpm 10.11.1
+        shell: bash
+        run: |
+          set -euo pipefail
+          corepack enable
+          corepack prepare pnpm@10.11.1 --activate
+          node --version
+          pnpm --version
+
+      - name: Fetch pinned official Medusa DTC starter
+        id: upstream
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/medusa-dtc
+          git clone --filter=blob:none https://github.com/medusajs/dtc-starter.git /tmp/medusa-dtc
+          git -C /tmp/medusa-dtc checkout --detach 7d0d4767a314a3ece4c2cd4e881e52f5f9cce845
+          test "$(git -C /tmp/medusa-dtc rev-parse HEAD)" = "7d0d4767a314a3ece4c2cd4e881e52f5f9cce845"
+          grep -q '"@medusajs/dashboard": "2.19.0"' /tmp/medusa-dtc/apps/backend/package.json
+          echo "UPSTREAM_PIN=PASS"
+
+      - name: Install exact upstream dependencies
+        id: install
+        shell: bash
+        working-directory: /tmp/medusa-dtc
+        run: |
+          set -euo pipefail
+          pnpm install --frozen-lockfile
+          echo "INSTALL=PASS"
+
+      - name: Build backend and admin dashboard
+        id: build
+        shell: bash
+        working-directory: /tmp/medusa-dtc
+        run: |
+          set -euo pipefail
+          pnpm --filter @dtc/backend build
+          echo "BUILD=PASS"
+
+      - name: Apply database migrations
+        id: migrate
+        shell: bash
+        working-directory: /tmp/medusa-dtc/apps/backend
+        run: |
+          set -euo pipefail
+          pnpm exec medusa db:migrate
+          echo "MIGRATE=PASS"
+
+      - name: Start backend
+        id: start
+        shell: bash
+        working-directory: /tmp/medusa-dtc/apps/backend
+        run: |
+          set -euo pipefail
+          pnpm start >/tmp/medusa-backend.log 2>&1 &
+          echo $! >/tmp/medusa-backend.pid
+          for i in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:9000/health >/tmp/medusa-health.txt; then
+              echo "HEALTH=PASS"
+              exit 0
+            fi
+            sleep 2
+          done
+          cat /tmp/medusa-backend.log
+          exit 1
+
+      - name: Smoke backend and admin UI
+        id: smoke
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -qi 'ok\|healthy' /tmp/medusa-health.txt || test -s /tmp/medusa-health.txt
+          STATUS="$(curl --silent --output /tmp/medusa-admin.html --write-out '%{http_code}' http://127.0.0.1:9000/app)"
+          case "$STATUS" in 200|301|302|307|308) ;; *) echo "Admin HTTP $STATUS"; cat /tmp/medusa-backend.log; exit 1;; esac
+          test -s /tmp/medusa-admin.html || case "$STATUS" in 301|302|307|308) true;; *) exit 1;; esac
+          echo "ADMIN_SMOKE=PASS"
+          echo "BACKOFFICE_VET=PASS"
+
+      - name: Publish SHA-scoped vet verdict
+        if: always()
+        shell: bash
+        run: |
+          set -u
+          OUT="docs/judge/ci/sportswear-backoffice-vet-${GITHUB_SHA}.md"
+          mkdir -p "$(dirname "$OUT")"
+          {
+            echo "# Sportswear backoffice upstream vet"
+            echo
+            echo "source_sha: $GITHUB_SHA"
+            echo "upstream_repo: medusajs/dtc-starter"
+            echo "upstream_sha: 7d0d4767a314a3ece4c2cd4e881e52f5f9cce845"
+            echo "upstream_medusa: 2.19.0"
+            echo "upstream_dashboard: 2.19.0"
+            echo "pin_outcome: ${{ steps.upstream.outcome }}"
+            echo "install_outcome: ${{ steps.install.outcome }}"
+            echo "build_outcome: ${{ steps.build.outcome }}"
+            echo "migrate_outcome: ${{ steps.migrate.outcome }}"
+            echo "start_outcome: ${{ steps.start.outcome }}"
+            echo "smoke_outcome: ${{ steps.smoke.outcome }}"
+            echo "workflow_run_id: $GITHUB_RUN_ID"
+            echo
+            echo '```text'
+            if [ -f /tmp/medusa-health.txt ]; then echo -n 'health='; cat /tmp/medusa-health.txt; fi
+            if [ -f /tmp/medusa-backend.log ]; then tail -n 80 /tmp/medusa-backend.log; fi
+            echo '```'
+          } > "$OUT"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$OUT"
+          git commit -m "ci(sportswear): publish backoffice vet for ${GITHUB_SHA}" || exit 0
+          git push origin "HEAD:${GITHUB_REF_NAME}"
