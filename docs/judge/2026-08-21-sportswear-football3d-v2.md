@@ -1,77 +1,84 @@
 # SPORTSWEAR — Football 3D v2
 
-Data: 2026-08-21
+Data: 2026-08-22
 Implementatore: GPT-5.6 Sol
 Working PR: #5
 Branch: `sol/mt3d-football-production-20260816`
 
 ## Decisione prodotto
 
-Questa specifica sostituisce, per il configuratore football 3D corrente, le parti precedenti che assumevano come runtime principale `assets/kit.glb` e i 12 pattern hardcoded.
+Il configuratore football 3D è il prodotto primario. La 2D resta fallback.
 
-Il requisito corrente è:
-- resa 3D pulita e stabile, coerente con la silhouette della divisa 2D approvata;
-- rotazione 360°;
-- nessuna dipendenza dal GLB che produceva geometria spezzata nella preview;
-- fantasie caricate dall'utente tramite file universali;
-- nome e numero/caratteri realmente personalizzabili;
+Requisiti correnti:
+- resa 3D pulita e stabile con silhouette atletica;
+- rotazione 360° reale;
+- fronte e retro reali;
+- nome sopra numero sul retro e orientamento leggibile;
+- fantasie caricate dall'utente;
+- nome e numero/caratteri liberi;
 - font integrati + font caricabili;
 - loghi, sponsor, patch e badge multipli;
 - superfici fronte/retro/maniche/pantaloncini/calze;
 - payload deterministico senza byte/file nel JSON.
 
-## Motore 3D
+## Motore 3D finale candidato
 
-Il runtime usa Three.js r160 locale e costruisce una divisa parametrica stabile con mesh separate per:
-- corpo maglia;
-- manica sinistra;
-- manica destra;
-- colletto;
-- cintura pantaloncini;
-- pantaloncino sinistro;
-- pantaloncino destro;
-- calza sinistra;
-- calza destra.
+Runtime: `football-real-garment-v4-conformal`.
 
-Personalizzazioni localizzate tramite `DecalGeometry` ufficiale Three.js r160.
+Three.js r160 è vendorizzato localmente. Il runtime usa mesh reali con licenza MIT:
+- maglia da `pmndrs/examples`, commit `be95c387abb15d41d388bca4e2d1568690935a5c`, blob `9c7609eddfd597a70cb708f96bc19841766b3488`;
+- pantaloncini da `madjin/asset-pallet`, commit `7243319029382f5799f03162cc6bf10795f9951d`, blob `3222095f45778676f967c08bf1962af5306e111b`;
+- calze dallo stesso pin, blob `44667afdfc03d73aad1b556899d41f4af8a6f2e3`.
 
-Nessun React, Fabric, SaaS o CDN runtime.
+La maglia riceve all'avvio una deformazione deterministica di athletic-fit per ridurre la silhouette T-shirt senza sostituire la topologia reale del donor.
+
+Nessun React, Fabric, SaaS, CDN o donor runtime.
+
+## Proiezione personalizzazioni
+
+Il runtime finale non usa `DecalGeometry`.
+
+Nome, numero, logo, sponsor, patch e badge sono resi tramite griglie conformali costruite campionando con raycast la superficie semantica richiesta. Le griglie:
+- seguono la superficie reale dell'indumento;
+- mantengono UV rettangolari per evitare deformazioni volumetriche;
+- riducono automaticamente la dimensione se una grafica uscirebbe dalla safe area;
+- usano una safe area dedicata alle maniche;
+- invertono U soltanto sul retro per rendere testo/grafiche leggibili dalla vista posteriore.
+
+Superfici:
+- `shirt-front`;
+- `shirt-back`;
+- `left-sleeve`;
+- `right-sleeve`;
+- `shorts-left`;
+- `shorts-right`;
+- `socks-left`;
+- `socks-right`.
 
 ## Fantasie
 
-Non esiste più un catalogo obbligatorio di fantasie standard.
-
-Ogni parte può ricevere una fantasia diversa caricata dal browser:
+Upload browser:
 - PNG;
 - JPG/JPEG;
-- WebP.
+- WebP;
+- max 8 MB.
 
-Formato raccomandato:
-- PNG 1024×1024;
-- square;
-- seamless/tileable;
-- trasparenza facoltativa.
+Formato raccomandato: PNG 1024×1024 square seamless/tileable.
 
-Limite 8 MB per file.
-
-Controlli:
-- repeat;
+Controlli per parte:
+- repeat X/Y;
 - rotation;
-- offset X/Y;
-- opacity.
+- offset X/Y.
 
-## Nome, numero e caratteri
+## Nome, numero e font
 
-`Nome / testo`:
-- testo libero stampabile, max 24 caratteri.
+`Nome / testo`: max 24 caratteri.
 
-`Numero / caratteri`:
-- non limitato ai soli numeri;
-- testo libero stampabile, max 6 caratteri.
+`Numero / caratteri`: testo libero, max 6 caratteri; non limitato ai soli numeri.
 
 Font:
 - 8 stack system/locali;
-- upload runtime TTF, OTF, WOFF, WOFF2 fino a 5 MB.
+- upload runtime TTF, OTF, WOFF, WOFF2 fino a 8 MB.
 
 Default:
 - nome sopra numero sul retro;
@@ -81,17 +88,7 @@ Default:
 
 Collection dinamica fino a 20 elementi.
 
-Tipi:
-- logo;
-- sponsor;
-- patch;
-- badge.
-
-File:
-- PNG consigliato con trasparenza;
-- JPG;
-- WebP;
-- max 8 MB.
+File immagine: PNG/JPG/WebP fino a 8 MB.
 
 Per ogni elemento:
 - surface;
@@ -102,25 +99,15 @@ Per ogni elemento:
 - opacity;
 - remove.
 
-Superfici:
-- shirt-front;
-- shirt-back;
-- left-sleeve;
-- right-sleeve;
-- shorts-left;
-- shorts-right;
-- socks-left;
-- socks-right.
-
 ## Payload 3D
 
-`window.__payload3d`, schema `v:2`.
+`window.__payload3d`, schema `v:3`.
 
 Include:
 - sport;
-- model;
+- model_source;
 - colors;
-- patterns con soli metadati ricostruibili;
+- patterns con metadati;
 - personalization;
 - graphics[].
 
@@ -134,21 +121,21 @@ Esclude:
 - UUID;
 - prezzi.
 
-Le immagini/font vanno ricaricati per ricostruire completamente una configurazione che li usa.
-
 ## Gate
 
-Prima del merge sono obbligatori:
-- syntax/static verification verde;
-- preview reale Chrome/WebGL sul Mac founder;
-- fronte/retro/360°;
-- nome sopra numero sul retro;
-- caricamento fantasia;
-- caricamento font custom;
-- almeno 2 sponsor e 2 patch contemporanei;
-- patch manica;
-- grafica pantaloncino;
-- mobile 390×844;
-- nessun errore console bloccante.
+Gate automatico prima della preview founder:
+- `node --check`;
+- asset runtime presenti;
+- Three.js revision 160;
+- real garment meshes caricati;
+- Chrome/Chromium WebGL reale;
+- front/back/right render;
+- nome + numero retro;
+- free-text numero/caratteri;
+- upload fantasia;
+- upload patch manica;
+- rotazione viste;
+- nessun errore console bloccante;
+- screenshot e runtime diagnostics come artifact.
 
-La PR resta Draft finché questi gate visuali non sono osservati.
+L'automazione non sostituisce l'approvazione visuale founder. PR #5 resta Draft finché l'esatto head finale non viene aperto sul Mac founder in Chrome reale e approvato.
