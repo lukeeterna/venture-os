@@ -1,5 +1,4 @@
 const { chromium } = require('playwright');
-const path = require('node:path');
 
 const BASE = process.env.SPORTSWEAR_URL || 'http://127.0.0.1:8282/';
 function fail(message) { throw new Error(message); }
@@ -8,17 +7,21 @@ function fail(message) { throw new Error(message); }
   const browser = await chromium.launch({ headless: true, args: ['--enable-webgl', '--ignore-gpu-blocklist', '--use-angle=swiftshader', '--disable-dev-shm-usage'] });
   try {
     const page = await browser.newPage({ viewport: { width: 1440, height: 1100 }, deviceScaleFactor: 1 });
+    await page.addInitScript(() => { window.__SPORTSWEAR_PUBLISHABLE_KEY = 'pk_ci_sportswear'; });
     const errors = [];
+    let catalogKey = null;
+    let quoteKey = null;
     page.on('pageerror', (err) => errors.push(`pageerror: ${err.stack || err.message}`));
     page.on('console', (msg) => { if (msg.type() === 'error') errors.push(`console.error: ${msg.text()}`); });
 
     await page.route('**/store/sportswear/catalog**', async (route) => {
+      catalogKey = route.request().headers()['x-publishable-api-key'] || null;
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify({
           fabrics: [
-            { sku: 'FABRIC_MATCH_145', title: 'Match 145 g', unit_amount: 3200 },
+            { sku: 'FABRIC_MATCH_145', title: 'Match 145 g', unit_amount: 3200, size_matrix: { men: ['XXS','XS','S','M','L','XL','XXL','3XL','4XL','5XL'], women: ['XXS','XS','S','M','L','XL','XXL','3XL','4XL'], boys: ['5XS','4XS','3XS','XXS','XS','S'], girls: ['5XS','4XS','3XS','XXS','XS','S'] } },
             { sku: 'FABRIC_PRO_130', title: 'Pro 130 g', unit_amount: 3900 },
           ],
           personalizations: [
@@ -31,6 +34,7 @@ function fail(message) { throw new Error(message); }
 
     await page.route('**/store/sportswear/quote', async (route) => {
       const request = route.request();
+      quoteKey = request.headers()['x-publishable-api-key'] || null;
       const body = JSON.parse(request.postData() || '{}');
       const quantity = Number(body.quantity || 0);
       const unit = quantity >= 10 ? 4100 : 4600;
@@ -56,6 +60,7 @@ function fail(message) { throw new Error(message); }
     const response = await page.goto(BASE, { waitUntil: 'networkidle', timeout: 60000 });
     if (!response || !response.ok()) fail(`HTTP ${response?.status()} loading ${BASE}`);
     await page.waitForFunction(() => window.__teamOrderReady === true, null, { timeout: 30000 });
+    if (catalogKey !== 'pk_ci_sportswear') fail(`catalog publishable key missing: ${catalogKey}`);
 
     const initial = await page.evaluate(() => ({
       ready: window.__teamOrderReady,
@@ -63,8 +68,9 @@ function fail(message) { throw new Error(message); }
       players: window.__teamOrder.roster.length,
       payloadVersion: window.__sportswear3d.payload().v,
       defaultCategory: window.__teamOrder.roster[0]?.category,
+      medusaBridge: window.__sportswearMedusaFetchInstalled,
     }));
-    if (!initial.ready) fail('team order not ready');
+    if (!initial.ready || !initial.medusaBridge) fail(`team/bridge not ready ${JSON.stringify(initial)}`);
     if (JSON.stringify(initial.categories) !== JSON.stringify(['men', 'women', 'boys', 'girls'])) fail(`categories mismatch ${JSON.stringify(initial.categories)}`);
     if (initial.players !== 1 || initial.defaultCategory !== 'men') fail(`unexpected initial roster ${JSON.stringify(initial)}`);
     if (initial.payloadVersion !== 4) fail(`expected payload v4 got ${initial.payloadVersion}`);
@@ -105,6 +111,7 @@ function fail(message) { throw new Error(message); }
 
     await page.locator('#team-fabric').selectOption('FABRIC_MATCH_145');
     await page.waitForFunction(() => window.__teamOrder.quoteState === 'ready', null, { timeout: 10000 });
+    if (quoteKey !== 'pk_ci_sportswear') fail(`quote publishable key missing: ${quoteKey}`);
 
     await row1.locator('[data-preview]').click();
     await page.waitForTimeout(250);
@@ -135,6 +142,7 @@ function fail(message) { throw new Error(message); }
     console.log('YOUTH_BOYS_GIRLS_SPLIT=PASS');
     console.log('ROSTER_PREVIEW=PASS');
     console.log('PAYLOAD_V4=PASS');
+    console.log('MEDUSA_PUBLISHABLE_KEY_BRIDGE=PASS');
     console.log('BACKOFFICE_QUOTE_CONTRACT=PASS');
     if (errors.length) console.log(`NON_FATAL_PAGE_ERRORS=${JSON.stringify(errors)}`);
   } finally {
