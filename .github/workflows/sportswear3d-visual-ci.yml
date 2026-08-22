@@ -36,16 +36,22 @@ jobs:
           ROOT="ventures/run_20260711_161411/configurator"
           node --check "$ROOT/src/app.js"
           node --check "$ROOT/src/football-realism-prelude.js"
+          node --check "$ROOT/src/sportswear-medusa-bridge.js"
           node --check "$ROOT/src/bootstrap.js"
           node --check "$ROOT/src/football-realism.js"
+          node --check "$ROOT/src/football-crest-conformal.js"
+          node --check "$ROOT/src/team-order.js"
           node --check "$ROOT/verify/visual-ci.cjs"
+          node --check "$ROOT/verify/visual-ci-core.cjs"
           test -s "$ROOT/assets/vendor/football-shirt.glb"
           test -s "$ROOT/assets/vendor/football-shorts.glb"
           test -s "$ROOT/assets/vendor/football-socks.glb"
           grep -q 'football-real-garment-v4-conformal' "$ROOT/src/app.js"
           grep -q 'buildSurfaceOverlayGeometry' "$ROOT/src/app.js"
           grep -q 'football-realism-v6-physical-20260822' "$ROOT/src/football-realism.js"
+          grep -q 'football-crest-conformal-v1-20260822' "$ROOT/src/football-crest-conformal.js"
           grep -q 'await import("./football-realism.js")' "$ROOT/src/bootstrap.js"
+          grep -q 'await import("./football-crest-conformal.js")' "$ROOT/src/bootstrap.js"
           if grep -q 'football-realism-post.js\|football-realism-calibration.js' "$ROOT/src/bootstrap.js"; then echo "Legacy realism layers still loaded"; exit 1; fi
           if grep -q 'football-boots\|roundedBox(.*boot' "$ROOT/src/football-realism.js"; then echo "Legacy footwear implementation found"; exit 1; fi
           if grep -q 'DecalGeometry' "$ROOT/src/app.js"; then echo "Unexpected DecalGeometry runtime dependency"; exit 1; fi
@@ -73,7 +79,7 @@ jobs:
               out=b'\x89PNG\r\n\x1a\n'+chunk(b'IHDR',struct.pack('>IIBBBBB',w,h,8,6,0,0,0))+chunk(b'IDAT',zlib.compress(raw,9))+chunk(b'IEND',b'')
               path.write_bytes(out)
           png(root/'ci-pattern.png',64,64,lambda x,y: (40,105,220,255) if ((x//8+y//8)%2==0) else (245,245,245,255))
-          png(root/'ci-logo.png',96,48,lambda x,y: (255,255,255,0) if (x<8 or x>87 or y<6 or y>41) else (220,35,50,255))
+          png(root/'ci-logo.png',96,48,lambda x,y: (255,255,255,0) if x<8 or x>87 or y<6 or y>41 else (220,35,50,255))
           PY
       - name: Install Playwright Chromium
         shell: bash
