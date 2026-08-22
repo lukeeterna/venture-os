@@ -121,6 +121,17 @@ jobs:
           print(report.read_text())
           PY
 
+      - name: Apply final runtime hardening
+        shell: bash
+        run: |
+          set -euo pipefail
+          ROOT="ventures/run_20260711_161411/configurator"
+          python3 "$ROOT/verify/apply-final-runtime-hardening.py"
+          node --check "$ROOT/src/app.js"
+          grep -q 'football-real-garment-v4-conformal' "$ROOT/src/app.js"
+          grep -q 'buildSurfaceOverlayGeometry' "$ROOT/src/app.js"
+          echo "FINAL_RUNTIME_STATIC=PASS"
+
       - name: Commit verified donor runtime
         shell: bash
         run: |
@@ -137,10 +148,11 @@ jobs:
             ventures/run_20260711_161411/configurator/vendor/three-r160/examples/jsm/loaders/GLTFLoader.js \
             ventures/run_20260711_161411/configurator/vendor/three-r160/examples/jsm/utils/BufferGeometryUtils.js \
             ventures/run_20260711_161411/configurator/vendor/three-r160/examples/jsm/environments/RoomEnvironment.js \
-            ventures/run_20260711_161411/configurator/verify/DONOR_MODEL_REPORT.json
+            ventures/run_20260711_161411/configurator/verify/DONOR_MODEL_REPORT.json \
+            ventures/run_20260711_161411/configurator/src/app.js
           if git diff --cached --quiet; then
-            echo "No vendor changes required"
+            echo "No vendor/runtime changes required"
             exit 0
           fi
-          git commit -m "sportswear3d: vendor verified athletic shirt candidate"
+          git commit -m "sportswear3d: finalize athletic fit and conformal overlays"
           git push origin HEAD:sol/mt3d-football-production-20260816
