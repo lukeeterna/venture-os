@@ -1,0 +1,90 @@
+name: Sportswear Team Order CI
+
+on:
+  pull_request:
+    paths:
+      - 'ventures/run_20260711_161411/configurator/**'
+      - '.github/workflows/sportswear-team-order-ci.yml'
+  push:
+    branches:
+      - 'sol/mt3d-football-production-20260816'
+    paths:
+      - 'ventures/run_20260711_161411/configurator/**'
+      - '.github/workflows/sportswear-team-order-ci.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sportswear-team-order-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  roster:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout candidate
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Static checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          ROOT="ventures/run_20260711_161411/configurator"
+          node --check "$ROOT/src/team-order.js"
+          node --check "$ROOT/src/team-size-availability.js"
+          node --check "$ROOT/verify/team-order-ci.cjs"
+          node --check "$ROOT/verify/team-size-ci.cjs"
+          grep -q 'const teamOrder = import("./team-order.js")' "$ROOT/src/bootstrap.js"
+          grep -q 'await import("./team-size-availability.js")' "$ROOT/src/bootstrap.js"
+          grep -q 'men: {' "$ROOT/src/team-order.js"
+          grep -q 'women: {' "$ROOT/src/team-order.js"
+          grep -q 'boys: {' "$ROOT/src/team-order.js"
+          grep -q 'girls: {' "$ROOT/src/team-order.js"
+          echo "TEAM_ORDER_STATIC=PASS"
+
+      - name: Install Playwright Chromium
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/sportswear-team-pw
+          cd /tmp/sportswear-team-pw
+          npm init -y >/dev/null 2>&1
+          npm install --no-audit --no-fund playwright@1.54.2
+          npx playwright install --with-deps chromium
+
+      - name: Start configurator
+        shell: bash
+        run: |
+          set -euo pipefail
+          ROOT="$GITHUB_WORKSPACE/ventures/run_20260711_161411/configurator"
+          python3 -m http.server 8282 --bind 127.0.0.1 --directory "$ROOT" >/tmp/sportswear-team-http.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:8282/ >/dev/null; then
+              echo "SERVER=PASS"
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/sportswear-team-http.log
+          exit 1
+
+      - name: Roster sizes and quote browser acceptance
+        shell: bash
+        run: |
+          set -euo pipefail
+          ROOT="$GITHUB_WORKSPACE/ventures/run_20260711_161411/configurator"
+          NODE_PATH=/tmp/sportswear-team-pw/node_modules SPORTSWEAR_URL=http://127.0.0.1:8282/ node "$ROOT/verify/team-order-ci.cjs"
+
+      - name: Fabric-specific size availability acceptance
+        shell: bash
+        run: |
+          set -euo pipefail
+          ROOT="$GITHUB_WORKSPACE/ventures/run_20260711_161411/configurator"
+          NODE_PATH=/tmp/sportswear-team-pw/node_modules SPORTSWEAR_URL=http://127.0.0.1:8282/ node "$ROOT/verify/team-size-ci.cjs"
