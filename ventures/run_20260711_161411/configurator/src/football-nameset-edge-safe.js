@@ -33,6 +33,7 @@ const status = {
   backNumberRepairs: 0,
   frontNumberRepairs: 0,
   maxInward: 0,
+  lastAspect: null,
   lastReason: null,
 };
 
@@ -47,12 +48,7 @@ function publish(extra = {}) {
 function shirtMetrics() {
   const box = new THREE.Box3().setFromObject(shirt);
   const size = box.getSize(new THREE.Vector3());
-  return {
-    box,
-    size,
-    safeWidth: size.x * 0.68,
-    worldPerCm: size.y / REFERENCE_SHIRT_BACK_CM,
-  };
+  return { box, size, safeWidth: size.x * 0.68, worldPerCm: size.y / REFERENCE_SHIRT_BACK_CM };
 }
 
 function currentFont() {
@@ -70,11 +66,7 @@ function shirtMeshes() {
 
 function hitSurface(side, xPct, bodyPct) {
   const { box, size } = shirtMetrics();
-  const x = THREE.MathUtils.lerp(
-    box.min.x + size.x * 0.16,
-    box.max.x - size.x * 0.16,
-    clamp(xPct, 0, 100) / 100
-  );
+  const x = THREE.MathUtils.lerp(box.min.x + size.x * 0.16, box.max.x - size.x * 0.16, clamp(xPct, 0, 100) / 100);
   const y = box.max.y - size.y * clamp(bodyPct, 0, 100) / 100;
   const far = Math.max(size.x, size.y, size.z) * 3 + 2;
   const front = side === "front";
@@ -84,66 +76,69 @@ function hitSurface(side, xPct, bodyPct) {
   );
   const hit = raycaster.intersectObjects(shirtMeshes(), false)[0];
   if (!hit) return null;
-  const normal = (hit.face?.normal?.clone() || new THREE.Vector3(0, 0, front ? 1 : -1))
-    .transformDirection(hit.object.matrixWorld)
-    .normalize();
+  const normal = (hit.face?.normal?.clone() || new THREE.Vector3(0, 0, front ? 1 : -1)).transformDirection(hit.object.matrixWorld).normalize();
   if (front && normal.z < 0) normal.negate();
   if (!front && normal.z > 0) normal.negate();
   return { point: hit.point.clone().add(normal.clone().multiplyScalar(0.017)), normal };
 }
 
-// Reuses the proven conformal-crest strategy: preserve the requested row/Y
-// first and move only a missed transparent edge vertex horizontally inward.
-// A small Y fallback exists only as a final safety net for highly curved edges.
+// Same edge-safe policy already proven by the conformal crest: preserve the
+// requested row/Y and only pull a missed edge sample inward toward the torso.
 function safeHitSurface(side, xPct, bodyPct, centerX, centerBodyPct) {
   const exact = hitSurface(side, xPct, bodyPct);
   if (exact) return { ...exact, inward: 0, yAdjusted: false };
-
   for (const inwardX of [0.08, 0.16, 0.28, 0.42, 0.60, 0.78, 1]) {
-    const x = THREE.MathUtils.lerp(xPct, centerX, inwardX);
-    const hit = hitSurface(side, x, bodyPct);
+    const hit = hitSurface(side, THREE.MathUtils.lerp(xPct, centerX, inwardX), bodyPct);
     if (hit) return { ...hit, inward: inwardX, yAdjusted: false };
   }
-
   for (const inwardY of [0.08, 0.16, 0.28]) {
     const y = THREE.MathUtils.lerp(bodyPct, centerBodyPct, inwardY);
     for (const inwardX of [0.16, 0.35, 0.60, 1]) {
-      const x = THREE.MathUtils.lerp(xPct, centerX, inwardX);
-      const hit = hitSurface(side, x, y);
+      const hit = hitSurface(side, THREE.MathUtils.lerp(xPct, centerX, inwardX), y);
       if (hit) return { ...hit, inward: Math.max(inwardX, inwardY), yAdjusted: true };
     }
   }
   return null;
 }
 
+// The old fixed 900x900 canvas projected a large transparent square around
+// narrow digits such as "10". Those invisible corners could cross an armhole
+// and distort visible pixels after inward fallback. Crop the canvas to actual
+// text width while retaining the 720px glyph height, so the physical height is
+// unchanged but projection geometry follows the real nameset footprint.
 function numberTexture() {
   const value = String(state.personalization.number || "10").replace(/[\r\n\t]/g, " ").trim().slice(0, 6) || "10";
-  const canvas = document.createElement("canvas");
-  canvas.width = 900;
-  canvas.height = 900;
-  const ctx = canvas.getContext("2d");
   const font = currentFont();
-  let px = 720;
-  ctx.clearRect(0, 0, 900, 900);
+  const height = 900;
+  const px = 720;
+  const probe = document.createElement("canvas").getContext("2d");
+  probe.font = `${font.weight} ${px}px ${font.family}`;
+  const measured = Math.ceil(probe.measureText(value).width);
+  const width = clamp(measured + Math.max(48, Math.round(px * 0.10)), 220, 3200);
+
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  ctx.clearRect(0, 0, width, height);
   ctx.font = `${font.weight} ${px}px ${font.family}`;
-  while (ctx.measureText(value).width > 810 && px > 180) {
-    px -= 8;
-    ctx.font = `${font.weight} ${px}px ${font.family}`;
-  }
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.lineJoin = "round";
   ctx.strokeStyle = "rgba(255,255,255,.16)";
   ctx.lineWidth = Math.max(1.5, px * 0.008);
-  ctx.strokeText(value, 450, 450 + px * 0.02);
+  ctx.strokeText(value, width / 2, height / 2 + px * 0.02);
   ctx.fillStyle = state.personalization.color;
-  ctx.fillText(value, 450, 450 + px * 0.02);
+  ctx.fillText(value, width / 2, height / 2 + px * 0.02);
+
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.anisotropy = Math.min(8, window.__footballRealismRenderer?.capabilities?.getMaxAnisotropy?.() || 1);
   texture.needsUpdate = true;
   texture.userData.footballNamesetGenerated = true;
   texture.userData.footballNamesetEdgeSafe = true;
+  texture.userData.canvasAspect = width / height;
+  texture.userData.glyphFill = NUMBER_GLYPH_FILL;
   return texture;
 }
 
@@ -167,14 +162,13 @@ function advancedConfig(slot) {
 }
 
 function layoutFor(slot) {
-  const advanced = document.body.classList.contains("football-easy-advanced");
-  return (advanced ? advancedConfig(slot) : null) || PROFILE[slot];
+  return (document.body.classList.contains("football-easy-advanced") ? advancedConfig(slot) : null) || PROFILE[slot];
 }
 
-function buildNumberGeometry(side, cfg) {
+function buildNumberGeometry(side, cfg, aspect) {
   const metrics = shirtMetrics();
   const overlayHeight = cfg.heightCm * metrics.worldPerCm / NUMBER_GLYPH_FILL;
-  const overlayWidth = overlayHeight;
+  const overlayWidth = overlayHeight * clamp(aspect, 0.18, 3.6);
   const spanX = overlayWidth / metrics.safeWidth * 100;
   const spanY = overlayHeight / metrics.size.y * 100;
   const angle = THREE.MathUtils.degToRad(Number(cfg.rotation) || 0);
@@ -214,7 +208,6 @@ function buildNumberGeometry(side, cfg) {
       indices.push(a, c, b, b, c, d);
     }
   }
-
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
   geometry.setAttribute("normal", new THREE.Float32BufferAttribute(normals, 3));
@@ -224,18 +217,35 @@ function buildNumberGeometry(side, cfg) {
   geometry.userData.edgeSafeVersion = VERSION;
   geometry.userData.maxInward = maxInward;
   geometry.userData.yAdjustedVertices = yAdjustedVertices;
+  geometry.userData.aspect = aspect;
   return geometry;
 }
 
-function addMissingNumber(slot, side, name) {
+function disposeNumber(mesh) {
+  if (!mesh) return;
+  mesh.parent?.remove(mesh);
+  mesh.geometry?.dispose?.();
+  mesh.material?.map?.dispose?.();
+  mesh.material?.dispose?.();
+}
+
+function ensureNumber(slot, side, name) {
   const authorityGroup = scene.getObjectByName("football-nameset-authority");
-  if (!authorityGroup || authorityGroup.getObjectByName(name)) return false;
+  if (!authorityGroup) return false;
   if (slot === "frontNumber" && !state.personalization.frontNumberEnabled) return false;
 
+  const existing = authorityGroup.getObjectByName(name);
+  if (existing?.userData?.edgeSafeVersion === VERSION) return false;
+  if (existing) disposeNumber(existing);
+
   const cfg = layoutFor(slot);
-  const geometry = buildNumberGeometry(side, cfg);
-  if (!geometry) return false;
   const texture = numberTexture();
+  const aspect = Number(texture.userData.canvasAspect) || 1;
+  const geometry = buildNumberGeometry(side, cfg, aspect);
+  if (!geometry) {
+    texture.dispose();
+    return false;
+  }
   const material = new THREE.MeshStandardMaterial({
     map: texture,
     transparent: true,
@@ -255,25 +265,24 @@ function addMissingNumber(slot, side, name) {
   mesh.userData.edgeSafeVersion = VERSION;
   mesh.userData.kind = "number";
   mesh.userData.slot = slot;
+  mesh.userData.canvasAspect = aspect;
   authorityGroup.add(mesh);
   status.maxInward = Math.max(status.maxInward, Number(geometry.userData.maxInward) || 0);
+  status.lastAspect = Number(aspect.toFixed(3));
   if (slot === "backNumber") status.backNumberRepairs += 1;
   else status.frontNumberRepairs += 1;
   return true;
 }
 
 function refreshAuthorityStatus() {
-  try {
-    api.payload?.();
-  } catch (error) {
-    console.error("nameset edge-safe status refresh failed", error);
-  }
+  try { api.payload?.(); }
+  catch (error) { console.error("nameset edge-safe status refresh failed", error); }
 }
 
 function repair(reason = "manual") {
   if (!scene || !shirt || !state || window.__footballNamesetAuthority?.mode !== "authority") return;
-  const back = addMissingNumber("backNumber", "back", "football-nameset-back-number");
-  const front = addMissingNumber("frontNumber", "front", "football-nameset-front-number");
+  const back = ensureNumber("backNumber", "back", "football-nameset-back-number");
+  const front = ensureNumber("frontNumber", "front", "football-nameset-front-number");
   if (back || front) {
     status.repairs += 1;
     status.lastReason = reason;
@@ -301,7 +310,6 @@ if (!(await waitReady())) {
   window.__footballNamesetEdgeSafeError = "football nameset edge-safe bootstrap timeout";
   throw new Error(window.__footballNamesetEdgeSafeError);
 }
-
 api = window.__sportswear3d;
 state = api.state;
 scene = window.__footballRealismScene;
@@ -312,11 +320,8 @@ repair("bootstrap");
 document.addEventListener("input", () => scheduleRepair("input", 180), true);
 document.addEventListener("change", () => scheduleRepair("change", 220), true);
 document.addEventListener("click", (event) => {
-  if (event.target?.id === "official-nameset-reset" || event.target?.matches?.("[data-easy-advanced-toggle]")) {
-    scheduleRepair("ui-mode", 260);
-  }
+  if (event.target?.id === "official-nameset-reset" || event.target?.matches?.("[data-easy-advanced-toggle]")) scheduleRepair("ui-mode", 260);
 }, true);
 watchTimer = setInterval(() => repair("authority-watch"), 220);
-
 window.__footballNamesetEdgeSafeReady = true;
 publish({ lastReason: "ready" });
