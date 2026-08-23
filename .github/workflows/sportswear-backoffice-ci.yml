@@ -86,12 +86,18 @@ jobs:
       - name: Start Medusa production build
         working-directory: ventures/run_20260711_161411/sportswear-backoffice
         run: |
-          npm run start >/tmp/sportswear-medusa.log 2>&1 &
+          set -euo pipefail
+          npm run start:production >/tmp/sportswear-medusa.log 2>&1 &
           echo $! >/tmp/sportswear-medusa.pid
           for i in $(seq 1 60); do
             if curl --fail --silent http://127.0.0.1:9000/health >/dev/null; then
               echo "MEDUSA_HEALTH=PASS"
               exit 0
+            fi
+            if ! kill -0 "$(cat /tmp/sportswear-medusa.pid)" 2>/dev/null; then
+              cat /tmp/sportswear-medusa.log
+              echo "Medusa production process exited before health check" >&2
+              exit 1
             fi
             sleep 2
           done
