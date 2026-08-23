@@ -45,6 +45,7 @@ jobs:
           node --check "$ROOT/src/football-crest-conformal.js"
           node --check "$ROOT/src/football-crest-ui-authority.js"
           node --check "$ROOT/src/football-nameset-authority.js"
+          node --check "$ROOT/src/football-nameset-edge-safe.js"
           node --check "$ROOT/src/football-easy-ui.js"
           node --check "$ROOT/src/team-order.js"
           node --check "$ROOT/src/team-size-availability.js"
@@ -62,6 +63,7 @@ jobs:
           grep -q 'football-crest-conformal-v3-20260823' "$ROOT/src/football-crest-conformal.js"
           grep -q 'football-crest-ui-authority-v1-20260823' "$ROOT/src/football-crest-ui-authority.js"
           grep -q 'football-nameset-authority-v1-20260823' "$ROOT/src/football-nameset-authority.js"
+          grep -q 'football-nameset-edge-safe-v1-20260823' "$ROOT/src/football-nameset-edge-safe.js"
           grep -q 'football-easy-ui-v1-20260823' "$ROOT/src/football-easy-ui.js"
           grep -q 'await import("./football-realism.js")' "$ROOT/src/bootstrap.js"
           grep -q 'await import("./football-collar-tailor.js")' "$ROOT/src/bootstrap.js"
@@ -69,6 +71,7 @@ jobs:
           grep -q 'await import("./football-crest-conformal.js")' "$ROOT/src/bootstrap.js"
           grep -q 'await import("./football-crest-ui-authority.js")' "$ROOT/src/bootstrap.js"
           grep -q 'await import("./football-nameset-authority.js")' "$ROOT/src/bootstrap.js"
+          grep -q 'await import("./football-nameset-edge-safe.js")' "$ROOT/src/bootstrap.js"
           grep -q 'await import("./football-easy-ui.js")' "$ROOT/src/bootstrap.js"
           if grep -q 'football-realism-post.js\|football-realism-calibration.js' "$ROOT/src/bootstrap.js"; then echo "Legacy realism layers still loaded"; exit 1; fi
           if grep -q 'football-boots\|roundedBox(.*boot' "$ROOT/src/football-realism.js"; then echo "Legacy footwear implementation found"; exit 1; fi
