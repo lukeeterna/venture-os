@@ -1,6 +1,6 @@
 import * as THREE from "three";
 
-const VERSION = "football-nameset-edge-safe-v1-20260823";
+const VERSION = "football-nameset-edge-safe-v2-20260823";
 const REFERENCE_SHIRT_BACK_CM = 74.5;
 const PROFILE = Object.freeze({
   backNumber: { x: 50, bodyPct: 42.3, heightCm: 27.0, rotation: 0 },
@@ -9,6 +9,7 @@ const PROFILE = Object.freeze({
 const CONTROL_TO_BODY_A = 7.7032258065;
 const CONTROL_TO_BODY_B = 0.8870967742;
 const NUMBER_GLYPH_FILL = 720 / 900;
+const NUMBER_ASPECT_CAP = Object.freeze([0, 0.50, 0.82, 1.16, 1.48, 1.78, 2.08]);
 const FONT_MAP = Object.freeze({
   impact: { family: "Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif", weight: 900 },
   geometric: { family: "Futura, Avenir, 'Century Gothic', Arial, sans-serif", weight: 800 },
@@ -33,7 +34,11 @@ const status = {
   backNumberRepairs: 0,
   frontNumberRepairs: 0,
   maxInward: 0,
+  lastMaxInward: 0,
   lastAspect: null,
+  lastWidthScale: null,
+  lastHorizontalScale: null,
+  lastDistortionFree: false,
   lastReason: null,
 };
 
@@ -76,45 +81,40 @@ function hitSurface(side, xPct, bodyPct) {
   );
   const hit = raycaster.intersectObjects(shirtMeshes(), false)[0];
   if (!hit) return null;
-  const normal = (hit.face?.normal?.clone() || new THREE.Vector3(0, 0, front ? 1 : -1)).transformDirection(hit.object.matrixWorld).normalize();
+  const normal = (hit.face?.normal?.clone() || new THREE.Vector3(0, 0, front ? 1 : -1))
+    .transformDirection(hit.object.matrixWorld)
+    .normalize();
   if (front && normal.z < 0) normal.negate();
   if (!front && normal.z > 0) normal.negate();
   return { point: hit.point.clone().add(normal.clone().multiplyScalar(0.017)), normal };
 }
 
-// Same edge-safe policy already proven by the conformal crest: preserve the
-// requested row/Y and only pull a missed edge sample inward toward the torso.
-function safeHitSurface(side, xPct, bodyPct, centerX, centerBodyPct) {
-  const exact = hitSurface(side, xPct, bodyPct);
-  if (exact) return { ...exact, inward: 0, yAdjusted: false };
-  for (const inwardX of [0.08, 0.16, 0.28, 0.42, 0.60, 0.78, 1]) {
-    const hit = hitSurface(side, THREE.MathUtils.lerp(xPct, centerX, inwardX), bodyPct);
-    if (hit) return { ...hit, inward: inwardX, yAdjusted: false };
-  }
-  for (const inwardY of [0.08, 0.16, 0.28]) {
-    const y = THREE.MathUtils.lerp(bodyPct, centerBodyPct, inwardY);
-    for (const inwardX of [0.16, 0.35, 0.60, 1]) {
-      const hit = hitSurface(side, THREE.MathUtils.lerp(xPct, centerX, inwardX), y);
-      if (hit) return { ...hit, inward: Math.max(inwardX, inwardY), yAdjusted: true };
-    }
-  }
-  return null;
+function cleanNumber() {
+  return String(state.personalization.number || "10")
+    .replace(/[\r\n\t]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 6) || "10";
 }
 
-// The old fixed 900x900 canvas projected a large transparent square around
-// narrow digits such as "10". Those invisible corners could cross an armhole
-// and distort visible pixels after inward fallback. Crop the canvas to actual
-// text width while retaining the 720px glyph height, so the physical height is
-// unchanged but projection geometry follows the real nameset footprint.
+// Reference namesets are condensed. Linux CI does not necessarily have Arial
+// Narrow/Helvetica Condensed, so measure the available font but cap its width
+// to the official-shirt reference footprint. We condense the glyphs inside the
+// texture rather than warping projected vertices on the garment surface.
 function numberTexture() {
-  const value = String(state.personalization.number || "10").replace(/[\r\n\t]/g, " ").trim().slice(0, 6) || "10";
+  const value = cleanNumber();
   const font = currentFont();
   const height = 900;
   const px = 720;
   const probe = document.createElement("canvas").getContext("2d");
   probe.font = `${font.weight} ${px}px ${font.family}`;
-  const measured = Math.ceil(probe.measureText(value).width);
-  const width = clamp(measured + Math.max(48, Math.round(px * 0.10)), 220, 3200);
+  const rawWidth = Math.max(1, probe.measureText(value).width);
+  const measuredAspect = (rawWidth + px * 0.08) / height;
+  const count = clamp([...value].length, 1, 6);
+  const targetAspect = clamp(Math.min(measuredAspect, NUMBER_ASPECT_CAP[count]), 0.28, 2.08);
+  const width = Math.max(220, Math.round(height * targetAspect));
+  const available = width * 0.90;
+  const horizontalScale = Math.min(1, available / rawWidth);
 
   const canvas = document.createElement("canvas");
   canvas.width = width;
@@ -125,11 +125,15 @@ function numberTexture() {
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.lineJoin = "round";
+  ctx.save();
+  ctx.translate(width / 2, height / 2 + px * 0.02);
+  ctx.scale(horizontalScale, 1);
   ctx.strokeStyle = "rgba(255,255,255,.16)";
-  ctx.lineWidth = Math.max(1.5, px * 0.008);
-  ctx.strokeText(value, width / 2, height / 2 + px * 0.02);
+  ctx.lineWidth = Math.max(1.5, px * 0.008) / Math.max(horizontalScale, 0.1);
+  ctx.strokeText(value, 0, 0);
   ctx.fillStyle = state.personalization.color;
-  ctx.fillText(value, width / 2, height / 2 + px * 0.02);
+  ctx.fillText(value, 0, 0);
+  ctx.restore();
 
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
@@ -137,7 +141,9 @@ function numberTexture() {
   texture.needsUpdate = true;
   texture.userData.footballNamesetGenerated = true;
   texture.userData.footballNamesetEdgeSafe = true;
-  texture.userData.canvasAspect = width / height;
+  texture.userData.canvasAspect = targetAspect;
+  texture.userData.measuredAspect = measuredAspect;
+  texture.userData.horizontalScale = horizontalScale;
   texture.userData.glyphFill = NUMBER_GLYPH_FILL;
   return texture;
 }
@@ -165,10 +171,10 @@ function layoutFor(slot) {
   return (document.body.classList.contains("football-easy-advanced") ? advancedConfig(slot) : null) || PROFILE[slot];
 }
 
-function buildNumberGeometry(side, cfg, aspect) {
+function makeExactGrid(side, cfg, aspect) {
   const metrics = shirtMetrics();
   const overlayHeight = cfg.heightCm * metrics.worldPerCm / NUMBER_GLYPH_FILL;
-  const overlayWidth = overlayHeight * clamp(aspect, 0.18, 3.6);
+  const overlayWidth = overlayHeight * aspect;
   const spanX = overlayWidth / metrics.safeWidth * 100;
   const spanY = overlayHeight / metrics.size.y * 100;
   const angle = THREE.MathUtils.degToRad(Number(cfg.rotation) || 0);
@@ -180,8 +186,6 @@ function buildNumberGeometry(side, cfg, aspect) {
   const normals = [];
   const uvs = [];
   const indices = [];
-  let maxInward = 0;
-  let yAdjustedVertices = 0;
 
   for (let row = 0; row <= rows; row++) {
     for (let col = 0; col <= cols; col++) {
@@ -189,10 +193,10 @@ function buildNumberGeometry(side, cfg, aspect) {
       const dy = (row / rows - 0.5) * spanY;
       const rx = dx * cos - dy * sin;
       const ry = dx * sin + dy * cos;
-      const hit = safeHitSurface(side, cfg.x + rx, cfg.bodyPct + ry, cfg.x, cfg.bodyPct);
+      const hit = hitSurface(side, cfg.x + rx, cfg.bodyPct + ry);
+      // Fail this candidate width instead of pulling the vertex inward. UV-space
+      // deformation created the visible torn "0" in the previous candidate.
       if (!hit) return null;
-      maxInward = Math.max(maxInward, Number(hit.inward) || 0);
-      if (hit.yAdjusted) yAdjustedVertices += 1;
       positions.push(hit.point.x, hit.point.y, hit.point.z);
       normals.push(hit.normal.x, hit.normal.y, hit.normal.z);
       uvs.push(side === "back" ? 1 - col / cols : col / cols, 1 - row / rows);
@@ -214,19 +218,37 @@ function buildNumberGeometry(side, cfg, aspect) {
   geometry.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
   geometry.setIndex(indices);
   geometry.computeBoundingSphere();
-  geometry.userData.edgeSafeVersion = VERSION;
-  geometry.userData.maxInward = maxInward;
-  geometry.userData.yAdjustedVertices = yAdjustedVertices;
-  geometry.userData.aspect = aspect;
   return geometry;
 }
 
-function disposeNumber(mesh) {
-  if (!mesh) return;
-  mesh.parent?.remove(mesh);
-  mesh.geometry?.dispose?.();
-  mesh.material?.map?.dispose?.();
-  mesh.material?.dispose?.();
+function buildNumberGeometry(side, cfg, requestedAspect) {
+  for (const widthScale of [1, 0.97, 0.94, 0.91, 0.88, 0.85]) {
+    const aspect = requestedAspect * widthScale;
+    const geometry = makeExactGrid(side, cfg, aspect);
+    if (!geometry) continue;
+    geometry.userData.edgeSafeVersion = VERSION;
+    geometry.userData.maxInward = 0;
+    geometry.userData.yAdjustedVertices = 0;
+    geometry.userData.aspect = aspect;
+    geometry.userData.requestedAspect = requestedAspect;
+    geometry.userData.widthScale = widthScale;
+    geometry.userData.distortionFree = true;
+    return geometry;
+  }
+  return null;
+}
+
+function disposeObject(object) {
+  if (!object) return;
+  object.traverse?.((node) => {
+    node.geometry?.dispose?.();
+    const materials = node.material ? (Array.isArray(node.material) ? node.material : [node.material]) : [];
+    materials.forEach((mat) => {
+      mat?.map?.dispose?.();
+      mat?.dispose?.();
+    });
+  });
+  object.parent?.remove(object);
 }
 
 function ensureNumber(slot, side, name) {
@@ -236,14 +258,15 @@ function ensureNumber(slot, side, name) {
 
   const existing = authorityGroup.getObjectByName(name);
   if (existing?.userData?.edgeSafeVersion === VERSION) return false;
-  if (existing) disposeNumber(existing);
+  if (existing) disposeObject(existing);
 
   const cfg = layoutFor(slot);
   const texture = numberTexture();
-  const aspect = Number(texture.userData.canvasAspect) || 1;
-  const geometry = buildNumberGeometry(side, cfg, aspect);
+  const requestedAspect = Number(texture.userData.canvasAspect) || 0.82;
+  const geometry = buildNumberGeometry(side, cfg, requestedAspect);
   if (!geometry) {
     texture.dispose();
+    publish({ lastReason: `${slot}-no-distortion-free-surface`, lastDistortionFree: false });
     return false;
   }
   const material = new THREE.MeshStandardMaterial({
@@ -265,10 +288,18 @@ function ensureNumber(slot, side, name) {
   mesh.userData.edgeSafeVersion = VERSION;
   mesh.userData.kind = "number";
   mesh.userData.slot = slot;
-  mesh.userData.canvasAspect = aspect;
+  mesh.userData.canvasAspect = Number(geometry.userData.aspect);
+  mesh.userData.requestedAspect = requestedAspect;
+  mesh.userData.widthScale = Number(geometry.userData.widthScale);
+  mesh.userData.horizontalScale = Number(texture.userData.horizontalScale);
+  mesh.userData.distortionFree = true;
   authorityGroup.add(mesh);
-  status.maxInward = Math.max(status.maxInward, Number(geometry.userData.maxInward) || 0);
-  status.lastAspect = Number(aspect.toFixed(3));
+
+  status.lastMaxInward = 0;
+  status.lastAspect = Number(geometry.userData.aspect.toFixed(3));
+  status.lastWidthScale = Number(geometry.userData.widthScale.toFixed(3));
+  status.lastHorizontalScale = Number(texture.userData.horizontalScale.toFixed(3));
+  status.lastDistortionFree = true;
   if (slot === "backNumber") status.backNumberRepairs += 1;
   else status.frontNumberRepairs += 1;
   return true;
