@@ -86,7 +86,7 @@ jobs:
           test -n "$PAK"
           echo "SPORTSWEAR_CI_PAK=$PAK" >> "$GITHUB_ENV"
 
-      - name: Start Medusa
+      - name: Start Medusa production build
         working-directory: ventures/run_20260711_161411/sportswear-backoffice
         run: |
           npm run start >/tmp/sportswear-medusa.log 2>&1 &
@@ -134,15 +134,53 @@ jobs:
             -H 'content-type: application/json' \
             -d '{"currency_code":"eur","fabric_sku":"FABRIC_MATCH_145","quantity":1,"feature_units":[{"sku":"CUSTOM_NAME","units_per_kit":1},{"sku":"BACK_NUMBER","units_per_kit":1}],"roster":[{"id":1,"name":"ROSSI","number":"10","category":"men","role":"player","shirt_size":"M","shorts_size":"M","socks_size_eu":"39/42","quantity":1}]}' \
             http://127.0.0.1:9000/store/sportswear/quote \
-            > /tmp/sportswear-quote.json
+            > /tmp/sportswear-quote-unpriced.json
           python3 - <<'PY'
           import json
-          data=json.load(open('/tmp/sportswear-quote.json'))
+          data=json.load(open('/tmp/sportswear-quote-unpriced.json'))
           assert data['quote_version']=='sportswear-medusa-v1', data
           assert data['priced'] is False, data
           missing=set(data['missing_skus'])
           assert {'FABRIC_MATCH_145','CUSTOM_NAME','BACK_NUMBER'} <= missing, missing
           print('SPORTSWEAR_QUOTE_FAIL_CLOSED=PASS')
+          PY
+
+      - name: Seed CI-only quantity tiers
+        working-directory: ventures/run_20260711_161411/sportswear-backoffice
+        env:
+          CI: 'true'
+        run: |
+          set -euo pipefail
+          npm run seed:ci-tier-prices | tee /tmp/sportswear-tier-seed.log
+          grep -q 'SPORTSWEAR_CI_TIER_PRICES=READY' /tmp/sportswear-tier-seed.log
+
+      - name: Real quantity-tier quote API smoke
+        run: |
+          set -euo pipefail
+          curl --fail --silent \
+            -H "x-publishable-api-key: $SPORTSWEAR_CI_PAK" \
+            -H 'content-type: application/json' \
+            -d '{"currency_code":"eur","fabric_sku":"FABRIC_MATCH_145","quantity":1,"feature_units":[{"sku":"CUSTOM_NAME","units_per_kit":1},{"sku":"BACK_NUMBER","units_per_kit":1}],"roster":[{"id":1,"name":"ROSSI","number":"10","category":"men","role":"player","shirt_size":"M","shorts_size":"M","socks_size_eu":"39/42","quantity":1}]}' \
+            http://127.0.0.1:9000/store/sportswear/quote \
+            > /tmp/sportswear-quote-q1.json
+          curl --fail --silent \
+            -H "x-publishable-api-key: $SPORTSWEAR_CI_PAK" \
+            -H 'content-type: application/json' \
+            -d '{"currency_code":"eur","fabric_sku":"FABRIC_MATCH_145","quantity":10,"feature_units":[{"sku":"CUSTOM_NAME","units_per_kit":1},{"sku":"BACK_NUMBER","units_per_kit":1}],"roster":[{"id":1,"name":"ROSSI","number":"10","category":"men","role":"player","shirt_size":"M","shorts_size":"M","socks_size_eu":"39/42","quantity":10}]}' \
+            http://127.0.0.1:9000/store/sportswear/quote \
+            > /tmp/sportswear-quote-q10.json
+          python3 - <<'PY'
+          import json
+          q1=json.load(open('/tmp/sportswear-quote-q1.json'))
+          q10=json.load(open('/tmp/sportswear-quote-q10.json'))
+          assert q1['priced'] is True, q1
+          assert q10['priced'] is True, q10
+          assert q1['unit_average_amount']==4200, q1
+          assert q10['unit_average_amount']==3700, q10
+          assert q10['unit_average_amount'] < q1['unit_average_amount'], (q1,q10)
+          assert all(line.get('tier') for line in q10['lines']), q10
+          print('SPORTSWEAR_QUANTITY_TIERS=PASS')
+          print(f"UNIT_Q1={q1['unit_average_amount']} UNIT_Q10={q10['unit_average_amount']}")
           PY
 
       - name: Verify structural products directly
@@ -158,4 +196,7 @@ jobs:
           cat /tmp/sportswear-medusa.log 2>/dev/null || true
           cat /tmp/sportswear-ci-pak.log 2>/dev/null || true
           cat /tmp/sportswear-catalog.json 2>/dev/null || true
-          cat /tmp/sportswear-quote.json 2>/dev/null || true
+          cat /tmp/sportswear-quote-unpriced.json 2>/dev/null || true
+          cat /tmp/sportswear-tier-seed.log 2>/dev/null || true
+          cat /tmp/sportswear-quote-q1.json 2>/dev/null || true
+          cat /tmp/sportswear-quote-q10.json 2>/dev/null || true
