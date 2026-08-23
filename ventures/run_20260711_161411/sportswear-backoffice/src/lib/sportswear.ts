@@ -87,11 +87,12 @@ export async function calculateSportswearVariant(
   const base = first.data[0]
   if (!base?.id) return null
 
+  // Medusa's pricing module evaluates min_quantity/max_quantity from the
+  // calculated_price QueryContext itself. Keep quantity at the top level,
+  // matching the official cart pricing workflow.
   const context = QueryContext({
     currency_code: currencyCode.toLowerCase(),
-    cart: {
-      items: [{ id: `sportswear-${base.id}`, variant_id: base.id, quantity }],
-    },
+    quantity: Math.max(1, Math.floor(Number(quantity) || 1)),
   })
   const priced = await query.graph({
     entity: "variant",
