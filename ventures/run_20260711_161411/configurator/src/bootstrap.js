@@ -9,3 +9,5 @@ await import("./football-crest-conformal.js");
 await import("./football-crest-ui-authority.js");
 await teamOrder;
 await import("./team-size-availability.js");
+await import("./football-nameset-authority.js");
+await import("./football-easy-ui.js");
