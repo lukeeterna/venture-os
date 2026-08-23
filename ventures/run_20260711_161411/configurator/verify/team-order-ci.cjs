@@ -122,6 +122,7 @@ function fail(message) { throw new Error(message); }
     }));
     if (preview.name !== 'BIANCHI' || preview.number !== '7') fail(`preview mismatch ${JSON.stringify(preview)}`);
 
+    await page.waitForFunction(() => window.__teamOrder.quoteState === 'ready', null, { timeout: 10000 });
     const payload = await page.evaluate(() => window.__sportswear3d.payload());
     if (payload.v !== 4) fail(`payload v ${payload.v}`);
     if (payload.team_order.players.length !== 4 || payload.team_order.total_quantity !== 4) fail(`team payload mismatch ${JSON.stringify(payload.team_order)}`);
