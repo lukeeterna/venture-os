@@ -7,7 +7,8 @@
   "scripts": {
     "build": "medusa build && npm run prepare:production",
     "prepare:production": "cd .medusa/server && npm install --omit=dev --no-audit --no-fund",
-    "start": "cd .medusa/server && npm run start",
+    "start": "medusa start",
+    "start:production": "cd .medusa/server && npx medusa start",
     "dev": "medusa develop",
     "lint": "medusa lint",
     "db:migrate": "medusa db:migrate",
