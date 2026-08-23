@@ -1,11 +1,11 @@
 import * as THREE from "three";
 
-const VERSION = "football-crest-conformal-v2-20260822";
+const VERSION = "football-crest-conformal-v3-20260823";
 const raycaster = new THREE.Raycaster();
 let scene;
 let shirt;
 let state;
-let settleTimers = [];
+let settleTimer = null;
 const status = {
   version: VERSION,
   stage: "bootstrap",
@@ -67,10 +67,16 @@ function crestCanvas() {
 
   const iw = image.width || image.naturalWidth || 512;
   const ih = image.height || image.naturalHeight || 512;
-  const cell = 190;
-  for (const x of [245, 450, 655]) {
-    const h = Math.min(240, cell * ih / Math.max(1, iw));
-    ctx.drawImage(image, x - cell / 2, 650 - h / 2, cell, h);
+  const numberText = String(state.personalization.number || "10").slice(0, 6);
+  const glyphCount = Math.max(1, numberText.length);
+  const slotWidth = Math.min(250, 620 / glyphCount);
+  for (let i = 0; i < glyphCount; i++) {
+    const x = 450 + (i - (glyphCount - 1) / 2) * slotWidth;
+    const maxBox = Math.min(150, slotWidth * 0.64);
+    const scale = Math.min(maxBox / Math.max(1, iw), maxBox / Math.max(1, ih));
+    const w = Math.max(1, iw * scale);
+    const h = Math.max(1, ih * scale);
+    ctx.drawImage(image, x - w / 2, 610 - h / 2, w, h);
   }
 
   const font = currentFont();
@@ -79,7 +85,7 @@ function crestCanvas() {
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillStyle = "#fff";
-  ctx.fillText(String(state.personalization.number || "10").slice(0, 6), 450, 455);
+  ctx.fillText(numberText, 450, 455);
   ctx.globalCompositeOperation = "source-over";
   return canvas;
 }
@@ -101,7 +107,7 @@ function rawBackHit(xPct, yPct) {
 }
 
 function safeBackHit(xPct, yPct, centerX, centerY) {
-  for (const inward of [0, 0.08, 0.16, 0.24, 0.34, 0.46, 0.60, 0.75]) {
+  for (const inward of [0, 0.12, 0.25, 0.40, 0.60, 0.80]) {
     const x = THREE.MathUtils.lerp(xPct, centerX, inward);
     const y = THREE.MathUtils.lerp(yPct, centerY, inward);
     const hit = rawBackHit(x, y);
@@ -166,8 +172,8 @@ function rebuild(reason = "manual") {
   const centerX = Number(cfg.x) || 50;
   const centerY = Number(cfg.y) || 52;
   const { widthPct, heightPct } = targetSpans();
-  const cols = 12;
-  const rows = 14;
+  const cols = 8;
+  const rows = 10;
   const positions = [];
   const normals = [];
   const uvs = [];
@@ -229,12 +235,9 @@ function rebuild(reason = "manual") {
   publishStatus({ stage: "built", vertices: positions.length / 3, maxInward });
 }
 
-function settle(reason) {
-  for (const timer of settleTimers) clearTimeout(timer);
-  settleTimers = [];
-  for (const delay of [0, 140, 320]) {
-    settleTimers.push(setTimeout(() => rebuild(`${reason}@${delay}`), delay));
-  }
+function settle(reason, delay = 180) {
+  clearTimeout(settleTimer);
+  settleTimer = setTimeout(() => rebuild(reason), delay);
 }
 
 async function waitReady() {
@@ -252,16 +255,22 @@ if (await waitReady()) {
   shirt = scene.getObjectByName("donor-shirt");
   if (!shirt) throw new Error("football crest conformal: donor shirt not found");
 
-  document.getElementById("crest-in-number")?.addEventListener("change", () => settle("crest-select"));
-  document.addEventListener("input", () => settle("document-input"));
-  document.addEventListener("change", () => settle("document-change"));
+  document.getElementById("crest-in-number")?.addEventListener("change", () => settle("crest-select", 180));
+  document.addEventListener("input", () => {
+    if (window.__sportswear3d?.realism?.crestInNumber) settle("document-input", 180);
+  });
+  document.addEventListener("change", () => {
+    if (window.__sportswear3d?.realism?.crestInNumber) settle("document-change", 180);
+  });
   const graphics = document.getElementById("graphics-list");
-  if (graphics) new MutationObserver(() => settle("graphics-mutation")).observe(graphics, { childList: true, subtree: true });
+  if (graphics) new MutationObserver(() => {
+    if (window.__sportswear3d?.realism?.crestInNumber) settle("graphics-mutation", 180);
+  }).observe(graphics, { childList: true, subtree: true });
 
   window.__sportswear3d.rebuildCrestInNumber = () => rebuild("api");
   window.__footballCrestConformalReady = true;
   publishStatus({ stage: "ready" });
-  settle("bootstrap");
+  settle("bootstrap", 0);
 } else {
   window.__footballCrestConformalError = "football crest conformal bootstrap timeout";
   publishStatus({ stage: "bootstrap-timeout" });
