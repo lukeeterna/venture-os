@@ -22,7 +22,7 @@ function checkpoint(name) { console.log(`VISUAL_CHECKPOINT=${name}`); }
     page.on('console', (msg) => { if (msg.type() === 'error') errors.push(`console.error: ${msg.text()}`); });
     const response = await page.goto(BASE, { waitUntil: 'networkidle', timeout: 60000 });
     if (!response || !response.ok()) fail(`HTTP ${response?.status()} loading ${BASE}`);
-    await page.waitForFunction(() => window.__sportswear3d?.ready === true && window.__footballRealismReady === true && window.__footballCollarTailorReady === true && window.__footballCrestConformalReady === true && window.__footballCrestUiAuthorityReady === true, null, { timeout: 60000 });
+    await page.waitForFunction(() => window.__sportswear3d?.ready === true && window.__footballRealismReady === true && window.__footballCollarTailorReady === true && window.__footballCrestConformalReady === true && window.__footballCrestUiAuthorityReady === true && window.__footballNamesetReady === true && window.__footballEasyUiReady === true, null, { timeout: 60000 });
     await page.waitForTimeout(500);
     checkpoint('runtime-ready');
 
@@ -56,7 +56,13 @@ function checkpoint(name) { console.log(`VISUAL_CHECKPOINT=${name}`); }
     await viewer.screenshot({ path: path.join(OUT, '01-front-no-footwear.png') });
     await page.evaluate(() => window.__sportswear3d.setView('back'));
     await page.waitForTimeout(700);
-    await viewer.screenshot({ path: path.join(OUT, '02-back-pl-real-size.png') });
+    await viewer.screenshot({ path: path.join(OUT, '02-back-reference-default.png') });
+
+    // The customer-facing experience is intentionally simple by default. The
+    // remaining checks below exercise expert/legacy controls, so disclose them
+    // explicitly rather than expecting hidden controls to be interactable.
+    await page.locator('[data-easy-advanced-toggle]').click();
+    await page.waitForFunction(() => window.__footballEasyUiStatus?.mode === 'advanced', null, { timeout: 5000 });
 
     await page.locator('#football-typography').selectOption('uefa-2026');
     await page.locator('#apply-football-typography').click();
@@ -164,7 +170,7 @@ function checkpoint(name) { console.log(`VISUAL_CHECKPOINT=${name}`); }
     checkpoint('regressions');
 
     const final = await page.evaluate(() => window.__sportswear3d.diagnostics());
-    const finalAux = await page.evaluate(() => ({ collar: window.__footballCollarTailorStatus, crest: window.__footballCrestConformalStatus, crestUi: window.__footballCrestUiAuthorityStatus }));
+    const finalAux = await page.evaluate(() => ({ collar: window.__footballCollarTailorStatus, crest: window.__footballCrestConformalStatus, crestUi: window.__footballCrestUiAuthorityStatus, nameset: window.__footballNamesetStatus, easyUi: window.__footballEasyUiStatus }));
     fs.writeFileSync(path.join(OUT, 'runtime-diagnostics.json'), JSON.stringify({ diagnostics: final, collarResults, crestCheck, finalAux, errors }, null, 2));
     if (errors.length) fail(errors.join('\n'));
     console.log('SPORTSWEAR_REAL_BROWSER=PASS');
