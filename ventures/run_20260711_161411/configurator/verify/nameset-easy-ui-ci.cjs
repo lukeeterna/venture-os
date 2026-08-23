@@ -110,12 +110,19 @@ function near(value, expected, tolerance, label) {
     near(snapshot.nameset.metrics.back_name.center_body_pct, 14.8, 1.5, 'reset back name center');
     near(snapshot.nameset.metrics.back_number.center_body_pct, 42.3, 1.5, 'reset back number center');
 
+    const repairsBeforeCrest = await page.evaluate(() => Number(window.__footballNamesetEdgeSafeStatus?.repairs || 0));
     await page.locator('[data-place="crest"]').click();
     const crestCard = page.locator('[data-graphic]').last();
     await crestCard.locator('input[data-field="file"]').setInputFiles(path.join(FIX, 'ci-logo.png'));
     await page.locator('#easy-crest-in-number').selectOption('on');
-    await page.waitForFunction(() => window.__footballCrestConformalStatus?.stage === 'built', null, { timeout: 8000 });
-    await page.waitForTimeout(350);
+    await page.waitForFunction((repairsBefore) =>
+      window.__footballCrestConformalStatus?.stage === 'built' &&
+      Number(window.__footballNamesetEdgeSafeStatus?.repairs || 0) > repairsBefore &&
+      Boolean(window.__footballNamesetStatus?.metrics?.back_number) &&
+      Boolean(window.__footballRealismScene?.getObjectByName('football-nameset-back-number')) &&
+      Boolean(window.__footballRealismScene?.getObjectByName('football-realism-crest-number-v6')),
+      repairsBeforeCrest, { timeout: 9000 }
+    );
     const crestAlignment = await page.evaluate(() => {
       function yBounds(object) {
         let min = Infinity, max = -Infinity;
