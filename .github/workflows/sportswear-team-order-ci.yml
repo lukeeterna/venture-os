@@ -8,9 +8,6 @@ on:
   push:
     branches:
       - 'sol/mt3d-football-production-20260816'
-    paths:
-      - 'ventures/run_20260711_161411/configurator/**'
-      - '.github/workflows/sportswear-team-order-ci.yml'
 
 permissions:
   contents: read
