@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - sol/mt3d-football-production-20260816
-    paths:
-      - ventures/run_20260711_161411/configurator/**
-      - .github/workflows/sportswear3d-visual-ci.yml
   pull_request:
     branches:
       - master
@@ -44,6 +41,7 @@ jobs:
           node --check "$ROOT/src/bootstrap.js"
           node --check "$ROOT/src/football-realism.js"
           node --check "$ROOT/src/football-collar-tailor.js"
+          node --check "$ROOT/src/football-collar-sync.js"
           node --check "$ROOT/src/football-crest-conformal.js"
           node --check "$ROOT/src/team-order.js"
           node --check "$ROOT/src/team-size-availability.js"
@@ -56,9 +54,11 @@ jobs:
           grep -q 'buildSurfaceOverlayGeometry' "$ROOT/src/app.js"
           grep -q 'football-realism-v6-physical-20260822' "$ROOT/src/football-realism.js"
           grep -q 'football-collar-tailor-v1-20260823' "$ROOT/src/football-collar-tailor.js"
+          grep -q 'football-collar-sync-v2-20260823' "$ROOT/src/football-collar-sync.js"
           grep -q 'football-crest-conformal-v3-20260823' "$ROOT/src/football-crest-conformal.js"
           grep -q 'await import("./football-realism.js")' "$ROOT/src/bootstrap.js"
           grep -q 'await import("./football-collar-tailor.js")' "$ROOT/src/bootstrap.js"
+          grep -q 'await import("./football-collar-sync.js")' "$ROOT/src/bootstrap.js"
           grep -q 'await import("./football-crest-conformal.js")' "$ROOT/src/bootstrap.js"
           if grep -q 'football-realism-post.js\|football-realism-calibration.js' "$ROOT/src/bootstrap.js"; then echo "Legacy realism layers still loaded"; exit 1; fi
           if grep -q 'football-boots\|roundedBox(.*boot' "$ROOT/src/football-realism.js"; then echo "Legacy footwear implementation found"; exit 1; fi
