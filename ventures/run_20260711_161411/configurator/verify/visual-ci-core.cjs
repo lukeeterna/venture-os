@@ -22,7 +22,7 @@ function checkpoint(name) { console.log(`VISUAL_CHECKPOINT=${name}`); }
     page.on('console', (msg) => { if (msg.type() === 'error') errors.push(`console.error: ${msg.text()}`); });
     const response = await page.goto(BASE, { waitUntil: 'networkidle', timeout: 60000 });
     if (!response || !response.ok()) fail(`HTTP ${response?.status()} loading ${BASE}`);
-    await page.waitForFunction(() => window.__sportswear3d?.ready === true && window.__footballRealismReady === true && window.__footballCollarTailorReady === true && window.__footballCrestConformalReady === true, null, { timeout: 60000 });
+    await page.waitForFunction(() => window.__sportswear3d?.ready === true && window.__footballRealismReady === true && window.__footballCollarTailorReady === true && window.__footballCrestConformalReady === true && window.__footballCrestUiAuthorityReady === true, null, { timeout: 60000 });
     await page.waitForTimeout(500);
     checkpoint('runtime-ready');
 
@@ -120,21 +120,25 @@ function checkpoint(name) { console.log(`VISUAL_CHECKPOINT=${name}`); }
     await page.locator('[data-place="crest"]').click();
     const crestCard = page.locator('[data-graphic]').last();
     await crestCard.locator('input[data-field="file"]').setInputFiles(path.join(FIX, 'ci-logo.png'));
+    await page.locator('#crest-in-number').selectOption('off');
+    await page.waitForFunction(() => window.__sportswear3d.realism.crestInNumber === false, null, { timeout: 5000 });
     await page.locator('#crest-in-number').selectOption('on');
-    await page.waitForTimeout(900);
+    await page.waitForFunction(() => window.__footballCrestConformalStatus?.stage === 'built' && window.__footballCrestConformalStatus?.enabled === true, null, { timeout: 8000 });
     const crestCheck = await page.evaluate(() => {
       const group = window.__footballRealismScene.getObjectByName('football-realism-crest-number-v6');
       const mesh = group?.children?.[0];
       const canvas = mesh?.material?.map?.image;
       const status = window.__footballCrestConformalStatus || {};
-      if (!canvas?.getContext) return { meshes: group?.children?.length || 0, alphaPixels: 0, status, version: group?.userData?.conformalVersion || null };
+      const uiAuthority = window.__footballCrestUiAuthorityStatus || {};
+      if (!canvas?.getContext) return { meshes: group?.children?.length || 0, alphaPixels: 0, status, uiAuthority, version: group?.userData?.conformalVersion || null };
       const data = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
       let alphaPixels = 0;
       for (let i = 3; i < data.length; i += 4) if (data[i] > 20) alphaPixels++;
-      return { meshes: group.children.length, alphaPixels, status, version: group.userData.conformalVersion || null };
+      return { meshes: group.children.length, alphaPixels, status, uiAuthority, version: group.userData.conformalVersion || null };
     });
     if (crestCheck.meshes < 1 || crestCheck.alphaPixels < 1000) fail(`Crest-in-number pixels missing: ${JSON.stringify(crestCheck)}`);
     if (crestCheck.version !== 'football-crest-conformal-v3-20260823' || crestCheck.status.stage !== 'built') fail(`Conformal crest layer not authoritative: ${JSON.stringify(crestCheck)}`);
+    if (crestCheck.uiAuthority.enabled !== true || crestCheck.uiAuthority.value !== 'on') fail(`Crest UI authority did not track ON state: ${JSON.stringify(crestCheck.uiAuthority)}`);
     await page.evaluate(() => window.__sportswear3d.setView('back'));
     await page.waitForTimeout(500);
     await viewer.screenshot({ path: path.join(OUT, '07-back-crest-in-number.png') });
@@ -160,7 +164,7 @@ function checkpoint(name) { console.log(`VISUAL_CHECKPOINT=${name}`); }
     checkpoint('regressions');
 
     const final = await page.evaluate(() => window.__sportswear3d.diagnostics());
-    const finalAux = await page.evaluate(() => ({ collar: window.__footballCollarTailorStatus, crest: window.__footballCrestConformalStatus }));
+    const finalAux = await page.evaluate(() => ({ collar: window.__footballCollarTailorStatus, crest: window.__footballCrestConformalStatus, crestUi: window.__footballCrestUiAuthorityStatus }));
     fs.writeFileSync(path.join(OUT, 'runtime-diagnostics.json'), JSON.stringify({ diagnostics: final, collarResults, crestCheck, finalAux, errors }, null, 2));
     if (errors.length) fail(errors.join('\n'));
     console.log('SPORTSWEAR_REAL_BROWSER=PASS');
