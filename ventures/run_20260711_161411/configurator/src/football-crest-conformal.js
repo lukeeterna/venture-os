@@ -8,6 +8,8 @@ let state;
 let settleTimer = null;
 let sourceRetryTimer = null;
 let sourceRetryCount = 0;
+let authorityTimer = null;
+let lastControlEnabled = null;
 const status = {
   version: VERSION,
   stage: "bootstrap",
@@ -158,7 +160,7 @@ function rebuild(reason = "manual") {
     return;
   }
   const control = document.getElementById("crest-in-number");
-  const enabled = window.__sportswear3d?.realism?.crestInNumber === true || control?.value === "on";
+  const enabled = control ? control.value === "on" : window.__sportswear3d?.realism?.crestInNumber === true;
   if (window.__sportswear3d?.realism) window.__sportswear3d.realism.crestInNumber = enabled;
   publishStatus({ enabled });
   removeAllCrestGroups();
@@ -267,6 +269,31 @@ function settle(reason, delay = 180) {
   settleTimer = setTimeout(() => rebuild(reason), delay);
 }
 
+function startAuthorityWatch() {
+  if (authorityTimer) clearInterval(authorityTimer);
+  authorityTimer = setInterval(() => {
+    const control = document.getElementById("crest-in-number");
+    if (!control || !window.__sportswear3d?.realism) return;
+    const enabled = control.value === "on";
+    const sourcePresent = Boolean(sourceGraphic());
+    const stateChanged = enabled !== lastControlEnabled;
+    lastControlEnabled = enabled;
+
+    if (window.__sportswear3d.realism.crestInNumber !== enabled) {
+      window.__sportswear3d.realism.crestInNumber = enabled;
+    }
+
+    if (stateChanged || status.enabled !== enabled) {
+      sourceRetryCount = 0;
+      settle("authority-state", 0);
+      return;
+    }
+    if (enabled && sourcePresent && status.stage !== "built") {
+      settle("authority-source", 0);
+    }
+  }, 120);
+}
+
 async function waitReady() {
   for (let i = 0; i < 600; i++) {
     if (window.__footballRealismReady === true && window.__sportswear3d?.state && window.__footballRealismScene?.isScene) return true;
@@ -287,13 +314,14 @@ if (await waitReady()) {
     if (target?.id === "crest-in-number") {
       const enabled = target.value === "on";
       if (window.__sportswear3d?.realism) window.__sportswear3d.realism.crestInNumber = enabled;
+      lastControlEnabled = enabled;
       sourceRetryCount = 0;
-      settle("crest-select-delegated", 220);
+      settle("crest-select-delegated", 80);
       return;
     }
     if (target?.matches?.('input[type="file"]') && (window.__sportswear3d?.realism?.crestInNumber || document.getElementById("crest-in-number")?.value === "on")) {
       sourceRetryCount = 0;
-      settle("graphic-file-change", 320);
+      settle("graphic-file-change", 180);
       return;
     }
     if (window.__sportswear3d?.realism?.crestInNumber) settle("document-change", 180);
@@ -304,13 +332,15 @@ if (await waitReady()) {
   }, true);
   const graphics = document.getElementById("graphics-list");
   if (graphics) new MutationObserver(() => {
-    if (window.__sportswear3d?.realism?.crestInNumber || document.getElementById("crest-in-number")?.value === "on") settle("graphics-mutation", 220);
+    if (window.__sportswear3d?.realism?.crestInNumber || document.getElementById("crest-in-number")?.value === "on") settle("graphics-mutation", 180);
   }).observe(graphics, { childList: true, subtree: true });
 
   window.__sportswear3d.rebuildCrestInNumber = () => rebuild("api");
   window.__footballCrestConformalReady = true;
   publishStatus({ stage: "ready" });
+  lastControlEnabled = document.getElementById("crest-in-number")?.value === "on";
   settle("bootstrap", 0);
+  startAuthorityWatch();
 } else {
   window.__footballCrestConformalError = "football crest conformal bootstrap timeout";
   publishStatus({ stage: "bootstrap-timeout" });
