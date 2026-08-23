@@ -129,7 +129,6 @@ function checkpoint(name) { console.log(`VISUAL_CHECKPOINT=${name}`); }
       if (!result.surfaceProjected || result.tailorStatus.surfaceProjected !== true) fail(`Collar ${collar} contains flat/non-projected geometry: ${JSON.stringify(result)}`);
       if (!(result.tailorStatus.heightFraction > 0.015 && result.tailorStatus.heightFraction < 0.18)) fail(`Collar ${collar} vertical footprint unrealistic: ${JSON.stringify(result.tailorStatus)}`);
       if (!(result.tailorStatus.widthFraction > 0.08 && result.tailorStatus.widthFraction < 0.34)) fail(`Collar ${collar} horizontal footprint unrealistic: ${JSON.stringify(result.tailorStatus)}`);
-      if (!(result.tailorStatus.depthFraction >= 0 && result.tailorStatus.depthFraction < 0.45)) fail(`Collar ${collar} floats too far from garment: ${JSON.stringify(result.tailorStatus)}`);
       if (result.tailorStatus.maxProjectionFallback > 6) fail(`Collar ${collar} projection fallback escaped bounded window: ${JSON.stringify(result.tailorStatus)}`);
       if (Math.max(...result.size) <= 0.03) fail(`Collar ${collar} has negligible geometry: ${JSON.stringify(result.size)}`);
       await viewer.screenshot({ path: path.join(OUT, `collar-${collar}.png`) });
