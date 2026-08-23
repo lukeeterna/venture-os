@@ -21,7 +21,7 @@ concurrency:
 jobs:
   visual:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 15
     steps:
       - name: Checkout candidate
         uses: actions/checkout@v4
@@ -44,10 +44,13 @@ jobs:
           node --check "$ROOT/src/football-collar-sync.js"
           node --check "$ROOT/src/football-crest-conformal.js"
           node --check "$ROOT/src/football-crest-ui-authority.js"
+          node --check "$ROOT/src/football-nameset-authority.js"
+          node --check "$ROOT/src/football-easy-ui.js"
           node --check "$ROOT/src/team-order.js"
           node --check "$ROOT/src/team-size-availability.js"
           node --check "$ROOT/verify/visual-ci.cjs"
           node --check "$ROOT/verify/visual-ci-core.cjs"
+          node --check "$ROOT/verify/nameset-easy-ui-ci.cjs"
           test -s "$ROOT/assets/vendor/football-shirt.glb"
           test -s "$ROOT/assets/vendor/football-shorts.glb"
           test -s "$ROOT/assets/vendor/football-socks.glb"
@@ -58,15 +61,20 @@ jobs:
           grep -q 'football-collar-sync-v2-20260823' "$ROOT/src/football-collar-sync.js"
           grep -q 'football-crest-conformal-v3-20260823' "$ROOT/src/football-crest-conformal.js"
           grep -q 'football-crest-ui-authority-v1-20260823' "$ROOT/src/football-crest-ui-authority.js"
+          grep -q 'football-nameset-authority-v1-20260823' "$ROOT/src/football-nameset-authority.js"
+          grep -q 'football-easy-ui-v1-20260823' "$ROOT/src/football-easy-ui.js"
           grep -q 'await import("./football-realism.js")' "$ROOT/src/bootstrap.js"
           grep -q 'await import("./football-collar-tailor.js")' "$ROOT/src/bootstrap.js"
           grep -q 'await import("./football-collar-sync.js")' "$ROOT/src/bootstrap.js"
           grep -q 'await import("./football-crest-conformal.js")' "$ROOT/src/bootstrap.js"
           grep -q 'await import("./football-crest-ui-authority.js")' "$ROOT/src/bootstrap.js"
+          grep -q 'await import("./football-nameset-authority.js")' "$ROOT/src/bootstrap.js"
+          grep -q 'await import("./football-easy-ui.js")' "$ROOT/src/bootstrap.js"
           if grep -q 'football-realism-post.js\|football-realism-calibration.js' "$ROOT/src/bootstrap.js"; then echo "Legacy realism layers still loaded"; exit 1; fi
           if grep -q 'football-boots\|roundedBox(.*boot' "$ROOT/src/football-realism.js"; then echo "Legacy footwear implementation found"; exit 1; fi
           if grep -q 'DecalGeometry' "$ROOT/src/app.js"; then echo "Unexpected DecalGeometry runtime dependency"; exit 1; fi
           test -s "$ROOT/FOOTBALL_REALISM_REFERENCES.md"
+          test -s "$ROOT/FOOTBALL_NAMESET_REFERENCE_2026.md"
           echo "STATIC_AND_RUNTIME_ASSETS=PASS"
       - name: Generate deterministic PNG fixtures
         shell: bash
@@ -117,6 +125,7 @@ jobs:
           set -euo pipefail
           ROOT="$GITHUB_WORKSPACE/ventures/run_20260711_161411/configurator"
           NODE_PATH=/tmp/sportswear-pw/node_modules SPORTSWEAR_URL=http://127.0.0.1:8282/ node "$ROOT/verify/visual-ci.cjs" 2>&1 | tee /tmp/sportswear-visual-ci.log
+          NODE_PATH=/tmp/sportswear-pw/node_modules SPORTSWEAR_URL=http://127.0.0.1:8282/ node "$ROOT/verify/nameset-easy-ui-ci.cjs" 2>&1 | tee /tmp/sportswear-nameset-easy-ui-ci.log
       - name: Upload visual evidence
         if: always()
         uses: actions/upload-artifact@v4
