@@ -6,6 +6,8 @@ let scene;
 let shirt;
 let state;
 let settleTimer = null;
+let sourceRetryTimer = null;
+let sourceRetryCount = 0;
 const status = {
   version: VERSION,
   stage: "bootstrap",
@@ -34,6 +36,27 @@ function disposeObject(object) {
     }
   });
   object.parent?.remove(object);
+}
+
+function removeAllCrestGroups() {
+  let previous = scene?.getObjectByName("football-realism-crest-number-v6");
+  while (previous) {
+    disposeObject(previous);
+    previous = scene?.getObjectByName("football-realism-crest-number-v6");
+  }
+}
+
+function clearSourceRetry() {
+  if (sourceRetryTimer) clearTimeout(sourceRetryTimer);
+  sourceRetryTimer = null;
+  sourceRetryCount = 0;
+}
+
+function retryMissingSource() {
+  if (sourceRetryCount >= 10) return;
+  sourceRetryCount += 1;
+  if (sourceRetryTimer) clearTimeout(sourceRetryTimer);
+  sourceRetryTimer = setTimeout(() => rebuild(`source-retry-${sourceRetryCount}`), 180 + sourceRetryCount * 90);
 }
 
 function currentFont() {
@@ -134,25 +157,29 @@ function rebuild(reason = "manual") {
     publishStatus({ stage: "not-ready" });
     return;
   }
-  const enabled = window.__sportswear3d?.realism?.crestInNumber === true || document.getElementById("crest-in-number")?.value === "on";
+  const control = document.getElementById("crest-in-number");
+  const enabled = window.__sportswear3d?.realism?.crestInNumber === true || control?.value === "on";
+  if (window.__sportswear3d?.realism) window.__sportswear3d.realism.crestInNumber = enabled;
   publishStatus({ enabled });
-  const previous = scene.getObjectByName("football-realism-crest-number-v6");
-  if (previous) disposeObject(previous);
+  removeAllCrestGroups();
 
   const group = new THREE.Group();
   group.name = "football-realism-crest-number-v6";
   group.userData.conformalVersion = VERSION;
   scene.add(group);
   if (!enabled) {
-    publishStatus({ stage: "disabled", alphaPixels: 0, vertices: 0, maxInward: 0 });
+    clearSourceRetry();
+    publishStatus({ stage: "disabled", sourcePresent: false, alphaPixels: 0, vertices: 0, maxInward: 0 });
     return;
   }
 
   const canvas = crestCanvas();
   if (!canvas) {
-    publishStatus({ stage: "missing-source", alphaPixels: 0, vertices: 0 });
+    publishStatus({ stage: "waiting-source", alphaPixels: 0, vertices: 0 });
+    retryMissingSource();
     return;
   }
+  clearSourceRetry();
   const ctx = canvas.getContext("2d", { willReadFrequently: true });
   const alpha = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
   let alphaPixels = 0;
@@ -255,16 +282,29 @@ if (await waitReady()) {
   shirt = scene.getObjectByName("donor-shirt");
   if (!shirt) throw new Error("football crest conformal: donor shirt not found");
 
-  document.getElementById("crest-in-number")?.addEventListener("change", () => settle("crest-select", 180));
-  document.addEventListener("input", () => {
-    if (window.__sportswear3d?.realism?.crestInNumber) settle("document-input", 180);
-  });
-  document.addEventListener("change", () => {
+  document.addEventListener("change", (event) => {
+    const target = event.target;
+    if (target?.id === "crest-in-number") {
+      const enabled = target.value === "on";
+      if (window.__sportswear3d?.realism) window.__sportswear3d.realism.crestInNumber = enabled;
+      sourceRetryCount = 0;
+      settle("crest-select-delegated", 220);
+      return;
+    }
+    if (target?.matches?.('input[type="file"]') && (window.__sportswear3d?.realism?.crestInNumber || document.getElementById("crest-in-number")?.value === "on")) {
+      sourceRetryCount = 0;
+      settle("graphic-file-change", 320);
+      return;
+    }
     if (window.__sportswear3d?.realism?.crestInNumber) settle("document-change", 180);
-  });
+  }, true);
+  document.addEventListener("input", (event) => {
+    if (event.target?.id === "crest-in-number") return;
+    if (window.__sportswear3d?.realism?.crestInNumber) settle("document-input", 180);
+  }, true);
   const graphics = document.getElementById("graphics-list");
   if (graphics) new MutationObserver(() => {
-    if (window.__sportswear3d?.realism?.crestInNumber) settle("graphics-mutation", 180);
+    if (window.__sportswear3d?.realism?.crestInNumber || document.getElementById("crest-in-number")?.value === "on") settle("graphics-mutation", 220);
   }).observe(graphics, { childList: true, subtree: true });
 
   window.__sportswear3d.rebuildCrestInNumber = () => rebuild("api");
