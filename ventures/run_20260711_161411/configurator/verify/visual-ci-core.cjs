@@ -80,6 +80,8 @@ function checkpoint(name) { console.log(`VISUAL_CHECKPOINT=${name}`); }
         const group = window.__footballRealismScene.getObjectByName('football-realism-collar-v6');
         const tailor = window.__footballCollarTailorStatus || {};
         let finite = true, maxAbs = 0;
+        const mins = [Infinity, Infinity, Infinity];
+        const maxs = [-Infinity, -Infinity, -Infinity];
         group?.traverse((o) => {
           const a = o.geometry?.attributes?.position;
           if (!a) return;
@@ -87,10 +89,15 @@ function checkpoint(name) { console.log(`VISUAL_CHECKPOINT=${name}`); }
             const values = [a.getX(i), a.getY(i), a.getZ(i)];
             if (!values.every(Number.isFinite)) finite = false;
             maxAbs = Math.max(maxAbs, ...values.map(Math.abs));
+            for (let axis = 0; axis < 3; axis++) {
+              mins[axis] = Math.min(mins[axis], values[axis]);
+              maxs[axis] = Math.max(maxs[axis], values[axis]);
+            }
           }
         });
-        const box = group ? new THREE.Box3().setFromObject(group) : null;
-        const size = box && !box.isEmpty() ? box.getSize(new THREE.Vector3()).toArray() : [0, 0, 0];
+        const size = mins.every(Number.isFinite) && maxs.every(Number.isFinite)
+          ? maxs.map((value, axis) => value - mins[axis])
+          : [0, 0, 0];
         return {
           meshes: d.collar_meshes,
           finite,
