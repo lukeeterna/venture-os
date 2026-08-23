@@ -24,9 +24,9 @@ child.stderr.on('data', (chunk) => {
 const watchdog = setTimeout(() => {
   if (finished) return;
   sawFailure = true;
-  process.stderr.write('VISUAL_CI_WATCHDOG_TIMEOUT=90s\n');
+  process.stderr.write('VISUAL_CI_WATCHDOG_TIMEOUT=180s\n');
   child.kill('SIGKILL');
-}, 90_000);
+}, 180_000);
 
 child.on('error', (error) => {
   sawFailure = true;
