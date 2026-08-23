@@ -37,14 +37,18 @@ export default async function seedCiTierPrices({ container }: ExecArgs) {
   for (const sku of skus) {
     const variant: any = bySku.get(sku)
     if (!variant?.id) throw new Error(`Missing structural Sportswear variant ${sku}`)
+    const prices = PRICE_PLAN[sku as keyof typeof PRICE_PLAN].map((price) => ({ ...price }))
+
     if (variant.price_set?.id) {
-      console.log(`SPORTSWEAR_CI_PRICESET=${sku}:ALREADY_LINKED:${variant.price_set.id}`)
+      await pricing.addPrices({
+        priceSetId: variant.price_set.id,
+        prices,
+      })
+      console.log(`SPORTSWEAR_CI_PRICESET=${sku}:POPULATED:${variant.price_set.id}`)
       continue
     }
 
-    const created = await pricing.createPriceSets({
-      prices: PRICE_PLAN[sku as keyof typeof PRICE_PLAN].map((price) => ({ ...price })),
-    })
+    const created = await pricing.createPriceSets({ prices })
     const priceSet = Array.isArray(created) ? created[0] : created
     if (!priceSet?.id) throw new Error(`Pricing module did not return a price set for ${sku}`)
 
