@@ -6,5 +6,6 @@ await import("./football-realism.js");
 await import("./football-collar-tailor.js");
 await import("./football-collar-sync.js");
 await import("./football-crest-conformal.js");
+await import("./football-crest-ui-authority.js");
 await teamOrder;
 await import("./team-size-availability.js");
