@@ -96,14 +96,16 @@ function near(value, expected, tolerance, label) {
     }));
     if (advanced.status.mode !== 'advanced' || !advanced.bodyAdvanced || advanced.realismDisplay === 'none' || advanced.backNameDisplay === 'none') fail(`advanced disclosure failed ${JSON.stringify(advanced)}`);
 
+    const repairsBeforeReset = await page.evaluate(() => Number(window.__footballNamesetEdgeSafeStatus?.repairs || 0));
     await page.locator('#official-nameset-reset').click();
-    await page.waitForFunction(() =>
+    await page.waitForFunction((repairsBefore) =>
       window.__footballNamesetStatus?.mode === 'authority' &&
+      Number(window.__footballNamesetEdgeSafeStatus?.repairs || 0) > repairsBefore &&
       Boolean(window.__footballNamesetStatus?.metrics?.back_name) &&
-      Boolean(window.__footballNamesetStatus?.metrics?.back_number),
-      null, { timeout: 6000 }
+      Boolean(window.__footballNamesetStatus?.metrics?.back_number) &&
+      Boolean(window.__footballRealismScene?.getObjectByName('football-nameset-back-number')),
+      repairsBeforeReset, { timeout: 7000 }
     );
-    await page.waitForTimeout(250);
     snapshot = await page.evaluate(() => ({ nameset: window.__footballNamesetStatus, edge: window.__footballNamesetEdgeSafeStatus }));
     near(snapshot.nameset.metrics.back_name.center_body_pct, 14.8, 1.5, 'reset back name center');
     near(snapshot.nameset.metrics.back_number.center_body_pct, 42.3, 1.5, 'reset back number center');
