@@ -3,26 +3,37 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const BASE = process.env.SPORTSWEAR_URL || 'http://127.0.0.1:8282/';
-const ROOT = path.resolve(__dirname, '..');
 const OUT = path.join(__dirname, 'visual-output');
 const FIX = path.join(__dirname, 'fixtures');
 fs.mkdirSync(OUT, { recursive: true });
 function fail(message) { throw new Error(message); }
 function near(value, expected, tolerance, label) {
-  if (Math.abs(Number(value) - expected) > tolerance) fail(`${label}: expected ${expected}±${tolerance}, got ${value}`);
+  if (!Number.isFinite(Number(value)) || Math.abs(Number(value) - expected) > tolerance) fail(`${label}: expected ${expected}±${tolerance}, got ${value}`);
 }
 function checkpoint(name) { console.log(`VISUAL_CHECKPOINT=${name}`); }
 
 (async () => {
-  const browser = await chromium.launch({ headless: true, args: ['--enable-webgl', '--ignore-gpu-blocklist', '--use-angle=swiftshader', '--disable-dev-shm-usage'] });
+  const browser = await chromium.launch({
+    headless: true,
+    args: ['--enable-webgl', '--ignore-gpu-blocklist', '--use-angle=swiftshader', '--disable-dev-shm-usage'],
+  });
   try {
     const page = await browser.newPage({ viewport: { width: 1440, height: 1100 }, deviceScaleFactor: 1 });
     const errors = [];
     page.on('pageerror', (err) => errors.push(`pageerror: ${err.stack || err.message}`));
     page.on('console', (msg) => { if (msg.type() === 'error') errors.push(`console.error: ${msg.text()}`); });
     const response = await page.goto(BASE, { waitUntil: 'networkidle', timeout: 60000 });
-    if (!response || !response.ok()) fail(`HTTP ${response?.status()} loading ${BASE}`);
-    await page.waitForFunction(() => window.__sportswear3d?.ready === true && window.__footballRealismReady === true && window.__footballCollarTailorReady === true && window.__footballCrestConformalReady === true && window.__footballCrestUiAuthorityReady === true && window.__footballNamesetReady === true && window.__footballEasyUiReady === true, null, { timeout: 60000 });
+    if (!response?.ok()) fail(`HTTP ${response?.status()} loading ${BASE}`);
+    await page.waitForFunction(() =>
+      window.__sportswear3d?.ready === true &&
+      window.__footballRealismReady === true &&
+      window.__footballCollarTailorReady === true &&
+      window.__footballCrestConformalReady === true &&
+      window.__footballCrestUiAuthorityReady === true &&
+      window.__footballNamesetReady === true &&
+      window.__footballEasyUiReady === true,
+      null, { timeout: 60000 }
+    );
     await page.waitForTimeout(500);
     checkpoint('runtime-ready');
 
@@ -58,12 +69,8 @@ function checkpoint(name) { console.log(`VISUAL_CHECKPOINT=${name}`); }
     await page.waitForTimeout(700);
     await viewer.screenshot({ path: path.join(OUT, '02-back-reference-default.png') });
 
-    // The customer-facing experience is intentionally simple by default. The
-    // remaining checks below exercise expert/legacy controls, so disclose them
-    // explicitly rather than expecting hidden controls to be interactable.
     await page.locator('[data-easy-advanced-toggle]').click();
     await page.waitForFunction(() => window.__footballEasyUiStatus?.mode === 'advanced', null, { timeout: 5000 });
-
     await page.locator('#football-typography').selectOption('uefa-2026');
     await page.locator('#apply-football-typography').click();
     await page.waitForTimeout(500);
@@ -80,7 +87,8 @@ function checkpoint(name) { console.log(`VISUAL_CHECKPOINT=${name}`); }
     const collarResults = {};
     for (const collar of ['crew', 'v', 'polo', 'polo-button', 'split-v', 'retro-90']) {
       await page.locator('#football-collar').selectOption(collar);
-      await page.waitForTimeout(420);
+      await page.waitForFunction((expected) => window.__footballCollarTailorStatus?.type === expected, collar, { timeout: 5000 });
+      await page.waitForTimeout(260);
       collarResults[collar] = await page.evaluate((expected) => {
         const d = window.__sportswear3d.diagnostics().football_realism;
         const group = window.__footballRealismScene.getObjectByName('football-realism-collar-v6');
@@ -102,26 +110,31 @@ function checkpoint(name) { console.log(`VISUAL_CHECKPOINT=${name}`); }
           }
         });
         const size = mins.every(Number.isFinite) && maxs.every(Number.isFinite)
-          ? maxs.map((value, axis) => value - mins[axis])
-          : [0, 0, 0];
+          ? maxs.map((value, axis) => value - mins[axis]) : [0, 0, 0];
         return {
           meshes: d.collar_meshes,
           finite,
           maxAbs,
           size,
           tailorVersion: group?.userData?.tailorVersion || null,
+          surfaceProjected: group?.userData?.surfaceProjected === true,
           tailorStatus: tailor,
           expected,
         };
       }, collar);
       const result = collarResults[collar];
       if (result.meshes < 1 || !result.finite || result.maxAbs > 20) fail(`Collar ${collar} invalid: ${JSON.stringify(result)}`);
-      if (result.tailorVersion !== 'football-collar-tailor-v1-20260823') fail(`Collar ${collar} not rendered by tailor layer: ${JSON.stringify(result)}`);
-      if (result.tailorStatus.type !== collar || result.tailorStatus.finite !== true) fail(`Collar ${collar} tailor status invalid: ${JSON.stringify(result.tailorStatus)}`);
+      if (result.tailorVersion !== 'football-collar-tailor-v2-20260823') fail(`Collar ${collar} not rendered by surface tailor: ${JSON.stringify(result)}`);
+      if (result.tailorStatus.version !== 'football-collar-tailor-v2-20260823' || result.tailorStatus.type !== collar || result.tailorStatus.finite !== true) fail(`Collar ${collar} tailor status invalid: ${JSON.stringify(result.tailorStatus)}`);
+      if (!result.surfaceProjected || result.tailorStatus.surfaceProjected !== true) fail(`Collar ${collar} contains flat/non-projected geometry: ${JSON.stringify(result)}`);
+      if (!(result.tailorStatus.heightFraction > 0.015 && result.tailorStatus.heightFraction < 0.18)) fail(`Collar ${collar} vertical footprint unrealistic: ${JSON.stringify(result.tailorStatus)}`);
+      if (!(result.tailorStatus.widthFraction > 0.08 && result.tailorStatus.widthFraction < 0.34)) fail(`Collar ${collar} horizontal footprint unrealistic: ${JSON.stringify(result.tailorStatus)}`);
+      if (!(result.tailorStatus.depthFraction >= 0 && result.tailorStatus.depthFraction < 0.45)) fail(`Collar ${collar} floats too far from garment: ${JSON.stringify(result.tailorStatus)}`);
+      if (result.tailorStatus.maxProjectionFallback > 6) fail(`Collar ${collar} projection fallback escaped bounded window: ${JSON.stringify(result.tailorStatus)}`);
       if (Math.max(...result.size) <= 0.03) fail(`Collar ${collar} has negligible geometry: ${JSON.stringify(result.size)}`);
       await viewer.screenshot({ path: path.join(OUT, `collar-${collar}.png`) });
     }
-    checkpoint('tailored-collars');
+    checkpoint('surface-projected-collars');
 
     await page.locator('[data-place="crest"]').click();
     const crestCard = page.locator('[data-graphic]').last();
@@ -170,7 +183,13 @@ function checkpoint(name) { console.log(`VISUAL_CHECKPOINT=${name}`); }
     checkpoint('regressions');
 
     const final = await page.evaluate(() => window.__sportswear3d.diagnostics());
-    const finalAux = await page.evaluate(() => ({ collar: window.__footballCollarTailorStatus, crest: window.__footballCrestConformalStatus, crestUi: window.__footballCrestUiAuthorityStatus, nameset: window.__footballNamesetStatus, easyUi: window.__footballEasyUiStatus }));
+    const finalAux = await page.evaluate(() => ({
+      collar: window.__footballCollarTailorStatus,
+      crest: window.__footballCrestConformalStatus,
+      crestUi: window.__footballCrestUiAuthorityStatus,
+      nameset: window.__footballNamesetStatus,
+      easyUi: window.__footballEasyUiStatus,
+    }));
     fs.writeFileSync(path.join(OUT, 'runtime-diagnostics.json'), JSON.stringify({ diagnostics: final, collarResults, crestCheck, finalAux, errors }, null, 2));
     if (errors.length) fail(errors.join('\n'));
     console.log('SPORTSWEAR_REAL_BROWSER=PASS');
@@ -180,7 +199,7 @@ function checkpoint(name) { console.log(`VISUAL_CHECKPOINT=${name}`); }
     console.log('PHYSICAL_TYPOGRAPHY=PASS');
     console.log('NO_FOOTWEAR=PASS');
     console.log('PAYLOAD_UI_HIDDEN=PASS');
-    console.log('TAILORED_COLLAR_GEOMETRY_ALL_VARIANTS=PASS');
+    console.log('SURFACE_PROJECTED_COLLAR_GEOMETRY_ALL_VARIANTS=PASS');
     console.log(`CREST_ALPHA_PIXELS=${crestCheck.alphaPixels}`);
     console.log('CONFORMAL_CREST_IN_NUMBER=PASS');
     console.log('PATTERN_UPLOAD=PASS');
