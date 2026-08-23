@@ -11,7 +11,8 @@
     "dev": "medusa develop",
     "lint": "medusa lint",
     "db:migrate": "medusa db:migrate",
-    "init:sportswear": "medusa exec ./src/scripts/init-sportswear.ts"
+    "init:sportswear": "medusa exec ./src/scripts/init-sportswear.ts",
+    "seed:ci-tier-prices": "medusa exec ./src/scripts/seed-ci-tier-prices.ts"
   },
   "dependencies": {
     "@medusajs/admin-sdk": "2.19.0",
