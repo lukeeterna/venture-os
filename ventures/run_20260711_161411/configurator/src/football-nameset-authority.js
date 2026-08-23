@@ -24,7 +24,10 @@ const PROFILE = Object.freeze({
 const CONTROL_TO_BODY_A = 7.7032258065;
 const CONTROL_TO_BODY_B = 0.8870967742;
 const TEXT_CANVAS = Object.freeze({
-  name: { aspect: 1400 / 420, glyphFill: 250 / 420 },
+  // Keep the exact same physical glyph width as the legacy 1400x420 canvas,
+  // but crop transparent vertical padding so the projection does not sample
+  // the open neckline above an otherwise valid official-style player name.
+  name: { aspect: 1400 / 280, glyphFill: 250 / 280 },
   number: { aspect: 1, glyphFill: 720 / 900 },
 });
 const FONT_MAP = Object.freeze({
@@ -103,7 +106,7 @@ function textTexture(text, kind) {
   const value = cleanText(text, kind === "name" ? 24 : 6) || (kind === "name" ? "ROSSI" : "10");
   const canvas = document.createElement("canvas");
   canvas.width = kind === "name" ? 1400 : 900;
-  canvas.height = kind === "name" ? 420 : 900;
+  canvas.height = kind === "name" ? 280 : 900;
   const ctx = canvas.getContext("2d");
   const font = currentFont();
   let px = kind === "name" ? 250 : 720;
