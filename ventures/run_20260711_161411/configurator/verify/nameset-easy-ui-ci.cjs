@@ -28,25 +28,41 @@ function near(value, expected, tolerance, label) {
     const response = await page.goto(BASE, { waitUntil: 'networkidle', timeout: 60000 });
     if (!response?.ok()) fail(`HTTP ${response?.status()} loading ${BASE}`);
     await page.waitForFunction(() =>
-      window.__sportswear3d?.ready === true &&
-      window.__footballNamesetReady === true &&
-      window.__footballEasyUiReady === true &&
-      window.__footballNamesetStatus?.metrics?.back_name &&
-      window.__footballNamesetStatus?.metrics?.back_number,
+      window.__sportswear3d?.ready === true && (
+        (window.__footballNamesetReady === true && window.__footballEasyUiReady === true) ||
+        Boolean(window.__footballNamesetError) ||
+        Boolean(window.__footballEasyUiError)
+      ),
       null,
-      { timeout: 60000 }
+      { timeout: 40000 }
     );
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(700);
 
     let snapshot = await page.evaluate(() => ({
-      nameset: window.__footballNamesetStatus,
-      easy: window.__footballEasyUiStatus,
+      nameset: window.__footballNamesetStatus || null,
+      easy: window.__footballEasyUiStatus || null,
+      namesetReady: window.__footballNamesetReady === true,
+      easyReady: window.__footballEasyUiReady === true,
+      namesetError: window.__footballNamesetError || null,
+      easyError: window.__footballEasyUiError || null,
+      teamOrderReady: window.__teamOrderReady === true,
+      realismReady: window.__footballRealismReady === true,
       bodySimple: document.body.classList.contains('football-easy-simple'),
       toolbarButtons: document.querySelectorAll('#football-easy-toolbar button').length,
-      advancedNameDisplay: getComputedStyle(document.getElementById('back-name-controls').closest('.subcard')).display,
-      realismDisplay: getComputedStyle(document.getElementById('football-realism-controls')).display,
+      advancedNameDisplay: document.getElementById('back-name-controls')?.closest('.subcard') ? getComputedStyle(document.getElementById('back-name-controls').closest('.subcard')).display : null,
+      realismDisplay: document.getElementById('football-realism-controls') ? getComputedStyle(document.getElementById('football-realism-controls')).display : null,
+      namesetGroupChildren: window.__footballRealismScene?.getObjectByName('football-nameset-authority')?.children?.map?.((node) => node.name) || [],
+      hasBackNameMesh: Boolean(window.__footballRealismScene?.getObjectByName('football-nameset-back-name')),
+      hasBackNumberMesh: Boolean(window.__footballRealismScene?.getObjectByName('football-nameset-back-number')),
+      sceneNames: window.__footballRealismScene?.children?.map?.((node) => node.name).filter(Boolean) || [],
     }));
 
+    if (!snapshot.namesetReady || !snapshot.easyReady || snapshot.namesetError || snapshot.easyError) {
+      fail(`nameset/easy bootstrap failed ${JSON.stringify(snapshot)}`);
+    }
+    if (!snapshot.nameset?.metrics?.back_name || !snapshot.nameset?.metrics?.back_number) {
+      fail(`authoritative rendered meshes missing ${JSON.stringify(snapshot)}`);
+    }
     if (snapshot.nameset.version !== 'football-nameset-authority-v1-20260823') fail(`nameset version ${snapshot.nameset.version}`);
     if (snapshot.nameset.mode !== 'authority' || snapshot.nameset.profile !== 'official-reference-2024') fail(`nameset authority not default ${JSON.stringify(snapshot.nameset)}`);
     if (!snapshot.nameset.legacy_text_hidden) fail('legacy text mesh is still visible under authoritative nameset');
