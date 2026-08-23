@@ -15,7 +15,7 @@ on:
       - .github/workflows/sportswear3d-visual-ci.yml
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: sportswear3d-visual-${{ github.workflow }}-${{ github.ref }}
@@ -43,6 +43,7 @@ jobs:
           node --check "$ROOT/src/sportswear-medusa-bridge.js"
           node --check "$ROOT/src/bootstrap.js"
           node --check "$ROOT/src/football-realism.js"
+          node --check "$ROOT/src/football-collar-tailor.js"
           node --check "$ROOT/src/football-crest-conformal.js"
           node --check "$ROOT/src/team-order.js"
           node --check "$ROOT/src/team-size-availability.js"
@@ -54,8 +55,10 @@ jobs:
           grep -q 'football-real-garment-v4-conformal' "$ROOT/src/app.js"
           grep -q 'buildSurfaceOverlayGeometry' "$ROOT/src/app.js"
           grep -q 'football-realism-v6-physical-20260822' "$ROOT/src/football-realism.js"
-          grep -q 'football-crest-conformal-v2-20260822' "$ROOT/src/football-crest-conformal.js"
+          grep -q 'football-collar-tailor-v1-20260823' "$ROOT/src/football-collar-tailor.js"
+          grep -q 'football-crest-conformal-v3-20260823' "$ROOT/src/football-crest-conformal.js"
           grep -q 'await import("./football-realism.js")' "$ROOT/src/bootstrap.js"
+          grep -q 'await import("./football-collar-tailor.js")' "$ROOT/src/bootstrap.js"
           grep -q 'await import("./football-crest-conformal.js")' "$ROOT/src/bootstrap.js"
           if grep -q 'football-realism-post.js\|football-realism-calibration.js' "$ROOT/src/bootstrap.js"; then echo "Legacy realism layers still loaded"; exit 1; fi
           if grep -q 'football-boots\|roundedBox(.*boot' "$ROOT/src/football-realism.js"; then echo "Legacy footwear implementation found"; exit 1; fi
@@ -119,28 +122,3 @@ jobs:
           path: ventures/run_20260711_161411/configurator/verify/visual-output
           if-no-files-found: warn
           retention-days: 7
-      - name: Publish SHA-scoped branch CI verdict
-        if: always() && github.event_name == 'push'
-        shell: bash
-        run: |
-          set -u
-          OUT="docs/judge/ci/sportswear-football-realism-${GITHUB_SHA}.md"
-          mkdir -p "$(dirname "$OUT")"
-          {
-            echo "# Sportswear 3D Football Realism — CI verdict"
-            echo
-            echo "source_sha: $GITHUB_SHA"
-            echo "static_outcome: ${{ steps.static.outcome }}"
-            echo "browser_outcome: ${{ steps.browser.outcome }}"
-            echo "workflow_run_id: $GITHUB_RUN_ID"
-            echo
-            echo '```text'
-            if [ -f /tmp/sportswear-visual-ci.log ]; then cat /tmp/sportswear-visual-ci.log; else echo "browser log unavailable"; fi
-            echo '```'
-          } > "$OUT"
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add "$OUT"
-          if git diff --cached --quiet; then exit 0; fi
-          git commit -m "ci(mt3d): publish football realism verdict for ${GITHUB_SHA}"
-          git push origin "HEAD:${GITHUB_REF_NAME}"
