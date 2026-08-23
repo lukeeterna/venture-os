@@ -30,32 +30,47 @@ function near(value, expected, tolerance, label) {
     );
     await page.waitForTimeout(700);
 
-    let snapshot = await page.evaluate(() => ({
-      nameset: window.__footballNamesetStatus || null,
-      edge: window.__footballNamesetEdgeSafeStatus || null,
-      easy: window.__footballEasyUiStatus || null,
-      namesetReady: window.__footballNamesetReady === true,
-      edgeReady: window.__footballNamesetEdgeSafeReady === true,
-      easyReady: window.__footballEasyUiReady === true,
-      namesetError: window.__footballNamesetError || null,
-      edgeError: window.__footballNamesetEdgeSafeError || null,
-      easyError: window.__footballEasyUiError || null,
-      teamOrderReady: window.__teamOrderReady === true,
-      realismReady: window.__footballRealismReady === true,
-      bodySimple: document.body.classList.contains('football-easy-simple'),
-      toolbarButtons: document.querySelectorAll('#football-easy-toolbar button').length,
-      advancedNameDisplay: document.getElementById('back-name-controls')?.closest('.subcard') ? getComputedStyle(document.getElementById('back-name-controls').closest('.subcard')).display : null,
-      realismDisplay: document.getElementById('football-realism-controls') ? getComputedStyle(document.getElementById('football-realism-controls')).display : null,
-      namesetGroupChildren: window.__footballRealismScene?.getObjectByName('football-nameset-authority')?.children?.map?.((node) => node.name) || [],
-      hasBackNameMesh: Boolean(window.__footballRealismScene?.getObjectByName('football-nameset-back-name')),
-      hasBackNumberMesh: Boolean(window.__footballRealismScene?.getObjectByName('football-nameset-back-number')),
-      sceneNames: window.__footballRealismScene?.children?.map?.((node) => node.name).filter(Boolean) || [],
-    }));
+    let snapshot = await page.evaluate(() => {
+      const backNumber = window.__footballRealismScene?.getObjectByName('football-nameset-back-number');
+      return {
+        nameset: window.__footballNamesetStatus || null,
+        edge: window.__footballNamesetEdgeSafeStatus || null,
+        easy: window.__footballEasyUiStatus || null,
+        namesetReady: window.__footballNamesetReady === true,
+        edgeReady: window.__footballNamesetEdgeSafeReady === true,
+        easyReady: window.__footballEasyUiReady === true,
+        namesetError: window.__footballNamesetError || null,
+        edgeError: window.__footballNamesetEdgeSafeError || null,
+        easyError: window.__footballEasyUiError || null,
+        teamOrderReady: window.__teamOrderReady === true,
+        realismReady: window.__footballRealismReady === true,
+        bodySimple: document.body.classList.contains('football-easy-simple'),
+        toolbarButtons: document.querySelectorAll('#football-easy-toolbar button').length,
+        advancedNameDisplay: document.getElementById('back-name-controls')?.closest('.subcard') ? getComputedStyle(document.getElementById('back-name-controls').closest('.subcard')).display : null,
+        realismDisplay: document.getElementById('football-realism-controls') ? getComputedStyle(document.getElementById('football-realism-controls')).display : null,
+        namesetGroupChildren: window.__footballRealismScene?.getObjectByName('football-nameset-authority')?.children?.map?.((node) => node.name) || [],
+        hasBackNameMesh: Boolean(window.__footballRealismScene?.getObjectByName('football-nameset-back-name')),
+        hasBackNumberMesh: Boolean(backNumber),
+        backNumberRender: backNumber ? {
+          distortionFree: backNumber.userData?.distortionFree === true,
+          canvasAspect: Number(backNumber.userData?.canvasAspect),
+          requestedAspect: Number(backNumber.userData?.requestedAspect),
+          widthScale: Number(backNumber.userData?.widthScale),
+          horizontalScale: Number(backNumber.userData?.horizontalScale),
+          edgeSafeVersion: backNumber.userData?.edgeSafeVersion || null,
+        } : null,
+        sceneNames: window.__footballRealismScene?.children?.map?.((node) => node.name).filter(Boolean) || [],
+      };
+    });
 
     if (!snapshot.namesetReady || !snapshot.edgeReady || !snapshot.easyReady || snapshot.namesetError || snapshot.edgeError || snapshot.easyError) fail(`nameset/easy bootstrap failed ${JSON.stringify(snapshot)}`);
     if (!snapshot.nameset?.metrics?.back_name || !snapshot.nameset?.metrics?.back_number) fail(`authoritative rendered meshes missing ${JSON.stringify(snapshot)}`);
     if (snapshot.nameset.version !== 'football-nameset-authority-v1-20260823') fail(`nameset version ${snapshot.nameset.version}`);
-    if (snapshot.edge?.version !== 'football-nameset-edge-safe-v1-20260823') fail(`edge-safe nameset missing ${JSON.stringify(snapshot.edge)}`);
+    if (snapshot.edge?.version !== 'football-nameset-edge-safe-v2-20260823') fail(`edge-safe nameset missing ${JSON.stringify(snapshot.edge)}`);
+    if (!snapshot.backNumberRender?.distortionFree) fail(`reference number is not distortion-free ${JSON.stringify(snapshot.backNumberRender)}`);
+    if (snapshot.backNumberRender.canvasAspect > 0.83 || snapshot.backNumberRender.canvasAspect < 0.60) fail(`reference 10 aspect outside official-shirt footprint ${JSON.stringify(snapshot.backNumberRender)}`);
+    if (snapshot.backNumberRender.widthScale < 0.85) fail(`reference number had to shrink beyond certified surface window ${JSON.stringify(snapshot.backNumberRender)}`);
+    if (Number(snapshot.edge.maxInward || 0) !== 0 || Number(snapshot.edge.lastMaxInward || 0) !== 0) fail(`reference number used vertex warping ${JSON.stringify(snapshot.edge)}`);
     if (snapshot.nameset.mode !== 'authority' || snapshot.nameset.profile !== 'official-reference-2024') fail(`nameset authority not default ${JSON.stringify(snapshot.nameset)}`);
     if (!snapshot.nameset.legacy_text_hidden) fail('legacy text mesh is still visible under authoritative nameset');
     near(snapshot.nameset.metrics.back_name.center_body_pct, 14.8, 1.5, 'back name center');
@@ -149,6 +164,7 @@ function near(value, expected, tolerance, label) {
     console.log('OFFICIAL_REFERENCE_NAMESET=PASS');
     console.log('RENDERED_PLACEMENT_ASSERTIONS=PASS');
     console.log('UEFA_NUMBER_ZONE_CLEARANCE=PASS');
+    console.log('DISTORTION_FREE_REFERENCE_NUMBER=PASS');
     console.log('SIMPLE_MODE_DEFAULT=PASS');
     console.log('ADVANCED_PROGRESSIVE_DISCLOSURE=PASS');
     console.log('EDGE_SAFE_NAMESET=PASS');
