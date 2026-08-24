@@ -1,6 +1,6 @@
 import * as THREE from "three";
 
-const VERSION = "football-neckline-structural-v1-20260824";
+const VERSION = "football-neckline-structural-v2-20260824";
 const topology = new WeakMap();
 let scene;
 let shirt;
@@ -44,20 +44,10 @@ function profileFor(type, f) {
   const w = f.size.x;
   const h = f.size.y;
   if (type === "v") {
-    return { kind: "v", topY: f.yTop + h * 0.014, bottomY: f.yTop - h * 0.130, topHalf: w * 0.100, bottomHalf: w * 0.003 };
+    return { kind: "v", topY: f.yTop + h * 0.010, bottomY: f.yTop - h * 0.124, topHalf: w * 0.071, bottomHalf: 0 };
   }
   if (type === "split-v") {
-    return { kind: "split-v", topY: f.yTop + h * 0.014, bottomY: f.yTop - h * 0.086, topHalf: w * 0.084, bottomHalf: w * 0.010 };
-  }
-  if (["polo", "polo-button", "retro-90"].includes(type)) {
-    const retro = type === "retro-90";
-    return {
-      kind: retro ? "retro-polo" : "polo",
-      topY: f.yTop + h * 0.012,
-      bottomY: f.yTop - h * (retro ? 0.120 : 0.102),
-      topHalf: w * (retro ? 0.087 : 0.074),
-      bottomHalf: w * (retro ? 0.030 : 0.023),
-    };
+    return { kind: "split-v", topY: f.yTop + h * 0.010, bottomY: f.yTop - h * 0.080, topHalf: w * 0.055, bottomHalf: w * 0.004 };
   }
   return null;
 }
@@ -102,8 +92,7 @@ function cut(type) {
       b.fromBufferAttribute(position, ib).applyMatrix4(mesh.matrixWorld);
       c.fromBufferAttribute(position, ic).applyMatrix4(mesh.matrixWorld);
       center.copy(a).add(b).add(c).multiplyScalar(1 / 3);
-      const vertexHits = Number(inside(a, profile, f)) + Number(inside(b, profile, f)) + Number(inside(c, profile, f));
-      if (inside(center, profile, f) || vertexHits >= 2) {
+      if (inside(center, profile, f)) {
         removed += 1;
       } else {
         kept.push(ia, ib, ic);
@@ -116,7 +105,7 @@ function cut(type) {
   }
 
   publish(type, profile.kind, removed, keptCount);
-  if (removed < 3) console.error(`football neckline structural cut failed for ${type}: removed=${removed}`);
+  if (removed < 2) console.error(`football neckline structural cut failed for ${type}: removed=${removed}`);
 }
 
 function publish(type, profile, removed, remaining) {
