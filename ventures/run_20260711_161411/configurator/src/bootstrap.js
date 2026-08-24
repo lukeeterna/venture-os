@@ -5,6 +5,7 @@ const teamOrder = import("./team-order.js");
 await import("./football-realism.js");
 await import("./football-collar-tailor.js");
 await import("./football-collar-sync.js");
+await import("./football-neckline-structural.js");
 await import("./football-crest-conformal.js");
 await import("./football-crest-ui-authority.js");
 await teamOrder;
