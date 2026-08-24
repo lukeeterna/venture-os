@@ -1,6 +1,6 @@
 import * as THREE from "three";
 
-const VERSION = "football-collar-tailor-v2-20260823";
+const VERSION = "football-collar-tailor-v3-20260824";
 const raycaster = new THREE.Raycaster();
 let api;
 let scene;
@@ -38,8 +38,6 @@ function necklineFrame() {
   const box = new THREE.Box3().setFromObject(shirt);
   const size = box.getSize(new THREE.Vector3());
   const cx = (box.min.x + box.max.x) * 0.5;
-  // Keep the construction on the actual upper-chest textile. The old v1 used
-  // one average Z plane at the neck and created visibly floating rectangles.
   const yTop = box.max.y - size.y * 0.035;
   return { box, size, cx, yTop };
 }
@@ -47,7 +45,7 @@ function necklineFrame() {
 function material(color, depth = 0) {
   return new THREE.MeshStandardMaterial({
     color,
-    roughness: 0.90,
+    roughness: 0.91,
     metalness: 0,
     side: THREE.DoubleSide,
     depthTest: true,
@@ -142,57 +140,54 @@ function addButton(x, y, frame, radius, group) {
   group.add(mesh);
 }
 
-function addCrew(group, frame) {
-  const { size, cx, yTop } = frame;
-  const w = size.x;
-  const h = size.y;
-  const color = api.realism?.collarColor || state.colors.shirt;
-  const rib = material(color, 2);
-  const seam = material(darken(color, 0.16), 3);
-  const segments = 20;
-  const outer = [];
-  const inner = [];
-  for (let i = 0; i <= segments; i++) {
-    const t = i / segments;
-    const angle = Math.PI * (1 - t);
-    outer.push([
-      cx + Math.cos(angle) * w * 0.082,
-      yTop - h * 0.004 - Math.sin(angle) * h * 0.050,
-    ]);
-    inner.push([
-      cx + Math.cos(angle) * w * 0.068,
-      yTop - h * 0.007 - Math.sin(angle) * h * 0.036,
-    ]);
-  }
-  for (let i = 0; i < segments; i++) {
-    addMesh(group, surfacePolygon([outer[i], outer[i + 1], inner[i + 1], inner[i]], frame, rib, `football-collar-crew-${i}`, 27, 0.006));
-  }
-  for (let i = 0; i < segments; i += 2) {
-    addMesh(group, surfaceRibbon(inner[i], inner[Math.min(segments, i + 2)], w * 0.0022, frame, seam, `football-collar-crew-seam-${i}`, 29, 0.009));
-  }
+function addCrew(group) {
+  group.userData.usesDonorCollar = true;
+  group.userData.visualProfile = "donor-crew";
 }
 
 function addV(group, frame, split = false) {
   const { size, cx, yTop } = frame;
   const w = size.x;
   const h = size.y;
-  const color = api.realism?.collarColor || state.colors.shirt;
-  const rib = material(color, 2);
-  const seam = material(darken(color, 0.18), 3);
-  const startX = w * (split ? 0.060 : 0.074);
-  const topY = yTop - h * 0.010;
-  const pointY = yTop - h * (split ? 0.082 : 0.112);
-  const halfGap = split ? w * 0.006 : 0;
-  const ribWidth = w * (split ? 0.014 : 0.017);
+  const collarColor = api.realism?.collarColor || state.colors.shirt;
+  const opening = material(darken(state.colors.shirt, split ? 0.24 : 0.30), 1);
+  const rib = material(darken(collarColor, 0.07), 3);
+  const seam = material(darken(collarColor, 0.24), 4);
+
+  const startX = w * (split ? 0.066 : 0.082);
+  const topY = yTop - h * 0.004;
+  const pointY = yTop - h * (split ? 0.073 : 0.118);
+  const halfGap = split ? w * 0.008 : 0;
+  const ribWidth = w * (split ? 0.015 : 0.020);
+  const openingTop = startX * (split ? 0.72 : 0.78);
+
+  addMesh(group, surfacePolygon([
+    [cx - openingTop, topY],
+    [cx + openingTop, topY],
+    [cx + halfGap, pointY],
+    [cx - halfGap, pointY],
+  ], frame, opening, split ? "football-collar-split-v-opening" : "football-collar-v-opening", 25, 0.004));
+
   const leftEnd = [cx - halfGap, pointY];
   const rightEnd = [cx + halfGap, pointY];
-  addMesh(group, surfaceRibbon([cx - startX, topY], leftEnd, ribWidth, frame, rib, "football-collar-v-rib-left", 28, 0.007));
-  addMesh(group, surfaceRibbon(rightEnd, [cx + startX, topY], ribWidth, frame, rib, "football-collar-v-rib-right", 28, 0.007));
-  addMesh(group, surfaceRibbon([cx - startX * 0.96, topY - h * 0.001], leftEnd, w * 0.0024, frame, seam, "football-collar-v-seam-left", 30, 0.010));
-  addMesh(group, surfaceRibbon(rightEnd, [cx + startX * 0.96, topY - h * 0.001], w * 0.0024, frame, seam, "football-collar-v-seam-right", 30, 0.010));
+  addMesh(group, surfaceRibbon([cx - startX, topY], leftEnd, ribWidth, frame, rib, "football-collar-v-rib-left", 29, 0.009));
+  addMesh(group, surfaceRibbon(rightEnd, [cx + startX, topY], ribWidth, frame, rib, "football-collar-v-rib-right", 29, 0.009));
+  addMesh(group, surfaceRibbon([cx - startX * 0.98, topY], leftEnd, w * 0.0032, frame, seam, "football-collar-v-seam-left", 31, 0.012));
+  addMesh(group, surfaceRibbon(rightEnd, [cx + startX * 0.98, topY], w * 0.0032, frame, seam, "football-collar-v-seam-right", 31, 0.012));
+
   if (split) {
-    addMesh(group, surfaceRibbon([cx, pointY - h * 0.010], [cx, pointY + h * 0.010], w * 0.0026, frame, seam, "football-collar-split-center", 31, 0.011));
+    addMesh(group, surfaceRibbon(
+      [cx - w * 0.020, pointY - h * 0.004],
+      [cx + w * 0.020, pointY - h * 0.004],
+      w * 0.010,
+      frame,
+      rib,
+      "football-collar-split-bridge",
+      30,
+      0.010
+    ));
   }
+  group.userData.visualProfile = split ? "split-v-visible" : "deep-v-visible";
 }
 
 function addPolo(group, frame, { buttons = false, retro = false } = {}) {
@@ -200,37 +195,42 @@ function addPolo(group, frame, { buttons = false, retro = false } = {}) {
   const w = size.x;
   const h = size.y;
   const collarColor = api.realism?.collarColor || state.colors.shirt;
-  const wing = material(collarColor, 3);
-  const seam = material(darken(collarColor, 0.18), 4);
-  const outer = retro ? 0.130 : 0.105;
-  const inner = retro ? 0.032 : 0.026;
-  const drop = retro ? 0.130 : 0.102;
-  const lowerOuter = retro ? 0.145 : 0.120;
-  const topY = yTop - h * 0.010;
+  const wing = material(darken(collarColor, 0.035), 3);
+  const seam = material(darken(collarColor, 0.20), 4);
+  const placket = material(darken(state.colors.shirt, 0.055), 2);
+
+  const outer = retro ? 0.124 : 0.098;
+  const inner = retro ? 0.030 : 0.023;
+  const drop = retro ? 0.118 : 0.090;
+  const lowerOuter = retro ? 0.137 : 0.108;
+  const topY = yTop - h * 0.006;
   const lowerY = yTop - h * drop;
 
   const leftWing = [
-    [cx - w * outer, topY - h * 0.010],
-    [cx - w * inner, topY - h * 0.008],
-    [cx - w * (retro ? 0.044 : 0.036), lowerY],
-    [cx - w * lowerOuter, yTop - h * (retro ? 0.082 : 0.070)],
+    [cx - w * outer, topY - h * 0.004],
+    [cx - w * (outer * 0.55), topY - h * 0.001],
+    [cx - w * inner, topY - h * 0.006],
+    [cx - w * (retro ? 0.043 : 0.034), lowerY],
+    [cx - w * (lowerOuter * 0.72), yTop - h * (retro ? 0.087 : 0.067)],
+    [cx - w * lowerOuter, yTop - h * (retro ? 0.070 : 0.055)],
   ];
   const rightWing = leftWing.map(([x, y]) => [2 * cx - x, y]).reverse();
-  addMesh(group, surfacePolygon(leftWing, frame, wing, "football-collar-polo-wing-left", 29, 0.008));
-  addMesh(group, surfacePolygon(rightWing, frame, wing, "football-collar-polo-wing-right", 29, 0.008));
-  addMesh(group, surfaceRibbon(leftWing[1], leftWing[2], w * 0.0028, frame, seam, "football-collar-polo-seam-left", 31, 0.011));
-  addMesh(group, surfaceRibbon(rightWing[2], rightWing[1], w * 0.0028, frame, seam, "football-collar-polo-seam-right", 31, 0.011));
+  addMesh(group, surfacePolygon(leftWing, frame, wing, "football-collar-polo-wing-left", 29, 0.009));
+  addMesh(group, surfacePolygon(rightWing, frame, wing, "football-collar-polo-wing-right", 29, 0.009));
+  addMesh(group, surfaceRibbon(leftWing[2], leftWing[3], w * 0.0030, frame, seam, "football-collar-polo-seam-left", 31, 0.012));
+  addMesh(group, surfaceRibbon(rightWing[2], rightWing[3], w * 0.0030, frame, seam, "football-collar-polo-seam-right", 31, 0.012));
 
-  const placketTop = yTop - h * 0.045;
-  const placketBottom = yTop - h * (buttons ? 0.145 : 0.125);
-  addMesh(group, surfaceRibbon([cx, placketTop], [cx, placketBottom], w * 0.013, frame, material(darken(state.colors.shirt, 0.04), 2), "football-collar-polo-placket", 26, 0.006));
-  addMesh(group, surfaceRibbon([cx, placketTop], [cx, placketBottom], w * 0.0022, frame, seam, "football-collar-polo-placket-seam", 31, 0.011));
+  const placketTop = yTop - h * 0.040;
+  const placketBottom = yTop - h * (buttons ? 0.132 : 0.112);
+  addMesh(group, surfaceRibbon([cx, placketTop], [cx, placketBottom], w * 0.012, frame, placket, "football-collar-polo-placket", 26, 0.006));
+  addMesh(group, surfaceRibbon([cx, placketTop], [cx, placketBottom], w * 0.0022, frame, seam, "football-collar-polo-placket-seam", 31, 0.012));
 
   if (buttons) {
-    const radius = w * 0.0062;
-    addButton(cx, yTop - h * 0.082, frame, radius, group);
-    addButton(cx, yTop - h * 0.116, frame, radius, group);
+    const radius = w * 0.0058;
+    addButton(cx, yTop - h * 0.075, frame, radius, group);
+    addButton(cx, yTop - h * 0.104, frame, radius, group);
   }
+  group.userData.visualProfile = retro ? "retro-polo-fold" : (buttons ? "polo-button-fold" : "polo-fold");
 }
 
 function rebuild(reason = "manual") {
@@ -244,7 +244,16 @@ function rebuild(reason = "manual") {
 
   const type = api.realism.collar || "original";
   if (type === "original") {
-    window.__footballCollarTailorStatus = { version: VERSION, type, meshes: 0, finite: true, surfaceProjected: true, reason };
+    window.__footballCollarTailorStatus = {
+      version: VERSION,
+      type,
+      meshes: 0,
+      finite: true,
+      surfaceProjected: true,
+      usesDonorCollar: true,
+      visualProfile: "donor-original",
+      reason,
+    };
     return;
   }
 
@@ -273,21 +282,24 @@ function rebuild(reason = "manual") {
   const collarSize = children.length ? collarBox.getSize(new THREE.Vector3()) : new THREE.Vector3();
   const heightFraction = shirtSize.y > 0 ? collarSize.y / shirtSize.y : 0;
   const widthFraction = shirtSize.x > 0 ? collarSize.x / shirtSize.x : 0;
-  const depthFraction = shirtSize.z > 0 ? collarSize.z / shirtSize.z : 0;
-  const surfaceProjected = children.length > 0 && children.every((child) => child.userData?.surfaceProjected === true);
+  const surfaceProjected = children.length === 0
+    ? group.userData.usesDonorCollar === true
+    : children.every((child) => child.userData?.surfaceProjected === true);
   group.userData.surfaceProjected = surfaceProjected;
   group.userData.heightFraction = heightFraction;
   group.userData.widthFraction = widthFraction;
   group.userData.maxProjectionFallback = projectionFallbackMax;
+
   window.__footballCollarTailorStatus = {
     version: VERSION,
     type,
     meshes: children.length,
     finite,
     surfaceProjected,
+    usesDonorCollar: group.userData.usesDonorCollar === true,
+    visualProfile: group.userData.visualProfile || null,
     heightFraction: Number(heightFraction.toFixed(4)),
     widthFraction: Number(widthFraction.toFixed(4)),
-    depthFraction: Number(depthFraction.toFixed(4)),
     maxProjectionFallback: projectionFallbackMax,
     reason,
   };
