@@ -85,6 +85,14 @@ function checkpoint(name) { console.log(`VISUAL_CHECKPOINT=${name}`); }
     await page.evaluate(() => window.__sportswear3d.setView('front'));
     await page.waitForTimeout(500);
     const collarResults = {};
+    const expectedProfiles = {
+      crew: 'donor-crew',
+      v: 'deep-v-visible',
+      'split-v': 'split-v-visible',
+      polo: 'polo-fold',
+      'polo-button': 'polo-button-fold',
+      'retro-90': 'retro-polo-fold',
+    };
     for (const collar of ['crew', 'v', 'polo', 'polo-button', 'split-v', 'retro-90']) {
       await page.locator('#football-collar').selectOption(collar);
       await page.waitForFunction((expected) => window.__footballCollarTailorStatus?.type === expected, collar, { timeout: 5000 });
@@ -96,7 +104,9 @@ function checkpoint(name) { console.log(`VISUAL_CHECKPOINT=${name}`); }
         let finite = true, maxAbs = 0;
         const mins = [Infinity, Infinity, Infinity];
         const maxs = [-Infinity, -Infinity, -Infinity];
+        const names = [];
         group?.traverse((o) => {
+          if (o.name) names.push(o.name);
           const a = o.geometry?.attributes?.position;
           if (!a) return;
           for (let i = 0; i < a.count; i++) {
@@ -116,24 +126,39 @@ function checkpoint(name) { console.log(`VISUAL_CHECKPOINT=${name}`); }
           finite,
           maxAbs,
           size,
+          names,
           tailorVersion: group?.userData?.tailorVersion || null,
           surfaceProjected: group?.userData?.surfaceProjected === true,
+          usesDonorCollar: group?.userData?.usesDonorCollar === true,
+          visualProfile: group?.userData?.visualProfile || null,
           tailorStatus: tailor,
           expected,
         };
       }, collar);
       const result = collarResults[collar];
-      if (result.meshes < 1 || !result.finite || result.maxAbs > 20) fail(`Collar ${collar} invalid: ${JSON.stringify(result)}`);
-      if (result.tailorVersion !== 'football-collar-tailor-v2-20260823') fail(`Collar ${collar} not rendered by surface tailor: ${JSON.stringify(result)}`);
-      if (result.tailorStatus.version !== 'football-collar-tailor-v2-20260823' || result.tailorStatus.type !== collar || result.tailorStatus.finite !== true) fail(`Collar ${collar} tailor status invalid: ${JSON.stringify(result.tailorStatus)}`);
-      if (!result.surfaceProjected || result.tailorStatus.surfaceProjected !== true) fail(`Collar ${collar} contains flat/non-projected geometry: ${JSON.stringify(result)}`);
-      if (!(result.tailorStatus.heightFraction > 0.015 && result.tailorStatus.heightFraction < 0.18)) fail(`Collar ${collar} vertical footprint unrealistic: ${JSON.stringify(result.tailorStatus)}`);
-      if (!(result.tailorStatus.widthFraction > 0.08 && result.tailorStatus.widthFraction < 0.34)) fail(`Collar ${collar} horizontal footprint unrealistic: ${JSON.stringify(result.tailorStatus)}`);
-      if (result.tailorStatus.maxProjectionFallback > 6) fail(`Collar ${collar} projection fallback escaped bounded window: ${JSON.stringify(result.tailorStatus)}`);
-      if (Math.max(...result.size) <= 0.03) fail(`Collar ${collar} has negligible geometry: ${JSON.stringify(result.size)}`);
+      if (!result.finite || result.maxAbs > 20) fail(`Collar ${collar} invalid: ${JSON.stringify(result)}`);
+      if (result.tailorVersion !== 'football-collar-tailor-v3-20260824') fail(`Collar ${collar} not rendered by current tailor: ${JSON.stringify(result)}`);
+      if (result.tailorStatus.version !== 'football-collar-tailor-v3-20260824' || result.tailorStatus.type !== collar || result.tailorStatus.finite !== true) fail(`Collar ${collar} tailor status invalid: ${JSON.stringify(result.tailorStatus)}`);
+      if (result.visualProfile !== expectedProfiles[collar] || result.tailorStatus.visualProfile !== expectedProfiles[collar]) fail(`Collar ${collar} visual identity missing: ${JSON.stringify(result)}`);
+
+      if (collar === 'crew') {
+        if (!result.usesDonorCollar || result.tailorStatus.usesDonorCollar !== true || result.meshes !== 0) fail(`Crew must reuse clean donor neckline without synthetic overlay: ${JSON.stringify(result)}`);
+      } else {
+        if (result.meshes < 2) fail(`Collar ${collar} has insufficient generated geometry: ${JSON.stringify(result)}`);
+        if (!result.surfaceProjected || result.tailorStatus.surfaceProjected !== true) fail(`Collar ${collar} contains flat/non-projected geometry: ${JSON.stringify(result)}`);
+        if (!(result.tailorStatus.heightFraction > 0.025 && result.tailorStatus.heightFraction < 0.18)) fail(`Collar ${collar} vertical footprint unrealistic: ${JSON.stringify(result.tailorStatus)}`);
+        if (!(result.tailorStatus.widthFraction > 0.09 && result.tailorStatus.widthFraction < 0.34)) fail(`Collar ${collar} horizontal footprint unrealistic: ${JSON.stringify(result.tailorStatus)}`);
+        if (result.tailorStatus.maxProjectionFallback > 6) fail(`Collar ${collar} projection fallback escaped bounded window: ${JSON.stringify(result.tailorStatus)}`);
+        if (Math.max(...result.size) <= 0.03) fail(`Collar ${collar} has negligible geometry: ${JSON.stringify(result.size)}`);
+      }
+
+      if (collar === 'v' && !result.names.includes('football-collar-v-opening')) fail(`V collar opening is not explicit: ${JSON.stringify(result.names)}`);
+      if (collar === 'split-v' && (!result.names.includes('football-collar-split-v-opening') || !result.names.includes('football-collar-split-bridge'))) fail(`Split-V identity incomplete: ${JSON.stringify(result.names)}`);
+      if (['polo', 'polo-button', 'retro-90'].includes(collar) && (!result.names.includes('football-collar-polo-wing-left') || !result.names.includes('football-collar-polo-wing-right') || !result.names.includes('football-collar-polo-placket'))) fail(`Polo fold identity incomplete for ${collar}: ${JSON.stringify(result.names)}`);
+      if (collar === 'polo-button' && result.names.filter((name) => name === 'football-collar-button').length < 2) fail(`Polo-button is missing buttons: ${JSON.stringify(result.names)}`);
       await viewer.screenshot({ path: path.join(OUT, `collar-${collar}.png`) });
     }
-    checkpoint('surface-projected-collars');
+    checkpoint('visually-distinct-surface-collars');
 
     await page.locator('[data-place="crest"]').click();
     const crestCard = page.locator('[data-graphic]').last();
@@ -198,7 +223,7 @@ function checkpoint(name) { console.log(`VISUAL_CHECKPOINT=${name}`); }
     console.log('PHYSICAL_TYPOGRAPHY=PASS');
     console.log('NO_FOOTWEAR=PASS');
     console.log('PAYLOAD_UI_HIDDEN=PASS');
-    console.log('SURFACE_PROJECTED_COLLAR_GEOMETRY_ALL_VARIANTS=PASS');
+    console.log('VISUALLY_DISTINCT_SURFACE_COLLARS=PASS');
     console.log(`CREST_ALPHA_PIXELS=${crestCheck.alphaPixels}`);
     console.log('CONFORMAL_CREST_IN_NUMBER=PASS');
     console.log('PATTERN_UPLOAD=PASS');
