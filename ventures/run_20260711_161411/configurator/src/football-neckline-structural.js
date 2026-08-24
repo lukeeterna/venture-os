@@ -1,6 +1,6 @@
 import * as THREE from "three";
 
-const VERSION = "football-neckline-structural-v2-20260824";
+const VERSION = "football-neckline-structural-v3-20260824";
 const topology = new WeakMap();
 let scene;
 let shirt;
@@ -62,6 +62,24 @@ function inside(point, profile, f) {
   return Math.abs(point.x - f.cx) <= half;
 }
 
+function publish(type, profile, removed, remaining) {
+  const active = Boolean(profile && removed > 0);
+  window.__footballNecklineStructuralStatus = {
+    version: VERSION,
+    type,
+    profile,
+    structuralCut: active,
+    removedTriangles: removed,
+    remainingTriangles: remaining,
+  };
+  const tailor = window.__footballCollarTailorStatus;
+  if (tailor && tailor.type === type) {
+    tailor.structuralCut = active;
+    tailor.removedTriangles = removed;
+    tailor.structuralProfile = profile;
+  }
+}
+
 function cut(type) {
   restore();
   const f = frame();
@@ -108,24 +126,6 @@ function cut(type) {
   if (removed < 2) console.error(`football neckline structural cut failed for ${type}: removed=${removed}`);
 }
 
-function publish(type, profile, removed, remaining) {
-  const active = Boolean(profile && removed > 0);
-  window.__footballNecklineStructuralStatus = {
-    version: VERSION,
-    type,
-    profile,
-    structuralCut: active,
-    removedTriangles: removed,
-    remainingTriangles: remaining,
-  };
-  const tailor = window.__footballCollarTailorStatus;
-  if (tailor && tailor.type === type) {
-    tailor.structuralCut = active;
-    tailor.removedTriangles = removed;
-    tailor.structuralProfile = profile;
-  }
-}
-
 function schedule(reason) {
   restore();
   clearTimeout(timer);
@@ -133,7 +133,7 @@ function schedule(reason) {
     const type = api?.realism?.collar || document.getElementById("football-collar")?.value || "original";
     cut(type);
     if (window.__footballNecklineStructuralStatus) window.__footballNecklineStructuralStatus.reason = reason;
-  }, 155);
+  }, 180);
 }
 
 async function waitReady() {
@@ -158,16 +158,6 @@ if (await waitReady()) {
   collar?.addEventListener("change", () => schedule("collar-change"));
   collarColor?.addEventListener("input", () => schedule("collar-color"));
   shirtColor?.addEventListener("input", () => schedule("shirt-color"));
-
-  const rebuild = api.rebuildFootballCollar;
-  if (typeof rebuild === "function") {
-    api.rebuildFootballCollar = (...args) => {
-      restore();
-      const result = rebuild(...args);
-      schedule("api-rebuild");
-      return result;
-    };
-  }
 
   window.__footballNecklineStructuralReady = true;
   schedule("bootstrap");
