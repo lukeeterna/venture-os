@@ -59,6 +59,10 @@ if (await waitReady()) {
     reason: "bootstrap",
     removed_legacy_groups: 0,
   };
+  // The select is customer-visible authority. Synchronize it once on boot even
+  // when its current value already equals the first option; in that case the
+  // browser will not emit a change event and runtime would otherwise lag behind.
+  syncFromUi("bootstrap-sync", 0);
 } else {
   window.__footballCollarSyncError = "football collar sync bootstrap timeout";
 }
