@@ -1,6 +1,6 @@
 import * as THREE from "three";
 
-const VERSION = "football-neckline-structural-v3-20260824";
+const VERSION = "football-neckline-structural-v4-20260824";
 const topology = new WeakMap();
 let scene;
 let shirt;
@@ -127,13 +127,13 @@ function cut(type) {
 }
 
 function schedule(reason) {
-  restore();
   clearTimeout(timer);
   timer = setTimeout(() => {
-    const type = api?.realism?.collar || document.getElementById("football-collar")?.value || "original";
+    const selectType = document.getElementById("football-collar")?.value;
+    const type = selectType || api?.realism?.collar || "original";
     cut(type);
     if (window.__footballNecklineStructuralStatus) window.__footballNecklineStructuralStatus.reason = reason;
-  }, 180);
+  }, 230);
 }
 
 async function waitReady() {
