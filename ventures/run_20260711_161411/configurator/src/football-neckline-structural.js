@@ -1,10 +1,9 @@
 import * as THREE from "three";
 
-const VERSION = "football-neckline-structural-v5-20260825";
+const VERSION = "football-neckline-structural-v6-20260825";
 let scene;
 let shirt;
 let api;
-let meshes = [];
 let materials = [];
 let timer = null;
 
@@ -62,11 +61,10 @@ function shaderState(material) {
 function installShaderClip(material) {
   if (!material || material.userData?.footballNecklineInstalled) return;
   const previousCompile = material.onBeforeCompile;
-  const previousCacheKey = material.customProgramCacheKey?.bind(material);
   const state = shaderState(material);
 
-  material.onBeforeCompile = (shader, renderer) => {
-    previousCompile?.(shader, renderer);
+  material.onBeforeCompile = function onBeforeFootballNecklineCompile(shader, renderer) {
+    previousCompile?.call(this, shader, renderer);
     shader.uniforms.uFootballNeckMode = { value: state.mode };
     shader.uniforms.uFootballNeckCx = { value: state.cx };
     shader.uniforms.uFootballNeckTopY = { value: state.topY };
@@ -81,8 +79,8 @@ function installShaderClip(material) {
         "#include <common>\nvarying vec3 vFootballNeckWorldPosition;"
       )
       .replace(
-        "#include <worldpos_vertex>",
-        "#include <worldpos_vertex>\nvFootballNeckWorldPosition = worldPosition.xyz;"
+        "#include <begin_vertex>",
+        "#include <begin_vertex>\nvFootballNeckWorldPosition = (modelMatrix * vec4(transformed, 1.0)).xyz;"
       );
 
     shader.fragmentShader = shader.fragmentShader
@@ -98,7 +96,6 @@ function installShaderClip(material) {
     state.shader = shader;
   };
 
-  material.customProgramCacheKey = () => `${previousCacheKey?.() || ""}|${VERSION}`;
   material.userData.footballNecklineInstalled = true;
   material.needsUpdate = true;
 }
@@ -176,7 +173,9 @@ function schedule(reason) {
 
 async function waitReady() {
   for (let i = 0; i < 600; i++) {
-    if (window.__footballCollarTailorReady && window.__footballRealismScene?.isScene && window.__sportswear3d?.realism) return true;
+    const selectValue = document.getElementById("football-collar")?.value || "original";
+    const synced = window.__footballCollarSyncReady === true && window.__footballCollarTailorStatus?.type === selectValue;
+    if (synced && window.__footballRealismScene?.isScene && window.__sportswear3d?.realism) return true;
     await new Promise((resolve) => setTimeout(resolve, 50));
   }
   return false;
@@ -191,7 +190,6 @@ if (await waitReady()) {
   const uniqueMaterials = new Set();
   shirt.traverse((node) => {
     if (!node.isMesh) return;
-    meshes.push(node);
     const list = Array.isArray(node.material) ? node.material : [node.material];
     list.filter(Boolean).forEach((material) => uniqueMaterials.add(material));
   });
