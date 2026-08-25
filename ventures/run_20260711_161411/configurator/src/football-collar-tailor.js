@@ -195,40 +195,51 @@ function addPolo(group, frame, { buttons = false, retro = false } = {}) {
   const w = size.x;
   const h = size.y;
   const collarColor = api.realism?.collarColor || state.colors.shirt;
-  const wing = material(darken(collarColor, 0.035), 3);
-  const seam = material(darken(collarColor, 0.20), 4);
-  const placket = material(darken(state.colors.shirt, 0.055), 2);
+  const wing = material(darken(collarColor, retro ? 0.15 : 0.12), 3);
+  const seam = material(darken(collarColor, 0.30), 4);
+  const placket = material(darken(state.colors.shirt, retro ? 0.18 : 0.15), 2);
+  const opening = material(darken(state.colors.shirt, retro ? 0.30 : 0.25), 1);
 
-  const outer = retro ? 0.124 : 0.098;
-  const inner = retro ? 0.030 : 0.023;
-  const drop = retro ? 0.118 : 0.090;
-  const lowerOuter = retro ? 0.137 : 0.108;
-  const topY = yTop - h * 0.006;
+  const outer = retro ? 0.138 : 0.114;
+  const inner = retro ? 0.034 : 0.028;
+  const drop = retro ? 0.136 : 0.108;
+  const lowerOuter = retro ? 0.150 : 0.126;
+  const topY = yTop - h * 0.004;
   const lowerY = yTop - h * drop;
+  const openingBottomY = yTop - h * (retro ? 0.130 : (buttons ? 0.124 : 0.104));
+  const openingTopHalf = w * (retro ? 0.082 : 0.066);
+  const openingBottomHalf = w * (retro ? 0.020 : 0.014);
+
+  addMesh(group, surfacePolygon([
+    [cx - openingTopHalf, topY],
+    [cx + openingTopHalf, topY],
+    [cx + openingBottomHalf, openingBottomY],
+    [cx - openingBottomHalf, openingBottomY],
+  ], frame, opening, "football-collar-polo-opening", 25, 0.005));
 
   const leftWing = [
-    [cx - w * outer, topY - h * 0.004],
-    [cx - w * (outer * 0.55), topY - h * 0.001],
-    [cx - w * inner, topY - h * 0.006],
-    [cx - w * (retro ? 0.043 : 0.034), lowerY],
-    [cx - w * (lowerOuter * 0.72), yTop - h * (retro ? 0.087 : 0.067)],
-    [cx - w * lowerOuter, yTop - h * (retro ? 0.070 : 0.055)],
+    [cx - w * outer, topY - h * 0.003],
+    [cx - w * (outer * 0.54), topY],
+    [cx - w * inner, topY - h * 0.004],
+    [cx - w * (retro ? 0.050 : 0.041), lowerY],
+    [cx - w * (lowerOuter * 0.70), yTop - h * (retro ? 0.100 : 0.081)],
+    [cx - w * lowerOuter, yTop - h * (retro ? 0.077 : 0.063)],
   ];
   const rightWing = leftWing.map(([x, y]) => [2 * cx - x, y]).reverse();
-  addMesh(group, surfacePolygon(leftWing, frame, wing, "football-collar-polo-wing-left", 29, 0.009));
-  addMesh(group, surfacePolygon(rightWing, frame, wing, "football-collar-polo-wing-right", 29, 0.009));
-  addMesh(group, surfaceRibbon(leftWing[2], leftWing[3], w * 0.0030, frame, seam, "football-collar-polo-seam-left", 31, 0.012));
-  addMesh(group, surfaceRibbon(rightWing[2], rightWing[3], w * 0.0030, frame, seam, "football-collar-polo-seam-right", 31, 0.012));
+  addMesh(group, surfacePolygon(leftWing, frame, wing, "football-collar-polo-wing-left", 29, 0.010));
+  addMesh(group, surfacePolygon(rightWing, frame, wing, "football-collar-polo-wing-right", 29, 0.010));
+  addMesh(group, surfaceRibbon(leftWing[2], leftWing[3], w * 0.0035, frame, seam, "football-collar-polo-seam-left", 31, 0.013));
+  addMesh(group, surfaceRibbon(rightWing[2], rightWing[3], w * 0.0035, frame, seam, "football-collar-polo-seam-right", 31, 0.013));
 
-  const placketTop = yTop - h * 0.040;
-  const placketBottom = yTop - h * (buttons ? 0.132 : 0.112);
-  addMesh(group, surfaceRibbon([cx, placketTop], [cx, placketBottom], w * 0.012, frame, placket, "football-collar-polo-placket", 26, 0.006));
-  addMesh(group, surfaceRibbon([cx, placketTop], [cx, placketBottom], w * 0.0022, frame, seam, "football-collar-polo-placket-seam", 31, 0.012));
+  const placketTop = yTop - h * 0.032;
+  const placketBottom = yTop - h * (retro ? 0.132 : (buttons ? 0.138 : 0.118));
+  addMesh(group, surfaceRibbon([cx, placketTop], [cx, placketBottom], w * 0.016, frame, placket, "football-collar-polo-placket", 28, 0.008));
+  addMesh(group, surfaceRibbon([cx, placketTop], [cx, placketBottom], w * 0.0030, frame, seam, "football-collar-polo-placket-seam", 31, 0.013));
 
   if (buttons) {
-    const radius = w * 0.0058;
-    addButton(cx, yTop - h * 0.075, frame, radius, group);
-    addButton(cx, yTop - h * 0.104, frame, radius, group);
+    const radius = w * 0.0074;
+    addButton(cx, yTop - h * 0.072, frame, radius, group);
+    addButton(cx, yTop - h * 0.106, frame, radius, group);
   }
   group.userData.visualProfile = retro ? "retro-polo-fold" : (buttons ? "polo-button-fold" : "polo-fold");
 }
