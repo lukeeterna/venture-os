@@ -1,6 +1,6 @@
 import * as THREE from "three";
 
-const VERSION = "football-neckline-structural-v6-20260825";
+const VERSION = "football-neckline-structural-v7-20260825";
 let scene;
 let shirt;
 let api;
@@ -39,6 +39,24 @@ function profileFor(type, f) {
       bottomY: f.yTop - h * 0.076,
       topHalf: w * 0.054,
       bottomHalf: w * 0.004,
+    };
+  }
+  if (type === "polo" || type === "polo-button") {
+    return {
+      kind: type,
+      topY: f.yTop + h * 0.008,
+      bottomY: f.yTop - h * (type === "polo-button" ? 0.126 : 0.104),
+      topHalf: w * 0.074,
+      bottomHalf: w * 0.012,
+    };
+  }
+  if (type === "retro-90") {
+    return {
+      kind: "retro-polo",
+      topY: f.yTop + h * 0.010,
+      bottomY: f.yTop - h * 0.132,
+      topHalf: w * 0.092,
+      bottomHalf: w * 0.020,
     };
   }
   return null;
