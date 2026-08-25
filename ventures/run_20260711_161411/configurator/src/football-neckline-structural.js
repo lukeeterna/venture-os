@@ -1,11 +1,11 @@
 import * as THREE from "three";
 
-const VERSION = "football-neckline-structural-v4-20260824";
-const topology = new WeakMap();
+const VERSION = "football-neckline-structural-v5-20260825";
 let scene;
 let shirt;
 let api;
 let meshes = [];
+let materials = [];
 let timer = null;
 
 function frame() {
@@ -17,123 +17,161 @@ function frame() {
     size,
     cx: (box.min.x + box.max.x) * 0.5,
     yTop: box.max.y - size.y * 0.035,
+    frontZ: box.min.z + size.z * 0.58,
   };
-}
-
-function capture() {
-  for (const mesh of meshes) {
-    const geometry = mesh.geometry;
-    const position = geometry?.attributes?.position;
-    if (!geometry || !position) continue;
-    if (!geometry.index) geometry.setIndex(Array.from({ length: position.count }, (_, i) => i));
-    topology.set(mesh, Array.from(geometry.index.array));
-  }
-}
-
-function restore() {
-  for (const mesh of meshes) {
-    const base = topology.get(mesh);
-    if (!base) continue;
-    mesh.geometry.setIndex(base);
-    mesh.geometry.index.needsUpdate = true;
-    mesh.geometry.computeBoundingSphere?.();
-  }
 }
 
 function profileFor(type, f) {
   const w = f.size.x;
   const h = f.size.y;
   if (type === "v") {
-    return { kind: "v", topY: f.yTop + h * 0.010, bottomY: f.yTop - h * 0.124, topHalf: w * 0.071, bottomHalf: 0 };
+    return {
+      kind: "v",
+      topY: f.yTop + h * 0.008,
+      bottomY: f.yTop - h * 0.116,
+      topHalf: w * 0.070,
+      bottomHalf: 0,
+    };
   }
   if (type === "split-v") {
-    return { kind: "split-v", topY: f.yTop + h * 0.010, bottomY: f.yTop - h * 0.080, topHalf: w * 0.055, bottomHalf: w * 0.004 };
+    return {
+      kind: "split-v",
+      topY: f.yTop + h * 0.008,
+      bottomY: f.yTop - h * 0.076,
+      topHalf: w * 0.054,
+      bottomHalf: w * 0.004,
+    };
   }
   return null;
 }
 
-function inside(point, profile, f) {
-  if (!profile) return false;
-  const frontZ = f.box.min.z + f.size.z * 0.58;
-  if (point.z < frontZ || point.y < profile.bottomY || point.y > profile.topY) return false;
-  const span = Math.max(1e-8, profile.topY - profile.bottomY);
-  const t = THREE.MathUtils.clamp((point.y - profile.bottomY) / span, 0, 1);
-  const half = THREE.MathUtils.lerp(profile.bottomHalf, profile.topHalf, t);
-  return Math.abs(point.x - f.cx) <= half;
+function shaderState(material) {
+  material.userData.footballNeckline ||= {
+    mode: 0,
+    cx: 0,
+    topY: 0,
+    bottomY: 0,
+    topHalf: 0,
+    bottomHalf: 0,
+    frontZ: 0,
+    shader: null,
+  };
+  return material.userData.footballNeckline;
 }
 
-function publish(type, profile, removed, remaining) {
-  const active = Boolean(profile && removed > 0);
+function installShaderClip(material) {
+  if (!material || material.userData?.footballNecklineInstalled) return;
+  const previousCompile = material.onBeforeCompile;
+  const previousCacheKey = material.customProgramCacheKey?.bind(material);
+  const state = shaderState(material);
+
+  material.onBeforeCompile = (shader, renderer) => {
+    previousCompile?.(shader, renderer);
+    shader.uniforms.uFootballNeckMode = { value: state.mode };
+    shader.uniforms.uFootballNeckCx = { value: state.cx };
+    shader.uniforms.uFootballNeckTopY = { value: state.topY };
+    shader.uniforms.uFootballNeckBottomY = { value: state.bottomY };
+    shader.uniforms.uFootballNeckTopHalf = { value: state.topHalf };
+    shader.uniforms.uFootballNeckBottomHalf = { value: state.bottomHalf };
+    shader.uniforms.uFootballNeckFrontZ = { value: state.frontZ };
+
+    shader.vertexShader = shader.vertexShader
+      .replace(
+        "#include <common>",
+        "#include <common>\nvarying vec3 vFootballNeckWorldPosition;"
+      )
+      .replace(
+        "#include <worldpos_vertex>",
+        "#include <worldpos_vertex>\nvFootballNeckWorldPosition = worldPosition.xyz;"
+      );
+
+    shader.fragmentShader = shader.fragmentShader
+      .replace(
+        "#include <common>",
+        `#include <common>\nvarying vec3 vFootballNeckWorldPosition;\nuniform float uFootballNeckMode;\nuniform float uFootballNeckCx;\nuniform float uFootballNeckTopY;\nuniform float uFootballNeckBottomY;\nuniform float uFootballNeckTopHalf;\nuniform float uFootballNeckBottomHalf;\nuniform float uFootballNeckFrontZ;`
+      )
+      .replace(
+        "#include <clipping_planes_fragment>",
+        `#include <clipping_planes_fragment>\nif (uFootballNeckMode > 0.5 && vFootballNeckWorldPosition.z > uFootballNeckFrontZ && vFootballNeckWorldPosition.y >= uFootballNeckBottomY && vFootballNeckWorldPosition.y <= uFootballNeckTopY) {\n  float neckSpan = max(0.000001, uFootballNeckTopY - uFootballNeckBottomY);\n  float neckT = clamp((vFootballNeckWorldPosition.y - uFootballNeckBottomY) / neckSpan, 0.0, 1.0);\n  float neckHalfWidth = mix(uFootballNeckBottomHalf, uFootballNeckTopHalf, neckT);\n  if (abs(vFootballNeckWorldPosition.x - uFootballNeckCx) < neckHalfWidth) discard;\n}`
+      );
+
+    state.shader = shader;
+  };
+
+  material.customProgramCacheKey = () => `${previousCacheKey?.() || ""}|${VERSION}`;
+  material.userData.footballNecklineInstalled = true;
+  material.needsUpdate = true;
+}
+
+function syncUniforms(material, values) {
+  const state = shaderState(material);
+  Object.assign(state, values);
+  const shader = state.shader;
+  if (!shader) return;
+  shader.uniforms.uFootballNeckMode.value = values.mode;
+  shader.uniforms.uFootballNeckCx.value = values.cx;
+  shader.uniforms.uFootballNeckTopY.value = values.topY;
+  shader.uniforms.uFootballNeckBottomY.value = values.bottomY;
+  shader.uniforms.uFootballNeckTopHalf.value = values.topHalf;
+  shader.uniforms.uFootballNeckBottomHalf.value = values.bottomHalf;
+  shader.uniforms.uFootballNeckFrontZ.value = values.frontZ;
+}
+
+function publish(type, profile, reason) {
+  const active = Boolean(profile);
+  const compiledMaterials = materials.filter((material) => shaderState(material).shader).length;
   window.__footballNecklineStructuralStatus = {
     version: VERSION,
     type,
-    profile,
-    structuralCut: active,
-    removedTriangles: removed,
-    remainingTriangles: remaining,
+    profile: profile?.kind || null,
+    shaderClip: active,
+    triangleCut: false,
+    topologyMutated: false,
+    edgeMode: "per-fragment-discard",
+    patchedMaterials: materials.length,
+    compiledMaterials,
+    reason,
   };
   const tailor = window.__footballCollarTailorStatus;
   if (tailor && tailor.type === type) {
-    tailor.structuralCut = active;
-    tailor.removedTriangles = removed;
-    tailor.structuralProfile = profile;
+    tailor.shaderClip = active;
+    tailor.triangleCut = false;
+    tailor.structuralProfile = profile?.kind || null;
   }
 }
 
-function cut(type) {
-  restore();
+function apply(type, reason) {
   const f = frame();
   const profile = profileFor(type, f);
-  if (!profile) {
-    publish(type, null, 0, 0);
-    return;
-  }
-
-  scene.updateMatrixWorld(true);
-  const a = new THREE.Vector3();
-  const b = new THREE.Vector3();
-  const c = new THREE.Vector3();
-  const center = new THREE.Vector3();
-  let removed = 0;
-  let keptCount = 0;
-
-  for (const mesh of meshes) {
-    const base = topology.get(mesh);
-    const position = mesh.geometry?.attributes?.position;
-    if (!base || !position) continue;
-    const kept = [];
-    for (let i = 0; i + 2 < base.length; i += 3) {
-      const ia = base[i];
-      const ib = base[i + 1];
-      const ic = base[i + 2];
-      a.fromBufferAttribute(position, ia).applyMatrix4(mesh.matrixWorld);
-      b.fromBufferAttribute(position, ib).applyMatrix4(mesh.matrixWorld);
-      c.fromBufferAttribute(position, ic).applyMatrix4(mesh.matrixWorld);
-      center.copy(a).add(b).add(c).multiplyScalar(1 / 3);
-      if (inside(center, profile, f)) {
-        removed += 1;
-      } else {
-        kept.push(ia, ib, ic);
-        keptCount += 1;
+  const values = profile
+    ? {
+        mode: 1,
+        cx: f.cx,
+        topY: profile.topY,
+        bottomY: profile.bottomY,
+        topHalf: profile.topHalf,
+        bottomHalf: profile.bottomHalf,
+        frontZ: f.frontZ,
       }
-    }
-    mesh.geometry.setIndex(kept);
-    mesh.geometry.index.needsUpdate = true;
-    mesh.geometry.computeBoundingSphere?.();
-  }
-
-  publish(type, profile.kind, removed, keptCount);
-  if (removed < 2) console.error(`football neckline structural cut failed for ${type}: removed=${removed}`);
+    : {
+        mode: 0,
+        cx: f.cx,
+        topY: f.yTop,
+        bottomY: f.yTop,
+        topHalf: 0,
+        bottomHalf: 0,
+        frontZ: f.frontZ,
+      };
+  materials.forEach((material) => syncUniforms(material, values));
+  publish(type, profile, reason);
 }
 
 function schedule(reason) {
   clearTimeout(timer);
   timer = setTimeout(() => {
-    const selectType = document.getElementById("football-collar")?.value;
-    const type = selectType || api?.realism?.collar || "original";
-    cut(type);
-    if (window.__footballNecklineStructuralStatus) window.__footballNecklineStructuralStatus.reason = reason;
-  }, 230);
+    const type = document.getElementById("football-collar")?.value || api?.realism?.collar || "original";
+    apply(type, reason);
+  }, 175);
 }
 
 async function waitReady() {
@@ -149,8 +187,16 @@ if (await waitReady()) {
   api = window.__sportswear3d;
   shirt = scene.getObjectByName("donor-shirt");
   if (!shirt) throw new Error("football neckline structural: donor shirt not found");
-  shirt.traverse((node) => { if (node.isMesh) meshes.push(node); });
-  capture();
+
+  const uniqueMaterials = new Set();
+  shirt.traverse((node) => {
+    if (!node.isMesh) return;
+    meshes.push(node);
+    const list = Array.isArray(node.material) ? node.material : [node.material];
+    list.filter(Boolean).forEach((material) => uniqueMaterials.add(material));
+  });
+  materials = [...uniqueMaterials];
+  materials.forEach(installShaderClip);
 
   const collar = document.getElementById("football-collar");
   const collarColor = document.getElementById("football-collar-color");
