@@ -43,7 +43,11 @@ function ensureState(material, kind) {
 function installWorldPosition(shader, fragmentDeclarations = "") {
   shader.vertexShader = shader.vertexShader
     .replace("#include <common>", "#include <common>\nvarying vec3 vSportswearFinishWorldPosition;")
-    .replace("#include <begin_vertex>", "#include <begin_vertex>\nvSportswearFinishWorldPosition = (modelMatrix * vec4(transformed, 1.0)).xyz;");
+    .replace("#include <begin_vertex>", "#include <begin_vertex>\nvarying vec3 vSportswearFinishWorldPosition;\nvSportswearFinishWorldPosition = (modelMatrix * vec4(transformed, 1.0)).xyz;");
+  shader.vertexShader = shader.vertexShader.replace(
+    "varying vec3 vSportswearFinishWorldPosition;\nvarying vec3 vSportswearFinishWorldPosition;",
+    "varying vec3 vSportswearFinishWorldPosition;"
+  );
   shader.fragmentShader = shader.fragmentShader.replace(
     "#include <common>",
     `#include <common>\nvarying vec3 vSportswearFinishWorldPosition;\n${fragmentDeclarations}`
@@ -173,7 +177,7 @@ function syncShirtMaterial(material) {
   finish.values = { cx: f.cx, minY: f.box.min.y, maxY: f.box.max.y, width: f.size.x };
   const u = finish.shader?.uniforms;
   if (!u) return;
-  const collar = document.getElementById("football-collar")?.value || "crew";
+  const collar = document.getElementById("football-collar")?.value || "original";
   u.uFinishShirtCx.value = f.cx;
   u.uFinishShirtMinY.value = f.box.min.y;
   u.uFinishShirtMaxY.value = f.box.max.y;
@@ -254,13 +258,9 @@ function simplifyCollarChoices() {
   const source = document.getElementById("football-collar");
   const easy = document.getElementById("easy-football-collar");
   if (!source || !easy) return;
-  const allowed = new Set(["crew", "v"]);
+  const allowed = new Set(["original", "crew", "v"]);
   [...easy.options].forEach((option) => { if (!allowed.has(option.value)) option.remove(); });
-  if (!allowed.has(easy.value)) {
-    easy.value = "crew";
-    source.value = "crew";
-    source.dispatchEvent(new Event("change", { bubbles: true }));
-  }
+  if (!allowed.has(easy.value)) easy.value = allowed.has(source.value) ? source.value : "original";
 }
 
 function publish() {
@@ -282,7 +282,7 @@ function publish() {
 
 async function waitReady() {
   for (let i = 0; i < 600; i++) {
-    if (window.__sportswear3d?.ready && window.__footballRealismScene?.isScene && document.querySelector(".panel")) return true;
+    if (window.__sportswear3d?.ready && window.__footballRealismScene?.isScene && window.__footballEasyUiReady === true && document.querySelector(".panel")) return true;
     await new Promise((resolve) => setTimeout(resolve, 50));
   }
   return false;
