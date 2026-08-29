@@ -1,6 +1,6 @@
 import * as THREE from "three";
 
-const VERSION = "football-garment-finishing-v1-20260829";
+const VERSION = "football-garment-finishing-v2-20260829";
 let scene;
 let shirt;
 let shorts;
@@ -20,11 +20,7 @@ function boxFrame(root) {
   scene.updateMatrixWorld(true);
   const box = new THREE.Box3().setFromObject(root);
   const size = box.getSize(new THREE.Vector3());
-  return {
-    box,
-    size,
-    cx: (box.min.x + box.max.x) * 0.5,
-  };
+  return { box, size, cx: (box.min.x + box.max.x) * 0.5 };
 }
 
 function uniqueMaterials(root) {
@@ -38,27 +34,17 @@ function uniqueMaterials(root) {
 }
 
 function ensureState(material, kind) {
-  material.userData.sportswearFinishing ||= {
-    kind,
-    shader: null,
-    values: {},
-  };
+  material.userData.sportswearFinishing ||= { kind, shader: null, values: {} };
   return material.userData.sportswearFinishing;
 }
 
-function installWorldPosition(shader) {
+function installWorldPosition(shader, fragmentDeclarations = "") {
   shader.vertexShader = shader.vertexShader
-    .replace(
-      "#include <common>",
-      "#include <common>\nvarying vec3 vSportswearFinishWorldPosition;"
-    )
-    .replace(
-      "#include <begin_vertex>",
-      "#include <begin_vertex>\nvSportswearFinishWorldPosition = (modelMatrix * vec4(transformed, 1.0)).xyz;"
-    );
+    .replace("#include <common>", "#include <common>\nvarying vec3 vSportswearFinishWorldPosition;")
+    .replace("#include <begin_vertex>", "#include <begin_vertex>\nvSportswearFinishWorldPosition = (modelMatrix * vec4(transformed, 1.0)).xyz;");
   shader.fragmentShader = shader.fragmentShader.replace(
     "#include <common>",
-    "#include <common>\nvarying vec3 vSportswearFinishWorldPosition;"
+    `#include <common>\nvarying vec3 vSportswearFinishWorldPosition;\n${fragmentDeclarations}`
   );
 }
 
@@ -68,7 +54,15 @@ function patchShirtMaterial(material) {
   const finish = ensureState(material, "shirt");
   material.onBeforeCompile = function sportswearShirtFinish(shader, renderer) {
     previous?.call(this, shader, renderer);
-    installWorldPosition(shader);
+    installWorldPosition(shader, `
+uniform float uFinishShirtCx;
+uniform float uFinishShirtMinY;
+uniform float uFinishShirtMaxY;
+uniform float uFinishShirtWidth;
+uniform float uFinishSleeveTrim;
+uniform float uFinishCollarTrim;
+uniform vec3 uFinishSleeveColor;
+uniform vec3 uFinishCollarColor;`);
     shader.uniforms.uFinishShirtCx = { value: 0 };
     shader.uniforms.uFinishShirtMinY = { value: 0 };
     shader.uniforms.uFinishShirtMaxY = { value: 1 };
@@ -79,7 +73,14 @@ function patchShirtMaterial(material) {
     shader.uniforms.uFinishCollarColor = { value: new THREE.Color(state.collarColor) };
     shader.fragmentShader = shader.fragmentShader.replace(
       "#include <map_fragment>",
-      `#include <map_fragment>\nuniform float uFinishShirtCx;\nuniform float uFinishShirtMinY;\nuniform float uFinishShirtMaxY;\nuniform float uFinishShirtWidth;\nuniform float uFinishSleeveTrim;\nuniform float uFinishCollarTrim;\nuniform vec3 uFinishSleeveColor;\nuniform vec3 uFinishCollarColor;\nfloat finishH = max(0.000001, uFinishShirtMaxY-uFinishShirtMinY);\nfloat finishTop = (uFinishShirtMaxY-vSportswearFinishWorldPosition.y)/finishH;\nfloat finishX = abs(vSportswearFinishWorldPosition.x-uFinishShirtCx)/max(0.000001,uFinishShirtWidth*0.5);\nif (uFinishSleeveTrim > 0.5 && finishX > 0.57 && finishTop > 0.18 && finishTop < 0.31) diffuseColor.rgb = uFinishSleeveColor;\nfloat neckX = abs(vSportswearFinishWorldPosition.x-uFinishShirtCx)/max(0.000001,uFinishShirtWidth);\nfloat neckY = finishTop;\nfloat neckEllipse = sqrt(pow(neckX/0.115,2.0)+pow((neckY-0.050)/0.046,2.0));\nif (uFinishCollarTrim > 0.5 && neckEllipse > 0.76 && neckEllipse < 1.18) diffuseColor.rgb = uFinishCollarColor;`
+      `#include <map_fragment>
+float finishH = max(0.000001, uFinishShirtMaxY-uFinishShirtMinY);
+float finishTop = (uFinishShirtMaxY-vSportswearFinishWorldPosition.y)/finishH;
+float finishX = abs(vSportswearFinishWorldPosition.x-uFinishShirtCx)/max(0.000001,uFinishShirtWidth*0.5);
+if (uFinishSleeveTrim > 0.5 && finishX > 0.57 && finishTop > 0.18 && finishTop < 0.31) diffuseColor.rgb = uFinishSleeveColor;
+float neckX = abs(vSportswearFinishWorldPosition.x-uFinishShirtCx)/max(0.000001,uFinishShirtWidth);
+float neckEllipse = sqrt(pow(neckX/0.115,2.0)+pow((finishTop-0.050)/0.046,2.0));
+if (uFinishCollarTrim > 0.5 && neckEllipse > 0.76 && neckEllipse < 1.18) diffuseColor.rgb = uFinishCollarColor;`
     );
     finish.shader = shader;
     syncShirtMaterial(material);
@@ -94,7 +95,11 @@ function patchShortsMaterial(material) {
   const finish = ensureState(material, "shorts");
   material.onBeforeCompile = function sportswearShortsFinish(shader, renderer) {
     previous?.call(this, shader, renderer);
-    installWorldPosition(shader);
+    installWorldPosition(shader, `
+uniform float uFinishShortHemY;
+uniform float uFinishShortTrimTopY;
+uniform float uFinishShortTrim;
+uniform vec3 uFinishShortColor;`);
     shader.uniforms.uFinishShortHemY = { value: -999 };
     shader.uniforms.uFinishShortTrimTopY = { value: -999 };
     shader.uniforms.uFinishShortTrim = { value: 0 };
@@ -102,11 +107,11 @@ function patchShortsMaterial(material) {
     shader.fragmentShader = shader.fragmentShader
       .replace(
         "#include <clipping_planes_fragment>",
-        "#include <clipping_planes_fragment>\nuniform float uFinishShortHemY;\nif (vSportswearFinishWorldPosition.y < uFinishShortHemY) discard;"
+        "#include <clipping_planes_fragment>\nif (vSportswearFinishWorldPosition.y < uFinishShortHemY) discard;"
       )
       .replace(
         "#include <map_fragment>",
-        "#include <map_fragment>\nuniform float uFinishShortTrimTopY;\nuniform float uFinishShortTrim;\nuniform vec3 uFinishShortColor;\nif (uFinishShortTrim > 0.5 && vSportswearFinishWorldPosition.y >= uFinishShortHemY && vSportswearFinishWorldPosition.y <= uFinishShortTrimTopY) diffuseColor.rgb = uFinishShortColor;"
+        "#include <map_fragment>\nif (uFinishShortTrim > 0.5 && vSportswearFinishWorldPosition.y >= uFinishShortHemY && vSportswearFinishWorldPosition.y <= uFinishShortTrimTopY) diffuseColor.rgb = uFinishShortColor;"
       );
     finish.shader = shader;
     syncShortsMaterial(material);
@@ -118,12 +123,7 @@ function patchShortsMaterial(material) {
 function syncShirtMaterial(material) {
   const finish = ensureState(material, "shirt");
   const f = boxFrame(shirt);
-  finish.values = {
-    cx: f.cx,
-    minY: f.box.min.y,
-    maxY: f.box.max.y,
-    width: f.size.x,
-  };
+  finish.values = { cx: f.cx, minY: f.box.min.y, maxY: f.box.max.y, width: f.size.x };
   const u = finish.shader?.uniforms;
   if (!u) return;
   u.uFinishShirtCx.value = f.cx;
@@ -154,7 +154,7 @@ function syncAll() {
   shirtMaterials.forEach(syncShirtMaterial);
   shortsMaterials.forEach(syncShortsMaterial);
   const existingCollarColor = document.getElementById("football-collar-color");
-  if (existingCollarColor && state.collarTrim) {
+  if (existingCollarColor && state.collarTrim && existingCollarColor.value !== state.collarColor) {
     existingCollarColor.value = state.collarColor;
     existingCollarColor.dispatchEvent(new Event("input", { bubbles: true }));
   }
@@ -186,7 +186,7 @@ function injectUi() {
   section.id = "sportswear-finishing-controls";
   section.innerHTML = `
     <header class="section-head"><h2>Bordi e finiture</h2><span>opzionali</span></header>
-    <p class="help">Come nei kit builder teamwear: attiva solo i bordi che vuoi. Il fondo pantaloncino viene comunque rifinito con un hem pulito.</p>
+    <p class="help">Attiva solo i bordi desiderati. Il fondo pantaloncino viene comunque rifinito con un hem continuo e pulito.</p>
     <div class="finish-grid">
       <div class="finish-card"><label><input id="finish-sleeve-on" type="checkbox"> Bordo maniche</label><input id="finish-sleeve-color" type="color" value="${state.sleeveColor}"></div>
       <div class="finish-card"><label><input id="finish-shorts-on" type="checkbox"> Bordo pantaloncini</label><input id="finish-shorts-color" type="color" value="${state.shortsColor}"></div>
@@ -206,9 +206,8 @@ function injectUi() {
 
 function simplifyCollarChoices() {
   const source = document.getElementById("football-collar");
-  if (!source) return;
   const easy = document.getElementById("easy-football-collar");
-  if (!easy) return;
+  if (!source || !easy) return;
   const allowed = new Set(["crew", "v", "polo", "polo-button"]);
   [...easy.options].forEach((option) => { if (!allowed.has(option.value)) option.remove(); });
   if (!allowed.has(easy.value)) {
