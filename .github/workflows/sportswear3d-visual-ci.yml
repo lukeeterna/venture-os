@@ -71,7 +71,7 @@ jobs:
           grep -q 'football-nameset-edge-safe-v2-20260823' "$ROOT/src/football-nameset-edge-safe.js"
           grep -q 'distortionFree' "$ROOT/src/football-nameset-edge-safe.js"
           grep -q 'football-easy-ui-v1-20260823' "$ROOT/src/football-easy-ui.js"
-          grep -q 'football-garment-finishing-v2-20260829' "$ROOT/src/football-garment-finishing.js"
+          grep -q 'football-garment-finishing-v3-20260829' "$ROOT/src/football-garment-finishing.js"
           grep -q 'await import("./football-realism.js")' "$ROOT/src/bootstrap.js"
           grep -q 'await import("./football-collar-tailor.js")' "$ROOT/src/bootstrap.js"
           grep -q 'await import("./football-collar-sync.js")' "$ROOT/src/bootstrap.js"
