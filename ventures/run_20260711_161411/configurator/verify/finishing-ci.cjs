@@ -41,11 +41,11 @@ const fail = (message) => { throw new Error(message); };
     if (!initial.status.viewbarOutsideCanvas) fail(`Viewbar still inside viewer shell: ${JSON.stringify(initial)}`);
     if (!initial.bar || initial.bar.top < initial.shell.bottom - 1) fail(`Viewbar overlaps 3D canvas: ${JSON.stringify(initial)}`);
     if (!initial.showSocks) fail('Socks must be visible by default');
-    if (!initial.status.cleanShortHem || !Number.isFinite(initial.status.shortHemY)) fail(`Clean shorts hem missing: ${JSON.stringify(initial.status)}`);
+    if (!initial.status.cleanShortHem || !Number.isFinite(initial.status.shortHemY) || initial.status.hemMeshes !== 2) fail(`Smooth shorts hem missing: ${JSON.stringify(initial.status)}`);
     if (initial.status.topologyMutated) fail('Finishing must not mutate garment topology');
     if (initial.status.patchedShirtMaterials < 1 || initial.status.patchedShortsMaterials < 1) fail(`Finishing shader not installed: ${JSON.stringify(initial.status)}`);
-    if (JSON.stringify(initial.easy) !== JSON.stringify(['crew', 'v', 'polo', 'polo-button'])) fail(`Simple collar choices are not the four production choices: ${JSON.stringify(initial.easy)}`);
-    for (const legacy of ['split-v', 'retro-90']) if (!initial.advanced.includes(legacy)) fail(`Advanced collar feature lost: ${legacy}`);
+    if (JSON.stringify(initial.easy) !== JSON.stringify(['crew', 'v'])) fail(`Simple collar choices must contain only production-safe crew/V: ${JSON.stringify(initial.easy)}`);
+    for (const preserved of ['polo', 'polo-button', 'split-v', 'retro-90']) if (!initial.advanced.includes(preserved)) fail(`Advanced collar feature lost: ${preserved}`);
 
     for (const id of ['finish-sleeve-on', 'finish-shorts-on', 'finish-collar-on']) await page.locator(`#${id}`).check();
     await page.locator('#finish-sleeve-color').fill('#17355f');
@@ -60,10 +60,10 @@ const fail = (message) => { throw new Error(message); };
     await page.evaluate(() => window.__sportswear3d.setView('front'));
     await page.waitForTimeout(700);
     await page.locator('.viewer-card').screenshot({ path: path.join(OUT, '09-front-finishing-and-clear-viewbar.png') });
-    await page.locator('#easy-football-collar').selectOption('polo-button');
-    await page.waitForFunction(() => window.__footballCollarTailorStatus?.type === 'polo-button', null, { timeout: 5000 });
+    await page.locator('#easy-football-collar').selectOption('v');
+    await page.waitForFunction(() => window.__footballCollarTailorStatus?.type === 'v', null, { timeout: 5000 });
     await page.waitForTimeout(500);
-    await page.locator('#viewer-shell').screenshot({ path: path.join(OUT, '10-polo-button-with-trims.png') });
+    await page.locator('#viewer-shell').screenshot({ path: path.join(OUT, '10-v-neck-with-trims.png') });
 
     const final = await page.evaluate(() => ({
       finishing: window.__sportswearFinishingStatus,
@@ -75,9 +75,9 @@ const fail = (message) => { throw new Error(message); };
     console.log('FINISHING_CI=PASS');
     console.log('VIEWBAR_OUTSIDE_CANVAS=PASS');
     console.log('SOCKS_UNOBSTRUCTED_LAYOUT=PASS');
-    console.log('CLEAN_SHORT_HEM=PASS');
+    console.log('SMOOTH_SHORT_HEMS=PASS');
     console.log('OPTIONAL_TRIMS=PASS');
-    console.log('SIMPLE_COLLARS_4=PASS');
+    console.log('SIMPLE_COLLARS_CREW_V=PASS');
     console.log('ADVANCED_FEATURES_PRESERVED=PASS');
   } finally {
     await browser.close();
