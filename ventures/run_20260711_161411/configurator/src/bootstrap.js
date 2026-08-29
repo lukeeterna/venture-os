@@ -1,0 +1,16 @@
+import "./football-realism-prelude.js";
+import "./sportswear-medusa-bridge.js";
+await import("./app.js");
+const teamOrder = import("./team-order.js");
+await import("./football-realism.js");
+await import("./football-collar-tailor.js");
+await import("./football-collar-sync.js");
+await import("./football-neckline-structural.js");
+await import("./football-crest-conformal.js");
+await import("./football-crest-ui-authority.js");
+await teamOrder;
+await import("./team-size-availability.js");
+await import("./football-nameset-authority.js");
+await import("./football-nameset-edge-safe.js");
+await import("./football-easy-ui.js");
+await import("./football-garment-finishing.js");

@@ -1,0 +1,160 @@
+name: Sportswear3D Visual CI
+
+on:
+  push:
+    branches:
+      - sol/mt3d-football-production-20260816
+  pull_request:
+    branches:
+      - master
+    paths:
+      - ventures/run_20260711_161411/configurator/**
+      - .github/workflows/sportswear3d-visual-ci.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sportswear3d-visual-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  visual:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout candidate
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Static syntax and runtime assets
+        id: static
+        shell: bash
+        run: |
+          set -euo pipefail
+          ROOT="ventures/run_20260711_161411/configurator"
+          node --check "$ROOT/src/app.js"
+          node --check "$ROOT/src/football-realism-prelude.js"
+          node --check "$ROOT/src/sportswear-medusa-bridge.js"
+          node --check "$ROOT/src/bootstrap.js"
+          node --check "$ROOT/src/football-realism.js"
+          node --check "$ROOT/src/football-collar-tailor.js"
+          node --check "$ROOT/src/football-collar-sync.js"
+          node --check "$ROOT/src/football-neckline-structural.js"
+          node --check "$ROOT/src/football-crest-conformal.js"
+          node --check "$ROOT/src/football-crest-ui-authority.js"
+          node --check "$ROOT/src/football-nameset-authority.js"
+          node --check "$ROOT/src/football-nameset-edge-safe.js"
+          node --check "$ROOT/src/football-easy-ui.js"
+          node --check "$ROOT/src/football-garment-finishing.js"
+          node --check "$ROOT/src/team-order.js"
+          node --check "$ROOT/src/team-size-availability.js"
+          node --check "$ROOT/verify/visual-ci.cjs"
+          node --check "$ROOT/verify/visual-ci-core.cjs"
+          node --check "$ROOT/verify/nameset-easy-ui-ci.cjs"
+          node --check "$ROOT/verify/finishing-ci.cjs"
+          test -s "$ROOT/assets/vendor/football-shirt.glb"
+          test -s "$ROOT/assets/vendor/football-shorts.glb"
+          test -s "$ROOT/assets/vendor/football-socks.glb"
+          grep -q 'football-real-garment-v4-conformal' "$ROOT/src/app.js"
+          grep -q 'buildSurfaceOverlayGeometry' "$ROOT/src/app.js"
+          grep -q 'football-realism-v6-physical-20260822' "$ROOT/src/football-realism.js"
+          grep -q 'football-collar-tailor-v3-20260824' "$ROOT/src/football-collar-tailor.js"
+          grep -q 'visualProfile' "$ROOT/src/football-collar-tailor.js"
+          grep -q 'surfaceProjected' "$ROOT/src/football-collar-tailor.js"
+          grep -q 'football-collar-sync-v2-20260823' "$ROOT/src/football-collar-sync.js"
+          grep -q 'football-crest-conformal-v3-20260823' "$ROOT/src/football-crest-conformal.js"
+          grep -q 'football-crest-ui-authority-v1-20260823' "$ROOT/src/football-crest-ui-authority.js"
+          grep -q 'football-nameset-authority-v1-20260823' "$ROOT/src/football-nameset-authority.js"
+          grep -q 'football-nameset-edge-safe-v2-20260823' "$ROOT/src/football-nameset-edge-safe.js"
+          grep -q 'distortionFree' "$ROOT/src/football-nameset-edge-safe.js"
+          grep -q 'football-easy-ui-v1-20260823' "$ROOT/src/football-easy-ui.js"
+          grep -q 'football-garment-finishing-v3-20260829' "$ROOT/src/football-garment-finishing.js"
+          grep -q 'await import("./football-realism.js")' "$ROOT/src/bootstrap.js"
+          grep -q 'await import("./football-collar-tailor.js")' "$ROOT/src/bootstrap.js"
+          grep -q 'await import("./football-collar-sync.js")' "$ROOT/src/bootstrap.js"
+          grep -q 'await import("./football-crest-conformal.js")' "$ROOT/src/bootstrap.js"
+          grep -q 'await import("./football-crest-ui-authority.js")' "$ROOT/src/bootstrap.js"
+          grep -q 'await import("./football-nameset-authority.js")' "$ROOT/src/bootstrap.js"
+          grep -q 'await import("./football-nameset-edge-safe.js")' "$ROOT/src/bootstrap.js"
+          grep -q 'await import("./football-easy-ui.js")' "$ROOT/src/bootstrap.js"
+          grep -q 'await import("./football-garment-finishing.js")' "$ROOT/src/bootstrap.js"
+          if grep -q 'football-realism-post.js\|football-realism-calibration.js' "$ROOT/src/bootstrap.js"; then echo "Legacy realism layers still loaded"; exit 1; fi
+          if grep -q 'football-boots\|roundedBox(.*boot' "$ROOT/src/football-realism.js"; then echo "Legacy footwear implementation found"; exit 1; fi
+          if grep -q 'DecalGeometry' "$ROOT/src/app.js"; then echo "Unexpected DecalGeometry runtime dependency"; exit 1; fi
+          test -s "$ROOT/FOOTBALL_REALISM_REFERENCES.md"
+          test -s "$ROOT/FOOTBALL_NAMESET_REFERENCE_2026.md"
+          echo "STATIC_AND_RUNTIME_ASSETS=PASS"
+      - name: Generate deterministic PNG fixtures
+        shell: bash
+        run: |
+          set -euo pipefail
+          ROOT="ventures/run_20260711_161411/configurator"
+          mkdir -p "$ROOT/verify/fixtures" "$ROOT/verify/visual-output"
+          rm -f "$ROOT/verify/visual-output"/*
+          python3 - <<'PY'
+          import pathlib, struct, zlib
+          root = pathlib.Path('ventures/run_20260711_161411/configurator/verify/fixtures')
+          def png(path, w, h, pixel):
+              rows=[]
+              for y in range(h):
+                  row=bytearray([0])
+                  for x in range(w): row.extend(pixel(x,y))
+                  rows.append(bytes(row))
+              raw=b''.join(rows)
+              def chunk(kind,data):
+                  return struct.pack('>I',len(data))+kind+data+struct.pack('>I',zlib.crc32(kind+data)&0xffffffff)
+              out=b'\x89PNG\r\n\x1a\n'+chunk(b'IHDR',struct.pack('>IIBBBBB',w,h,8,6,0,0,0))+chunk(b'IDAT',zlib.compress(raw,9))+chunk(b'IEND',b'')
+              path.write_bytes(out)
+          def crest_pixel(x,y):
+              cx=48
+              if y < 4 or y > 44: return (255,255,255,0)
+              if y <= 15:
+                  half=30
+              else:
+                  half=max(5, int(30-(y-15)*0.86))
+              if abs(x-cx) > half: return (255,255,255,0)
+              if y < 9 and abs(x-cx) > 24: return (255,255,255,0)
+              if (abs(x-cx) <= 3 and 11 <= y <= 34) or (20 <= y <= 24 and abs(x-cx) <= 15):
+                  return (245,245,245,255)
+              return (205,32,48,255)
+          png(root/'ci-pattern.png',64,64,lambda x,y: (40,105,220,255) if ((x//8+y//8)%2==0) else (245,245,245,255))
+          png(root/'ci-logo.png',96,48,crest_pixel)
+          PY
+      - name: Install Playwright Chromium
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/sportswear-pw
+          cd /tmp/sportswear-pw
+          npm init -y >/dev/null 2>&1
+          npm install --no-audit --no-fund playwright@1.54.2
+          npx playwright install --with-deps chromium
+      - name: Start static server
+        shell: bash
+        run: |
+          set -euo pipefail
+          ROOT="$GITHUB_WORKSPACE/ventures/run_20260711_161411/configurator"
+          python3 -m http.server 8282 --bind 127.0.0.1 --directory "$ROOT" >/tmp/sportswear-http.log 2>&1 &
+          for i in $(seq 1 30); do if curl --fail --silent http://127.0.0.1:8282/ >/dev/null; then echo "SERVER=PASS"; exit 0; fi; sleep 1; done
+          cat /tmp/sportswear-http.log
+          exit 1
+      - name: Real Chromium WebGL acceptance
+        id: browser
+        shell: bash
+        run: |
+          set -euo pipefail
+          ROOT="$GITHUB_WORKSPACE/ventures/run_20260711_161411/configurator"
+          NODE_PATH=/tmp/sportswear-pw/node_modules SPORTSWEAR_URL=http://127.0.0.1:8282/ node "$ROOT/verify/visual-ci.cjs" 2>&1 | tee /tmp/sportswear-visual-ci.log
+          NODE_PATH=/tmp/sportswear-pw/node_modules SPORTSWEAR_URL=http://127.0.0.1:8282/ node "$ROOT/verify/nameset-easy-ui-ci.cjs" 2>&1 | tee /tmp/sportswear-nameset-easy-ui-ci.log
+          NODE_PATH=/tmp/sportswear-pw/node_modules SPORTSWEAR_URL=http://127.0.0.1:8282/ node "$ROOT/verify/finishing-ci.cjs" 2>&1 | tee /tmp/sportswear-finishing-ci.log
+      - name: Upload visual evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sportswear3d-visual-evidence-${{ github.sha }}
+          path: ventures/run_20260711_161411/configurator/verify/visual-output
+          if-no-files-found: warn
+          retention-days: 7
