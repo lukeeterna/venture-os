@@ -1,11 +1,13 @@
 import * as THREE from "three";
 
-const VERSION = "football-garment-finishing-v2-20260829";
+const VERSION = "football-garment-finishing-v3-20260829";
 let scene;
 let shirt;
 let shorts;
 let shirtMaterials = [];
 let shortsMaterials = [];
+let hemGroup = null;
+let hemMaterials = [];
 
 const state = {
   sleeveTrim: false,
@@ -77,10 +79,10 @@ uniform vec3 uFinishCollarColor;`);
 float finishH = max(0.000001, uFinishShirtMaxY-uFinishShirtMinY);
 float finishTop = (uFinishShirtMaxY-vSportswearFinishWorldPosition.y)/finishH;
 float finishX = abs(vSportswearFinishWorldPosition.x-uFinishShirtCx)/max(0.000001,uFinishShirtWidth*0.5);
-if (uFinishSleeveTrim > 0.5 && finishX > 0.57 && finishTop > 0.18 && finishTop < 0.31) diffuseColor.rgb = uFinishSleeveColor;
+if (uFinishSleeveTrim > 0.5 && finishX > 0.53 && finishTop > 0.395 && finishTop < 0.455) diffuseColor.rgb = uFinishSleeveColor;
 float neckX = abs(vSportswearFinishWorldPosition.x-uFinishShirtCx)/max(0.000001,uFinishShirtWidth);
 float neckEllipse = sqrt(pow(neckX/0.115,2.0)+pow((finishTop-0.050)/0.046,2.0));
-if (uFinishCollarTrim > 0.5 && neckEllipse > 0.76 && neckEllipse < 1.18) diffuseColor.rgb = uFinishCollarColor;`
+if (uFinishCollarTrim > 0.5 && neckEllipse > 0.88 && neckEllipse < 1.08) diffuseColor.rgb = uFinishCollarColor;`
     );
     finish.shader = shader;
     syncShirtMaterial(material);
@@ -95,29 +97,74 @@ function patchShortsMaterial(material) {
   const finish = ensureState(material, "shorts");
   material.onBeforeCompile = function sportswearShortsFinish(shader, renderer) {
     previous?.call(this, shader, renderer);
-    installWorldPosition(shader, `
-uniform float uFinishShortHemY;
-uniform float uFinishShortTrimTopY;
-uniform float uFinishShortTrim;
-uniform vec3 uFinishShortColor;`);
+    installWorldPosition(shader, "uniform float uFinishShortHemY;");
     shader.uniforms.uFinishShortHemY = { value: -999 };
-    shader.uniforms.uFinishShortTrimTopY = { value: -999 };
-    shader.uniforms.uFinishShortTrim = { value: 0 };
-    shader.uniforms.uFinishShortColor = { value: new THREE.Color(state.shortsColor) };
-    shader.fragmentShader = shader.fragmentShader
-      .replace(
-        "#include <clipping_planes_fragment>",
-        "#include <clipping_planes_fragment>\nif (vSportswearFinishWorldPosition.y < uFinishShortHemY) discard;"
-      )
-      .replace(
-        "#include <map_fragment>",
-        "#include <map_fragment>\nif (uFinishShortTrim > 0.5 && vSportswearFinishWorldPosition.y >= uFinishShortHemY && vSportswearFinishWorldPosition.y <= uFinishShortTrimTopY) diffuseColor.rgb = uFinishShortColor;"
-      );
+    shader.fragmentShader = shader.fragmentShader.replace(
+      "#include <clipping_planes_fragment>",
+      "#include <clipping_planes_fragment>\nif (vSportswearFinishWorldPosition.y < uFinishShortHemY) discard;"
+    );
     finish.shader = shader;
     syncShortsMaterial(material);
   };
   material.userData.sportswearFinishingInstalled = true;
   material.needsUpdate = true;
+}
+
+function shortsHemFrame() {
+  const f = boxFrame(shorts);
+  const hemY = f.box.min.y + f.size.y * 0.055;
+  const bandHeight = f.size.y * 0.072;
+  return { ...f, hemY, bandHeight };
+}
+
+function disposeHemGroup() {
+  if (!hemGroup) return;
+  hemGroup.traverse((node) => {
+    node.geometry?.dispose?.();
+    if (node.material && !Array.isArray(node.material)) node.material.dispose?.();
+  });
+  hemGroup.removeFromParent();
+  hemGroup = null;
+  hemMaterials = [];
+}
+
+function buildShortHemBands() {
+  disposeHemGroup();
+  const f = shortsHemFrame();
+  hemGroup = new THREE.Group();
+  hemGroup.name = "sportswear-clean-short-hems";
+  const centerY = f.hemY + f.bandHeight * 0.46;
+  const offsetX = f.size.x * 0.245;
+  const radiusX = f.size.x * 0.198;
+  const radiusZ = f.size.z * 0.425;
+  for (const sign of [-1, 1]) {
+    const material = new THREE.MeshStandardMaterial({
+      color: state.shortsTrim ? state.shortsColor : (window.__sportswear3d?.state?.colors?.shorts || "#ffffff"),
+      roughness: 0.86,
+      metalness: 0,
+      side: THREE.DoubleSide,
+    });
+    const geometry = new THREE.CylinderGeometry(1, 1, f.bandHeight, 64, 1, true);
+    const band = new THREE.Mesh(geometry, material);
+    band.name = sign < 0 ? "sportswear-short-hem-left" : "sportswear-short-hem-right";
+    band.position.set(f.cx + sign * offsetX, centerY, (f.box.min.z + f.box.max.z) * 0.5);
+    band.scale.set(radiusX, 1, radiusZ);
+    band.renderOrder = 8;
+    band.castShadow = true;
+    band.receiveShadow = true;
+    hemGroup.add(band);
+    hemMaterials.push(material);
+  }
+  scene.add(hemGroup);
+  syncHemBands();
+}
+
+function syncHemBands() {
+  const base = window.__sportswear3d?.state?.colors?.shorts || "#ffffff";
+  hemMaterials.forEach((material) => {
+    material.color.set(state.shortsTrim ? state.shortsColor : base);
+    material.needsUpdate = true;
+  });
 }
 
 function syncShirtMaterial(material) {
@@ -126,33 +173,30 @@ function syncShirtMaterial(material) {
   finish.values = { cx: f.cx, minY: f.box.min.y, maxY: f.box.max.y, width: f.size.x };
   const u = finish.shader?.uniforms;
   if (!u) return;
+  const collar = document.getElementById("football-collar")?.value || "crew";
   u.uFinishShirtCx.value = f.cx;
   u.uFinishShirtMinY.value = f.box.min.y;
   u.uFinishShirtMaxY.value = f.box.max.y;
   u.uFinishShirtWidth.value = f.size.x;
   u.uFinishSleeveTrim.value = state.sleeveTrim ? 1 : 0;
-  u.uFinishCollarTrim.value = state.collarTrim ? 1 : 0;
+  u.uFinishCollarTrim.value = state.collarTrim && (collar === "crew" || collar === "original") ? 1 : 0;
   u.uFinishSleeveColor.value.set(state.sleeveColor);
   u.uFinishCollarColor.value.set(state.collarColor);
 }
 
 function syncShortsMaterial(material) {
   const finish = ensureState(material, "shorts");
-  const f = boxFrame(shorts);
-  const hemY = f.box.min.y + f.size.y * 0.026;
-  const trimTopY = hemY + f.size.y * 0.055;
-  finish.values = { hemY, trimTopY };
+  const f = shortsHemFrame();
+  finish.values = { hemY: f.hemY };
   const u = finish.shader?.uniforms;
   if (!u) return;
-  u.uFinishShortHemY.value = hemY;
-  u.uFinishShortTrimTopY.value = trimTopY;
-  u.uFinishShortTrim.value = state.shortsTrim ? 1 : 0;
-  u.uFinishShortColor.value.set(state.shortsColor);
+  u.uFinishShortHemY.value = f.hemY;
 }
 
 function syncAll() {
   shirtMaterials.forEach(syncShirtMaterial);
   shortsMaterials.forEach(syncShortsMaterial);
+  syncHemBands();
   const existingCollarColor = document.getElementById("football-collar-color");
   if (existingCollarColor && state.collarTrim && existingCollarColor.value !== state.collarColor) {
     existingCollarColor.value = state.collarColor;
@@ -186,7 +230,7 @@ function injectUi() {
   section.id = "sportswear-finishing-controls";
   section.innerHTML = `
     <header class="section-head"><h2>Bordi e finiture</h2><span>opzionali</span></header>
-    <p class="help">Attiva solo i bordi desiderati. Il fondo pantaloncino viene comunque rifinito con un hem continuo e pulito.</p>
+    <p class="help">Attiva solo i bordi desiderati. Il fondo pantaloncino usa sempre un hem liscio che maschera il bordo della mesh donor.</p>
     <div class="finish-grid">
       <div class="finish-card"><label><input id="finish-sleeve-on" type="checkbox"> Bordo maniche</label><input id="finish-sleeve-color" type="color" value="${state.sleeveColor}"></div>
       <div class="finish-card"><label><input id="finish-shorts-on" type="checkbox"> Bordo pantaloncini</label><input id="finish-shorts-color" type="color" value="${state.shortsColor}"></div>
@@ -202,13 +246,15 @@ function injectUi() {
     ["finish-collar-color", "collarColor", "input", (e) => e.target.value],
   ];
   bindings.forEach(([id, key, event, read]) => document.getElementById(id)?.addEventListener(event, (e) => { state[key] = read(e); syncAll(); }));
+  document.getElementById("shorts-color")?.addEventListener("input", () => setTimeout(syncHemBands, 0));
+  document.getElementById("football-collar")?.addEventListener("change", () => setTimeout(syncAll, 180));
 }
 
 function simplifyCollarChoices() {
   const source = document.getElementById("football-collar");
   const easy = document.getElementById("easy-football-collar");
   if (!source || !easy) return;
-  const allowed = new Set(["crew", "v", "polo", "polo-button"]);
+  const allowed = new Set(["crew", "v"]);
   [...easy.options].forEach((option) => { if (!allowed.has(option.value)) option.remove(); });
   if (!allowed.has(easy.value)) {
     easy.value = "crew";
@@ -218,13 +264,15 @@ function simplifyCollarChoices() {
 }
 
 function publish() {
-  const sf = boxFrame(shorts);
+  const sf = shortsHemFrame();
   window.__sportswearFinishingStatus = {
     version: VERSION,
     ready: true,
     viewbarOutsideCanvas: !document.getElementById("viewer-shell")?.contains(document.querySelector(".viewbar")),
     cleanShortHem: true,
-    shortHemY: Number((sf.box.min.y + sf.size.y * 0.026).toFixed(4)),
+    shortHemY: Number(sf.hemY.toFixed(4)),
+    hemMeshes: hemGroup?.children?.length || 0,
+    simpleCollars: [...document.querySelectorAll("#easy-football-collar option")].map((option) => option.value),
     trims: { ...state },
     patchedShirtMaterials: shirtMaterials.length,
     patchedShortsMaterials: shortsMaterials.length,
@@ -249,6 +297,7 @@ if (await waitReady()) {
   shortsMaterials = uniqueMaterials(shorts);
   shirtMaterials.forEach(patchShirtMaterial);
   shortsMaterials.forEach(patchShortsMaterial);
+  buildShortHemBands();
   addStyles();
   injectUi();
   simplifyCollarChoices();
