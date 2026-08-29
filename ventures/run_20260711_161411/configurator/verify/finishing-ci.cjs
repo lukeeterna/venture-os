@@ -44,7 +44,7 @@ const fail = (message) => { throw new Error(message); };
     if (!initial.status.cleanShortHem || !Number.isFinite(initial.status.shortHemY) || initial.status.hemMeshes !== 2) fail(`Smooth shorts hem missing: ${JSON.stringify(initial.status)}`);
     if (initial.status.topologyMutated) fail('Finishing must not mutate garment topology');
     if (initial.status.patchedShirtMaterials < 1 || initial.status.patchedShortsMaterials < 1) fail(`Finishing shader not installed: ${JSON.stringify(initial.status)}`);
-    if (JSON.stringify(initial.easy) !== JSON.stringify(['crew', 'v'])) fail(`Simple collar choices must contain only production-safe crew/V: ${JSON.stringify(initial.easy)}`);
+    if (JSON.stringify(initial.easy) !== JSON.stringify(['original', 'crew', 'v'])) fail(`Simple collar choices must be original/crew/V: ${JSON.stringify(initial.easy)}`);
     for (const preserved of ['polo', 'polo-button', 'split-v', 'retro-90']) if (!initial.advanced.includes(preserved)) fail(`Advanced collar feature lost: ${preserved}`);
 
     for (const id of ['finish-sleeve-on', 'finish-shorts-on', 'finish-collar-on']) await page.locator(`#${id}`).check();
@@ -77,7 +77,7 @@ const fail = (message) => { throw new Error(message); };
     console.log('SOCKS_UNOBSTRUCTED_LAYOUT=PASS');
     console.log('SMOOTH_SHORT_HEMS=PASS');
     console.log('OPTIONAL_TRIMS=PASS');
-    console.log('SIMPLE_COLLARS_CREW_V=PASS');
+    console.log('SIMPLE_COLLARS_ORIGINAL_CREW_V=PASS');
     console.log('ADVANCED_FEATURES_PRESERVED=PASS');
   } finally {
     await browser.close();
