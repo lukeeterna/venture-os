@@ -43,11 +43,7 @@ function ensureState(material, kind) {
 function installWorldPosition(shader, fragmentDeclarations = "") {
   shader.vertexShader = shader.vertexShader
     .replace("#include <common>", "#include <common>\nvarying vec3 vSportswearFinishWorldPosition;")
-    .replace("#include <begin_vertex>", "#include <begin_vertex>\nvarying vec3 vSportswearFinishWorldPosition;\nvSportswearFinishWorldPosition = (modelMatrix * vec4(transformed, 1.0)).xyz;");
-  shader.vertexShader = shader.vertexShader.replace(
-    "varying vec3 vSportswearFinishWorldPosition;\nvarying vec3 vSportswearFinishWorldPosition;",
-    "varying vec3 vSportswearFinishWorldPosition;"
-  );
+    .replace("#include <begin_vertex>", "#include <begin_vertex>\nvSportswearFinishWorldPosition = (modelMatrix * vec4(transformed, 1.0)).xyz;");
   shader.fragmentShader = shader.fragmentShader.replace(
     "#include <common>",
     `#include <common>\nvarying vec3 vSportswearFinishWorldPosition;\n${fragmentDeclarations}`
