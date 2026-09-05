@@ -1,7 +1,7 @@
 # VOS FABRIC — STATE
 
 Updated: 2026-09-05
-Status: CANDIDATE / IMPLEMENTATION ACTIVE
+Status: CANDIDATE / PLUG-AND-CERTIFY PACKAGE ACTIVE
 
 ## Live repository baseline
 
@@ -9,49 +9,60 @@ Status: CANDIDATE / IMPLEMENTATION ACTIVE
 - base branch: `master`
 - base exact SHA: `08b97b1342c82049ca17945e00b6a3478dabb7b8`
 - implementation branch: `sol/vos-fabric-worker-contract-20260905`
+- review surface: PR #6 (Draft)
 
-## Canonical runtime direction recovered from latest handoff
+## Canonical runtime direction
 
-- U1 iMac preservation: previously GREEN; must still be regression-checked before
-  new runtime work.
+- U1 iMac preservation: previously GREEN; must still be regression-checked before new runtime work.
 - U1 MacBook preservation: previously GREEN.
 - iMac is server/data/runtime.
 - MacBook Big Sur is console/dev, not the production Codex runtime.
-- candidate Codex/Sol worker is isolated Ubuntu x86_64 Multipass `vos-worker`
-  ON_DEMAND on iMac.
+- candidate Codex/Sol worker is isolated Ubuntu x86_64 Multipass `vos-worker` ON_DEMAND on iMac.
 - Guardian + FLUXION must not regress.
 - smartphone-backup volume: general VOS writes DENY.
 - automatic spend: DENY (`max_cost_usd = 0`).
 
+## Package state
+
+Prepared and statically testable without the physical PCs:
+
+1. generic worker adapter + request schema + stable CLI;
+2. fail-closed worker/path/executable/cost/data-class/timeout gates;
+3. durable monotonic checkpoint contract;
+4. external-effect fingerprint/idempotency guard;
+5. Codex G2 qualification script using official CLI commands;
+6. exact resume/fork JSONL evidence path;
+7. package/runbook documentation;
+8. Python 3.8 + 3.13 CI and shell syntax gate.
+
+See `docs/fabric/PACKAGE.md`.
+
 ## Gate state
 
-- G1 `IMAC_PRODUCTION_BASELINE`: NOT EXECUTED in this GitHub-only continuation.
-- G2 `LINUX_CODEX_WORKER`: NOT EXECUTED; requires live iMac + device-auth.
-- G3 `VOS_KERNEL_CERTIFIED`: OPEN.
-  - current branch adds the first minimum-code slice: generic worker adapter contract.
-  - its isolated unit tests must be GREEN before this branch is reviewable.
-  - this does not certify the pre-existing VOS kernel exact SHA/runtime by itself.
-- G4 `ZERO_PROMPT_SHUTTLING`: BLOCKED on G1-G3.
-- G5 `CONTEXT_ROLLOVER`: BLOCKED on G4.
+- G1 `IMAC_PRODUCTION_BASELINE`: EXECUTION PENDING on `fluxion-desktop` PR #66 / self-hosted MacBook runner.
+- G2 `LINUX_CODEX_WORKER`: PACKAGE READY / RUNTIME BLOCKED ON G1 + possible device-auth.
+- G3 `VOS_KERNEL_CERTIFIED`: PACKAGE READY / RUNTIME CERTIFICATION OPEN.
+- G4 `ZERO_PROMPT_SHUTTLING`: DESIGN BOUNDED / BLOCKED ON G1-G3.
+- G5 `CONTEXT_ROLLOVER`: CHECKPOINT + IDEMPOTENCY PRIMITIVES IMPLEMENTED / end-to-end runtime proof blocked on G4.
 
-## Current implementation unit
+None of these labels is a runtime GREEN until exact machine evidence exists.
 
-Build and test a generic worker adapter that is:
+## Current authority boundary
 
-- deterministic and fail-closed;
-- zero-cost only;
-- mandatory data-class;
-- explicit worker/path/executable allowlists;
-- bounded by timeout;
-- terminal on worker failure/death;
-- content-addressed via stdout/stderr SHA-256;
-- explicit that network authorization is upstream VOS authority, not a fake local sandbox.
+`Founder -> Sol -> existing VOS authority/policy -> typed worker adapter -> replaceable worker`
 
-## Exact next action
+The new Fabric code does not create a second authority. `network=VOS_AUTHORIZED` is a structural reference only; VOS must authenticate/authorize it. The checkpoint module records external-effect fingerprints but never executes external effects.
 
-1. Review this branch's worker adapter + negative fixtures and require CI GREEN.
-2. Execute the latest handoff's G1 read-only iMac production baseline.
-3. Only if G1 is GREEN, create/use isolated `vos-worker` and prove official Codex
-   device-auth, GPT-5.6 Sol call, exec JSON, exact resume/fork, resources, stop/rollback.
-4. Run existing VOS kernel positive/negative fixtures on the exact runtime SHA.
-5. Then wire the smallest Sol <-> VOS bridge; do not add CRM/marketing/media infra yet.
+## Exact next action when the PC lane is available
+
+1. Let PR #66 execute the read-only iMac G1 baseline and require a real GREEN.
+2. Only if G1 is GREEN, create/use isolated `vos-worker` (initial target 2 vCPU / 4 GB / 40 GB).
+3. Install official Codex CLI; record version and binary SHA-256.
+4. Use isolated `$HOME/.codex-vos-fabric`; perform `codex login --device-auth` only if `codex login status` is not GREEN.
+5. Resolve the exact supported model name and export it as `VOS_CODEX_MODEL`.
+6. Run `tools/fabric/codex_worker_gate.sh qualify` and preserve JSONL/hash/resource evidence.
+7. Stop the VM and prove Guardian + FLUXION did not regress.
+8. Run exact-SHA VOS positive/negative fixtures plus Fabric unit tests.
+9. Only then execute one harmless zero-shuttle fixture and rollover/idempotency fixture.
+
+Do not add CRM/marketing/media infrastructure before these gates.
