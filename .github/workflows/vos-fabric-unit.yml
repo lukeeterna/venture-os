@@ -5,6 +5,7 @@ on:
     paths:
       - "components/fabric/**"
       - "bin/vos-fabric-worker"
+      - "tools/fabric/**"
       - "schemas/fabric/**"
       - "docs/fabric/**"
       - ".github/workflows/vos-fabric-unit.yml"
@@ -14,6 +15,7 @@ on:
     paths:
       - "components/fabric/**"
       - "bin/vos-fabric-worker"
+      - "tools/fabric/**"
       - "schemas/fabric/**"
       - "docs/fabric/**"
       - ".github/workflows/vos-fabric-unit.yml"
@@ -35,6 +37,13 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Compile
         run: |
-          python -m py_compile components/fabric/worker_adapter.py components/fabric/test_worker_adapter.py bin/vos-fabric-worker
+          python -m py_compile \
+            components/fabric/worker_adapter.py \
+            components/fabric/checkpoint.py \
+            components/fabric/test_worker_adapter.py \
+            components/fabric/test_checkpoint.py \
+            bin/vos-fabric-worker
+      - name: Shell syntax
+        run: bash -n tools/fabric/codex_worker_gate.sh
       - name: Unit tests
         run: python -m unittest discover -s components/fabric -p 'test_*.py' -v
