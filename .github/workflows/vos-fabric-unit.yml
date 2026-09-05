@@ -1,0 +1,40 @@
+name: VOS Fabric Unit
+
+on:
+  pull_request:
+    paths:
+      - "components/fabric/**"
+      - "bin/vos-fabric-worker"
+      - "schemas/fabric/**"
+      - "docs/fabric/**"
+      - ".github/workflows/vos-fabric-unit.yml"
+  push:
+    branches:
+      - "sol/vos-fabric-*"
+    paths:
+      - "components/fabric/**"
+      - "bin/vos-fabric-worker"
+      - "schemas/fabric/**"
+      - "docs/fabric/**"
+      - ".github/workflows/vos-fabric-unit.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.8", "3.13"]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Compile
+        run: |
+          python -m py_compile components/fabric/worker_adapter.py components/fabric/test_worker_adapter.py bin/vos-fabric-worker
+      - name: Unit tests
+        run: python -m unittest discover -s components/fabric -p 'test_*.py' -v
