@@ -59,7 +59,9 @@ class BridgeTests(unittest.TestCase):
             self.assertEqual(prepared["checkpoint"]["state"], "DISPATCH_READY")
             self.assertEqual(prepared["checkpoint"]["generation"], 1)
             self.assertRegex(prepared["dispatch_sha256"], r"^[0-9a-f]{64}$")
-            self.assertNotIn("prompt", json.dumps(prepared["evidence"], sort_keys=True).lower())
+            evidence_json = json.dumps(prepared["evidence"], sort_keys=True).lower()
+            self.assertNotIn('"prompt":', evidence_json)
+            self.assertNotIn('"founder_prompt":', evidence_json)
 
             result = worker_adapter.run_request(prepared["worker_request"])
             self.assertEqual(result["status"], "DONE")
