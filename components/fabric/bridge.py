@@ -15,7 +15,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
-from typing import Any, Dict, Mapping, Optional, Tuple
+from typing import Any, Dict, Mapping, Optional
 
 try:
     from . import checkpoint as checkpoint_mod
@@ -46,6 +46,10 @@ def _sha256(value: Mapping[str, Any]) -> str:
     return hashlib.sha256(_canonical_bytes(value)).hexdigest()
 
 
+def _sha256_text(value: str) -> str:
+    return hashlib.sha256(value.encode("utf-8")).hexdigest()
+
+
 def _request_id(task_id: str, mandate_sha256: str, generation: int) -> str:
     seed = "%s\0%s\0%d" % (task_id, mandate_sha256, generation)
     return "vos-" + hashlib.sha256(seed.encode("utf-8")).hexdigest()[:24]
@@ -57,6 +61,27 @@ def _require_authorization_ref(value: Any) -> str:
     return value.strip()
 
 
+def _request_evidence_summary(request: Mapping[str, Any]) -> Dict[str, Any]:
+    """Return audit metadata without persisting argv/env/path values or auth material."""
+    env = request.get("env", {})
+    command = request.get("command", [])
+    return {
+        "request_id": request["request_id"],
+        "mandate_sha256": request["mandate_sha256"],
+        "worker_id": request["worker_id"],
+        "eligible_worker_count": len(request["eligible_workers"]),
+        "data_class": request["data_class"],
+        "max_cost_usd": request["max_cost_usd"],
+        "network": request["network"],
+        "external_effects": request["external_effects"],
+        "argv_count": len(command),
+        "env_key_count": len(env),
+        "allowed_executable_count": len(request["allowed_executables"]),
+        "allowed_path_count": len(request["allowed_paths"]),
+        "timeout_seconds": request["timeout_seconds"],
+    }
+
+
 def prepare_dispatch(
     checkpoint: Mapping[str, Any],
     worker_spec: Mapping[str, Any],
@@ -66,13 +91,16 @@ def prepare_dispatch(
 ) -> Dict[str, Any]:
     """Prepare one deterministic worker request from an already-authorized VOS unit.
 
-    The opaque authorization ref is carried as evidence only. This function does not
-    verify its authenticity; that remains the sealed VOS kernel's job.
+    The opaque authorization ref is carried only as a digest in persisted evidence.
+    This function does not verify its authenticity; that remains the sealed VOS kernel's
+    job. Full argv/env/path values remain only in the executable handoff object.
     """
     cp = checkpoint_mod.validate_checkpoint(checkpoint)
     authorization_ref = _require_authorization_ref(vos_authorization_ref)
     if cp["state"] in TERMINAL_CHECKPOINT_STATES:
         raise BridgeError("terminal checkpoint cannot be dispatched again")
+    if cp["state"] not in ("READY",):
+        raise BridgeError("dispatch requires READY checkpoint")
     if not isinstance(worker_spec, Mapping):
         raise BridgeError("worker_spec must be an object")
 
@@ -103,14 +131,16 @@ def prepare_dispatch(
     if next_cp["generation"] != next_generation:
         raise BridgeError("checkpoint generation did not advance monotonically")
 
+    request_sha = _sha256(normalized_request)
     evidence = {
         "schema_version": 1,
         "task_id": cp["task_id"],
         "base_sha": cp["base_sha"],
         "checkpoint_generation": next_cp["generation"],
         "checkpoint_sha256": checkpoint_mod.checkpoint_digest(next_cp),
-        "vos_authorization_ref": authorization_ref,
-        "worker_request": normalized_request,
+        "vos_authorization_ref_sha256": _sha256_text(authorization_ref),
+        "worker_request_sha256": request_sha,
+        "worker_request_summary": _request_evidence_summary(normalized_request),
         "founder_prompt_shuttling": 0,
     }
     return {
