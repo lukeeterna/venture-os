@@ -178,6 +178,7 @@ def validate_request(raw: Mapping[str, Any]) -> Dict[str, Any]:
         "request_id": request_id,
         "mandate_sha256": mandate_sha256.lower(),
         "worker_id": worker_id,
+        "eligible_workers": list(eligible_workers),
         "data_class": data_class,
         "max_cost_usd": 0.0,
         "network": network,
