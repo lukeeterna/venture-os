@@ -24,6 +24,7 @@ preflight() {
   [ "${free_kib:-0}" -ge 10485760 ] || fail "ROOT_FREE_LT_10_GIB"
   command -v python3 >/dev/null 2>&1 || fail "PYTHON3_MISSING"
   command -v sha256sum >/dev/null 2>&1 || fail "SHA256SUM_MISSING"
+  command -v timeout >/dev/null 2>&1 || fail "TIMEOUT_MISSING"
   say "G2_PREFLIGHT=GREEN"
   say "G2_OS=$(uname -sr)"
   say "G2_ARCH=$(uname -m)"
@@ -36,10 +37,15 @@ codex_present() {
   codex --version
 }
 
+codex_login_status_bounded() {
+  local seconds="${VOS_CODEX_AUTH_STATUS_TIMEOUT_SECONDS:-15}"
+  timeout "${seconds}s" codex login status >/dev/null 2>&1
+}
+
 auth_status() {
   require_linux_x86_64
   codex_present >/dev/null
-  if codex login status >/dev/null 2>&1; then
+  if codex_login_status_bounded; then
     say "CODEX_CHATGPT_AUTH=GREEN"
     return 0
   fi
@@ -52,7 +58,7 @@ device_auth() {
   codex_present >/dev/null
   say "DEVICE_AUTH_START=EXPLICIT_USER_GATE"
   codex login --device-auth
-  codex login status >/dev/null 2>&1 || fail "DEVICE_AUTH_DID_NOT_PERSIST"
+  codex_login_status_bounded || fail "DEVICE_AUTH_DID_NOT_PERSIST"
   say "CODEX_CHATGPT_AUTH=GREEN"
 }
 
@@ -101,7 +107,7 @@ run_timed() {
 qualify() {
   preflight >/dev/null
   codex_present >/dev/null
-  codex login status >/dev/null 2>&1 || fail "CHATGPT_DEVICE_AUTH_REQUIRED"
+  codex_login_status_bounded || fail "CHATGPT_DEVICE_AUTH_REQUIRED"
 
   local model="${VOS_CODEX_MODEL:-}"
   [ -n "$model" ] || fail "VOS_CODEX_MODEL_REQUIRED_FOR_EXACT_MODEL_CERTIFICATION"
@@ -121,12 +127,14 @@ qualify() {
   local first_json="$run_dir/first.jsonl"
   local first_msg="$run_dir/first.txt"
   local first_time="$run_dir/first.time"
+  # Codex 0.154 treats a non-TTY stdin alongside a positional prompt as
+  # additional prompt input. Explicitly close stdin for deterministic headless runs.
   run_timed "$first_time" \
     codex exec --json --sandbox read-only --model "$model" \
       --skip-git-repo-check --cd "$run_dir/work" \
       --output-last-message "$first_msg" \
       'Do not execute commands and do not modify files. Reply exactly: VOS_FABRIC_PING=OK' \
-      > "$first_json"
+      < /dev/null > "$first_json"
   assert_last_message "$first_msg" 'VOS_FABRIC_PING=OK' || fail "FIRST_CALL_OUTPUT_MISMATCH"
   local thread_id
   thread_id="$(thread_id_from_jsonl "$first_json")" || fail "FIRST_THREAD_ID_MISSING"
@@ -140,7 +148,7 @@ qualify() {
       --output-last-message "$resume_msg" \
       resume "$thread_id" \
       'Do not execute commands and do not modify files. Reply exactly: VOS_FABRIC_RESUME=OK' \
-      > "$resume_json"
+      < /dev/null > "$resume_json"
   assert_last_message "$resume_msg" 'VOS_FABRIC_RESUME=OK' || fail "RESUME_OUTPUT_MISMATCH"
   local resumed_thread_id
   resumed_thread_id="$(thread_id_from_jsonl "$resume_json")" || fail "RESUME_THREAD_ID_MISSING"
@@ -155,7 +163,7 @@ qualify() {
       --output-last-message "$fork_msg" \
       fork "$thread_id" \
       'Do not execute commands and do not modify files. Reply exactly: VOS_FABRIC_FORK=OK' \
-      > "$fork_json"
+      < /dev/null > "$fork_json"
   assert_last_message "$fork_msg" 'VOS_FABRIC_FORK=OK' || fail "FORK_OUTPUT_MISMATCH"
   local fork_thread_id
   fork_thread_id="$(thread_id_from_jsonl "$fork_json")" || fail "FORK_THREAD_ID_MISSING"
