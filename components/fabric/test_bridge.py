@@ -79,6 +79,43 @@ class BridgeTests(unittest.TestCase):
                 consumed["result_sha256"],
             )
 
+    def test_evidence_redacts_auth_env_argv_and_paths(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            secret_env = "SENTINEL_ENV_SECRET_987654"
+            secret_arg = "SENTINEL_ARG_SECRET_123456"
+            auth_ref = "vos://authorization/SENTINEL_AUTH_SECRET_456789"
+            spec = self.worker_spec(td)
+            spec["command"] = [spec["command"][0], secret_arg]
+            spec["env"] = {"VOS_FIXTURE_SECRET": secret_env}
+
+            prepared = bridge.prepare_dispatch(
+                self.new_checkpoint(),
+                spec,
+                vos_authorization_ref=auth_ref,
+            )
+            self.assertIn(secret_arg, prepared["worker_request"]["command"])
+            self.assertEqual(
+                prepared["worker_request"]["env"]["VOS_FIXTURE_SECRET"],
+                secret_env,
+            )
+
+            evidence_json = json.dumps(prepared["evidence"], sort_keys=True)
+            for raw_value in (secret_env, secret_arg, auth_ref, td):
+                with self.subTest(raw_value=raw_value):
+                    self.assertNotIn(raw_value, evidence_json)
+            self.assertRegex(
+                prepared["evidence"]["worker_request_sha256"],
+                r"^[0-9a-f]{64}$",
+            )
+            self.assertRegex(
+                prepared["evidence"]["vos_authorization_ref_sha256"],
+                r"^[0-9a-f]{64}$",
+            )
+            summary = prepared["evidence"]["worker_request_summary"]
+            self.assertEqual(summary["argv_count"], 2)
+            self.assertEqual(summary["env_key_count"], 1)
+            self.assertEqual(summary["allowed_path_count"], 1)
+
     def test_same_result_replay_is_idempotent_changed_replay_fails_closed(self) -> None:
         with tempfile.TemporaryDirectory() as td:
             prepared = bridge.prepare_dispatch(
