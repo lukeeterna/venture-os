@@ -112,8 +112,6 @@ qualify() {
   local model="${VOS_CODEX_MODEL:-}"
   [ -n "$model" ] || fail "VOS_CODEX_MODEL_REQUIRED_FOR_EXACT_MODEL_CERTIFICATION"
 
-  # Pin actual binary identity used by this run. The release/version must be reviewed
-  # before this evidence is promoted to an OFFICIAL architecture gate.
   local codex_bin codex_version codex_sha
   codex_bin="$(command -v codex)"
   codex_version="$(codex --version | head -1)"
@@ -124,17 +122,19 @@ qualify() {
   trap 'rm -rf "$run_dir"' RETURN
   mkdir -p "$run_dir/work"
 
+  # Codex 0.154 treats piped/non-TTY stdin beside a positional prompt as
+  # OptionalAppend. Use the documented '-' sentinel so stdin is the one and only
+  # primary prompt channel (Forced) for deterministic headless execution.
   local first_json="$run_dir/first.jsonl"
   local first_msg="$run_dir/first.txt"
   local first_time="$run_dir/first.time"
-  # Codex 0.154 treats a non-TTY stdin alongside a positional prompt as
-  # additional prompt input. Explicitly close stdin for deterministic headless runs.
+  local first_prompt="$run_dir/first.prompt"
+  printf '%s\n' 'Do not execute commands and do not modify files. Reply exactly: VOS_FABRIC_PING=OK' > "$first_prompt"
   run_timed "$first_time" \
     codex exec --json --sandbox read-only --model "$model" \
       --skip-git-repo-check --cd "$run_dir/work" \
-      --output-last-message "$first_msg" \
-      'Do not execute commands and do not modify files. Reply exactly: VOS_FABRIC_PING=OK' \
-      < /dev/null > "$first_json"
+      --output-last-message "$first_msg" - \
+      < "$first_prompt" > "$first_json"
   assert_last_message "$first_msg" 'VOS_FABRIC_PING=OK' || fail "FIRST_CALL_OUTPUT_MISMATCH"
   local thread_id
   thread_id="$(thread_id_from_jsonl "$first_json")" || fail "FIRST_THREAD_ID_MISSING"
@@ -142,13 +142,14 @@ qualify() {
   local resume_json="$run_dir/resume.jsonl"
   local resume_msg="$run_dir/resume.txt"
   local resume_time="$run_dir/resume.time"
+  local resume_prompt="$run_dir/resume.prompt"
+  printf '%s\n' 'Do not execute commands and do not modify files. Reply exactly: VOS_FABRIC_RESUME=OK' > "$resume_prompt"
   run_timed "$resume_time" \
     codex exec --json --sandbox read-only --model "$model" \
       --skip-git-repo-check --cd "$run_dir/work" \
       --output-last-message "$resume_msg" \
-      resume "$thread_id" \
-      'Do not execute commands and do not modify files. Reply exactly: VOS_FABRIC_RESUME=OK' \
-      < /dev/null > "$resume_json"
+      resume "$thread_id" - \
+      < "$resume_prompt" > "$resume_json"
   assert_last_message "$resume_msg" 'VOS_FABRIC_RESUME=OK' || fail "RESUME_OUTPUT_MISMATCH"
   local resumed_thread_id
   resumed_thread_id="$(thread_id_from_jsonl "$resume_json")" || fail "RESUME_THREAD_ID_MISSING"
@@ -157,13 +158,14 @@ qualify() {
   local fork_json="$run_dir/fork.jsonl"
   local fork_msg="$run_dir/fork.txt"
   local fork_time="$run_dir/fork.time"
+  local fork_prompt="$run_dir/fork.prompt"
+  printf '%s\n' 'Do not execute commands and do not modify files. Reply exactly: VOS_FABRIC_FORK=OK' > "$fork_prompt"
   run_timed "$fork_time" \
     codex exec --json --sandbox read-only --model "$model" \
       --skip-git-repo-check --cd "$run_dir/work" \
       --output-last-message "$fork_msg" \
-      fork "$thread_id" \
-      'Do not execute commands and do not modify files. Reply exactly: VOS_FABRIC_FORK=OK' \
-      < /dev/null > "$fork_json"
+      fork "$thread_id" - \
+      < "$fork_prompt" > "$fork_json"
   assert_last_message "$fork_msg" 'VOS_FABRIC_FORK=OK' || fail "FORK_OUTPUT_MISMATCH"
   local fork_thread_id
   fork_thread_id="$(thread_id_from_jsonl "$fork_json")" || fail "FORK_THREAD_ID_MISSING"
