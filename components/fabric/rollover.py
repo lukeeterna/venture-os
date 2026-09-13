@@ -21,6 +21,9 @@ except ImportError:  # pragma: no cover
     import checkpoint as checkpoint_mod  # type: ignore
 
 
+SAFE_ROLLOVER_SOURCE_STATES = frozenset(("READY", "WORKER_DONE"))
+
+
 class RolloverError(ValueError):
     """Telemetry or rollover transition is unsafe/inconsistent."""
 
@@ -68,6 +71,8 @@ def watch(
 
     The comparison is integer-only: ``used * 100 >= limit * threshold``. Re-reading an
     already ``ROLLOVER_REQUIRED`` checkpoint is idempotent and does not bump generation.
+    Threshold rollover is allowed only from quiescent states; in-flight dispatches fail
+    closed so a continuation cannot change while a worker result is pending.
     """
     cp = checkpoint_mod.validate_checkpoint(checkpoint)
     measured = validate_telemetry(telemetry)
@@ -113,6 +118,10 @@ def watch(
 
     if cp["state"] == "WORKER_FAILED":
         raise RolloverError("failed worker checkpoint must be resolved before rollover")
+    if cp["state"] not in SAFE_ROLLOVER_SOURCE_STATES:
+        raise RolloverError(
+            "rollover is not allowed from checkpoint state " + str(cp["state"])
+        )
     if not cp["continuation_ref"]:
         raise RolloverError("rollover requires an existing continuation_ref")
 
