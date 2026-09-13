@@ -114,6 +114,25 @@ class RolloverTests(unittest.TestCase):
                 {"context_used_units": 90, "context_limit_units": 100},
             )
 
+    def test_inflight_dispatch_threshold_fails_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            prepared = bridge.prepare_dispatch(
+                checkpoint.new_checkpoint("inflight-rollover", self.MANDATE, self.BASE),
+                self.worker_spec(td),
+                vos_authorization_ref="vos://fixture/authorized/inflight",
+                continuation_ref="codex-thread:old",
+            )
+            inflight = prepared["checkpoint"]
+            generation_before = inflight["generation"]
+            self.assertEqual(inflight["state"], "DISPATCH_READY")
+            with self.assertRaisesRegex(rollover.RolloverError, "DISPATCH_READY"):
+                rollover.watch(
+                    inflight,
+                    {"context_used_units": 90, "context_limit_units": 100},
+                )
+            self.assertEqual(inflight["state"], "DISPATCH_READY")
+            self.assertEqual(inflight["generation"], generation_before)
+
     def test_complete_rollover_is_monotonic_and_idempotent(self) -> None:
         cp = self.ready_checkpoint()
         planned = rollover.watch(
