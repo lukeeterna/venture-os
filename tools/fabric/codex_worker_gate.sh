@@ -179,7 +179,11 @@ PY
   first_msg="$run_dir/first.txt"
   first_time="$run_dir/first.time"
   first_prompt="$run_dir/first.prompt"
-  printf '%s\n' 'Use the shell tool to run exactly: cat ./probe.txt . You must read the file; do not infer, guess, or skip the command. After it succeeds, reply with exactly VOS_FABRIC_PING= followed immediately by the exact stdout from that command, with no other text.' > "$first_prompt"
+  cat > "$first_prompt" <<'PROMPT'
+Use the shell tool to run exactly this command and no other command:
+cat ./probe.txt
+The command must exit with status 0. You must read the file; do not infer, guess, or skip the command. After it succeeds, reply with exactly VOS_FABRIC_PING= followed immediately by the exact stdout from that command, with no other text.
+PROMPT
   run_timed "$first_time" \
     codex exec --json --sandbox read-only -c 'approval_policy="never"' --model "$model" \
       --skip-git-repo-check --cd "$run_dir/work" \
