@@ -161,8 +161,9 @@ qualify() {
   # Codex 0.154 treats piped/non-TTY stdin beside a positional prompt as
   # OptionalAppend. Use the documented '-' sentinel so stdin is the one and only
   # primary prompt channel (Forced) for deterministic headless execution.
-  # The first call also proves a real read-only shell tool execution, avoiding a
-  # redundant fourth model call solely for tool qualification.
+  # The first call proves a real read-only shell execution. Its final answer is
+  # data-dependent on a random nonce that exists only in probe.txt, so the model
+  # cannot satisfy the assertion by echoing a constant without using the tool.
   local nonce first_json first_msg first_time first_prompt
   nonce="VOS_TOOL_NONCE_$(python3 - <<'PY'
 import secrets
@@ -174,13 +175,13 @@ PY
   first_msg="$run_dir/first.txt"
   first_time="$run_dir/first.time"
   first_prompt="$run_dir/first.prompt"
-  printf '%s\n' 'Use the shell tool to run exactly: cat ./probe.txt . Do not infer or skip the command. After it succeeds, reply exactly: VOS_FABRIC_PING=OK' > "$first_prompt"
+  printf '%s\n' 'Use the shell tool to run exactly: cat ./probe.txt . You must read the file; do not infer, guess, or skip the command. After it succeeds, reply with exactly VOS_FABRIC_PING= followed immediately by the exact stdout from that command, with no other text.' > "$first_prompt"
   run_timed "$first_time" \
     codex exec --json --sandbox read-only --model "$model" \
       --skip-git-repo-check --cd "$run_dir/work" \
       --output-last-message "$first_msg" - \
       < "$first_prompt" > "$first_json"
-  assert_last_message "$first_msg" 'VOS_FABRIC_PING=OK' || fail "FIRST_CALL_OUTPUT_MISMATCH"
+  assert_last_message "$first_msg" "VOS_FABRIC_PING=$nonce" || fail "FIRST_CALL_OUTPUT_MISMATCH"
   assert_real_tool_execution "$first_json" "$nonce" || fail "FIRST_CALL_TOOL_EXECUTION_MISSING"
   local thread_id
   thread_id="$(thread_id_from_jsonl "$first_json")" || fail "FIRST_THREAD_ID_MISSING"
