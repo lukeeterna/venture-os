@@ -42,10 +42,12 @@ jobs:
             components/fabric/checkpoint.py \
             components/fabric/bridge.py \
             components/fabric/rollover.py \
+            components/fabric/router.py \
             components/fabric/test_worker_adapter.py \
             components/fabric/test_checkpoint.py \
             components/fabric/test_bridge.py \
             components/fabric/test_rollover.py \
+            components/fabric/test_router.py \
             bin/vos-fabric-worker
       - name: Shell syntax
         run: bash -n tools/fabric/codex_worker_gate.sh
