@@ -114,10 +114,13 @@ with open(path, "r", encoding="utf-8") as fh:
         if event.get("type") == "turn.completed":
             turn_done = True
         item = event.get("item") or {}
+        # Codex 0.154 exposes command lifecycle twice: item.started then
+        # item.completed. The completed event itself is the authoritative
+        # completion signal; requiring the nested status field as well is
+        # redundant and was observed to reject otherwise valid runtime evidence.
         if (
             event.get("type") == "item.completed"
             and item.get("type") == "command_execution"
-            and item.get("status") == "completed"
             and item.get("exit_code") == 0
             and nonce in (item.get("aggregated_output") or "")
         ):
