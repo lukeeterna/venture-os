@@ -114,10 +114,6 @@ with open(path, "r", encoding="utf-8") as fh:
         if event.get("type") == "turn.completed":
             turn_done = True
         item = event.get("item") or {}
-        # Codex 0.154 exposes command lifecycle twice: item.started then
-        # item.completed. The completed event itself is the authoritative
-        # completion signal; requiring the nested status field as well is
-        # redundant and was observed to reject otherwise valid runtime evidence.
         if (
             event.get("type") == "item.completed"
             and item.get("type") == "command_execution"
@@ -132,10 +128,11 @@ PY
 
 run_timed() {
   local time_file="$1"; shift
+  local seconds="${VOS_CODEX_TURN_TIMEOUT_SECONDS:-120}"
   if [ -x /usr/bin/time ]; then
-    /usr/bin/time -v -o "$time_file" "$@"
+    /usr/bin/time -v -o "$time_file" timeout "${seconds}s" "$@"
   else
-    "$@"
+    timeout "${seconds}s" "$@"
     : > "$time_file"
   fi
 }
@@ -161,13 +158,6 @@ qualify() {
   trap 'rm -rf "$run_dir"' RETURN
   mkdir -p "$run_dir/work"
 
-  # Codex 0.154 treats piped/non-TTY stdin beside a positional prompt as
-  # OptionalAppend. Use the documented '-' sentinel so stdin is the one and only
-  # primary prompt channel (Forced) for deterministic headless execution.
-  # approval_policy=never is required because this is a noninteractive runtime
-  # gate: any command that would require escalation must fail rather than prompt.
-  # The first call proves a real read-only shell execution. Its final answer is
-  # data-dependent on a random nonce that exists only in probe.txt.
   local nonce first_json first_msg first_time first_prompt
   nonce="VOS_TOOL_NONCE_$(python3 - <<'PY'
 import secrets
