@@ -37,6 +37,11 @@ codex_present() {
   codex --version
 }
 
+codex_runtime_present() {
+  command -v codex-code-mode-host >/dev/null 2>&1 || fail "CODEX_CODE_MODE_HOST_MISSING"
+  command -v bwrap >/dev/null 2>&1 || fail "BWRAP_MISSING"
+}
+
 codex_login_status_bounded() {
   local seconds="${VOS_CODEX_AUTH_STATUS_TIMEOUT_SECONDS:-15}"
   timeout "${seconds}s" codex login status >/dev/null 2>&1
@@ -94,6 +99,34 @@ if actual != expected:
 PY
 }
 
+assert_real_tool_execution() {
+  python3 - "$1" "$2" <<'PY'
+import json, sys
+path, nonce = sys.argv[1:]
+command_seen = False
+turn_done = False
+with open(path, "r", encoding="utf-8") as fh:
+    for raw in fh:
+        raw = raw.strip()
+        if not raw:
+            continue
+        event = json.loads(raw)
+        if event.get("type") == "turn.completed":
+            turn_done = True
+        item = event.get("item") or {}
+        if (
+            event.get("type") == "item.completed"
+            and item.get("type") == "command_execution"
+            and item.get("status") == "completed"
+            and item.get("exit_code") == 0
+            and nonce in (item.get("aggregated_output") or "")
+        ):
+            command_seen = True
+if not (command_seen and turn_done):
+    raise SystemExit(2)
+PY
+}
+
 run_timed() {
   local time_file="$1"; shift
   if [ -x /usr/bin/time ]; then
@@ -107,15 +140,18 @@ run_timed() {
 qualify() {
   preflight >/dev/null
   codex_present >/dev/null
+  codex_runtime_present
   codex_login_status_bounded || fail "CHATGPT_DEVICE_AUTH_REQUIRED"
 
   local model="${VOS_CODEX_MODEL:-}"
   [ -n "$model" ] || fail "VOS_CODEX_MODEL_REQUIRED_FOR_EXACT_MODEL_CERTIFICATION"
 
-  local codex_bin codex_version codex_sha
+  local codex_bin codex_version codex_sha host_sha bwrap_sha
   codex_bin="$(command -v codex)"
   codex_version="$(codex --version | head -1)"
   codex_sha="$(sha256sum "$codex_bin" | awk '{print $1}')"
+  host_sha="$(sha256sum "$(command -v codex-code-mode-host)" | awk '{print $1}')"
+  bwrap_sha="$(sha256sum "$(command -v bwrap)" | awk '{print $1}')"
 
   local run_dir
   run_dir="$(mktemp -d -t vos-fabric-g2.XXXXXX)"
@@ -125,17 +161,27 @@ qualify() {
   # Codex 0.154 treats piped/non-TTY stdin beside a positional prompt as
   # OptionalAppend. Use the documented '-' sentinel so stdin is the one and only
   # primary prompt channel (Forced) for deterministic headless execution.
-  local first_json="$run_dir/first.jsonl"
-  local first_msg="$run_dir/first.txt"
-  local first_time="$run_dir/first.time"
-  local first_prompt="$run_dir/first.prompt"
-  printf '%s\n' 'Do not execute commands and do not modify files. Reply exactly: VOS_FABRIC_PING=OK' > "$first_prompt"
+  # The first call also proves a real read-only shell tool execution, avoiding a
+  # redundant fourth model call solely for tool qualification.
+  local nonce first_json first_msg first_time first_prompt
+  nonce="VOS_TOOL_NONCE_$(python3 - <<'PY'
+import secrets
+print(secrets.token_hex(12))
+PY
+)"
+  printf '%s\n' "$nonce" > "$run_dir/work/probe.txt"
+  first_json="$run_dir/first.jsonl"
+  first_msg="$run_dir/first.txt"
+  first_time="$run_dir/first.time"
+  first_prompt="$run_dir/first.prompt"
+  printf '%s\n' 'Use the shell tool to run exactly: cat ./probe.txt . Do not infer or skip the command. After it succeeds, reply exactly: VOS_FABRIC_PING=OK' > "$first_prompt"
   run_timed "$first_time" \
     codex exec --json --sandbox read-only --model "$model" \
       --skip-git-repo-check --cd "$run_dir/work" \
       --output-last-message "$first_msg" - \
       < "$first_prompt" > "$first_json"
   assert_last_message "$first_msg" 'VOS_FABRIC_PING=OK' || fail "FIRST_CALL_OUTPUT_MISMATCH"
+  assert_real_tool_execution "$first_json" "$nonce" || fail "FIRST_CALL_TOOL_EXECUTION_MISSING"
   local thread_id
   thread_id="$(thread_id_from_jsonl "$first_json")" || fail "FIRST_THREAD_ID_MISSING"
 
@@ -179,6 +225,8 @@ qualify() {
 
   say "CODEX_VERSION=$codex_version"
   say "CODEX_BINARY_SHA256=$codex_sha"
+  say "CODEX_CODE_MODE_HOST_SHA256=$host_sha"
+  say "CODEX_BWRAP_SHA256=$bwrap_sha"
   say "CODEX_MODEL_REQUESTED=$model"
   say "CODEX_SOURCE_THREAD_ID=$thread_id"
   say "CODEX_FORK_THREAD_ID=$fork_thread_id"
@@ -187,6 +235,7 @@ qualify() {
   say "CODEX_FORK_EVENTS_SHA256=$(sha256sum "$fork_json" | awk '{print $1}')"
   say "CODEX_MAX_RSS_KIB_FIRST_RUN=$max_rss_kib"
   say "CODEX_EXEC_JSON=GREEN"
+  say "CODEX_TOOL_EXECUTION=GREEN"
   say "CODEX_EXACT_RESUME=GREEN"
   say "CODEX_EXACT_FORK=GREEN"
   say "LINUX_CODEX_WORKER_LOCAL_QUALIFICATION=GREEN"
