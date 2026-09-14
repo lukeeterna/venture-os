@@ -161,9 +161,10 @@ qualify() {
   # Codex 0.154 treats piped/non-TTY stdin beside a positional prompt as
   # OptionalAppend. Use the documented '-' sentinel so stdin is the one and only
   # primary prompt channel (Forced) for deterministic headless execution.
+  # approval_policy=never is required because this is a noninteractive runtime
+  # gate: any command that would require escalation must fail rather than prompt.
   # The first call proves a real read-only shell execution. Its final answer is
-  # data-dependent on a random nonce that exists only in probe.txt, so the model
-  # cannot satisfy the assertion by echoing a constant without using the tool.
+  # data-dependent on a random nonce that exists only in probe.txt.
   local nonce first_json first_msg first_time first_prompt
   nonce="VOS_TOOL_NONCE_$(python3 - <<'PY'
 import secrets
@@ -177,7 +178,7 @@ PY
   first_prompt="$run_dir/first.prompt"
   printf '%s\n' 'Use the shell tool to run exactly: cat ./probe.txt . You must read the file; do not infer, guess, or skip the command. After it succeeds, reply with exactly VOS_FABRIC_PING= followed immediately by the exact stdout from that command, with no other text.' > "$first_prompt"
   run_timed "$first_time" \
-    codex exec --json --sandbox read-only --model "$model" \
+    codex exec --json --sandbox read-only -c 'approval_policy="never"' --model "$model" \
       --skip-git-repo-check --cd "$run_dir/work" \
       --output-last-message "$first_msg" - \
       < "$first_prompt" > "$first_json"
@@ -192,7 +193,7 @@ PY
   local resume_prompt="$run_dir/resume.prompt"
   printf '%s\n' 'Do not execute commands and do not modify files. Reply exactly: VOS_FABRIC_RESUME=OK' > "$resume_prompt"
   run_timed "$resume_time" \
-    codex exec --json --sandbox read-only --model "$model" \
+    codex exec --json --sandbox read-only -c 'approval_policy="never"' --model "$model" \
       --skip-git-repo-check --cd "$run_dir/work" \
       --output-last-message "$resume_msg" \
       resume "$thread_id" - \
@@ -208,7 +209,7 @@ PY
   local fork_prompt="$run_dir/fork.prompt"
   printf '%s\n' 'Do not execute commands and do not modify files. Reply exactly: VOS_FABRIC_FORK=OK' > "$fork_prompt"
   run_timed "$fork_time" \
-    codex exec --json --sandbox read-only --model "$model" \
+    codex exec --json --sandbox read-only -c 'approval_policy="never"' --model "$model" \
       --skip-git-repo-check --cd "$run_dir/work" \
       --output-last-message "$fork_msg" \
       fork "$thread_id" - \
