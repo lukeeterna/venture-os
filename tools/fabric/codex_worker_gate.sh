@@ -126,6 +126,15 @@ if not (command_seen and turn_done):
 PY
 }
 
+sha256_path() {
+  local path="$1"
+  if [ -f "$path" ]; then
+    sha256sum "$path" | awk '{print $1}'
+  else
+    printf 'MISSING\n'
+  fi
+}
+
 run_timed() {
   local time_file="$1"; shift
   local seconds="${VOS_CODEX_TURN_TIMEOUT_SECONDS:-120}"
@@ -158,7 +167,7 @@ qualify() {
   trap 'rm -rf "$run_dir"' RETURN
   mkdir -p "$run_dir/work"
 
-  local nonce first_json first_msg first_time first_prompt
+  local nonce first_json first_msg first_time first_prompt first_stderr first_rc
   nonce="VOS_TOOL_NONCE_$(python3 - <<'PY'
 import secrets
 print(secrets.token_hex(12))
@@ -169,16 +178,23 @@ PY
   first_msg="$run_dir/first.txt"
   first_time="$run_dir/first.time"
   first_prompt="$run_dir/first.prompt"
+  first_stderr="$run_dir/first.stderr"
   cat > "$first_prompt" <<'PROMPT'
 Use the shell tool to run exactly this command and no other command:
 cat ./probe.txt
 The command must exit with status 0. You must read the file; do not infer, guess, or skip the command. After it succeeds, reply with exactly VOS_FABRIC_PING= followed immediately by the exact stdout from that command, with no other text.
 PROMPT
+  first_rc=0
   run_timed "$first_time" \
     codex exec --json --sandbox read-only -c 'approval_policy="never"' --model "$model" \
       --skip-git-repo-check --cd "$run_dir/work" \
       --output-last-message "$first_msg" - \
-      < "$first_prompt" > "$first_json"
+      < "$first_prompt" > "$first_json" 2> "$first_stderr" || first_rc=$?
+  if [ "$first_rc" -ne 0 ]; then
+    say "CODEX_FIRST_EVENTS_SHA256=$(sha256_path "$first_json")"
+    say "CODEX_FIRST_STDERR_SHA256=$(sha256_path "$first_stderr")"
+    fail "FIRST_CALL_CODEX_RC_$first_rc"
+  fi
   assert_last_message "$first_msg" "VOS_FABRIC_PING=$nonce" || fail "FIRST_CALL_OUTPUT_MISMATCH"
   assert_real_tool_execution "$first_json" "$nonce" || fail "FIRST_CALL_TOOL_EXECUTION_MISSING"
   local thread_id
@@ -188,13 +204,20 @@ PROMPT
   local resume_msg="$run_dir/resume.txt"
   local resume_time="$run_dir/resume.time"
   local resume_prompt="$run_dir/resume.prompt"
+  local resume_stderr="$run_dir/resume.stderr"
+  local resume_rc=0
   printf '%s\n' 'Do not execute commands and do not modify files. Reply exactly: VOS_FABRIC_RESUME=OK' > "$resume_prompt"
   run_timed "$resume_time" \
     codex exec --json --sandbox read-only -c 'approval_policy="never"' --model "$model" \
       --skip-git-repo-check --cd "$run_dir/work" \
       --output-last-message "$resume_msg" \
       resume "$thread_id" - \
-      < "$resume_prompt" > "$resume_json"
+      < "$resume_prompt" > "$resume_json" 2> "$resume_stderr" || resume_rc=$?
+  if [ "$resume_rc" -ne 0 ]; then
+    say "CODEX_RESUME_EVENTS_SHA256=$(sha256_path "$resume_json")"
+    say "CODEX_RESUME_STDERR_SHA256=$(sha256_path "$resume_stderr")"
+    fail "RESUME_CODEX_RC_$resume_rc"
+  fi
   assert_last_message "$resume_msg" 'VOS_FABRIC_RESUME=OK' || fail "RESUME_OUTPUT_MISMATCH"
   local resumed_thread_id
   resumed_thread_id="$(thread_id_from_jsonl "$resume_json")" || fail "RESUME_THREAD_ID_MISSING"
@@ -204,13 +227,20 @@ PROMPT
   local fork_msg="$run_dir/fork.txt"
   local fork_time="$run_dir/fork.time"
   local fork_prompt="$run_dir/fork.prompt"
+  local fork_stderr="$run_dir/fork.stderr"
+  local fork_rc=0
   printf '%s\n' 'Do not execute commands and do not modify files. Reply exactly: VOS_FABRIC_FORK=OK' > "$fork_prompt"
   run_timed "$fork_time" \
     codex exec --json --sandbox read-only -c 'approval_policy="never"' --model "$model" \
       --skip-git-repo-check --cd "$run_dir/work" \
       --output-last-message "$fork_msg" \
       fork "$thread_id" - \
-      < "$fork_prompt" > "$fork_json"
+      < "$fork_prompt" > "$fork_json" 2> "$fork_stderr" || fork_rc=$?
+  if [ "$fork_rc" -ne 0 ]; then
+    say "CODEX_FORK_EVENTS_SHA256=$(sha256_path "$fork_json")"
+    say "CODEX_FORK_STDERR_SHA256=$(sha256_path "$fork_stderr")"
+    fail "FORK_CODEX_RC_$fork_rc"
+  fi
   assert_last_message "$fork_msg" 'VOS_FABRIC_FORK=OK' || fail "FORK_OUTPUT_MISMATCH"
   local fork_thread_id
   fork_thread_id="$(thread_id_from_jsonl "$fork_json")" || fail "FORK_THREAD_ID_MISSING"
