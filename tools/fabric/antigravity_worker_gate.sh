@@ -22,31 +22,44 @@ sha256_path() {
   fi
 }
 
-require_no_api_fallback() {
+require_zero_cost_account_profile() {
   [ -z "${GEMINI_API_KEY:-}" ] || fail "GEMINI_API_KEY_FORBIDDEN"
   [ -z "${GOOGLE_API_KEY:-}" ] || fail "GOOGLE_API_KEY_FORBIDDEN"
   [ -z "${GOOGLE_GEMINI_BASE_URL:-}" ] || fail "CUSTOM_GEMINI_BASE_URL_FORBIDDEN"
 
   local settings="${HOME}/.gemini/antigravity-cli/settings.json"
-  if [ -f "$settings" ]; then
-    python3 - "$settings" <<'PY' || exit 31
+  [ -f "$settings" ] || fail "ANTIGRAVITY_SETTINGS_REQUIRED"
+
+  python3 - "$settings" <<'PY' || exit 31
 import json, sys
 p = sys.argv[1]
 try:
-    data = json.load(open(p, "r", encoding="utf-8"))
+    with open(p, "r", encoding="utf-8") as fh:
+        data = json.load(fh)
 except Exception as exc:
     print("A2_SETTINGS_INVALID=" + type(exc).__name__)
     raise SystemExit(2)
+
+# Direct official Antigravity account auth only. Explicit Gemini API provider fallback is forbidden.
 if data.get("modelProvider") == "gemini":
     print("A2_BLOCKED=GEMINI_API_PROVIDER_FORBIDDEN")
     raise SystemExit(2)
+
+# Google documents useG1Credits as the switch that permits personal AI credits to be
+# consumed after included Antigravity quota. VOS requires the explicit false value;
+# absent/unknown is fail-closed because MAX_COST_USD must remain exactly zero.
+if data.get("useG1Credits") is not False:
+    print("A2_BLOCKED=ANTIGRAVITY_CREDIT_FALLBACK_NOT_EXPLICITLY_DISABLED")
+    raise SystemExit(2)
 PY
-  fi
+
+  say "ANTIGRAVITY_CREDIT_FALLBACK=0"
+  say "ANTIGRAVITY_SETTINGS_SHA256=$(sha256sum "$settings" | awk '{print $1}')"
 }
 
 preflight() {
   require_linux_x86_64
-  require_no_api_fallback
+  require_zero_cost_account_profile
   command -v python3 >/dev/null 2>&1 || fail "PYTHON3_MISSING"
   command -v sha256sum >/dev/null 2>&1 || fail "SHA256SUM_MISSING"
   command -v timeout >/dev/null 2>&1 || fail "TIMEOUT_MISSING"
@@ -253,6 +266,7 @@ PROMPT
   say "ANTIGRAVITY_MAX_RSS_KIB_FIRST_RUN=$max_rss_kib"
   say "ANTIGRAVITY_ZERO_COST_EVIDENCE_REF=$evidence_ref"
   say "ANTIGRAVITY_API_KEY_FALLBACK=0"
+  say "ANTIGRAVITY_CREDIT_FALLBACK=0"
   say "ANTIGRAVITY_HEADLESS_JSON=GREEN"
   say "ANTIGRAVITY_WORKSPACE_TOOL_EXECUTION=GREEN"
   say "ANTIGRAVITY_EXACT_RESUME=GREEN"
