@@ -22,10 +22,49 @@ sha256_path() {
   fi
 }
 
-require_zero_cost_account_profile() {
+forbid_paid_api_environment() {
   [ -z "${GEMINI_API_KEY:-}" ] || fail "GEMINI_API_KEY_FORBIDDEN"
   [ -z "${GOOGLE_API_KEY:-}" ] || fail "GOOGLE_API_KEY_FORBIDDEN"
   [ -z "${GOOGLE_GEMINI_BASE_URL:-}" ] || fail "CUSTOM_GEMINI_BASE_URL_FORBIDDEN"
+}
+
+# Antigravity may rewrite settings.json during otherwise read-only CLI operations.
+# VOS therefore owns and atomically reasserts the zero-cost switches immediately
+# before and after any CLI operation that can touch account settings.
+enforce_zero_cost_account_profile() {
+  forbid_paid_api_environment
+
+  local settings="${HOME}/.gemini/antigravity-cli/settings.json"
+  [ -f "$settings" ] || fail "ANTIGRAVITY_SETTINGS_REQUIRED"
+
+  python3 - "$settings" <<'PY' || exit 31
+import json, os, sys
+p = sys.argv[1]
+try:
+    with open(p, "r", encoding="utf-8") as fh:
+        data = json.load(fh)
+except Exception as exc:
+    print("A2_SETTINGS_INVALID=" + type(exc).__name__)
+    raise SystemExit(2)
+
+# Direct official account auth only. Never retain an explicit Gemini API provider.
+data.pop("modelProvider", None)
+# Explicitly disable personal AI-credit consumption after included Antigravity quota.
+data["useG1Credits"] = False
+
+q = p + ".vos-zero-cost.tmp"
+with open(q, "w", encoding="utf-8") as fh:
+    json.dump(data, fh, sort_keys=True, indent=2)
+    fh.write("\n")
+os.chmod(q, 0o600)
+os.replace(q, p)
+PY
+
+  require_zero_cost_account_profile
+}
+
+require_zero_cost_account_profile() {
+  forbid_paid_api_environment
 
   local settings="${HOME}/.gemini/antigravity-cli/settings.json"
   [ -f "$settings" ] || fail "ANTIGRAVITY_SETTINGS_REQUIRED"
@@ -40,14 +79,10 @@ except Exception as exc:
     print("A2_SETTINGS_INVALID=" + type(exc).__name__)
     raise SystemExit(2)
 
-# Direct official Antigravity account auth only. Explicit Gemini API provider fallback is forbidden.
 if data.get("modelProvider") == "gemini":
     print("A2_BLOCKED=GEMINI_API_PROVIDER_FORBIDDEN")
     raise SystemExit(2)
 
-# Google documents useG1Credits as the switch that permits personal AI credits to be
-# consumed after included Antigravity quota. VOS requires the explicit false value;
-# absent/unknown is fail-closed because MAX_COST_USD must remain exactly zero.
 if data.get("useG1Credits") is not False:
     print("A2_BLOCKED=ANTIGRAVITY_CREDIT_FALLBACK_NOT_EXPLICITLY_DISABLED")
     raise SystemExit(2)
@@ -85,8 +120,19 @@ agy_present() {
 
 require_model() {
   local model="${VOS_AGY_MODEL:-}"
+  local models
   [ -n "$model" ] || fail "VOS_AGY_MODEL_REQUIRED"
-  agy models 2>/dev/null | awk '{print $1}' | grep -Fx "$model" >/dev/null \
+
+  enforce_zero_cost_account_profile >/dev/null
+  if ! models="$(agy models 2>/dev/null)"; then
+    enforce_zero_cost_account_profile >/dev/null
+    fail "MODEL_LIST_FAILED"
+  fi
+  # `agy models` is known to be able to rewrite settings; restore the invariant
+  # before any model turn is permitted.
+  enforce_zero_cost_account_profile >/dev/null
+
+  printf '%s\n' "$models" | awk '{print $1}' | grep -Fx "$model" >/dev/null \
     || fail "REQUESTED_MODEL_NOT_AVAILABLE"
 }
 
@@ -154,14 +200,16 @@ run_timed() {
   local time_file="$1"; shift
   local seconds="${VOS_AGY_TURN_TIMEOUT_SECONDS:-180}"
   if [ -x /usr/bin/time ]; then
-    /usr/bin/time -v -o "$time_file" timeout "${seconds}s" "$@"
+    /usr/bin/time -v -o "$time_file" timeout -k 15s "${seconds}s" "$@"
   else
-    timeout "${seconds}s" "$@"
+    timeout -k 15s "${seconds}s" "$@"
     : > "$time_file"
   fi
 }
 
 qualify() {
+  # Self-heal the explicit free-account switches before validating the worker.
+  enforce_zero_cost_account_profile >/dev/null
   preflight >/dev/null
   agy_present >/dev/null
   require_model
@@ -200,6 +248,9 @@ $expected
 Do not access files outside the workspace. Do not use network tools. Do not add any other text.
 PROMPT
 
+  # Reassert immediately before the paid-capable operation. If Antigravity rewrites
+  # settings on exit, restore the invariant immediately afterward as well.
+  enforce_zero_cost_account_profile >/dev/null
   first_rc=0
   (
     cd "$run_dir/work"
@@ -210,6 +261,7 @@ PROMPT
         --sandbox \
         --print-timeout "${VOS_AGY_PRINT_TIMEOUT:-2m}"
   ) >"$first_json" 2>"$first_err" || first_rc=$?
+  enforce_zero_cost_account_profile >/dev/null
 
   if [ "$first_rc" -ne 0 ]; then
     say "ANTIGRAVITY_FIRST_EVENTS_SHA256=$(sha256_path "$first_json")"
@@ -230,6 +282,8 @@ PROMPT
   resume_err="$run_dir/resume.stderr"
   resume_time="$run_dir/resume.time"
   resume_expected="VOS_ANTIGRAVITY_RESUME=OK"
+
+  enforce_zero_cost_account_profile >/dev/null
   resume_rc=0
   (
     cd "$run_dir/work"
@@ -241,6 +295,7 @@ PROMPT
         --sandbox \
         --print-timeout "${VOS_AGY_PRINT_TIMEOUT:-2m}"
   ) >"$resume_json" 2>"$resume_err" || resume_rc=$?
+  enforce_zero_cost_account_profile >/dev/null
 
   if [ "$resume_rc" -ne 0 ]; then
     say "ANTIGRAVITY_RESUME_EVENTS_SHA256=$(sha256_path "$resume_json")"
@@ -256,6 +311,7 @@ PROMPT
     [ -n "$max_rss_kib" ] || max_rss_kib="UNKNOWN"
   fi
 
+  require_zero_cost_account_profile >/dev/null
   say "ANTIGRAVITY_VERSION=$agy_version"
   say "ANTIGRAVITY_BINARY_SHA256=$agy_sha"
   say "ANTIGRAVITY_MODEL_REQUESTED=$model"
