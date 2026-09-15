@@ -50,6 +50,8 @@ jobs:
             components/fabric/test_router.py \
             bin/vos-fabric-worker
       - name: Shell syntax
-        run: bash -n tools/fabric/codex_worker_gate.sh
+        run: |
+          bash -n tools/fabric/codex_worker_gate.sh
+          bash -n tools/fabric/antigravity_worker_gate.sh
       - name: Unit tests
         run: python -m unittest discover -s components/fabric -p 'test_*.py' -v
