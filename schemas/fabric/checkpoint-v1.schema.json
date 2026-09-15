@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://venture-os.local/schemas/fabric/checkpoint-v1.schema.json",
+  "title": "VOS Fabric Checkpoint v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "task_id",
+    "mandate_sha256",
+    "base_sha",
+    "generation",
+    "state",
+    "continuation_ref",
+    "last_result_sha256",
+    "effects"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "task_id": {"type": "string", "minLength": 1},
+    "mandate_sha256": {"type": "string", "pattern": "^[0-9a-fA-F]{64}$"},
+    "base_sha": {"type": "string", "pattern": "^[0-9a-fA-F]{64}$"},
+    "generation": {"type": "integer", "minimum": 0},
+    "state": {"type": "string", "minLength": 1},
+    "continuation_ref": {"type": ["string", "null"], "minLength": 1},
+    "last_result_sha256": {
+      "oneOf": [
+        {"type": "null"},
+        {"type": "string", "pattern": "^[0-9a-fA-F]{64}$"}
+      ]
+    },
+    "effects": {
+      "type": "object",
+      "propertyNames": {"minLength": 1},
+      "additionalProperties": {"type": "string", "pattern": "^[0-9a-fA-F]{64}$"}
+    }
+  }
+}

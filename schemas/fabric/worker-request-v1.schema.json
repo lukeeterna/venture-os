@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://venture-os.local/schemas/fabric/worker-request-v1.schema.json",
+  "title": "VOS Fabric Generic Worker Request v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "request_id",
+    "mandate_sha256",
+    "worker_id",
+    "eligible_workers",
+    "data_class",
+    "max_cost_usd",
+    "command",
+    "allowed_executables",
+    "allowed_paths",
+    "cwd"
+  ],
+  "properties": {
+    "request_id": {"type": "string", "minLength": 1},
+    "mandate_sha256": {"type": "string", "pattern": "^[0-9a-fA-F]{64}$"},
+    "worker_id": {"type": "string", "minLength": 1},
+    "eligible_workers": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "data_class": {"enum": ["PUBLIC", "INTERNAL", "CONFIDENTIAL", "SECRET"]},
+    "max_cost_usd": {"const": 0},
+    "network": {"enum": ["NONE", "VOS_AUTHORIZED"], "default": "NONE"},
+    "network_authorization_ref": {"type": "string", "minLength": 1},
+    "external_effects": {"const": false, "default": false},
+    "command": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "allowed_executables": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "allowed_paths": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "cwd": {"type": "string", "minLength": 1},
+    "timeout_seconds": {"type": "number", "exclusiveMinimum": 0, "maximum": 3600},
+    "env": {"type": "object", "additionalProperties": {"type": "string"}}
+  }
+}
