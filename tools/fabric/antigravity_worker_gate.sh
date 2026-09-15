@@ -28,47 +28,10 @@ forbid_paid_api_environment() {
   [ -z "${GOOGLE_GEMINI_BASE_URL:-}" ] || fail "CUSTOM_GEMINI_BASE_URL_FORBIDDEN"
 }
 
-# Antigravity may rewrite settings.json during otherwise read-only CLI operations.
-# VOS therefore owns and atomically reasserts the zero-cost switches immediately
-# before and after any CLI operation that can touch account settings.
-enforce_zero_cost_account_profile() {
-  forbid_paid_api_environment
-
-  local settings="${HOME}/.gemini/antigravity-cli/settings.json"
-  [ -f "$settings" ] || fail "ANTIGRAVITY_SETTINGS_REQUIRED"
-
-  python3 - "$settings" <<'PY' || exit 31
-import json, os, sys
-p = sys.argv[1]
-try:
-    with open(p, "r", encoding="utf-8") as fh:
-        data = json.load(fh)
-except Exception as exc:
-    print("A2_SETTINGS_INVALID=" + type(exc).__name__)
-    raise SystemExit(2)
-
-# Direct official account auth only. Never retain an explicit Gemini API provider.
-data.pop("modelProvider", None)
-# Explicitly disable personal AI-credit consumption after included Antigravity quota.
-data["useG1Credits"] = False
-
-q = p + ".vos-zero-cost.tmp"
-with open(q, "w", encoding="utf-8") as fh:
-    json.dump(data, fh, sort_keys=True, indent=2)
-    fh.write("\n")
-os.chmod(q, 0o600)
-os.replace(q, p)
-PY
-
-  require_zero_cost_account_profile
-}
-
 require_zero_cost_account_profile() {
   forbid_paid_api_environment
-
   local settings="${HOME}/.gemini/antigravity-cli/settings.json"
   [ -f "$settings" ] || fail "ANTIGRAVITY_SETTINGS_REQUIRED"
-
   python3 - "$settings" <<'PY' || exit 31
 import json, sys
 p = sys.argv[1]
@@ -78,18 +41,42 @@ try:
 except Exception as exc:
     print("A2_SETTINGS_INVALID=" + type(exc).__name__)
     raise SystemExit(2)
-
 if data.get("modelProvider") == "gemini":
     print("A2_BLOCKED=GEMINI_API_PROVIDER_FORBIDDEN")
     raise SystemExit(2)
-
 if data.get("useG1Credits") is not False:
     print("A2_BLOCKED=ANTIGRAVITY_CREDIT_FALLBACK_NOT_EXPLICITLY_DISABLED")
     raise SystemExit(2)
 PY
-
   say "ANTIGRAVITY_CREDIT_FALLBACK=0"
   say "ANTIGRAVITY_SETTINGS_SHA256=$(sha256sum "$settings" | awk '{print $1}')"
+}
+
+# Antigravity can rewrite settings.json even for CLI metadata operations. VOS owns
+# the hard-zero switches and atomically reasserts them around every such operation.
+enforce_zero_cost_account_profile() {
+  forbid_paid_api_environment
+  local settings="${HOME}/.gemini/antigravity-cli/settings.json"
+  [ -f "$settings" ] || fail "ANTIGRAVITY_SETTINGS_REQUIRED"
+  python3 - "$settings" <<'PY' || exit 31
+import json, os, sys
+p = sys.argv[1]
+try:
+    with open(p, "r", encoding="utf-8") as fh:
+        data = json.load(fh)
+except Exception as exc:
+    print("A2_SETTINGS_INVALID=" + type(exc).__name__)
+    raise SystemExit(2)
+data.pop("modelProvider", None)
+data["useG1Credits"] = False
+q = p + ".vos-zero-cost.tmp"
+with open(q, "w", encoding="utf-8") as fh:
+    json.dump(data, fh, sort_keys=True, indent=2)
+    fh.write("\n")
+os.chmod(q, 0o600)
+os.replace(q, p)
+PY
+  require_zero_cost_account_profile >/dev/null
 }
 
 preflight() {
@@ -99,13 +86,11 @@ preflight() {
   command -v sha256sum >/dev/null 2>&1 || fail "SHA256SUM_MISSING"
   command -v timeout >/dev/null 2>&1 || fail "TIMEOUT_MISSING"
   command -v agy >/dev/null 2>&1 || fail "AGY_MISSING"
-
   local mem_kib free_kib
   mem_kib="$(awk '/MemTotal:/ {print $2}' /proc/meminfo)"
   free_kib="$(df -Pk / | awk 'NR==2 {print $4}')"
   [ "${mem_kib:-0}" -ge 3500000 ] || fail "RAM_LT_3_5_GIB"
   [ "${free_kib:-0}" -ge 10485760 ] || fail "ROOT_FREE_LT_10_GIB"
-
   say "A2_PREFLIGHT=GREEN"
   say "A2_OS=$(uname -sr)"
   say "A2_ARCH=$(uname -m)"
@@ -119,26 +104,20 @@ agy_present() {
 }
 
 require_model() {
-  local model="${VOS_AGY_MODEL:-}"
-  local models
+  local model="${VOS_AGY_MODEL:-}" models
   [ -n "$model" ] || fail "VOS_AGY_MODEL_REQUIRED"
-
-  enforce_zero_cost_account_profile >/dev/null
+  enforce_zero_cost_account_profile
   if ! models="$(agy models 2>/dev/null)"; then
-    enforce_zero_cost_account_profile >/dev/null
+    enforce_zero_cost_account_profile
     fail "MODEL_LIST_FAILED"
   fi
-  # `agy models` is known to be able to rewrite settings; restore the invariant
-  # before any model turn is permitted.
-  enforce_zero_cost_account_profile >/dev/null
-
+  enforce_zero_cost_account_profile
   printf '%s\n' "$models" | awk '{print $1}' | grep -Fx "$model" >/dev/null \
     || fail "REQUESTED_MODEL_NOT_AVAILABLE"
 }
 
 classify_failure() {
-  local events="$1" stderr_file="$2"
-  local haystack
+  local events="$1" stderr_file="$2" haystack
   haystack="$(cat "$events" "$stderr_file" 2>/dev/null || true)"
   if printf '%s' "$haystack" | grep -Eqi 'quota|rate[ -]?limit|resource[_ -]?exhausted|out of credits|usage limit'; then
     say "ANTIGRAVITY_QUOTA_STATE=BLOCKED_QUOTA"
@@ -151,6 +130,8 @@ classify_failure() {
   fail "ANTIGRAVITY_RUNTIME_ERROR"
 }
 
+# The CLI documents result.response as free text. For a deterministic gate use
+# --json-schema and validate structured_output instead of trusting wording.
 parse_stream() {
   python3 - "$1" "$2" "${3:-}" <<'PY'
 import json, sys
@@ -176,8 +157,9 @@ if not init or not result:
     raise SystemExit("missing init/result events")
 if result.get("status") != "SUCCESS":
     raise SystemExit("terminal status is not SUCCESS")
-if (result.get("response") or "").strip() != expected:
-    raise SystemExit("response mismatch")
+structured = result.get("structured_output")
+if not isinstance(structured, dict) or structured.get("proof") != expected:
+    raise SystemExit("structured proof mismatch")
 conversation_id = result.get("conversation_id") or init.get("conversation_id")
 if not isinstance(conversation_id, str) or not conversation_id:
     raise SystemExit("conversation_id missing")
@@ -208,8 +190,7 @@ run_timed() {
 }
 
 qualify() {
-  # Self-heal the explicit free-account switches before validating the worker.
-  enforce_zero_cost_account_profile >/dev/null
+  enforce_zero_cost_account_profile
   preflight >/dev/null
   agy_present >/dev/null
   require_model
@@ -217,11 +198,12 @@ qualify() {
   local evidence_ref="${VOS_AGY_ZERO_COST_EVIDENCE_REF:-}"
   [ -n "$evidence_ref" ] || fail "ZERO_COST_ACCOUNT_EVIDENCE_REF_REQUIRED"
 
-  local model agy_bin agy_version agy_sha
+  local model agy_bin agy_version agy_sha schema
   model="$VOS_AGY_MODEL"
   agy_bin="$(command -v agy)"
   agy_version="$(agy --version | head -1)"
   agy_sha="$(sha256sum "$agy_bin" | awk '{print $1}')"
+  schema='{"type":"object","properties":{"proof":{"type":"string"}},"required":["proof"],"additionalProperties":false}'
 
   local run_dir
   run_dir="$(mktemp -d -t vos-fabric-a2.XXXXXX)"
@@ -243,14 +225,12 @@ PY
   cat > "$first_prompt" <<PROMPT
 Inside the current workspace, create a file named proof.txt whose entire content is exactly:
 $nonce
-Then read proof.txt using an available workspace file tool and reply with exactly:
+Then read proof.txt using an available workspace file tool. Your structured output field named proof must be exactly:
 $expected
-Do not access files outside the workspace. Do not use network tools. Do not add any other text.
+Do not access files outside the workspace. Do not use network tools.
 PROMPT
 
-  # Reassert immediately before the paid-capable operation. If Antigravity rewrites
-  # settings on exit, restore the invariant immediately afterward as well.
-  enforce_zero_cost_account_profile >/dev/null
+  enforce_zero_cost_account_profile
   first_rc=0
   (
     cd "$run_dir/work"
@@ -258,10 +238,11 @@ PROMPT
       agy -p "$(cat "$first_prompt")" \
         --model "$model" \
         --output-format stream-json \
+        --json-schema "$schema" \
         --sandbox \
         --print-timeout "${VOS_AGY_PRINT_TIMEOUT:-2m}"
   ) >"$first_json" 2>"$first_err" || first_rc=$?
-  enforce_zero_cost_account_profile >/dev/null
+  enforce_zero_cost_account_profile
 
   if [ "$first_rc" -ne 0 ]; then
     say "ANTIGRAVITY_FIRST_EVENTS_SHA256=$(sha256_path "$first_json")"
@@ -283,19 +264,20 @@ PROMPT
   resume_time="$run_dir/resume.time"
   resume_expected="VOS_ANTIGRAVITY_RESUME=OK"
 
-  enforce_zero_cost_account_profile >/dev/null
+  enforce_zero_cost_account_profile
   resume_rc=0
   (
     cd "$run_dir/work"
     run_timed "$resume_time" \
-      agy -p "Reply exactly: $resume_expected" \
+      agy -p "Return a structured object whose proof field is exactly: $resume_expected" \
         --conversation "$conversation_id" \
         --model "$model" \
         --output-format stream-json \
+        --json-schema "$schema" \
         --sandbox \
         --print-timeout "${VOS_AGY_PRINT_TIMEOUT:-2m}"
   ) >"$resume_json" 2>"$resume_err" || resume_rc=$?
-  enforce_zero_cost_account_profile >/dev/null
+  enforce_zero_cost_account_profile
 
   if [ "$resume_rc" -ne 0 ]; then
     say "ANTIGRAVITY_RESUME_EVENTS_SHA256=$(sha256_path "$resume_json")"
@@ -324,6 +306,7 @@ PROMPT
   say "ANTIGRAVITY_API_KEY_FALLBACK=0"
   say "ANTIGRAVITY_CREDIT_FALLBACK=0"
   say "ANTIGRAVITY_HEADLESS_JSON=GREEN"
+  say "ANTIGRAVITY_STRUCTURED_OUTPUT=GREEN"
   say "ANTIGRAVITY_WORKSPACE_TOOL_EXECUTION=GREEN"
   say "ANTIGRAVITY_EXACT_RESUME=GREEN"
   say "ANTIGRAVITY_SANDBOX_REQUESTED=GREEN"
